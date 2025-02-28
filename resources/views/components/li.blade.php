@@ -1,0 +1,1 @@
+<li class="first:mt-6 mt-1 italic list-disc md:ml-10 ml-7">{{$text}}</li>

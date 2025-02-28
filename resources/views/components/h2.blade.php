@@ -1,0 +1,1 @@
+<h2 class="md:text-4xl text-2xl md:mb-6 mb-4 text-zinc-900 font-normal tracking-wider md:mt-20 mt-12">{{$title}}</h2>

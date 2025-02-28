@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* @import url('https://fonts.googleapis.com/css2?family=Alice&display=swap'); */
+
+
+
+
+.background-100 {
+    background: cover;
+    background-size: 100% 100%;
+}
+
+
+/* @font-face {
+    font-weight: 400;
+    font-family: 'serif';
+    src: url("../fonts/Lora-medium.otf"),
+    url("../fonts/Lora-Semimedium.otf"),
+    url("../fonts/Lora-Medium.otf"),
+    url("../fonts/Lora-Regular.otf"),
+    url("../fonts/Lora-Italic.otf"),
+    url("../fonts/Lora-MediumItalic.otf"),
+    url("../fonts/Lora-SemimediumItalic.otf"),
+    url("../fonts/Lora-mediumItalic.otf"),
+
+} */
+
+/* @font-face {
+    font-weight: 400;
+    font-family: 'serif';
+    src: url("../fonts/Alice-Regular.ttf"),
+} */
+@font-face {
+    font-weight: 400;
+    font-family: 'serif';
+    src: url("../fonts/PTF55F.ttf"),
+        /* url("../fonts/CenturyExpandedLTStd.woff") format('woff'), */
+}
+
+/* @font-face {
+    font-family: 'sans';
+    src:url("../fonts/helvetica_regular.otf"), 
+    url("../fonts/helvetica_medium.otf"),
+    url("../fonts/helvetica_mediumoblique.otf"),
+    url("../fonts/helvetica_light.otf"),
+    url("../fonts/helvetica_lightoblique.otf"),
+
+    url("../fonts/helvetica_oblique.otf");
+} */
+
+@font-face {
+    font-family: 'sans';
+    src: url('../fonts/golos-text_regular.woff2') format('woff2'),
+         url('../fonts/golos-text_regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'sans';
+    src: url('../fonts/golos-text_medium.woff2') format('woff2'),
+         url('../fonts/golos-text_medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'sans';
+    src: url('../fonts/golos-text_demibold.woff2') format('woff2'),
+         url('../fonts/golos-text_demibold.woff') format('woff');
+    font-weight: 600;
+    font-style: normal;
+}
+
+
+
+
+.serif {
+    /* font-family: serif;
+    letter-spacing: 0.03em !important; */
+    font-family: "Alice", serif;
+    font-weight: 300 !important;
+    font-style: normal;
+}
+
+.sans {
+    font-family: "sans", sans-serif;
+    font-weight: 400;
+    /* letter-spacing: 0.03em; */
+}
+.sans-medium {
+    font-family: "sans", sans-serif;
+    font-weight: 500;
+    /* letter-spacing: 0.03em; */
+    /* line-height: 150%; */
+}
+.underpic {
+    color: rgb(178, 178, 178);
+    letter-spacing: 0.05em;
+    /* font-weight: 500; */
+}
+
+body {
+    font-family: 'sans';
+    font-weight: 300;
+    /* letter-spacing: 0.05em; */
+
+    background-color: #F9FAFA;
+}
+h1, h2 {
+    font-family: 'serif';
+    /* letter-spacing: 0.05em; */
+    /* font-weight: 700 !important; */
+}
+
+.image-bg:before {
+	content: '';
+	display: block;
+	width: 100%;
+	min-height: auto;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color:rgba(0, 0, 0, .4);
+    border-radius: 16px;
+    /* margin-left: 0,75rem;
+    margin-right: 0,75rem; */
+}
+.image-bg {
+    margin: 0rem 0.75rem 0rem 0.75rem
+}
+
+.card-bg::before {
+    content: '';
+	display: block;
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	/* background-color:rgba(71, 71, 71, 0.45); */
+    background-color:rgba(0, 0, 0, .45);
+    border-radius: 16px;
+}
+.bg-gold::before {
+    background-color: #523e116b;
+}
+.bg-silver::before {
+    background-color:rgba(71, 71, 71, 0.45);
+}
+.gold {
+    color: rgb(217 119 6);
+}
+.link {
+    color: rgb(217 119 6);
+    padding-bottom: 2px;
+    border-bottom: dashed rgb(180 83 9) 1px
+
+}
+.link-author {
+    padding-bottom: 2px;
+    border-bottom: dashed rgb(180 83 9) 1px
+}
+li::marker {
+    color: rgb(217 119 6);
+}
+
+.article-card:hover .title-card {
+    color: #ab8c43;
+}
+
+.blue-bg {
+    background-color: #7a9dff;
+}
+.blue-color {
+    color: #7a9dff;
+}
