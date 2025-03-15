@@ -27,6 +27,6 @@ class IndexController extends Controller
         }
 
         // dd(request()->query('post_category'));
-        return view('post.index', compact('posts'));
+        return view('exercise.index', compact('posts'));
     }
 }

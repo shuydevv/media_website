@@ -119,27 +119,32 @@
                     <hr class="mt-8">
                     <h2 class="text-lg tracking-wider mb-4 mt-8">Укажите предмет, раздел и тему</h2>
                     <label class="mr-5">Выберите категорию (предмет)</label>
-                    <select class="p-2 border" name="category_id">
+                    <select class="category_select p-2 border" name="category_id">
+                        <option value disabled selected>Не выбрано</option>
                         @foreach ($categories as $category)
-                        <option value="{{$category->id}}">{{$category->title}}</option>
+                        <a href="{{ request()->fullUrlWithQuery(['category' => $category->title ]) }}">
+                            <option class="category_option" value="{{$category->id}}">{{$category->title}}</option>
+                        </a>
                         @endforeach
                     </select>
                 </div>
     
                 <div class="mt-5">
                     <label class="mr-5">Выберите раздел</label>
-                    <select class="p-2 border" name="category_id">
-                        @foreach ($categories as $category)
-                        <option value="{{$category->id}}">{{$category->title}}</option>
+                    <select class="section_select p-2 border" name="section_id">
+                        <option class="section_option_default" value disabled selected>Не выбрано</option>
+                        @foreach ($sections as $section)
+                        <option class="section_option" id="{{$section->category_id}}" value="{{$section->id}}">{{$section->title}}</option>
                         @endforeach
                     </select>
                 </div>
     
                 <div class="mt-5">
                     <label class="mr-5">Выберите тему</label>
-                    <select class="p-2 border" name="category_id">
-                        @foreach ($categories as $category)
-                        <option value="{{$category->id}}">{{$category->title}}</option>
+                    <select class="topic_select p-2 border" name="topic_id">
+                        <option value disabled selected>Не выбрано</option>
+                        @foreach ($topics as $topic)
+                        <option class="topic_option" id="{{$topic->section_id}}" value="{{$topic->id}}">{{$topic->title}}</option>
                         @endforeach
                     </select>
                 </div>
@@ -149,11 +154,11 @@
                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" for="multiple_files">Изображение</label>
                     <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" id="multiple_files" name="main_image" type="file"></div>
                 <a><button type="submit" class="mt-12 p-2 px-4 bg-zinc-200 border-2 border-gray-600 hover:bg-zinc-300">Создать задание</button></a>
-            
             </div>
 
             </form>
         
         <script src="{{ asset("/js/admin/tabs.js") }}"></script>
+        <script src="{{ asset("/js/admin/select_options.js") }}"></script>
 
 @endsection

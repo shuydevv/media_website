@@ -36,8 +36,8 @@
                     <a class="tracking-wide" href="{{route('post.index')}}"><li class="hover:text-amber-700 transition-all tracking-wide">Статьи</li></a>
                     {{-- <li class="hover:text-amber-700 transition-all tracking-wide">Наши курсы</li> --}}
                     {{-- <li class="hover:text-amber-700 transition-all tracking-wide">Групповые занятия</li> --}}
-                    <a class="tracking-wide" href="{{route('main.repetitor')}}"><li class="hover:text-amber-700 transition-all tracking-wide">Занятия с репетитором</li></a>
-                    <a class="tracking-wide" href="{{route('main.author')}}"><li class="hover:text-amber-700 transition-all tracking-wide">Об авторе</li></a>
+                    <a class="tracking-wide" href="{{route('main.repetitor')}}"><li class="hover:text-amber-700 transition-all tracking-wide">Курсы</li></a>
+                    <a class="tracking-wide" href="{{route('exercise.index')}}"><li class="hover:text-amber-700 transition-all tracking-wide">Упражнения</li></a>
                     <!-- <li>Бесплатные статьи</li> -->
                     <!-- <li>Вход / Регистрация</li> -->
                 </ul>
