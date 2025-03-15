@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('exercises', function (Blueprint $table) {
             $table->id();
+            // $table->string('path')->nullable();
+            // $table->string('html_title')->nullable();
             $table->text('title'); // в заголовке пишется само задание
             $table->string('ex_number'); // номер задания
             $table->text('content_options')->nullable(); // в контенте пишутся варианты ответа 

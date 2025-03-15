@@ -1,5 +1,5 @@
 {{-- <a class="noclass" href="{{route('post.show', $path)}}"> --}}
-<div class="md:p-4 p-3 border group rounded-lg article-card cursor-pointer bg-white">
+<div class="md:p-4 p-3 border group rounded-lg article-card cursor-pointer bg-white list_exists">
     <div class="relative">
         @if (isset($price))
         <div style="border-color: #d2deff" class="absolute top-2 left-2 bg-white border-2 px-3 py-0.5 blue-color rounded-full">{{$price}} ₽</div>

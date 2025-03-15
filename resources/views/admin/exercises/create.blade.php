@@ -3,7 +3,7 @@
 @section('content')
     <div>
         <h1 class="text-xl sans mb-4">Создать упражнение</h1>
-        <form action="{{route('admin.shpargalka.store')}}" method="post" enctype="multipart/form-data">
+        <form action="{{route('admin.exercise.store')}}" method="post" enctype="multipart/form-data">
             @csrf
             <div class="mt-2">
                 <label class="text-zinc-800 text-sm">Номер задания в экзамене</label>
@@ -50,21 +50,21 @@
                     <div class="shrink w-full">
                         <div class="mt-2">
                             <label class="text-zinc-800 text-sm">Заголовок Левой колонки</label>
-                            <input class="p-2 block border w-full" type="text" placeholder="Введите заголовок" name="ex_number">
+                            <input class="p-2 block border w-full" type="text" placeholder="Введите заголовок" name="content_column_1_title">
                         </div>
                         <div class="mt-2">
                             <label class="text-zinc-800 text-sm">Варианты ответа</label>
-                            <textarea rows='1' class="p-2 block border w-full min-h-40" type="text" placeholder="Введите текст задания" name="title"></textarea>
+                            <textarea rows='1' class="p-2 block border w-full min-h-40" type="text" placeholder="Введите текст задания" name="content_column_1_content"></textarea>
                         </div>
                     </div>
                     <div class="shrink w-full">
                         <div class="mt-2">
                             <label class="text-zinc-800 text-sm">Заголовок Правой колонки</label>
-                            <input class="p-2 block border w-full" type="text" placeholder="Введите заголовок" name="ex_number">
+                            <input class="p-2 block border w-full" type="text" placeholder="Введите заголовок" name="content_column_2_title">
                         </div>
                         <div class="mt-2">
                             <label class="text-zinc-800 text-sm">Варианты ответа</label>
-                            <textarea rows='1' class="p-2 block border w-full min-h-40" type="text" placeholder="Введите текст задания" name="title"></textarea>
+                            <textarea rows='1' class="p-2 block border w-full min-h-40" type="text" placeholder="Введите текст задания" name="content_column_2_content"></textarea>
                         </div>
                     </div>
                 </div>
@@ -77,7 +77,7 @@
                 <h2 class="text-lg tracking-wider mb-2 mt-8">Тестовое задание с вариантами ответов</h2>
                 <div class="">
                     <div class="mt-2">
-                        <textarea rows='1' class="p-2 block border w-full min-h-40" type="text" placeholder="Варианты ответа" name="content"></textarea>
+                        <textarea rows='1' class="p-2 block border w-full min-h-40" type="text" placeholder="Варианты ответа" name="content_options"></textarea>
                     </div>
                 </div>
                 <hr class="mt-8 mb-8">
@@ -88,7 +88,7 @@
                 <h2 class="text-lg tracking-wider mb-4 mt-8">Текст (из второй части)</h2>
                 <div class="">
                     <div class="mt-2">
-                        <textarea rows='1' class="p-2 block border w-full min-h-40" type="text" placeholder="Вставьте текст" name="content"></textarea>
+                        <textarea rows='1' class="p-2 block border w-full min-h-40" type="text" placeholder="Вставьте текст" name="text_spoiler"></textarea>
                     </div>
                 </div>
                 <hr class="mt-8 mb-8">
@@ -99,12 +99,12 @@
                 <h2 class="text-lg tracking-wider mb-2 mt-8">Ответ и пояснение</h2>
                 <div>
                     <label class="text-zinc-800 text-sm">Ответ на задание (Только цифры, для второй части заполните только пояснение)</label>
-                    <input rows='1' class="p-2 block border mb-4 w-full" type="text" placeholder="Ответ (только цифры)" name="path"></input>
+                    <input rows='1' class="p-2 block border mb-4 w-full" type="text" placeholder="Ответ (только цифры)" name="answer"></input>
                 </div>
     
                 <div class="mt-2">
                     <label class="text-zinc-800 text-sm">Пояснение к ответу</label>
-                    <textarea rows='1' class="p-2 block border w-full min-h-40" type="text" placeholder="Введите пояснение" name="content"></textarea>
+                    <textarea rows='1' class="p-2 block border w-full min-h-40" type="text" placeholder="Введите пояснение" name="comment"></textarea>
                 </div>
                 {{-- @error('answer') --}}
                 <div>

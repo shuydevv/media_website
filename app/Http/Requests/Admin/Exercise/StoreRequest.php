@@ -22,9 +22,11 @@ class StoreRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // 'path' => 'nullable|string',
+            // 'html_title' => 'nullable|string',
             'title' => 'required|string',
             'ex_number' => 'required|string',
-            'content' => 'nullable|string',
+            'content_options' => 'nullable|string',
             'content_column_1_title' => 'nullable|string',
             'content_column_1_content' => 'nullable|string',
             'content_column_2_title' => 'nullable|string',
@@ -33,6 +35,7 @@ class StoreRequest extends FormRequest
             'comment' => 'nullable|string',
             'short_answer' => 'nullable|string',
             'text_spoiler' => 'nullable|string',
+            'topic_id' => 'nullable|string',
             'main_image' => 'nullable|file',
         ];
     }

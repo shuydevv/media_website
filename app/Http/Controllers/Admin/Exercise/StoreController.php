@@ -10,13 +10,28 @@ use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
-class StoreController extends BaseController
+// class StoreController extends BaseController
+// {
+//     public function __invoke(StoreRequest $request) {
+//         $data = $request->validated();
+//         dd($data)
+//         $this->service->store($data);
+//         return redirect()->route('admin.exercises.index');
+//     }
+// }
+
+class StoreController extends Controller
 {
     public function __invoke(StoreRequest $request) {
+        // dd($request);
         $data = $request->validated();
-        $this->service->store($data);
-        
+        // dd($data);
 
-        return redirect()->route('admin.exercises.index');
+        Exercise::firstOrCreate($data);
+        return redirect()->route('admin.exercise.index');
+
+        // dd($data)
+        // $this->service->store($data);
+        // return redirect()->route('admin.exercises.index');
     }
 }

@@ -1,4 +1,17 @@
-<div class="container mx-auto max-w-screen-lg md:mt-20 mt-12 md:mb-20 mb-12 px-3">
+<style>
+    .if-container-empty {
+        display: none;
+    }
+    .if-container-empty:has(.list_exists) {
+        display: block;
+        /* В more_card есть класс list_exists, если похожих статей не существует, то display none */
+    }
+    img[src=""] {
+        display: none;
+    }
+</style>
+
+<div class="container mx-auto max-w-screen-lg md:mt-20 mt-12 md:mb-20 mb-12 px-3 if-container-empty">
     <h2 class="md:text-2xl text-xl md:mb-4 mb-3 mt-10 text-zinc-900 tracking-wider">
 
         @if ($title == '')

@@ -18,15 +18,15 @@ category_select.addEventListener('change', (e) => {
     for (let i = 0; i < section_lenght; i++) {
         const item = section_option[i]
 
-        console.log('here')
+        // console.log('here')
         // section_option_default.options.selected = true
             if (item.id !== selected) {
-                console.log('case_1')
+                console.log(item.id)
                 item.classList.add('hidden');
                 item.classList.remove('block');
 
             } else {
-                console.log('case_2')
+                // console.log('case_2')
                 item.classList.add('block')
                 item.classList.remove('hidden');
             }
@@ -39,9 +39,9 @@ section_select.addEventListener('change', (e) => {
     let topic_lenght = topic_option.length
     // console.log(section_lenght)
     for (let i = 0; i < topic_lenght; i++) {
-        const item = topic_lenght[i]
+        const item = topic_option[i]
 
-        console.log('here')
+        console.log(topic_lenght)
         // section_option_default.options.selected = true
             if (item.id !== selected) {
                 console.log('case_1')
