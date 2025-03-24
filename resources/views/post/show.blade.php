@@ -117,19 +117,8 @@
 
         <x-ad_course />
 
-        <style>
-            .if-container-empty {
-                display: none;
-            }
-            .if-container-empty:has(.list_exists) {
-                display: block;
-            }
-            img[src=""] {
-                display: none;
-            }
-        </style>
 
-        <x-more_cards_div title="Другие статьи по теме:" class="if-container-empty">
+        <x-more_cards_div title="Другие статьи по теме:">
             @foreach ($posts as $post)
             <a class="noclass" href="{{route('post.show', $post->path)}}"><x-more_card title="{{$post->title}}" title2="{{$post->title2}}" description="Подзаголовок" :tags="$post->tags" img="{{'storage/' . $post->main_image}}" /></a>
             @endforeach

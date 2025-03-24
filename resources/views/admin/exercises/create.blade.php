@@ -1,5 +1,79 @@
 @extends('admin.layouts.main')
 
+<style>
+    .accordion-div {
+    margin-bottom: 2px;
+}
+.accordion {
+    color: #111;
+    background-color: white;
+    cursor: 'pointer';
+    padding: 16px 24px 16px 24px;
+    width: 100%;
+    text-align: left;
+    outline: none;
+    transition: 0.2s;
+    font-weight: 400;
+    font-size: 20px;
+  }
+.accordion:hover {
+    background-color: white;
+}
+  
+  /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+  .active, .accordion:hover {
+    /* background-color: #FFEBAD; */
+    filter: drop-shadow(0px 4px 8px rgba(45, 149, 156, 0.05));
+
+  }
+  /* .active, .accordion:hover {
+    background-color: black;
+  } */
+  
+  /* Style the accordion panel. Note: hidden by default */
+  .panel {
+    padding: 0 18px;
+    /* background-color: white; */
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-out;
+  }
+  .panel p {
+    padding-top: 0;
+    padding-bottom: 24px;
+    font-size: 18px;
+  }
+  .accordion:after {
+    content: '+'; /* Unicode character for "plus" sign (+) */
+    font-size: 24px;
+    color: #777;
+    float: right;
+    margin-left: 5px;
+    font-weight: 600;
+  }
+  
+  .active:after {
+    content: "-"; /* Unicode character for "minus" sign (-) */
+  }
+  /* .faq-block { */
+    /* margin-bottom: 100px; */
+    /* background-color: #F6F8FC; */
+    /* padding-bottom: 90px;
+    padding-top: 60px; */
+  /* } */
+
+  @media (max-width: 500px) {
+    .accordion:after {
+      font-size: 18px;
+    }
+    .panel p {
+      font-size: 16px;
+      line-height: 135%;
+      padding-bottom: 20px;
+    }
+  }
+</style>
+
 @section('content')
     <div>
         <h1 class="text-xl sans mb-4">Создать упражнение</h1>

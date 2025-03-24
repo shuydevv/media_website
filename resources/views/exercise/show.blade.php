@@ -1,9 +1,9 @@
 @extends('layouts.main')
 @section('title')
-{{$post->title}}
+{{-- {{$post->title}} --}}
 @endsection
 @section('description')
-{{$post->description}}
+{{-- {{$post->description}} --}}
 @endsection
 @section('content')
     <body>
@@ -31,7 +31,7 @@
 
             }
         </style>
-        <x-cover title1="{{$post->title}}. " title2="{{$post->title2}}" description="{{$post->description}}" :tags="$post->tags" img="{{ asset('storage/' . $post->main_image)}}" />           
+        {{-- <x-cover title1="{{$post->title}}. " title2="{{$post->title2}}" description="{{$post->description}}" :tags="$post->tags" img="{{ asset('storage/' . $post->main_image)}}" />            --}}
         {{-- <div class="px-3 md:mt-10 mt-4 container mx-auto max-w-screen-lg">
             <x-h2 title="Что будет на курсе?" />
             <div class="swiper swiperCards">
@@ -62,10 +62,76 @@
             <p>Программа не затянута, можно пройти за несколько месяцев, можно раньше</p>
         </div> --}}
         <x-block>
+            {{-- <x-h2 title="В стране Z проводится реформа образования. Какие факты свидетельствуют о том, что реформа направлена на гуманизацию образования? Запишите цифры, под которыми они указаны." /> --}}
+            <div>
+                {{-- <span class="border-2 p-3 px-6 text-lg mt-8">4</span> --}}
+                
+                {{-- <x-h3 title="В стране Z проводится реформа образования. Какие факты свидетельствуют о том, что реформа направлена на гуманизацию образования? Запишите цифры, под которыми они указаны." /> --}}
+                <x-h3 title="Прочтите отрывок из воспоминаний исторического деятеля." />
+
+                {{-- <div class="flex md:flex-row flex-col md:mt-12 mt-12 md:gap-24 gap-12">
+                    <ul class="md:text-xl text-base text-zinc-800 flex flex-col gap-2">ПРИЗНАКИ
+                        <li class="mt-2">1) Увеличение количества учебных предметов</li>
+                        <li>2) Сокращение времени изучения естественных наук</li>
+                        <li>3) Особое внимание нравственному воспитанию учеников</li>
+                        <li>4) Компьютеризация образовательного процесса</li>
+                        <li>5) Ориентация на интересы и склонности ученика</li>
+                        <li>6) Применение технологий, сберегающих здоровье</li>
+                    </ul>
+                    <ul class="md:text-xl text-base text-zinc-800 flex flex-col gap-2">ОБЛАСТИ ДУХОВНОЙ КУЛЬТУРЫ
+                        <li class="mt-2">1) Наука</li>
+                        <li>2) Религия</li>
+                    </ul>
+                </div> --}}
+
+
+                {{-- Варианты ответов
+                <ul class="md:text-xl text-base text-zinc-800 flex flex-col gap-2">
+                    <li>1) Увеличение количества учебных предметов</li>
+                    <li>2) Сокращение времени изучения естественных наук</li>
+                    <li>3) Особое внимание нравственному воспитанию учеников</li>
+                    <li>4) Компьютеризация образовательного процесса</li>
+                    <li>5) Ориентация на интересы и склонности ученика</li>
+                    <li>6) Применение технологий, сберегающих здоровье</li>
+                </ul> --}}
+
+                <p>
+                    <x-quote_text text="Царь исполнился усердием, сам и по собственному разумению начал вооружаться против врага и собирать многочисленные и храбрые войска. Он уже не хотел наслаждаться покоем, жить, затворясь в прекрасных хоромах, как в обыкновении у теперешних царей на западе (прожигать целые ночи, сидя за картами и другими бесовскими измышлениями), но сам поднимался не раз, не щадя своего здоровья, на враждебного и злейшего своего противника казанского царя. И хоть не взял он в одну суровую зиму этого столичного города, то есть крепости Казани, и отступил без всякого успеха, вовсе не впали в уныние душа его и храбрая его воинственность. И, оценив положение города, через год или два распорядился он построить немедля на реке Свияге большую превосходную крепость, за четверть мили от Волги и миль за пять от великого города Казани, - вот как близко уже подошёл!
+
+                
+                " source="Источник" />
+                <x-quote_text text="В тот же год отправив по Волге большие стенобитные пушки, сам он хотел тотчас пойти сухим путём. Но тут пришло известие, что крымский хан идёт на него с большими силами, препятствуя походу на Казань. И хотя для постройки крепости он послал прежде большое войско, да и при пушках множество воинов, но по этому случаю ненадолго отсрочил поход на Казань." source="Источник" />
+                <ul class="md:text-xl mt-12 text-base text-zinc-800 flex flex-col gap-2">Используя отрывок и знания по истории, выберите в приведённом списке верные суждения. Запишите цифры, под которыми они указаны.
+                    <li class="mt-3">1) Увеличение количества учебных предметов</li>
+                    <li>2) Сокращение времени изучения естественных наук</li>
+                    <li>3) Особое внимание нравственному воспитанию учеников</li>
+                    <li>4) Компьютеризация образовательного процесса</li>
+                    <li>5) Ориентация на интересы и склонности ученика</li>
+                    <li>6) Применение технологий, сберегающих здоровье</li>
+                </ul>
+                <div class="accordion-div">
+                    <div style="background-color: white; max-height: 0; overflow: hidden; transition: max-height 2s ease-out;" class="panel hidden bg-white border md:mt-10 mt-8 rounded py-3 px-4">
+                        <p class="mb-4 md:text-lg text-base">Ответ: 234</p>
+                        <p class="md:text-lg text-base">1 — Неверно. <br>
+                            2 — Неверно. <br>
+                            3 — Неверно. <br>
+                            4 — Неверно. <br>
+                            5 — Неверно. <br>
+                            6 — Неверно. <br>
+                        </p>
+                    </div>
+    
+                    <button class="accordion attention-tag md:mt-10 mt-8 py-4 px-6 bg-blue-600 text-white rounded tracking-wide"><img class="inline-block relative mr-2 bottom-[1px]" src="{{asset('img/show.svg')}}" alt="arrow"> Посмотреть ответ</button>
+                    </div>
+                </div>
+
+
+
+            </div>
 
             
 
-            {!! Blade::render($post->content, $new_images) !!}
+            {{-- {!! Blade::render($post->content, $new_images) !!} --}}
 
             {{-- <div class="mt-8 w-full">
                 <details class="list-none cursor-pointer text-center mb-4 pb-4">
@@ -117,7 +183,7 @@
 
         <x-ad_course />
 
-        <x-more_cards_div title="Другие статьи по теме:">
+        {{-- <x-more_cards_div title="Другие статьи по теме:">
             @foreach ($posts as $post)
             <a class="noclass" href="{{route('post.show', $post->path)}}"><x-more_card title="{{$post->title}}" title2="{{$post->title2}}" description="Подзаголовок" :tags="$post->tags" img="{{'storage/' . $post->main_image}}" /></a>
             @endforeach
@@ -126,16 +192,17 @@
                 <div class="flex justify-center md:mt-8 mt-1">
                     <button class="md:px-8 md:py-4 px-6 py-3 border-2 border-black bg-white text-black font-semimedium tracking-wider rounded-lg">Все статьи <img class="inline-block ml-1" src="{{ asset('img/arrow_black-button.svg') }}" alt="" srcset=""></button>
                 </div>
-            </x-slot:pagination>
+            </x-slot:pagination> --}}
             {{-- <x-more_card title="Отмена крепостного права. Как это было" description="Подзаголовок" :tags="$title" img="/img/ivan.webp"/>
             <x-more_card title="Заголовок" description="Подзаголовок" :tags="$title" img="/img/ivan.webp"/>
             <x-more_card title="Заголовок" description="Подзаголовок" :tags="$title" img="/img/ivan.webp"/> --}}
-        </x-more_cards_div>
+        {{-- </x-more_cards_div> --}}
 
 
         <x-material></x-material>
         <x-footer />
-    
+        
+        <script src="{{ asset("js/accordion.js") }}"></script>
         <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
         <script>
             var swiper = new Swiper(".swiperCards", {
