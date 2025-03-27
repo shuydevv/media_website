@@ -14,6 +14,6 @@ class ShowController extends BaseController
 {
     public function __invoke(Exercise $exercise) {
         $exercises = Exercise::all();
-        return view('admin.exercises.show', compact('exercises'));
+        return view('admin.exercises.show', compact( 'exercise'));
     }
 }

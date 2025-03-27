@@ -27,6 +27,10 @@ class StoreController extends Controller
         $data = $request->validated();
         // dd($data);
 
+        if( array_key_exists('main_image', $data)) {
+            $data['main_image'] = Storage::disk('public')->put('/images', $data['main_image']);
+        }
+
         Exercise::firstOrCreate($data);
         return redirect()->route('admin.exercise.index');
 

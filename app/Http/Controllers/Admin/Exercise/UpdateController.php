@@ -18,7 +18,11 @@ class UpdateController extends BaseController
 {
     public function __invoke(UpdateRequest $request, Exercise $exercise) {
         $data = $request->validated();
-        $exercise = $this->service->update($data, $exercise);
+        if( array_key_exists('main_image', $data)) {
+            $data['main_image'] = Storage::disk('public')->put('/images', $data['main_image']);
+        }
+        $exercise->update($data);
+        // $exercise = $this->service->update($data, $exercise);
 
         return view('admin.exercises.show', compact('exercise'));
     }
