@@ -6,6 +6,18 @@
 {{$post->description}}
 @endsection
 @section('content')
+@php
+$postTagsArr = $post->tags->toArray();
+$is_there_plans = false;
+for ($i = 0; $i <= count($postTagsArr) - 1; $i++) {
+    if (in_array("Планы", $postTagsArr[$i])) {
+        $is_there_plans = true;
+    };
+};
+// dd($is_there_plans);
+// dd(count($postTagsArr) - 1);
+
+@endphp
     <body>
         <style>
             a:not([class]) {
@@ -31,9 +43,7 @@
 
             }
         </style>
-        <x-cover title1="{{$post->title}}. " title2="{{$post->title2}}" description="{{$post->description}}" :tags="$post->tags" 
-            {{-- @if ($post->main_image !== null) --}}
-            img="{{ asset('storage/' . $post->main_image)}}"
+        <x-cover title1="{{$post->title}}. " title2="{{$post->title2}}" description="{{$post->description}}" :tags="$post->tags" isTherePlans="{{$is_there_plans}}" img="{{ asset('storage/' . $post->main_image)}}"
             {{-- @else --}}
             {{-- img=""
             @endif --}}
@@ -123,8 +133,8 @@
 
         <x-ad_course />
 
-
-        <x-more_cards_div title="Другие статьи по теме:">
+        @if ($is_there_plans == null)
+        <x-more_cards_div title="Другие статьи:">
             @foreach ($posts as $post)
             <a class="noclass" href="{{route('post.show', $post->path)}}"><x-more_card title="{{$post->title}}" title2="{{$post->title2}}" description="Подзаголовок" :tags="$post->tags" img="{{'storage/' . $post->main_image}}" /></a>
             @endforeach
@@ -138,6 +148,7 @@
             <x-more_card title="Заголовок" description="Подзаголовок" :tags="$title" img="/img/ivan.webp"/>
             <x-more_card title="Заголовок" description="Подзаголовок" :tags="$title" img="/img/ivan.webp"/> --}}
         </x-more_cards_div>
+        @endif
 
 
         <x-material></x-material>

@@ -39,7 +39,18 @@
         @endphp
         <x-more_cards_div title="{{$post_category_name}}">
             @foreach ($posts as $post)
-            <a class="noclass" href="{{route('post.show', $post->path)}}"><x-more_card title="{{$post->title}}" title2="{{$post->title2}}" description="Подзаголовок" :tags="$post->tags" img="{{'storage/' . $post->main_image}}" /></a>
+                @php
+                    $postTagsArr = $post->tags->toArray();
+                    $is_there_plans = false;
+                    for ($i = 0; $i <= count($postTagsArr) - 1; $i++) {
+                        if (in_array("Планы", $postTagsArr[$i])) {
+                            $is_there_plans = true;
+                        };
+                    };
+                @endphp
+                @if ($is_there_plans == false)
+                <a class="noclass" href="{{route('post.show', $post->path)}}"><x-more_card title="{{$post->title}}" title2="{{$post->title2}}" description="Подзаголовок" :tags="$post->tags" img="{{'storage/' . $post->main_image}}" /></a>
+                @endif
             @endforeach
 
             

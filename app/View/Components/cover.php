@@ -16,6 +16,7 @@ class cover extends Component
         public string $title2,
         public string $description,
         public string $img,
+        public string $isTherePlans,
         public $tags,
     )
     {
