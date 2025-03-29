@@ -31,45 +31,74 @@
 
             }
         </style>
-        {{-- <x-cover title1="{{$post->title}}. " title2="{{$post->title2}}" description="{{$post->description}}" :tags="$post->tags" img="{{ asset('storage/' . $post->main_image)}}" />            --}}
-        {{-- <div class="px-3 md:mt-10 mt-4 container mx-auto max-w-screen-lg">
-            <x-h2 title="Что будет на курсе?" />
-            <div class="swiper swiperCards">
-                <div class="swiper-wrapper">
-                    <div class="md:p-4 p-3 border rounded-lg swiper-slide">
-                        <div class="flex align-baseline justify-between items-start flex-col">
-                            <h3 class="title-card md:text-xl tracking-wide text-l mb-2 text-zinc-900">Вся необходимая теория до 20 века</h3>
-                            <p>авваав</p>
+
+        <x-block>
+            <div>
+                @if ($exercise->main_image !== null)
+                <x-h3 title="{{$exercise->title}}"/>
+                    {{-- {!! Blade::render($post->content, $new_images) !!} --}}
+                    <div class="md:w-1/3 w-full mx-auto md:mt-8 mt-6 md:mb-10 mb-8">
+                        <img class="border rounded object-cover rounded h-full mx-auto" src="{{ asset('storage/' . $exercise->main_image)}}" alt="main_img" srcset="">
+                    </div>
+
+                    {!! Blade::render($exercise->text_spoiler) !!} 
+                    {{-- // Использовать тэг <x-text text="" /> --}}
+
+                    <div class="accordion-div">
+                        <div style="background-color: white; max-height: 0; overflow: hidden; transition: max-height 2s ease-out;" class="panel hidden bg-white border md:mt-10 mt-8 rounded py-3 px-4">
+
+                            <p class="mb-4 md:text-lg text-base">Ответ:
+                                @if ($exercise->answer !== null && $exercise->answer !== "0")
+                                    {{$exercise->answer}}
+                                @endif
+                            </p>
+                            {{-- <p class="mb-4 md:text-lg text-base">Пояснение:  --}}
+                            <p class="md:text-lg text-base">
+                                {!! Blade::render($exercise->comment) !!} 
+
+                                {{-- Шаблон:
+                                1 — Неверно. <br>
+                                2 — Неверно. <br>
+                                3 — Неверно. <br>
+                                4 — Неверно. <br>
+                                5 — Неверно. <br>
+                                6 — Неверно. <br> --}}
+                            </p>
+                        </div>
+        
+                        <button class="accordion attention-tag md:mt-10 mt-8 py-4 px-6 bg-blue-600 text-white rounded tracking-wide"><img class="inline-block relative mr-2 bottom-[1px]" src="{{asset('img/show.svg')}}" alt="arrow"> Посмотреть ответ</button>
                         </div>
                     </div>
-                    <div class="md:p-4 p-3 border rounded-lg swiper-slide">
-                        <div class="flex align-baseline justify-between items-start flex-col">
-                            <h3 class="title-card md:text-xl tracking-wide text-l mb-2 text-zinc-900">Конспекты по каждой теме</h3>
-                            <p>Даты, карты, термины</p>
-                        </div>       
-                    </div>
-                    <div class="md:p-4 p-3 border rounded-lg swiper-slide">    
-                        <div class="flex align-baseline justify-between items-start flex-col">
-                            <h3 class="title-card md:text-xl tracking-wide text-l mb-2 text-zinc-900">Много практики</h3>
-                            <p>Даты, карты, термины</p>
-                        </div>  
-                    </div>
-                </div>
-            </div>
-            <x-h2 title="Об авторе курса" />
-            <x-h2 title="Посмотрите видео об этом курсе" />
-            <x-h2 title="Занимайтесь в удобном темпе " />
-            <p>Программа не затянута, можно пройти за несколько месяцев, можно раньше</p>
-        </div> --}}
-        <x-block>
-            {{-- <x-h2 title="В стране Z проводится реформа образования. Какие факты свидетельствуют о том, что реформа направлена на гуманизацию образования? Запишите цифры, под которыми они указаны." /> --}}
-            <div>   
-                {{-- <span class="border-2 p-3 px-6 text-lg mt-8">4</span> --}}
+                @endif
                 
-                <div class="md:w-2/3 w-full mx-auto mt-12">
-                    <img class="object-cover rounded h-full" src="{{ asset('storage/' . $exercise->main_image)}}" alt="main_img" srcset="">
+                @if ($exercise->ex_number == "25")
+                @php
+                    $title_array = explode("@", $exercise->title);
+                    $answer_array = explode("@", $exercise->text_spoiler);
+                    unset($title_array[0]);
+                    unset($answer_array[0]);
+                @endphp
+                
+                @for ($i = 1; $i <= count($title_array); $i++)
+                <x-h3 title="{{$title_array[$i]}}" />
+                {!! Blade::render($answer_array[$i]) !!} 
+                {{-- <x-text text="{{$answer_array[$i]}}" /> --}}
+                @endfor
+                {{-- <x-h3 title="{{$exercise->title}}" /> --}}
+
+                @endif
+                {{-- <x-h3 title="На графике изображено изменение ситуации на рынке мороженого в стране Z. Спрос переместился из положения D в положение D1 при неизменном спросе S. (На графике P — цена товара; Q — количество товара.)" /> --}}
+
+
+                {{-- Задание с картинкой
+                <x-h3 title="На графике изображено изменение ситуации на рынке мороженого в стране Z. Спрос переместился из положения D в положение D1 при неизменном спросе S. (На графике P — цена товара; Q — количество товара.)" />
+                <div class="md:w-1/3 w-full mx-auto md:mt-8 mt-6 md:mb-10 mb-8">
+                    <img class="border rounded object-cover rounded h-full mx-auto" src="{{ asset('storage/' . $exercise->main_image)}}" alt="main_img" srcset="">
                 </div>
-                <x-h3 title="Обоснуйте необходимость правового регулирования трудовых отношений " />
+                <x-text text="1. Как изменилась равновесная цена?" />
+                <x-text text="2. Что могло вызвать изменение спроса? Укажите любое одно обстоятельство (фактор) и объясните его влияние на спрос." />
+                <x-text text="3. Как изменятся предложение и равновесная цена на данном рынке, если при прочих равных условиях обанкротится крупнейшая фирма-производитель мороженого?" /> --}}
+
 
                 {{-- <x-h3 title="В стране Z проводится реформа образования. Какие факты свидетельствуют о том, что реформа направлена на гуманизацию образования? Запишите цифры, под которыми они указаны." /> --}}
 
@@ -120,21 +149,7 @@
                     <li>5) Ориентация на интересы и склонности ученика</li>
                     <li>6) Применение технологий, сберегающих здоровье</li>
                 </ul> --}}
-                {{-- <div class="accordion-div">
-                    <div style="background-color: white; max-height: 0; overflow: hidden; transition: max-height 2s ease-out;" class="panel hidden bg-white border md:mt-10 mt-8 rounded py-3 px-4">
-                        <p class="mb-4 md:text-lg text-base">Ответ: 234</p>
-                        <p class="md:text-lg text-base">1 — Неверно. <br>
-                            2 — Неверно. <br>
-                            3 — Неверно. <br>
-                            4 — Неверно. <br>
-                            5 — Неверно. <br>
-                            6 — Неверно. <br>
-                        </p>
-                    </div>
-    
-                    <button class="accordion attention-tag md:mt-10 mt-8 py-4 px-6 bg-blue-600 text-white rounded tracking-wide"><img class="inline-block relative mr-2 bottom-[1px]" src="{{asset('img/show.svg')}}" alt="arrow"> Посмотреть ответ</button>
-                    </div>
-                </div> --}}
+
 
 
 

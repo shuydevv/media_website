@@ -31,7 +31,7 @@ class StoreRequest extends FormRequest
             'content_column_1_content' => 'nullable|string',
             'content_column_2_title' => 'nullable|string',
             'content_column_2_content' => 'nullable|string',
-            'answer' => 'required|string',
+            'answer' => 'nullable|string',
             'comment' => 'nullable|string',
             'short_answer' => 'nullable|string',
             'text_spoiler' => 'nullable|string',

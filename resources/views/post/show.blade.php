@@ -31,7 +31,13 @@
 
             }
         </style>
-        <x-cover title1="{{$post->title}}. " title2="{{$post->title2}}" description="{{$post->description}}" :tags="$post->tags" img="{{ asset('storage/' . $post->main_image)}}" />           
+        <x-cover title1="{{$post->title}}. " title2="{{$post->title2}}" description="{{$post->description}}" :tags="$post->tags" 
+            {{-- @if ($post->main_image !== null) --}}
+            img="{{ asset('storage/' . $post->main_image)}}"
+            {{-- @else --}}
+            {{-- img=""
+            @endif --}}
+            />           
         {{-- <div class="px-3 md:mt-10 mt-4 container mx-auto max-w-screen-lg">
             <x-h2 title="Что будет на курсе?" />
             <div class="swiper swiperCards">
