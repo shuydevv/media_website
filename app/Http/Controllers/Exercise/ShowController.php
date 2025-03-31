@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Exercise;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Exercise;
 use App\Models\Image;
 use App\Models\Post;
+use App\Models\Section;
 use Illuminate\Support\Facades\DB;
 use Request;
 // use Illuminate\Http\Request;
@@ -26,12 +28,14 @@ class ShowController extends Controller
         preg_match('([^\/]+$)', $url, $matches);
         $postId = $matches[0]; //Получаем path из адресной строки
         $exercise = Exercise::where('id', $postId)->first();
+        $categories = Category::all();
+        $sections = Section::all();
         // $currentPost = Exercise::where('path', $postId)->first();
         // текущий пост
         // $posts = Post::where('category_id', $currentPost->category_id)->where('path', '!=' , $postId)->paginate(4);
         // Передаются все посты, кроме текущего, чтобы не повторять его в рекомендациях 
         
 
-        return view('exercise.show', compact('exercise'));
+        return view('exercise.show', compact('exercise', 'categories', 'sections'));
     }
 }

@@ -34,25 +34,20 @@
 
         <x-block>
             <div>
-                @if ($exercise->main_image !== null)
+                {{-- Тестовое задание --}}
+                @if ($exercise->content_options)
                 <x-h3 title="{{$exercise->title}}"/>
-                    {{-- {!! Blade::render($post->content, $new_images) !!} --}}
-                    <div class="md:w-1/3 w-full mx-auto md:mt-8 mt-6 md:mb-10 mb-8">
-                        <img class="border rounded object-cover rounded h-full mx-auto" src="{{ asset('storage/' . $exercise->main_image)}}" alt="main_img" srcset="">
-                    </div>
 
-                    {!! Blade::render($exercise->text_spoiler) !!} 
+                    {!! Blade::render($exercise->content_options) !!} 
                     {{-- // Использовать тэг <x-text text="" /> --}}
 
                     <div class="accordion-div">
                         <div style="background-color: white; max-height: 0; overflow: hidden; transition: max-height 2s ease-out;" class="panel hidden bg-white border md:mt-10 mt-8 rounded py-3 px-4">
-
                             <p class="mb-4 md:text-lg text-base">Ответ:
                                 @if ($exercise->answer !== null && $exercise->answer !== "0")
                                     {{$exercise->answer}}
                                 @endif
                             </p>
-                            {{-- <p class="mb-4 md:text-lg text-base">Пояснение:  --}}
                             <p class="md:text-lg text-base">
                                 {!! Blade::render($exercise->comment) !!} 
 
@@ -65,13 +60,47 @@
                                 6 — Неверно. <br> --}}
                             </p>
                         </div>
-        
+                        <button class="accordion attention-tag md:mt-10 mt-8 py-4 px-6 bg-blue-600 text-white rounded tracking-wide"><img class="inline-block relative mr-2 bottom-[1px]" src="{{asset('img/show.svg')}}" alt="arrow"> Посмотреть ответ</button>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Задание с картинкой --}}
+                @if ($exercise->main_image !== null)
+                <x-h3 title="{{$exercise->title}}"/>
+                    <div class="md:w-1/3 w-full mx-auto md:mt-8 mt-6 md:mb-10 mb-8">
+                        <img class="border rounded object-cover rounded h-full mx-auto" src="{{ asset('storage/' . $exercise->main_image)}}" alt="main_img" srcset="">
+                    </div>
+
+                    {!! Blade::render($exercise->text_spoiler) !!} 
+                    {{-- // Использовать тэг <x-text text="" /> --}}
+
+                    <div class="accordion-div">
+                        <div style="background-color: white; max-height: 0; overflow: hidden; transition: max-height 2s ease-out;" class="panel hidden bg-white border md:mt-10 mt-8 rounded py-3 px-4">
+                            <p class="mb-4 md:text-lg text-base">Ответ:
+                                @if ($exercise->answer !== null && $exercise->answer !== "0")
+                                    {{$exercise->answer}}
+                                @endif
+                            </p>
+                            <p class="md:text-lg text-base">
+                                {!! Blade::render($exercise->comment) !!} 
+
+                                {{-- Шаблон:
+                                1 — Неверно. <br>
+                                2 — Неверно. <br>
+                                3 — Неверно. <br>
+                                4 — Неверно. <br>
+                                5 — Неверно. <br>
+                                6 — Неверно. <br> --}}
+                            </p>
+                        </div>
                         <button class="accordion attention-tag md:mt-10 mt-8 py-4 px-6 bg-blue-600 text-white rounded tracking-wide"><img class="inline-block relative mr-2 bottom-[1px]" src="{{asset('img/show.svg')}}" alt="arrow"> Посмотреть ответ</button>
                         </div>
                     </div>
                 @endif
                 
-                @if ($exercise->ex_number == "25")
+                {{-- Задание второй части --}}
+                @if ($exercise->text_spoiler)
                 @php
                     $title_array = explode("@", $exercise->title);
                     $answer_array = explode("@", $exercise->text_spoiler);
@@ -206,8 +235,24 @@
                 <x-text text="С другой стороны новая модель организационной деятельности влечет за собой процесс внедрения и модернизации модели развития. Идейные соображения высшего порядка, а также реализация намеченных плановых заданий требуют от нас анализа дальнейших направлений развития. Товарищи! начало повседневной работы по формированию позиции влечет за собой процесс внедрения и модернизации системы обучения кадров, соответствует насущным потребностям. С другой стороны рамки и место обучения кадров позволяет выполнять важные задания по разработке форм развития." />
                  --}}
         </x-block>
-
-        <x-ad_course />
+        @php
+        
+        $exercise_section = $exercise->topic->section_id; // даёт id раздела, которому посвящено задание
+        // dd($exercise_section);
+        $category_id = null;
+        
+        // for ($i = 0; count($categories) - 1; $i++ ) {
+        foreach ($sections as $section) {
+            if ($exercise_section == $section->id) {
+                $category_id = $section->category_id;
+                // dd($category_id);
+            } 
+        }
+        // foreach ($categories as $category) {
+        //     if ($category->id == ) 
+        // }
+        @endphp
+        <x-ad_course subject="{{$category_id}}" />
 
         {{-- <x-more_cards_div title="Другие статьи по теме:">
             @foreach ($posts as $post)

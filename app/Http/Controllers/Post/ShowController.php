@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Post;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Image;
 use App\Models\Post;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,7 @@ class ShowController extends Controller
     // }
     public function __invoke(Post $post) {
         // dd($post);
+
         
         $images = Image::all()->where('post_id', $post->path);
         $i = 0;
@@ -29,10 +31,20 @@ class ShowController extends Controller
         preg_match('([^\/]+$)', $url, $matches);
         $postId = $matches[0]; //Получаем path из адресной строки
         $currentPost = Post::where('path', $postId)->first(); // текущий пост
-        $posts = Post::where('category_id', $currentPost->category_id)->where('path', '!=' , $postId)->paginate(4);
+        
+        $categories = Category::all();
+        $category_plan = "wrong";
+        foreach ($categories as $category) {
+            if ($category->title == "Планы по обществознанию") {
+                $category_plan = $category->id;
+            } 
+        }
+        // dd($category_plan);
+        
+        $posts = Post::where('category_id', $currentPost->category_id)->where('path', '!=' , $postId)->where('category_id', '!=', $category_plan)->paginate(4);
         // Передаются все посты, кроме текущего, чтобы не повторять его в рекомендациях 
         
-
+        
         return view('post.show', compact('post', 'posts', 'images', 'new_images'));
     }
 }

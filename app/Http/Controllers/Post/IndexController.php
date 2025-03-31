@@ -22,7 +22,15 @@ class IndexController extends Controller
         } 
         // dd($posts);
         else {
-            $posts = Post::paginate(4)->withQueryString();;
+            $categories = Category::all();
+            $category_plan = "wrong";
+            foreach ($categories as $category) {
+                if ($category->title == "Планы по обществознанию") {
+                    $category_plan = $category->id;
+                } 
+            }
+            $posts = Post::where('category_id', '!=', $category_plan)->paginate(4)->withQueryString();
+            // ->paginate(4)->withQueryString();
             // dd($posts);
         }
 

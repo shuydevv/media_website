@@ -1,6 +1,22 @@
 <div class="max-w-screen-lg mx-auto bg-blue-600 h-200 md:pt-8 pt-6 pb-6 md:px-8 px-6 md:pb-8 cursor-pointer md:mb-20 mb-16 rounded-2xl md:mx-auto mx-1 px-2">
     <img class="md:w-1/4 w-1/3 m-auto md:mb-6 mb-6 rotate-6" src="{{asset('img/tg-3d.png')}}" alt="">
-    <h3 class="md:text-3xl text-xl font-regular line text-white text-center tracking-wider">Бесплатный телеграм-канал для подготовки к ЕГЭ по истории на 100 баллов!</h3>
+    {{-- @php
+        dd($subject);
+    @endphp --}}
+    <h3 class="md:text-3xl text-xl font-regular line text-white text-center tracking-wider">Бесплатный телеграм-канал для подготовки к ЕГЭ
+        {{-- @php
+            dd($subject);
+        @endphp --}}
+        @if (isset($subject))
+            {{$subject == "1" ? 'по истории' : 'по обществу'}}
+        @else
+            @php
+                $subject = rand("1", "2");
+            @endphp
+            {{$subject == "1" ? 'по истории' : 'по обществу'}}
+        @endif
+
+        на 100 баллов!</h3>
 
     <!-- <p class="text-white text-center text-xl">Вся нужная теория с глубоким анализом фактов</p>
     <p class="text-white text-center text-xl">Готовые ответы на задания второй части</p>
