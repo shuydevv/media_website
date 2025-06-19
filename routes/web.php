@@ -72,6 +72,16 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
             Route::put('{session}', 'UpdateController')->name('admin.sessions.update');
     });
 
+    Route::group(['namespace' => 'Lesson', 'prefix' => 'lessons'], function() {
+            Route::get('/', 'IndexController')->name('admin.lessons.index');
+            Route::get('/create', 'CreateController')->name('admin.lessons.create');
+            Route::post('/', 'StoreController')->name('admin.lessons.store');
+            Route::get('/{lesson}/edit', 'EditController')->name('admin.lessons.edit');
+            Route::put('/{lesson}', 'UpdateController')->name('admin.lessons.update');
+            Route::delete('/{lesson}', 'DestroyController')->name('admin.lessons.destroy');
+    });
+    // });
+
 
     Route::group(['namespace' => 'Category', 'prefix' => 'categories'], function() {
         Route::get('/', 'IndexController')->name('admin.category.index');

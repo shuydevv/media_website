@@ -27,6 +27,11 @@ class CourseSession extends Model
         return $this->belongsTo(Course::class);
     }
 
+        public function lesson()
+    {
+        return $this->hasOne(Lesson::class);
+    }
+
     /**
      * Получить дату и время начала сессии как Carbon объект
      */

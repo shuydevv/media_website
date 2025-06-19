@@ -17,11 +17,6 @@
     <form method="POST" action="{{ route('admin.sessions.store') }}">
         @csrf
 
-        <div class="mb-4">
-            <label for="title" class="block text-sm font-medium text-gray-700">Тема занятия</label>
-            <input type="text" name="title" id="title" class="w-full border rounded px-3 py-2" value="{{ old('title') }}">
-        </div>
-
         {{-- Курс --}}
         <div class="mb-4">
             <label for="course_id" class="block text-sm font-medium">Курс</label>
@@ -57,12 +52,6 @@
                 <option value="active">Активно</option>
                 <option value="cancelled">Отменено</option>
             </select>
-        </div>
-
-        {{-- Комментарий --}}
-        <div class="mb-4">
-            <label for="comment" class="block text-sm font-medium">Комментарий (необязательно)</label>
-            <textarea name="comment" id="comment" class="w-full border rounded px-3 py-2"></textarea>
         </div>
 
         <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">

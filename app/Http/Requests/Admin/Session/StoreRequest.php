@@ -17,7 +17,8 @@ class StoreRequest extends FormRequest
             'course_id'    => ['required', 'exists:courses,id'],
             'date'         => ['required', 'date'],
             'start_time'   => ['required', 'date_format:H:i'],
-            'end_time'     => ['required', 'date_format:H:i', 'after:start_time'],
+            'duration_minutes' => ['required', 'integer', 'min:1'],
+            // 'end_time'     => ['required', 'date_format:H:i', 'after:start_time'],
             'status'       => ['required', 'in:active,cancelled'],
         ];
     }
