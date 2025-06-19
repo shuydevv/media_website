@@ -3,6 +3,14 @@
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\Admin\Course\IndexController;
+use App\Http\Controllers\Admin\Course\ShowController;
+use App\Http\Controllers\Admin\Course\CreateController;
+use App\Http\Controllers\Admin\Course\StoreController;
+use App\Http\Controllers\Admin\Course\EditController;
+use App\Http\Controllers\Admin\Course\UpdateController;
+use App\Http\Controllers\Admin\Course\DestroyController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -44,6 +52,26 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
     Route::group(['namespace' => 'Main'], function() {
         Route::get('/', 'IndexController')->name('main.index');
     });
+
+    Route::group(['namespace' => 'Course', 'prefix' => 'courses'], function() {
+        Route::get('/', 'IndexController')->name('admin.courses.index');
+        Route::get('/create', 'CreateController')->name('admin.courses.create');
+        Route::post('/store', 'StoreController')->name('admin.courses.store');
+        Route::get('/{course}', 'ShowController')->name('admin.courses.show');
+        Route::get('/{course}/edit', 'EditController')->name('admin.courses.edit');
+        Route::patch('/{course}', 'UpdateController')->name('admin.courses.update');
+        Route::delete('/{course}', 'DestroyController')->name('admin.courses.destroy');
+
+    });
+
+        Route::group(['namespace' => 'Session', 'prefix' => 'sessions'], function() {
+            Route::get('/', 'IndexController')->name('admin.sessions.index');
+            Route::get('/create', 'CreateController')->name('admin.sessions.create');
+            Route::post('/store', 'StoreController')->name('admin.sessions.store');
+            Route::get('{session}/edit', 'EditController')->name('admin.sessions.edit');
+            Route::put('{session}', 'UpdateController')->name('admin.sessions.update');
+    });
+
 
     Route::group(['namespace' => 'Category', 'prefix' => 'categories'], function() {
         Route::get('/', 'IndexController')->name('admin.category.index');

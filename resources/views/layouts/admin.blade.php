@@ -14,7 +14,7 @@
     <body>
         <div class="relative">
             <div class="flex justify-between mb-4 p-4 border w-full bg-white z-10 items-center flex-wrap grow-0">
-                <a href="{{route('main.index')}}"><h2 class="md:text-xl md:mb-0 mb-4 text-lg tracking-wider font-medium">Школа Полтавского</h2></a>
+                <a href="{{route('main.index')}}"><h2 class="md:text-xl md:mb-0 mb-4 text-lg tracking-wider font-medium">Школа</h2></a>
                 <ul class="gap-10 md:flex hidden">
                     <li style="color: rgb(217 119 6);" class="tracking-wide"></li>
                     <li class="tracking-wide"></li>

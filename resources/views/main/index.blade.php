@@ -6,6 +6,16 @@
 Школа Полтавского. Курсы по подготовке к ЕГЭ и ОГЭ по истории и обществознанию
 @endsection
 @section('content')
+<style>
+
+    /* .other-schools::after {
+        content: "aa111";
+        display: inline;
+        position: rela;
+        left: -54px;
+        bottom: 54px
+    } */
+</style>
     <body>
         {{-- <div class="relative">
             <div class="flex justify-between mb-4 p-4 border w-full bg-white z-10 items-center flex-wrap grow-0">
@@ -26,9 +36,9 @@
     <div class="bg-blue-600 md:mx-6 mx-0 py-1 rounded-3xl mb-16">
         <div class="container mx-auto max-w-screen-lg md:mt-20 mt-12 md:mb-20 mb-6 px-3 ">
             {{-- <h1 class="md:text-6xl text-3xl font-bold md:mb-6 mb-5 text-center tracking-wide text-white"><span class="sans">Глубокие знания в нескучном формате! </span></h1> --}}
-            <h1 class="md:text-6xl text-3xl font-medium md:mb-6 mb-5 text-center tracking-wide text-white"><span class="sans font-semibold">Глубокие знания в нескучном формате! </span></h1>
+            <h1 class="md:text-5xl text-3xl md:mb-6 mb-5 text-center tracking-wide text-white "><span class="sans md:font-medium font-medium">Подготовим к ЕГЭ с нуля до 85+ баллов! </span></h1>
 
-            <h3 class="md:text-2xl text-lg mt-3 text-center mb-6 tracking-wider font-regular text-white opacity-90">Подготовим к ЕГЭ и ОГЭ по истории и обществознанию на высокие баллы</h3>
+            <h3 class="md:text-2xl text-lg mt-3 text-center mb-6 tracking-wider font-regular text-white opacity-90">Быстро. Эффективно. Без лишнего стресса</h3>
             <div class="md:h-64 h-48 w-full bg-blue-400 md:mt-16 mt-10">
                 {{-- <video src=""></video> --}}
             </div>
@@ -63,35 +73,35 @@
                 </div>
             </div> --}}
             <div class="flex justify-center md:mt-8 mt-8">
-                <button class="md:px-8 md:py-4 px-6 md:w-auto w-full py-3 bg-white text-black font-semimedium tracking-wider rounded-lg">Записаться на занятия <img class="inline-block ml-1" src="{{ asset('img/arrow_black-button.svg') }}" alt="" srcset=""></button>
+                <button class="md:px-8 md:py-4 px-6 md:w-auto w-full py-3 bg-white text-black font-semimedium tracking-wider rounded-lg">Первые 7 дней бесплатно! <img class="inline-block ml-1" src="{{ asset('img/arrow_black-button.svg') }}" alt="" srcset=""></button>
             </div>
         </div>
 
     </div>    
-        <div class="container mx-auto max-w-screen-lg md:mt-24 mt-12 md:mb-20 mb-6 px-3">
-            <h2 class="sans text-4xl text-center tracking-wide">Поступай куда хочешь, а не куда возьмут!</h2>
+
+        <div class="container mx-auto max-w-screen-lg md:mt-24 mt-12 mb-12 md:mb-20 mb-6 px-3">
+            <h2 class="sans max-w-screen-xl md:text-5xl text-3xl text-center tracking-wide md:leading-[1.3] leading-[1.3]">Поступай куда хочешь, а не куда возьмут!</h2>
 
             {{-- <div></div> --}}
 
 
             {{-- <x-h2 title="Как это началось?" /> --}}
-            <div class="flex mt-12 gap-6 shrink">
-                <img class="w-1/2 rounded-2xl" src="{{ asset('img/mgu.jpg') }}" alt="">
-                <div class="w-1/2 flex flex-col gap-6 shrink">
-                    <div class="bg-blue-100 py-6 px-6 rounded-2xl flex gap-6">
-                        {{-- <div class="w-16 h-full bg-blue-400"></div> --}}
+            <div class="flex md:flex-nowrap flex-wrap md:mt-12 mt-8 md:gap-6 gap-5 shrink">
+                <img class="md:w-1/2 w-full rounded-2xl" src="{{ asset('img/mgu.jpg') }}" alt="">
+                <div class="md:w-1/2 w-full flex flex-col md:gap-6 gap-3 shrink">
+                    <div class="bg-blue-100 md:p-6 p-4 rounded-2xl flex md:gap-6 gap-3">
                         <div>
-                            <h3 style="color: #0C1C52" class="text-3xl mb-1 text-zinc-900 tracking-wider">80+ баллов</h3>
-                            <p style="color: #0C1C52" class="text-lg">Получает каждый третий наш ученик</p>
+                            <h3 style="color: #0C1C52" class="md:text-3xl text-2xl mb-1 text-zinc-900 tracking-wider">80+ баллов</h3>
+                            <p style="color: #0C1C52" class="md:text-lg text-base">Получает каждый третий наш ученик</p>
                         </div>
                     </div>
-                    <div style="background-color: #FFC9FF" class="bg-blue-100 py-6 px-6 rounded-2xl">
-                        <h3 style="color: #520C52" class="text-3xl mb-1 text-zinc-900 tracking-wider">80+ баллов</h3>
-                        <p style="color: #520C52" class="text-lg">Получает каждый третий наш ученик</p>
+                    <div style="background-color: #FFC9FF" class="bg-blue-100 md:p-6 p-4 rounded-2xl">
+                        <h3 style="color: #520C52" class="md:text-3xl text-2xl mb-1 text-zinc-900 tracking-wider">80+ баллов</h3>
+                        <p style="color: #520C52" class="md:text-lg text-base">Получает каждый третий наш ученик</p>
                     </div>
-                    <div style="background-color: #FFD6CB" class="bg-blue-100 py-6 px-6 rounded-2xl">
-                        <h3 style="color: #4C190E" class="text-3xl mb-1 text-zinc-900 tracking-wider">80+ баллов</h3>
-                        <p style="color: #4C190E" class="text-lg">Получает каждый третий наш ученик</p>
+                    <div style="background-color: #FFD6CB" class="bg-blue-100 md:p-6 p-4 rounded-2xl">
+                        <h3 style="color: #4C190E" class="md:text-3xl text-2xl mb-1 text-zinc-900 tracking-wider">80+ баллов</h3>
+                        <p style="color: #4C190E" class="md:text-lg text-base">Получает каждый третий наш ученик</p>
                     </div>
                     
                 </div>
@@ -99,17 +109,182 @@
         </div>
 
         <div class="container mx-auto max-w-screen-lg md:mt-24 mt-12 md:mb-20 mb-6 px-3">
-            <h2 class="sans text-4xl text-center tracking-wide">Полностью интерактивные занятия!</h2>
+            <h2 class="sans md:text-5xl text-2xl text-center tracking-wide">Полностью интерактивные занятия!</h2>
             <p>У нас нет скучных лекций. Вся теория подаётся простым языком с интересными презентациями и понятными примерами</p>
         </div>
 
-        <div class="container mx-auto max-w-screen-lg md:mt-24 mt-12 md:mb-20 mb-6 px-3">
-            <h2 class="sans text-4xl text-center tracking-wide">Эту школу создал учитель, а не маркетолог</h2>
-            <p>Вместо сотен учеников в потоке — внимание к каждому. Вместо сухих лекций — живые занятия, где можно задавать вопросы и не бояться ошибок. Вместо зубрежки — понимание.
+    <div style="background-color: #f3f8ff; border-color: #DBEAFE" class="rounded-3xl max-w-screen-xl border-2 mx-auto mb-12">
+        <div class="container mx-auto max-w-screen-lg md:mt-12 mt-6 md:mb-12 mb-12 px-3">
+            <h2 class="sans md:text-5xl text-2xl text-center tracking-wide md:mb-12 mb-6 md:leading-[1.2] leading-[1.3]">Эту школу создал учитель, а не маркетолог!</h2>
+            {{-- <h2 class="sans text-4xl text-center tracking-wide mb-12">Эту школу создал учитель, а не маркетолог</h2> --}}
+            <div class="flex flex-col md:gap-6 gap-4">
+                <div class="flex">
+                    {{-- <div> --}}
+                        <img class="md:w-20 w-12 self-end rounded-full" src="{{ asset('img/other-schools.jpg') }}" alt="" srcset="">
+                    {{-- </div> --}}
+                    <div style="background-color: #FFC9E0" class="md:w-3/4 w-full md:p-6 p-4 rounded-tr-2xl rounded-br-2xl rounded-tl-2xl flex gap-6">
+                        <div>
+                            <h3 style="color: #530C2A; opacity: .6;" class="mb-1 md:text-lg text-base">В других онлайн-школах:</h3>
+                            <p class="md:text-2xl text-lg" style="color: #530C2A">Огромные потоки учеников. Нет связи с преподавателями, уроки даются в записи, а всё общение происходит только с "кураторами"</p>
+                            <div class="md:mt-5 mt-4 flex md:gap-3 gap-2">
+                                <div style="background-color: #FFEAF3" class="flex p-2 px-3 rounded-full gap-2 bg-white ">
+                                    <img class="md:w-6 w-6" src="{{ asset('img/dislike.svg') }}" alt="">
+                                    <p style="color: #530C2A;">134</p>    
+                                </div>
+                                <div style="background-color: #FFEAF3" class="flex p-2 px-3 rounded-full gap-2 bg-white ">
+                                    <img class="w-6" src="{{ asset('img/crying.svg') }}" alt="">
+                                    <p style="color: #530C2A;">87</p>    
+                                </div>
+                                <div style="background-color: #FFEAF3" class="flex p-2 px-3 rounded-full gap-2 bg-white ">
+                                    <img class="w-6" src="{{ asset('img/steam.svg') }}" alt="">
+                                    <p style="color: #530C2A;">43</p>    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            Если вам важно не просто сдать ЕГЭ, а действительно освоить предмет, я буду рад помочь!</p>
+                <div class="flex self-end ">
+                    <div style="background-color: #DBEAFE" class="md:w-3/4 w-full ml-auto md:p-6 p-4 rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl flex gap-6">
+                        <div>
+                            <h3 style="color: #0C1C52; opacity: .6;" class="mb-1 md:text-lg text-base">В школе Полтавского:</h3>
+                            <p class="md:text-2xl text-lg" style="color: #0C1C52">Можно написать преподавателю с вопросом в любое время. Не куратору, не помощнику, а лично преподу</p>    
+                            <div class="md:mt-5 mt-4 flex md:gap-3 gap-2">
+                                <div style="background-color: #EBF4FF" class="flex p-2 px-3 rounded-full gap-2 bg-white ">
+                                    <img class="md:w-6 w-6" src="{{ asset('img/like.svg') }}" alt="">
+                                    <p style="color: #0C1C52">134</p>    
+                                </div>
+                                <div style="background-color: #EBF4FF" class="flex p-2 px-3 rounded-full gap-2 bg-white ">
+                                    <img class="w-6" src="{{ asset('img/heart.svg') }}" alt="">
+                                    <p style="color: #0C1C52">87</p>
+                                </div>
+                                <div style="background-color: #EBF4FF" class="flex p-2 px-3 rounded-full gap-2 bg-white ">
+                                    <img class="w-6" src="{{ asset('img/cool.svg') }}" alt="">
+                                    <p style="color: #0C1C52">43</p>    
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <img class="ml-1 md:w-20 w-12 self-end rounded-full" src="{{ asset('img/our-school.jpg') }}" alt="" srcset="">
+                </div>
+
+                <div class="flex">
+                    {{-- <div> --}}
+                        <img class="md:w-20 w-12 self-end rounded-full" src="{{ asset('img/other-schools.jpg') }}" alt="" srcset="">
+                    {{-- </div> --}}
+                    <div style="background-color: #FFC9E0" class="md:w-3/4 w-full md:p-6 p-4 rounded-tr-2xl rounded-br-2xl rounded-tl-2xl flex gap-6">
+                        <div>
+                            <h3 style="color: #530C2A; opacity: .6;" class="mb-1 md:text-lg text-base">В других онлайн-школах:</h3>
+                            <p class="md:text-2xl text-lg" style="color: #530C2A">Много воды, длинные вебинары по 2-3 часа. Много лишней информации, которая не встретится в ЕГЭ</p>
+                            <div class="md:mt-5 mt-4 flex md:gap-3 gap-2">
+                                <div style="background-color: #FFEAF3" class="flex p-2 px-3 rounded-full gap-2 bg-white ">
+                                    <img class="md:w-6 w-6" src="{{ asset('img/dislike.svg') }}" alt="">
+                                    <p style="color: #530C2A;">134</p>    
+                                </div>
+                                <div style="background-color: #FFEAF3" class="flex p-2 px-3 rounded-full gap-2 bg-white ">
+                                    <img class="w-6" src="{{ asset('img/crying.svg') }}" alt="">
+                                    <p style="color: #530C2A;">87</p>    
+                                </div>
+                                <div style="background-color: #FFEAF3" class="flex p-2 px-3 rounded-full gap-2 bg-white ">
+                                    <img class="w-6" src="{{ asset('img/steam.svg') }}" alt="">
+                                    <p style="color: #530C2A;">43</p>    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex self-end ">
+                    <div style="background-color: #DBEAFE" class="md:w-3/4 w-full ml-auto md:p-6 p-4 rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl flex gap-6">
+                        <div>
+                            <h3 style="color: #0C1C52; opacity: .6;" class="mb-1 md:text-lg text-base">В школе Полтавского:</h3>
+                            <p class="md:text-2xl text-lg" style="color: #0C1C52">Только самая нужная информация. 1,5 часа на теорию и практику. Объяснение на понятных примерах.</p>    
+                            <div class="md:mt-5 mt-4 flex md:gap-3 gap-2">
+                                <div style="background-color: #EBF4FF" class="flex p-2 px-3 rounded-full gap-2 bg-white ">
+                                    <img class="md:w-6 w-6" src="{{ asset('img/like.svg') }}" alt="">
+                                    <p style="color: #0C1C52">134</p>    
+                                </div>
+                                <div style="background-color: #EBF4FF" class="flex p-2 px-3 rounded-full gap-2 bg-white ">
+                                    <img class="w-6" src="{{ asset('img/heart.svg') }}" alt="">
+                                    <p style="color: #0C1C52">87</p>    
+                                </div>
+                                <div style="background-color: #EBF4FF" class="flex p-2 px-3 rounded-full gap-2 bg-white ">
+                                    <img class="w-6" src="{{ asset('img/cool.svg') }}" alt="">
+                                    <p style="color: #0C1C52">43</p>    
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <img class="ml-1 md:w-20 w-12 self-end rounded-full" src="{{ asset('img/our-school.jpg') }}" alt="" srcset="">
+                </div>
+
+                <div class="flex">
+                    {{-- <div> --}}
+                        <img class="md:w-20 w-12 self-end rounded-full" src="{{ asset('img/other-schools.jpg') }}" alt="" srcset="">
+                    {{-- </div> --}}
+                    <div style="background-color: #FFC9E0" class="md:w-3/4 w-full md:p-6 p-4 rounded-tr-2xl rounded-br-2xl rounded-tl-2xl flex gap-6">
+                        <div>
+                            <h3 style="color: #530C2A; opacity: .6;" class="mb-1 md:text-lg text-base">В других онлайн-школах:</h3>
+                            <p class="md:text-2xl text-lg" style="color: #530C2A">Очень строгие дедлайны. Отчисляют за просроченные домашки. Могут выгнать даже незадолго до экзамена, чтобы не портить себе статистику</p>
+                            <div class="md:mt-5 mt-4 flex md:gap-3 gap-2">
+                                <div style="background-color: #FFEAF3" class="flex p-2 px-3 rounded-full gap-2 bg-white ">
+                                    <img class="md:w-6 w-6" src="{{ asset('img/dislike.svg') }}" alt="">
+                                    <p style="color: #530C2A;">134</p>    
+                                </div>
+                                <div style="background-color: #FFEAF3" class="flex p-2 px-3 rounded-full gap-2 bg-white ">
+                                    <img class="w-6" src="{{ asset('img/crying.svg') }}" alt="">
+                                    <p style="color: #530C2A;">87</p>    
+                                </div>
+                                <div style="background-color: #FFEAF3" class="flex p-2 px-3 rounded-full gap-2 bg-white ">
+                                    <img class="w-6" src="{{ asset('img/steam.svg') }}" alt="">
+                                    <p style="color: #530C2A;">43</p>    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex self-end ">
+                    <div style="background-color: #DBEAFE" class="md:w-3/4 w-full ml-auto md:p-6 p-4 rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl flex gap-6">
+                        <div>
+                            <h3 style="color: #0C1C52; opacity: .6;" class="mb-1 md:text-lg text-base">В школе Полтавского:</h3>
+                            <p class="md:text-2xl text-lg" style="color: #0C1C52">Обучение в комфортном темпе с вниманием к каждому. Человеческое отношение. Есть время на личную жизнь</p>    
+                            <div class="md:mt-5 mt-4 flex md:gap-3 gap-2">
+                                <div style="background-color: #EBF4FF" class="flex p-2 px-3 rounded-full gap-2 bg-white ">
+                                    <img class="md:w-6 w-6" src="{{ asset('img/like.svg') }}" alt="">
+                                    <p style="color: #0C1C52">134</p>    
+                                </div>
+                                <div style="background-color: #EBF4FF" class="flex p-2 px-3 rounded-full gap-2 bg-white ">
+                                    <img class="w-6" src="{{ asset('img/heart.svg') }}" alt="">
+                                    <p style="color: #0C1C52">87</p>    
+                                </div>
+                                <div style="background-color: #EBF4FF" class="flex p-2 px-3 rounded-full gap-2 bg-white ">
+                                    <img class="w-6" src="{{ asset('img/cool.svg') }}" alt="">
+                                    <p style="color: #0C1C52">43</p>    
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <img class="ml-1 md:w-20 w-12 self-end rounded-full" src="{{ asset('img/our-school.jpg') }}" alt="" srcset="">
+                </div>
+
+
+
+
+                
+            </div>
+            
+
+            <div></div>
+            <div></div>
+            {{-- <p>Вместо сотен учеников в потоке — внимание к каждому. Вместо сухих лекций — живые занятия, где можно задавать вопросы и не бояться ошибок. Вместо зубрежки — понимание.
+
+            Если вам важно не просто сдать ЕГЭ, а действительно освоить предмет, я буду рад помочь!</p> --}}
         </div>
-
+    </div>
         {{-- @php
         $title = [
             'title 1' => 'История',
