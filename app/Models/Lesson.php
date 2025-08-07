@@ -16,7 +16,6 @@ protected $fillable = [
     'meet_link',
     'recording_link',
     'notes_link',
-    'homework_id',
     'image',
 ];
 
@@ -25,9 +24,5 @@ protected $fillable = [
         return $this->belongsTo(CourseSession::class, 'course_session_id');
     }
 
-    public function homework()
-    {
-        return $this->belongsTo(Homework::class);
-    }
 }
 

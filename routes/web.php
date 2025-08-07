@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\Course\StoreController;
 use App\Http\Controllers\Admin\Course\EditController;
 use App\Http\Controllers\Admin\Course\UpdateController;
 use App\Http\Controllers\Admin\Course\DestroyController;
+use App\Http\Controllers\LessonAjaxController;
 
 /*
 |--------------------------------------------------------------------------
@@ -187,7 +188,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Controller'], function() {
 //     return view('welcome');
 // });
 
-
+Route::get('/lessons', [LessonAjaxController::class, 'getLessons']);
 Auth::routes(['verify' => true]);
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

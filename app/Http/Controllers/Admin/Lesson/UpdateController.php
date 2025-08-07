@@ -33,7 +33,7 @@ class UpdateController extends Controller
             'recording_link'    => $validated['recording_link'] ?? null,
             'notes_link'        => $validated['notes_link'] ?? null,
             'image'             => $validated['image'] ?? $lesson->image,
-            'homework_id'       => $validated['homework_id'] ?? null,
+            // 'homework_id'       => $validated['homework_id'] ?? null,
         ]);
 
         return redirect()->route('admin.lessons.index')

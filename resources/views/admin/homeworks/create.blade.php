@@ -29,15 +29,20 @@
             <textarea name="description" class="w-full border rounded px-3 py-2"></textarea>
         </div>
 
+
         <div class="mb-4">
-        <label class="block text-sm font-medium">Урок</label>
-        <select name="lesson_id" class="w-full border rounded px-3 py-2">
-            <option value="">Выберите урок</option>
-            @foreach ($lessons as $lesson)
-                <option value="{{ $lesson->id }}" {{ old('lesson_id', $homework->lesson_id ?? '') == $lesson->id ? 'selected' : '' }}>
-                    {{ $lesson->title }}
-                </option>
+        <label for="course_id">Курс</label>
+        <select class="w-full border rounded px-3 py-2" name="course_id" id="course_id" required>
+            @foreach($courses as $course)
+                <option value="{{ $course->id }}">{{ $course->title }}</option>
             @endforeach
+        </select>
+        </div>
+
+        <div class="mb-4">
+        <label for="lesson_id">Урок</label>
+        <select class="w-full border rounded px-3 py-2" name="lesson_id" id="lesson_id" required>
+            <!-- Уроки будут загружаться динамически, если выбрали курс -->
         </select>
         </div>
 
@@ -202,5 +207,27 @@ document.getElementById('add-task').addEventListener('click', () => {
     });
 
 });
+</script>
+<script>
+    document.getElementById('course_id').addEventListener('change', function() {
+        var courseId = this.value;
+        fetchLessons(courseId);
+    });
+
+    function fetchLessons(courseId) {
+        // Запрос к серверу для получения уроков для выбранного курса
+        fetch('/lessons?course_id=' + courseId)
+            .then(response => response.json())
+            .then(data => {
+                var lessonSelect = document.getElementById('lesson_id');
+                lessonSelect.innerHTML = ''; // Очищаем текущие опции
+                data.lessons.forEach(lesson => {
+                    var option = document.createElement('option');
+                    option.value = lesson.id;
+                    option.textContent = lesson.title;
+                    lessonSelect.appendChild(option);
+                });
+            });
+    }
 </script>
 @endsection

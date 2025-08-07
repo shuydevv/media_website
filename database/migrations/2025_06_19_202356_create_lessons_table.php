@@ -17,7 +17,6 @@ return new class extends Migration {
             $table->string('meet_link')->nullable(); // Ссылка на трансляцию
             $table->string('recording_link')->nullable(); // Ссылка на запись
             $table->string('notes_link')->nullable(); // Ссылка на конспект
-            $table->foreignId('homework_id')->nullable()->constrained()->nullOnDelete(); // Домашнее задание
             $table->string('image')->nullable(); // Обложка
 
             $table->timestamps();

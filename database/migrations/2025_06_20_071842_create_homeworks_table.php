@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('homeworks', function (Blueprint $table) {
+            $table->unsignedBigInteger('course_id');  // Добавляем связь с курсом
             $table->unsignedBigInteger('lesson_id')->nullable();  // Для связи с уроками
+            $table->foreign('course_id')->references('id')->on('courses')->onDelete('cascade');  // Обновляем внешний ключ для курса
             $table->foreign('lesson_id')->references('id')->on('lessons')->onDelete('set null');  // Обновление внешнего ключа
             $table->id();
             $table->string('title');
