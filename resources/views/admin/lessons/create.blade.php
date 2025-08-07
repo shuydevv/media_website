@@ -17,22 +17,47 @@
     <form action="{{ route('admin.lessons.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
-        {{-- Привязка к сессии --}}
+                {{-- Выбор курса --}}
         <div class="mb-4">
-            <label for="session_id" class="block text-sm font-medium">Сессия</label>
-            <select name="session_id" id="session_id" required class="w-full border rounded px-3 py-2">
+            <label for="course_id" class="block text-sm font-medium">Курс</label>
+            <select name="course_id" id="course_id" class="w-full border rounded px-3 py-2" required>
+                <option value="">Выберите курс</option>
+                @foreach($courses as $course)
+                    <option value="{{ $course->id }}">{{ $course->title }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- Сессии (будут подгружены динамически) --}}
+        <div class="mb-4">
+            <label for="course_session_id" class="block text-sm font-medium">Сессия</label>
+            <select name="course_session_id" id="course_session_id" class="w-full border rounded px-3 py-2" required disabled>
+                <option value="">Сначала выберите курс</option>
+            </select>
+        </div>
+{{-- 
+        Привязка к сессии --}}
+        {{-- <div class="mb-4">
+            <label for="course_session_id" class="block text-sm font-medium">Сессия</label>
+            <select name="course_session_id" id="course_session_id" required class="w-full border rounded px-3 py-2">
                 @foreach ($sessions as $session)
                     <option value="{{ $session->id }}">
                         {{ $session->date }} — {{ $session->course->title }}
                     </option>
                 @endforeach
             </select>
-        </div>
+        </div> --}}
 
         {{-- Тема урока --}}
         <div class="mb-4">
             <label for="title" class="block text-sm font-medium">Тема урока</label>
             <input type="text" name="title" id="title" class="w-full border rounded px-3 py-2" required>
+        </div>
+
+        {{-- Описание --}}
+        <div class="mb-4">
+            <label for="description" class="block text-sm font-medium">Описание</label>
+            <textarea name="description" id="description" rows="4" class="w-full border rounded px-3 py-2">{{ old('description', $lesson->description ?? '') }}</textarea>
         </div>
 
         {{-- Ссылка на трансляцию --}}
@@ -64,4 +89,38 @@
         </button>
     </form>
 </div>
+
+<script>
+    document.getElementById('course_id').addEventListener('change', function () {
+        const courseId = this.value;
+        const sessionSelect = document.getElementById('course_session_id');
+
+        sessionSelect.disabled = true;
+        sessionSelect.innerHTML = '<option>Загрузка...</option>';
+
+        fetch(`/admin/api/courses/${courseId}/sessions`)
+            .then(response => response.json())
+            .then(data => {
+                sessionSelect.innerHTML = '';
+
+                if (data.length === 0) {
+                    sessionSelect.innerHTML = '<option>Нет доступных занятий</option>';
+                } else {
+                    data.forEach(session => {
+                        const option = document.createElement('option');
+                        option.value = session.id;
+                        option.textContent = `${session.date} (${session.start_time})`;
+                        sessionSelect.appendChild(option);
+                    });
+                }
+
+                sessionSelect.disabled = false;
+            })
+            .catch(() => {
+                sessionSelect.innerHTML = '<option>Ошибка загрузки</option>';
+                sessionSelect.disabled = false;
+            });
+    });
+</script>
+
 @endsection

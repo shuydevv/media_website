@@ -9,15 +9,16 @@ class Lesson extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'course_session_id',
-        'title',
-        'meet_url',
-        'recording_url',
-        'notes_url',
-        'homework_id',
-        'image',
-    ];
+protected $fillable = [
+    'course_session_id',
+    'title',
+    'description',
+    'meet_link',
+    'recording_link',
+    'notes_link',
+    'homework_id',
+    'image',
+];
 
     public function session()
     {

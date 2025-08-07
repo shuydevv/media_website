@@ -15,6 +15,7 @@ class UpdateRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
             'meet_link' => ['nullable', 'url'],
             'recording_link' => ['nullable', 'url'],
             'notes_link' => ['nullable', 'url'],
@@ -27,6 +28,7 @@ class UpdateRequest extends FormRequest
     {
         return [
             'title' => 'Тема',
+            'description' => 'Описание',
             'meet_link' => 'Ссылка на трансляцию',
             'recording_link' => 'Ссылка на запись',
             'notes_link' => 'Ссылка на конспект',

@@ -13,9 +13,10 @@ return new class extends Migration {
             $table->foreignId('course_session_id')->constrained()->onDelete('cascade');
 
             $table->string('title')->nullable(); // Название (тема) урока
-            $table->string('meet_url')->nullable(); // Ссылка на трансляцию
-            $table->string('recording_url')->nullable(); // Ссылка на запись
-            $table->string('notes_url')->nullable(); // Ссылка на конспект
+            $table->string('description')->nullable(); // Название (тема) урока
+            $table->string('meet_link')->nullable(); // Ссылка на трансляцию
+            $table->string('recording_link')->nullable(); // Ссылка на запись
+            $table->string('notes_link')->nullable(); // Ссылка на конспект
             $table->foreignId('homework_id')->nullable()->constrained()->nullOnDelete(); // Домашнее задание
             $table->string('image')->nullable(); // Обложка
 

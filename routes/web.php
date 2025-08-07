@@ -82,6 +82,18 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
     });
     // });
 
+    Route::group(['namespace' => 'Homework', 'prefix' => 'homeworks'], function() {
+        Route::get('/', 'IndexController')->name('admin.homeworks.index');
+        Route::get('create', 'CreateController')->name('admin.homeworks.create');
+        Route::get('{homework}/edit', 'EditController')->name('admin.homeworks.edit');
+        Route::get('/{homework}', 'ShowController')->name('admin.homeworks.show');
+        Route::post('/', 'StoreController')->name('admin.homeworks.store');
+        Route::put('/{homework}', 'UpdateController')->name('admin.homeworks.update');
+        Route::delete('/{homework}', 'DestroyController')->name('admin.homeworks.destroy');
+    });
+
+    Route::get('/api/courses/{course}/sessions', [\App\Http\Controllers\Admin\Session\ApiController::class, 'sessionsByCourse']);
+
 
     Route::group(['namespace' => 'Category', 'prefix' => 'categories'], function() {
         Route::get('/', 'IndexController')->name('admin.category.index');

@@ -27,6 +27,9 @@ class Course extends Model
     public function sessions() {
         return $this->hasMany(CourseSession::class);
     }
+    public function category() {
+        return $this->belongsTo(Category::class);
+    }
 
     protected static function booted()
 {

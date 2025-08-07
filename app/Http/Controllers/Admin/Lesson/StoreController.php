@@ -12,6 +12,7 @@ class StoreController extends Controller
 {
     public function __invoke(StoreRequest $request)
     {
+        
         $validated = $request->validated();
 
         // Загружаем изображение, если есть
@@ -24,6 +25,7 @@ class StoreController extends Controller
         Lesson::create([
             'course_session_id' => $validated['course_session_id'],
             'title'             => $validated['title'],
+            'description' => $validated['description'] ?? null,
             'meet_link'         => $validated['meet_link'] ?? null,
             'recording_link'    => $validated['recording_link'] ?? null,
             'notes_link'        => $validated['notes_link'] ?? null,

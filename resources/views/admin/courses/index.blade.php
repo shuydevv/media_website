@@ -36,7 +36,7 @@
                             {{ \Carbon\Carbon::parse($course->end_date)->format('d.m.Y') }}
                         </div>
                         <div class="flex gap-3 mt-2">
-                            <a href="{{ route('admin.courses.show', $course->id) }}" class="text-blue-600 hover:underline">Подробнее</a>
+                            {{-- <a href="{{ route('admin.courses.show', $course->id) }}" class="text-blue-600 hover:underline">Подробнее</a> --}}
                             <a href="{{ route('admin.courses.edit', $course->id) }}" class="text-yellow-600 hover:underline">Редактировать</a>
                             <form method="POST" action="{{ route('admin.courses.destroy', $course->id) }}"
                                 onsubmit="return confirm('Точно удалить курс?');">

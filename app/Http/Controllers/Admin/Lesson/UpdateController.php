@@ -26,8 +26,9 @@ class UpdateController extends Controller
 
         // Обновляем остальные поля
         $lesson->update([
-            'course_session_id' => $validated['course_session_id'],
+            // 'course_session_id' => $validated['course_session_id'],
             'title'             => $validated['title'],
+            'description' => $validated['description'] ?? null,
             'meet_link'         => $validated['meet_link'] ?? null,
             'recording_link'    => $validated['recording_link'] ?? null,
             'notes_link'        => $validated['notes_link'] ?? null,

@@ -16,7 +16,7 @@
 
     <form action="{{ route('admin.lessons.update', $lesson->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
-        @method('PATCH')
+        @method('PUT')
 
         {{-- Привязка к сессии (не редактируется) --}}
         <div class="mb-4">
@@ -32,31 +32,47 @@
             <input type="text" name="title" id="title" value="{{ old('title', $lesson->title) }}" class="w-full border rounded px-3 py-2" required>
         </div>
 
+        {{-- Описание --}}
+        <div class="mb-4">
+            <label for="description" class="block text-sm font-medium">Описание</label>
+            <textarea name="description" id="description" rows="4" class="w-full border rounded px-3 py-2">{{ old('description', $lesson->description ?? '') }}</textarea>
+        </div>
+
         {{-- Ссылка на трансляцию --}}
         <div class="mb-4">
-            <label for="meet_link" class="block text-sm font-medium">Ссылка на трансляцию</label>
-            <input type="url" name="meet_link" id="meet_link" value="{{ old('meet_link', $lesson->meet_link) }}" class="w-full border rounded px-3 py-2">
+            <label for="meet_link" class="block text-sm font-medium">Ссылка на трансляцию (Google Meet)</label>
+            <input type="url" name="meet_link" id="meet_link"
+                value="{{ old('meet_link', $lesson->meet_link) }}"
+                class="w-full border rounded px-3 py-2">
         </div>
 
         {{-- Ссылка на запись --}}
         <div class="mb-4">
             <label for="recording_link" class="block text-sm font-medium">Ссылка на запись</label>
-            <input type="url" name="recording_link" id="recording_link" value="{{ old('recording_link', $lesson->recording_link) }}" class="w-full border rounded px-3 py-2">
+            <input type="url" name="recording_link" id="recording_link"
+                value="{{ old('recording_link', $lesson->recording_link) }}"
+                class="w-full border rounded px-3 py-2">
         </div>
 
         {{-- Ссылка на конспект --}}
         <div class="mb-4">
             <label for="notes_link" class="block text-sm font-medium">Ссылка на конспект</label>
-            <input type="url" name="notes_link" id="notes_link" value="{{ old('notes_link', $lesson->notes_link) }}" class="w-full border rounded px-3 py-2">
+            <input type="url" name="notes_link" id="notes_link"
+                value="{{ old('notes_link', $lesson->notes_link) }}"
+                class="w-full border rounded px-3 py-2">
         </div>
 
         {{-- Изображение --}}
         <div class="mb-6">
             <label for="image" class="block text-sm font-medium">Новое изображение</label>
             <input type="file" name="image" id="image" class="w-full text-sm text-gray-600 mt-1">
-            @if ($lesson->image)
-                <p class="mt-2 text-sm text-gray-500">Текущее изображение: <span class="text-blue-600">{{ $lesson->image }}</span></p>
-            @endif
+
+                @if ($lesson->image)
+                    <div class="mt-3">
+                        <p class="text-sm text-gray-500 mb-1">Текущее изображение:</p>
+                        <img src="{{ asset('storage/' . $lesson->image) }}" alt="Изображение урока" class="w-24 rounded border">
+                    </div>
+                @endif
         </div>
 
         <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
