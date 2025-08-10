@@ -10,9 +10,16 @@ class CreateController extends Controller
 {
     public function __invoke()
     {
-        $lessons = Lesson::all();  // Получаем все уроки
-        $courses = Course::all();  // Получаем все уроки
+        $courses = Course::orderBy('title')->get();
+
+        $lessons = collect();
+        if ($courses->isNotEmpty()) {
+            $firstCourseId = $courses->first()->id;
+            $lessons = Lesson::whereHas('session', fn($q) => $q->where('course_id', $firstCourseId))
+                ->orderBy('title')
+                ->get(['id','title']);
+        }
+
         return view('admin.homeworks.create', compact('lessons', 'courses'));
     }
 }
-

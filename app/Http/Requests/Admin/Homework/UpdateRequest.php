@@ -8,40 +8,30 @@ class UpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return true; // добавь свою авторизацию при необходимости
     }
 
-    public function rules(): array
-    {
-        return [
-            'title'       => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'type'        => ['required', 'string'], // homework или mock
+public function rules(): array
+{
+    return [
+        'title'       => ['required','string','max:255'],
+        'description' => ['nullable','string'],
+        'type'        => ['required','in:homework,mock'],
+        'course_id'   => ['required','integer','exists:courses,id'],
+        'lesson_id'   => ['required','integer','exists:lessons,id'],
 
-            'tasks' => ['nullable', 'array'],
-            'tasks.*.id' => ['nullable', 'integer', 'exists:homework_tasks,id'],
-            'tasks.*.type' => ['required', 'string'], // строка, не enum
-            'tasks.*.question_text' => ['nullable', 'string'],
-            'tasks.*.options' => ['nullable', 'array'],
-            'tasks.*.matches' => ['nullable', 'array'],
-            'tasks.*.image_path' => ['nullable', 'string'],
-            'tasks.*.table' => ['nullable', 'array'],
-            'tasks.*.answer' => ['required', 'string'],
-            'tasks.*.order' => ['nullable', 'integer'],
-            'tasks.*.task_number' => ['nullable', 'string'],
-        ];
-    }
+        'tasks'                   => ['sometimes','array'],
+        'tasks.*.id'              => ['sometimes','integer'],
+        'tasks.*.type'            => ['required_with:tasks','string'],
+        'tasks.*.question_text'   => ['nullable','string'],
+        'tasks.*.options'         => ['nullable'], // у тебя касты в модели — оставляем свободно
+        'tasks.*.matches'         => ['nullable'],
+        'tasks.*.table'           => ['nullable'],
+        'tasks.*.image'           => ['nullable','image','max:5120'], // <= картинка
+        'tasks.*.answer'          => ['required_with:tasks','string'],
+        'tasks.*.order'           => ['nullable','integer'],
+        'tasks.*.task_number'     => ['nullable','string'],
+    ];
+}
 
-    public function attributes(): array
-    {
-        return [
-            'title' => 'Название',
-            'description' => 'Описание',
-            'type' => 'Тип работы',
-            'tasks' => 'Задания',
-            'tasks.*.type' => 'Тип задания',
-            'tasks.*.question_text' => 'Текст задания',
-            'tasks.*.answer' => 'Ответ',
-        ];
-    }
 }

@@ -24,6 +24,18 @@ class Course extends Model
         return $this->hasMany(Image::class);
     }
 
+    public function lessons()
+    {
+        return $this->hasManyThrough(
+            \App\Models\Lesson::class,
+            \App\Models\CourseSession::class,
+            'course_id',          // FK в course_sessions
+            'course_session_id',  // FK в lessons
+            'id',                 // локальный ключ Course
+            'id'                  // локальный ключ CourseSession
+        );
+    }
+
     public function sessions() {
         return $this->hasMany(CourseSession::class);
     }

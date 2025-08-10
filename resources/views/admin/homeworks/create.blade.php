@@ -209,25 +209,41 @@ document.getElementById('add-task').addEventListener('click', () => {
 });
 </script>
 <script>
-    document.getElementById('course_id').addEventListener('change', function() {
-        var courseId = this.value;
-        fetchLessons(courseId);
-    });
+document.addEventListener('DOMContentLoaded', () => {
+    const courseSelect = document.getElementById('course_id');
+    const lessonSelect = document.getElementById('lesson_id');
+
+    function renderLessons(list) {
+        lessonSelect.innerHTML = '';
+        if (!list.length) {
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = 'Нет уроков';
+            lessonSelect.appendChild(opt);
+            return;
+        }
+        list.forEach(lesson => {
+            const opt = document.createElement('option');
+            opt.value = lesson.id;
+            opt.textContent = lesson.meta ? `${lesson.meta} — ${lesson.title}` : lesson.title;
+            lessonSelect.appendChild(opt);
+        });
+    }
 
     function fetchLessons(courseId) {
-        // Запрос к серверу для получения уроков для выбранного курса
-        fetch('/lessons?course_id=' + courseId)
-            .then(response => response.json())
-            .then(data => {
-                var lessonSelect = document.getElementById('lesson_id');
-                lessonSelect.innerHTML = ''; // Очищаем текущие опции
-                data.lessons.forEach(lesson => {
-                    var option = document.createElement('option');
-                    option.value = lesson.id;
-                    option.textContent = lesson.title;
-                    lessonSelect.appendChild(option);
-                });
-            });
+        if (!courseId) return renderLessons([]);
+        fetch(`/lessons?course_id=${courseId}`)
+            .then(r => r.json())
+            .then(data => renderLessons(data.lessons || []));
     }
+
+    // подгружаем сразу для выбранного по умолчанию курса
+    if (courseSelect.value) fetchLessons(courseSelect.value);
+
+    courseSelect.addEventListener('change', function() {
+        fetchLessons(this.value);
+    });
+});
 </script>
+
 @endsection
