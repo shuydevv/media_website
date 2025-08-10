@@ -40,6 +40,7 @@ class CourseScheduleService
                         'date'        => $current->toDateString(),
                         'start_time'  => $sessionStart->format('H:i:s'),
                         'end_time'    => $sessionEnd->format('H:i:s'),
+                        'duration_minutes' => $sessionStart->diffInMinutes($sessionEnd),
                         'status'      => 'active', // активное занятие
                     ]);
                 }

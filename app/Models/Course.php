@@ -24,6 +24,14 @@ class Course extends Model
         return $this->hasMany(Image::class);
     }
 
+    public function students()
+    {
+        return $this->belongsToMany(\App\Models\User::class, 'course_user')
+            ->withPivot(['status','enrolled_at','expires_at','source','payment_id','promo_code'])
+            ->withTimestamps();
+    }
+
+
     public function lessons()
     {
         return $this->hasManyThrough(

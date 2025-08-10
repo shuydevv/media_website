@@ -11,7 +11,9 @@ use App\Http\Controllers\Admin\Course\EditController;
 use App\Http\Controllers\Admin\Course\UpdateController;
 use App\Http\Controllers\Admin\Course\DestroyController;
 use App\Http\Controllers\Admin\Lesson\LessonByCourseController;
+use App\Http\Controllers\Admin\Session\ApiController;
 use App\Http\Controllers\LessonAjaxController;
+use App\Http\Controllers\Promo\RedeemController;
 
 /*
 |--------------------------------------------------------------------------
@@ -191,6 +193,12 @@ Route::group(['namespace' => 'App\Http\Controllers\Controller'], function() {
 
 
 Route::get('/lessons', LessonByCourseController::class)->name('lessons.by-course');
+Route::get('/admin/api/courses/{course}/sessions', [ApiController::class, 'sessionsByCourse'])
+    ->name('admin.api.sessions.by-course');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/promo/redeem', RedeemController::class)->name('promo.redeem');
+});
 
 Auth::routes(['verify' => true]);
 

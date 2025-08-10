@@ -11,20 +11,21 @@ class StoreController extends Controller
 {
 public function __invoke(StoreRequest $request)
 {
-    $validated = $request->validated();
+    $v = $request->validated();
 
-    // Расчёт времени окончания
-    $startTime = Carbon::createFromFormat('H:i', $validated['start_time']);
-    $endTime = $startTime->copy()->addMinutes($validated['duration_minutes']);
+    $start = \Illuminate\Support\Carbon::createFromFormat('H:i', $v['start_time']);
+    $end   = $start->copy()->addMinutes($v['duration_minutes']);
 
     CourseSession::create([
-        'course_id'     => $validated['course_id'],
-        'date'          => $validated['date'],
-        'start_time'    => $startTime->format('H:i:s'),
-        'end_time'      => $endTime->format('H:i:s'),
-        'status'        => $validated['status'],
+        'course_id'         => $v['course_id'],
+        'date'              => $v['date'],
+        'start_time'        => $start->format('H:i:s'),
+        'end_time'          => $end->format('H:i:s'),
+        'duration_minutes'  => $v['duration_minutes'],   // ← добавь это
+        'status'            => $v['status'],
     ]);
 
     return redirect()->route('admin.sessions.index')->with('success', 'Занятие успешно создано');
 }
+
 }

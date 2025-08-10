@@ -11,17 +11,17 @@ class StoreRequest extends FormRequest
         return true;
     }
 
-    public function rules(): array
-    {
-        return [
-            'course_id'    => ['required', 'exists:courses,id'],
-            'date'         => ['required', 'date'],
-            'start_time'   => ['required', 'date_format:H:i'],
-            'duration_minutes' => ['required', 'integer', 'min:1'],
-            // 'end_time'     => ['required', 'date_format:H:i', 'after:start_time'],
-            'status'       => ['required', 'in:active,cancelled'],
-        ];
-    }
+public function rules(): array
+{
+    return [
+        'course_id'        => ['required', 'integer', 'exists:courses,id'],
+        'date'             => ['required', 'date'],
+        'start_time'       => ['required', 'date_format:H:i'],
+        'duration_minutes' => ['required', 'integer', 'min:1'], // ← важно
+        'status'           => ['required', 'in:active,cancelled'],
+    ];
+}
+
 
     public function attributes(): array
     {

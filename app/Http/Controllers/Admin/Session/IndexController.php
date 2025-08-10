@@ -11,21 +11,22 @@ class IndexController extends Controller
 {
     public function __invoke(Request $request)
     {
-        // Загружаем курсы для выпадающего списка фильтра
         $courses = Course::orderBy('title')->get();
 
-        // Получаем id курса из запроса
         $courseId = $request->input('course_id');
+        $status   = $request->input('status'); // ← добавили
+        $date     = $request->input('date');
 
-        // Загружаем занятия с фильтрацией и пагинацией
         $sessions = CourseSession::with('course')
-            ->when($courseId, function ($query, $courseId) {
-                $query->where('course_id', $courseId);
-            })
+            ->when($courseId, fn($q) => $q->where('course_id', $courseId))
+            ->when($status,   fn($q) => $q->where('status', $status)) // ← фильтр по статусу
+            ->when($date,     fn($q) => $q->whereDate('date', $date))
             ->orderBy('date')
             ->orderBy('start_time')
             ->paginate(15);
 
         return view('admin.sessions.index', compact('courses', 'sessions'));
     }
+
+
 }

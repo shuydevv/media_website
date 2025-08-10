@@ -10,18 +10,27 @@ use Illuminate\Http\Request;
 
 class ApiController extends Controller
 {
-    public function sessionsByCourse(Course $course)
-    {
-        // Получаем ID всех уже занятых сессий
-        $usedSessionIds = Lesson::pluck('course_session_id')->toArray();
+public function sessionsByCourse(Request $request, Course $course)
+{
+    // ID сессий, занятых уроками (чтобы скрыть уже использованные)
+    $usedSessionIds = Lesson::pluck('course_session_id')->toArray();
 
-        // Получаем доступные сессии для данного курса
-        $sessions = CourseSession::where('course_id', $course->id)
-            ->whereNotIn('id', $usedSessionIds)
-            ->whereDate('date', '>=', now()->toDateString()) // ← включи, если нужны только будущие
-            ->orderBy('date')
-            ->get(['id', 'date', 'start_time']);
+    $q = CourseSession::where('course_id', $course->id)
+        ->whereNotIn('id', $usedSessionIds)
+        ->orderBy('date')
+        ->orderBy('start_time');
 
-        return response()->json($sessions);
+    // Если передали дату: фильтруем именно этот день
+    if ($request->filled('date')) {
+        $q->whereDate('date', $request->input('date'));
+    } else {
+        // иначе показываем только будущие/сегодняшние
+        $q->whereDate('date', '>=', now()->toDateString());
     }
+
+    $sessions = $q->get(['id', 'date', 'start_time', 'end_time', 'status', 'duration_minutes']);
+
+    return response()->json($sessions);
+}
+
 }

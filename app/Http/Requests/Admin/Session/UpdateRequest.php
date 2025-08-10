@@ -14,6 +14,7 @@ class UpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
+             'date'             => ['required', 'date'],  
             'start_time' => ['required', 'date_format:H:i'],
             'duration_minutes' => ['required', 'integer', 'min:1'],
             'status' => ['required', 'in:active,cancelled'],
@@ -23,6 +24,7 @@ class UpdateRequest extends FormRequest
     public function attributes(): array
     {
         return [
+             'date'             => ['required', 'date'],  
             'start_time' => 'Время начала',
             'duration_minutes' => 'Длительность',
             'status' => 'Статус',

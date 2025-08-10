@@ -27,6 +27,28 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    public function courses()
+    {
+        return $this->belongsToMany(\App\Models\Course::class, 'course_user')
+            ->withPivot(['status','enrolled_at','expires_at','source','payment_id','promo_code'])
+            ->withTimestamps();
+    }
+
+    public function hasActiveEnrollment($course): bool
+    {
+        $courseId = is_object($course) ? $course->id : (int) $course;
+
+        return $this->courses()
+            ->wherePivot('status', 'active')
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>=', now());
+            })
+            ->where('courses.id', $courseId)
+            ->exists();
+    }
+
+
+
 
     /**
      * The attributes that are mass assignable.

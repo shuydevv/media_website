@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto bg-white shadow-md rounded-xl p-6">
-    <h1 class="text-xl font-semibold mb-6">Создание занятия</h1>
+    <h1 class="text-xl font-semibold mb-6">Создание сессии</h1>
 
     @if ($errors->any())
         <div class="mb-4 text-red-600">
