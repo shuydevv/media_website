@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Course extends Model
 {
@@ -24,11 +26,27 @@ class Course extends Model
         return $this->hasMany(Image::class);
     }
 
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'course_user')
+            ->withPivot(['is_active', 'access_starts_at', 'access_expires_at'])
+            ->withTimestamps();
+    }
+
+
     public function students()
     {
         return $this->belongsToMany(\App\Models\User::class, 'course_user')
             ->withPivot(['status','enrolled_at','expires_at','source','payment_id','promo_code'])
             ->withTimestamps();
+    }
+
+    public function nextSession()
+    {
+        return $this->hasOne(\App\Models\CourseSession::class)
+            ->whereDate('date', '>=', now()->toDateString())
+            ->orderBy('date')
+            ->orderBy('start_time');
     }
 
 

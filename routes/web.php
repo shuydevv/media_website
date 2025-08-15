@@ -14,6 +14,15 @@ use App\Http\Controllers\Admin\Lesson\LessonByCourseController;
 use App\Http\Controllers\Admin\Session\ApiController;
 use App\Http\Controllers\LessonAjaxController;
 use App\Http\Controllers\Promo\RedeemController;
+use App\Http\Controllers\Student\DashboardController;
+use App\Http\Controllers\Admin\Promo\PromoCodeController;
+use App\Http\Controllers\Checkout\CourseCheckoutController;
+use App\Http\Controllers\Student\CourseController;
+use App\Http\Controllers\Student\LessonController as StudentLessonController;
+
+
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -197,8 +206,53 @@ Route::get('/admin/api/courses/{course}/sessions', [ApiController::class, 'sessi
     ->name('admin.api.sessions.by-course');
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/promo/redeem', RedeemController::class)->name('promo.redeem');
+    Route::get('/promo/redeem', [RedeemController::class, 'form'])->name('promo.redeem.form');
+    Route::post('/promo/redeem', [RedeemController::class, 'redeem'])->name('promo.redeem');
 });
+
+// Route::match(['get', 'post'], '/promo/redeem', RedeemController::class)
+//     ->middleware('auth')
+//     ->name('promo.redeem');
+
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/promos', [PromoCodeController::class, 'index'])->name('promos.index');
+    Route::get('/promos/create', [PromoCodeController::class, 'create'])->name('promos.create');
+    Route::post('/promos', [PromoCodeController::class, 'store'])->name('promos.store');
+
+    // ✨ редактирование
+    Route::get('/promos/{promo}/edit', [PromoCodeController::class, 'edit'])->name('promos.edit');
+    Route::put('/promos/{promo}', [PromoCodeController::class, 'update'])->name('promos.update');
+
+    // вкл/выкл
+    Route::post('/promos/{promo}/toggle', [PromoCodeController::class, 'toggle'])->name('promos.toggle');
+
+    // (опционально) удаление
+    // Route::delete('/promos/{promo}', [PromoCodeController::class, 'destroy'])->name('promos.destroy');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/checkout/course/{course}', [CourseCheckoutController::class, 'show'])
+        ->name('checkout.course.show');
+    Route::post('/checkout/course/{course}', [CourseCheckoutController::class, 'apply'])
+        ->name('checkout.course.apply');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/student/dashboard', DashboardController::class)->name('student.dashboard');
+});
+
+Route::middleware(['auth'])
+    ->prefix('student')
+    ->name('student.')
+    ->group(function () {
+        Route::get('/courses/{course}', [\App\Http\Controllers\Student\CourseController::class, 'show'])
+            ->name('courses.show');
+
+        // Страница урока для студента
+        Route::get('/lessons/{lesson}', [StudentLessonController::class, 'show'])
+            ->name('lessons.show');
+    });
+
 
 Auth::routes(['verify' => true]);
 
