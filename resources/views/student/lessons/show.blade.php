@@ -9,6 +9,13 @@
     <p class="mt-2 text-gray-700">{{ $lesson->description }}</p>
   @endif>
 
+  @if($lesson->homework ?? false)
+  <a href="{{ route('student.submissions.create', $lesson->homework) }}"
+     class="inline-flex items-center px-3 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700">
+    Сдать домашку
+  </a>
+@endif
+
   {{-- Здесь позже добавим материалы и домашку --}}
 </div>
 @endsection

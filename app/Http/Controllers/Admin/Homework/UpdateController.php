@@ -50,12 +50,26 @@ public function __invoke(UpdateRequest $request, Homework $homework)
             $task->fill([
                 'type'          => $taskData['type'],
                 'question_text' => $taskData['question_text'] ?? null,
-                'options'       => $taskData['options'] ?? null,
-                'matches'       => $taskData['matches'] ?? null,
-                'table'         => $taskData['table'] ?? null,
-                'answer'        => $taskData['answer'],
-                'order'         => $taskData['order'] ?? null,
+                'passage_text'  => $taskData['passage_text'] ?? null,   // художественный / публицистический текст
+                'answer'        => $taskData['answer'] ?? null,
+
+                // JSON-поля
+                'options'       => $taskData['options'] ?? null,        // варианты ответа (multiple_choice)
+                'matches'       => $taskData['matches'] ?? null,        // соотнесение
+                'table'         => $taskData['table'] ?? null,          // содержимое таблицы (3x4)
+
+                // служебные
                 'task_number'   => $taskData['task_number'] ?? null,
+                'order'         => $taskData['order'] ?? null,
+
+                // для картинок
+                'image_path'    => $taskData['image_path'] ?? $task->image_path, 
+
+                // дополнительные (если есть в миграциях)
+                'left_title'   => $taskData['left_title'] ?? null,
+                'right_title'  => $taskData['right_title'] ?? null,
+                'max_score'     => isset($taskData['max_score']) ? (int)$taskData['max_score'] : 1,
+
             ]);
 
             // если загрузили новое изображение — сохраним

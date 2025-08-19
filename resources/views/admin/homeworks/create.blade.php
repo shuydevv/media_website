@@ -29,21 +29,20 @@
             <textarea name="description" class="w-full border rounded px-3 py-2"></textarea>
         </div>
 
-
+        {{-- Курс --}}
         <div class="mb-4">
-        <label for="course_id">Курс</label>
-        <select class="w-full border rounded px-3 py-2" name="course_id" id="course_id" required>
-            @foreach($courses as $course)
-                <option value="{{ $course->id }}">{{ $course->title }}</option>
-            @endforeach
-        </select>
+            <label for="course_id">Курс</label>
+            <select class="w-full border rounded px-3 py-2" name="course_id" id="course_id" required>
+                @foreach($courses as $course)
+                    <option value="{{ $course->id }}">{{ $course->title }}</option>
+                @endforeach
+            </select>
         </div>
 
+        {{-- Урок --}}
         <div class="mb-4">
-        <label for="lesson_id">Урок</label>
-        <select class="w-full border rounded px-3 py-2" name="lesson_id" id="lesson_id" required>
-            <!-- Уроки будут загружаться динамически, если выбрали курс -->
-        </select>
+            <label for="lesson_id">Урок</label>
+            <select class="w-full border rounded px-3 py-2" name="lesson_id" id="lesson_id" required></select>
         </div>
 
         {{-- Тип домашней работы --}}
@@ -57,7 +56,6 @@
 
         {{-- Список заданий --}}
         <div id="tasks-container" class="space-y-8">
-            {{-- Один шаблон задания (клонируется JavaScript'ом) --}}
             <div class="task-item border rounded p-4 bg-gray-50">
                 <h2 class="text-lg font-semibold mb-4">Задание</h2>
 
@@ -76,46 +74,71 @@
                     </select>
                 </div>
 
+                {{-- Дополнительный текст (для text_based) --}}
+                <div class="mb-4 task-passage hidden">
+                    <label class="block text-sm font-medium">Текст задания (художественный / публицистический)</label>
+                    <textarea name="tasks[0][passage_text]" class="w-full border rounded px-3 py-2" rows="4"></textarea>
+                </div>
+
                 {{-- Вопрос --}}
                 <div class="mb-4">
                     <label class="block text-sm font-medium">Вопрос / текст</label>
                     <textarea name="tasks[0][question_text]" class="w-full border rounded px-3 py-2"></textarea>
                 </div>
 
-                {{-- Ответ (всегда показывается) --}}
+                {{-- Ответ --}}
                 <div class="mb-4">
                     <label class="block text-sm font-medium">Правильный ответ</label>
                     <input type="text" name="tasks[0][answer]" class="w-full border rounded px-3 py-2" required>
                 </div>
 
-                {{-- Варианты ответа (только multiple_choice) --}}
+                {{-- Варианты (multiple_choice) --}}
                 <div class="mb-4 task-options hidden">
                     <label class="block text-sm font-medium">Варианты ответа (по одному в строке)</label>
                     <textarea name="tasks[0][options][]" class="w-full border rounded px-3 py-2" rows="6"></textarea>
                 </div>
 
-                {{-- Соотнесение (matching) --}}
+                {{-- Соотнесение --}}
                 <div class="mb-4 task-matches hidden">
+                    <label class="block text-sm font-medium">Заголовок левой колонки</label>
+                    <input type="text" name="tasks[0][left_title]" class="w-full border rounded px-3 py-2 mb-2">
+
                     <label class="block text-sm font-medium">Левая колонка</label>
                     <textarea name="tasks[0][matches][left][]" class="w-full border rounded px-3 py-2" rows="3"></textarea>
 
-                    <label class="block text-sm font-medium mt-2">Правая колонка</label>
+                    <label class="block text-sm font-medium mt-2">Заголовок правой колонки</label>
+                    <input type="text" name="tasks[0][right_title]" class="w-full border rounded px-3 py-2 mb-2">
+
+                    <label class="block text-sm font-medium">Правая колонка</label>
                     <textarea name="tasks[0][matches][right][]" class="w-full border rounded px-3 py-2" rows="3"></textarea>
                 </div>
 
-                {{-- Таблица (table) --}}
+                {{-- Таблица --}}
                 <div class="mb-4 task-table hidden">
                     <label class="block text-sm font-medium">Содержимое таблицы (3x4, 9 ячеек)</label>
                     <textarea name="tasks[0][table][]" class="w-full border rounded px-3 py-2" rows="5"></textarea>
                 </div>
 
-                {{-- Изображение (image_*) --}}
+                {{-- Изображение --}}
                 <div class="mb-4 task-image hidden">
                     <label class="block text-sm font-medium">Изображение</label>
                     <input type="file" name="tasks[0][image]" class="w-full text-sm mt-1">
                 </div>
 
-                {{-- Порядок и номер задания --}}
+                {{-- image_auto — опции и порядок важен --}}
+                <div class="mb-4 task-image-auto-extra hidden">
+                    <label class="block text-sm font-medium">Варианты ответа (по одному в строке, необязательно)</label>
+                    <textarea name="tasks[0][image_auto_options][]" class="w-full border rounded px-3 py-2" rows="4"></textarea>
+
+                    <div class="mt-2">
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" name="tasks[0][image_auto_strict]" value="1" class="mr-2">
+                            Порядок цифр/ответов важен
+                        </label>
+                    </div>
+                </div>
+
+                {{-- Порядок и номер --}}
                 <div class="flex gap-4">
                     <div class="flex-1">
                         <label class="block text-sm font-medium">Номер в пробнике</label>
@@ -125,26 +148,30 @@
                         <label class="block text-sm font-medium">Порядок</label>
                         <input type="number" name="tasks[0][order]" class="w-full border rounded px-3 py-2">
                     </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium">Баллы</label>
+                        <input type="number" name="tasks[0][max_score]" class="w-full border rounded px-3 py-2" min="1" max="3" value="1">
+                    </div>
                 </div>
-            {{-- Кнопка удаления --}}
-            <div class="mt-4 text-right">
-                <button type="button" class="delete-task text-red-600 text-sm hover:underline">
-                    Удалить задание
-                </button>
-            </div>
+
+                {{-- Текст (пассаж) для "Текст с вопросами" и "Развёрнутый ответ" --}}
+                <div class="mb-4 task-passage hidden">
+                    <label class="block text-sm font-medium">Текст (источник)</label>
+                    <textarea name="tasks[0][passage_text]" class="w-full border rounded px-3 py-2" rows="5">{{ old('tasks.0.passage_text') }}</textarea>
+                </div>
+
+                <div class="mt-4 text-right">
+                    <button type="button" class="delete-task text-red-600 text-sm hover:underline">Удалить задание</button>
+                </div>
             </div>
         </div>
 
         <div class="mt-6">
-            <button type="button" id="add-task" class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">
-                Добавить задание
-            </button>
+            <button type="button" id="add-task" class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">Добавить задание</button>
         </div>
 
         <div class="mt-6">
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                Сохранить домашнее задание
-            </button>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Сохранить домашнее задание</button>
         </div>
     </form>
 </div>
@@ -153,63 +180,53 @@
 document.addEventListener('DOMContentLoaded', () => {
     let taskIndex = 1;
 
-    // Отображение полей в зависимости от типа
     function toggleFields(container, type) {
-        container.querySelector('.task-options')?.classList.add('hidden');
-        container.querySelector('.task-matches')?.classList.add('hidden');
-        container.querySelector('.task-image')?.classList.add('hidden');
-        container.querySelector('.task-table')?.classList.add('hidden');
+        container.querySelectorAll('.task-options, .task-matches, .task-image, .task-table, .task-passage, .task-image-auto-extra')
+                 .forEach(el => el.classList.add('hidden'));
 
         if (type === 'multiple_choice') container.querySelector('.task-options')?.classList.remove('hidden');
+        if (type === 'text_based') container.querySelector('.task-passage')?.classList.remove('hidden');
         if (type === 'matching') container.querySelector('.task-matches')?.classList.remove('hidden');
-        if (type === 'image_auto' || type === 'image_written') container.querySelector('.task-image')?.classList.remove('hidden');
         if (type === 'table') container.querySelector('.task-table')?.classList.remove('hidden');
+        if (type === 'text_based' || type === 'written') container.querySelector('.task-passage')?.classList.remove('hidden');
+
+        if (type === 'image_auto') {
+            container.querySelector('.task-image')?.classList.remove('hidden');
+            container.querySelector('.task-image-auto-extra')?.classList.remove('hidden');
+        }
+        if (type === 'image_written') container.querySelector('.task-image')?.classList.remove('hidden');
     }
 
-    // При изменении типа задания
     document.addEventListener('change', e => {
         if (e.target.classList.contains('task-type')) {
-            const container = e.target.closest('.task-item');
-            toggleFields(container, e.target.value);
+            toggleFields(e.target.closest('.task-item'), e.target.value);
         }
     });
 
-    // Добавление нового задания
-document.getElementById('add-task').addEventListener('click', () => {
-    const tasksContainer = document.getElementById('tasks-container');
-    const newTask = tasksContainer.firstElementChild.cloneNode(true);
+    document.getElementById('add-task').addEventListener('click', () => {
+        const tasksContainer = document.getElementById('tasks-container');
+        const newTask = tasksContainer.firstElementChild.cloneNode(true);
 
-    // Обновляем индекс и чистим значения
-    newTask.querySelectorAll('input, textarea, select').forEach(el => {
-        // Обновляем name с новым индексом
-        if (el.name) {
-            el.name = el.name.replace(/\[\d+]/, `[${taskIndex}]`);
-        }
-        el.value = '';
+        newTask.querySelectorAll('input, textarea, select').forEach(el => {
+            if (el.name) el.name = el.name.replace(/\[\d+]/, `[${taskIndex}]`);
+            if (el.type === 'checkbox') el.checked = false;
+            else el.value = '';
+        });
+
+        newTask.querySelectorAll('.task-options, .task-matches, .task-image, .task-table, .task-passage, .task-image-auto-extra')
+               .forEach(el => el.classList.add('hidden'));
+
+        tasksContainer.appendChild(newTask);
+        taskIndex++;
     });
 
-    tasksContainer.appendChild(newTask);
-    taskIndex++;
-});
-        // Удаление задания
     document.addEventListener('click', e => {
         if (e.target.classList.contains('delete-task')) {
-            const container = e.target.closest('.task-item');
-
-            // Если это последнее задание — не удаляем
-            if (document.querySelectorAll('.task-item').length === 1) {
-                alert('Нельзя удалить последнее задание');
-                return;
-            }
-
-            container.remove();
+            if (document.querySelectorAll('.task-item').length === 1) return alert('Нельзя удалить последнее задание');
+            e.target.closest('.task-item').remove();
         }
     });
 
-});
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
     const courseSelect = document.getElementById('course_id');
     const lessonSelect = document.getElementById('lesson_id');
 
@@ -237,13 +254,8 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => renderLessons(data.lessons || []));
     }
 
-    // подгружаем сразу для выбранного по умолчанию курса
     if (courseSelect.value) fetchLessons(courseSelect.value);
-
-    courseSelect.addEventListener('change', function() {
-        fetchLessons(this.value);
-    });
+    courseSelect.addEventListener('change', function() { fetchLessons(this.value); });
 });
 </script>
-
 @endsection

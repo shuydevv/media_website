@@ -24,6 +24,7 @@ public function rules(): array
         'tasks.*.id'              => ['sometimes','integer'],
         'tasks.*.type'            => ['required_with:tasks','string'],
         'tasks.*.question_text'   => ['nullable','string'],
+        'tasks.*.passage_text'    => ['nullable','string'], // текст (пассаж)
         'tasks.*.options'         => ['nullable'], // у тебя касты в модели — оставляем свободно
         'tasks.*.matches'         => ['nullable'],
         'tasks.*.table'           => ['nullable'],
@@ -31,6 +32,10 @@ public function rules(): array
         'tasks.*.answer'          => ['required_with:tasks','string'],
         'tasks.*.order'           => ['nullable','integer'],
         'tasks.*.task_number'     => ['nullable','string'],
+        'tasks.*.left_title'  => ['nullable','string'],
+        'tasks.*.right_title' => ['nullable','string'],
+        'tasks.*.max_score' => ['nullable','integer','min:1','max:3'],
+
     ];
 }
 

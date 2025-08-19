@@ -47,6 +47,12 @@ class User extends Authenticatable implements MustVerifyEmail
             ->exists();
     }
 
+    public function submissions()
+    {
+        return $this->hasMany(\App\Models\Submission::class);
+    }
+
+
 
 
 

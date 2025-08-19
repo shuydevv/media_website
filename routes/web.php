@@ -19,6 +19,12 @@ use App\Http\Controllers\Admin\Promo\PromoCodeController;
 use App\Http\Controllers\Checkout\CourseCheckoutController;
 use App\Http\Controllers\Student\CourseController;
 use App\Http\Controllers\Student\LessonController as StudentLessonController;
+use App\Http\Controllers\Student\SubmissionController as StudentSubmissionController;
+use App\Http\Controllers\Mentor\SubmissionController as MentorSubmissionController;
+use App\Http\Controllers\Student\SubmissionController;
+
+// --- Mentor/Admin: проверка письменной части ---
+use App\Http\Controllers\Mentor\SubmissionReviewController;
 
 
 
@@ -251,6 +257,50 @@ Route::middleware(['auth'])
         // Страница урока для студента
         Route::get('/lessons/{lesson}', [StudentLessonController::class, 'show'])
             ->name('lessons.show');
+    });
+
+// Сдача домашки студентом
+Route::middleware(['auth'])
+    ->prefix('student')
+    ->name('student.')
+    ->group(function () {
+        Route::get('/homeworks/{homework}/submit', [StudentSubmissionController::class, 'create'])
+            ->name('submissions.create');
+        Route::post('/homeworks/{homework}/submit', [StudentSubmissionController::class, 'store'])
+            ->name('submissions.store');
+    });
+
+// Проверка домашних ментором
+Route::middleware(['auth'])
+    ->prefix('mentor')
+    ->name('mentor.')
+    ->group(function () {
+        Route::get('/submissions', [MentorSubmissionController::class, 'index'])->name('submissions.index');
+        Route::get('/submissions/{submission}', [MentorSubmissionController::class, 'show'])->name('submissions.show');
+        Route::post('/submissions/{submission}', [MentorSubmissionController::class, 'update'])->name('submissions.update');
+    });
+
+Route::middleware(['auth'])->group(function () {
+Route::get('/student/submissions/{submission}', [SubmissionController::class, 'show'])
+        ->name('student.submissions.show');
+});
+
+
+Route::middleware(['auth']) // при желании добавь свой middleware роли
+    ->prefix('mentor')
+    ->name('mentor.')
+    ->group(function () {
+        // просмотр попытки с разделением на авто/ручные задачи
+        Route::get('/submissions/{submission}', [SubmissionReviewController::class, 'show'])
+            ->name('submissions.show');
+
+        // выставить баллы и комментарий по КОНКРЕТНОЙ ручной задаче
+        Route::post('/submissions/{submission}/tasks/{taskId}', [SubmissionReviewController::class, 'scoreTask'])
+            ->name('submissions.scoreTask');
+
+        // финализировать проверку попытки (фиксирует баллы, пересчитывает итог)
+        Route::post('/submissions/{submission}/finalize', [SubmissionReviewController::class, 'finalize'])
+            ->name('submissions.finalize');
     });
 
 

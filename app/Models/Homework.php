@@ -10,7 +10,7 @@ class Homework extends Model
     use HasFactory;
 
     protected $table = 'homeworks';
-    protected $fillable = ['title', 'description', 'type', 'course_id', 'lesson_id'];
+    protected $fillable = ['title', 'description', 'type', 'course_id', 'lesson_id', 'attempts_allowed',];
 
     public function tasks()
     {
@@ -26,5 +26,11 @@ class Homework extends Model
     {
         return $this->belongsTo(Lesson::class);
     }
+
+    public function submissions()
+    {
+        return $this->hasMany(\App\Models\Submission::class);
+    }
+
 
 }

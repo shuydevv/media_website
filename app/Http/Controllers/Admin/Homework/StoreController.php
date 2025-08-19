@@ -39,6 +39,7 @@ class StoreController extends Controller
                     'homework_id'   => $homework->id,
                     'type'          => $task['type'],
                     'question_text' => $task['question_text'] ?? null,
+                    'passage_text'  => $task['passage_text'] ?? null,
                     'options'       => $task['options'] ?? [],
                     'matches'       => $task['matches'] ?? [],
                     'table'         => $task['table'] ?? [],
@@ -46,6 +47,9 @@ class StoreController extends Controller
                     'answer'        => $task['answer'],
                     'order'         => $task['order'] ?? null,
                     'task_number'   => $task['task_number'] ?? null,
+                    'left_title'   => $task['left_title'] ?? null,
+                    'right_title'  => $task['right_title'] ?? null,
+                    'max_score'     => isset($task['max_score']) ? (int)$task['max_score'] : 1,
                 ]);
             }
         }
