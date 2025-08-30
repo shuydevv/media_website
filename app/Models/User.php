@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
 use App\Notifications\SendVerifyWithQueueNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,13 +15,16 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasApiTokens, HasFactory, Notifiable;
     // SoftDeletes;
 
-    const ROLE_ADMIN = 1;
+    const ROLE_ADMIN  = 1;
     const ROLE_READER = 2;
+    const ROLE_MENTOR = 3;
 
-    public static function getRoles() {
+    public static function getRoles()
+    {
         return [
-            self::ROLE_ADMIN => 'Админ',
+            self::ROLE_ADMIN  => 'Админ',
             self::ROLE_READER => 'Пользователь',
+            self::ROLE_MENTOR => 'Куратор',
         ];
     }
 
@@ -52,9 +53,29 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(\App\Models\Submission::class);
     }
 
+    /**
+     * Проверка: админ.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
 
+    /**
+     * Проверка: куратор.
+     */
+    public function isMentor(): bool
+    {
+        return $this->role === self::ROLE_MENTOR;
+    }
 
-
+    /**
+     * Проверка: студент/обычный пользователь.
+     */
+    public function isStudent(): bool
+    {
+        return $this->role === self::ROLE_READER;
+    }
 
     /**
      * The attributes that are mass assignable.

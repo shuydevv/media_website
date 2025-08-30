@@ -32,9 +32,10 @@ public function rules(): array
         'tasks.*.answer'          => ['required_with:tasks','string'],
         'tasks.*.order'           => ['nullable','integer'],
         'tasks.*.task_number'     => ['nullable','string'],
+        'tasks.*.task_id' => ['required','exists:tasks,id'],
+        'tasks.*.max_score' => ['required','integer','min:1'],
         'tasks.*.left_title'  => ['nullable','string'],
         'tasks.*.right_title' => ['nullable','string'],
-        'tasks.*.max_score' => ['nullable','integer','min:1','max:3'],
 
     ];
 }

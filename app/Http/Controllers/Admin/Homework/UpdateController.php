@@ -59,7 +59,8 @@ public function __invoke(UpdateRequest $request, Homework $homework)
                 'table'         => $taskData['table'] ?? null,          // содержимое таблицы (3x4)
 
                 // служебные
-                'task_number'   => $taskData['task_number'] ?? null,
+                // 'task_number'   => $taskData['task_number'] ?? null,
+                'task_id' => $taskData['task_id'],
                 'order'         => $taskData['order'] ?? null,
 
                 // для картинок

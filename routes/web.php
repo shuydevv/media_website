@@ -22,9 +22,10 @@ use App\Http\Controllers\Student\LessonController as StudentLessonController;
 use App\Http\Controllers\Student\SubmissionController as StudentSubmissionController;
 use App\Http\Controllers\Mentor\SubmissionController as MentorSubmissionController;
 use App\Http\Controllers\Student\SubmissionController;
+use App\Http\Controllers\Mentor\ReviewAiController;
 
 // --- Mentor/Admin: проверка письменной части ---
-use App\Http\Controllers\Mentor\SubmissionReviewController;
+// use App\Http\Controllers\Mentor\SubmissionReviewController;
 
 
 
@@ -286,22 +287,102 @@ Route::get('/student/submissions/{submission}', [SubmissionController::class, 's
 });
 
 
-Route::middleware(['auth']) // при желании добавь свой middleware роли
-    ->prefix('mentor')
-    ->name('mentor.')
+// ==== РЕВЬЮ КУРАТОРА ====
+use App\Http\Controllers\Mentor\SubmissionReviewController;
+
+
+Route::prefix('mentor/review')
+    ->name('mentor.review.')
+    ->middleware(['auth','mentor'])
     ->group(function () {
-        // просмотр попытки с разделением на авто/ручные задачи
-        Route::get('/submissions/{submission}', [SubmissionReviewController::class, 'show'])
-            ->name('submissions.show');
+        Route::get('/inbox', [SubmissionReviewController::class, 'inbox'])->name('inbox');
+        Route::get('/{submission}', [SubmissionReviewController::class, 'show'])->name('show');
 
-        // выставить баллы и комментарий по КОНКРЕТНОЙ ручной задаче
-        Route::post('/submissions/{submission}/tasks/{taskId}', [SubmissionReviewController::class, 'scoreTask'])
-            ->name('submissions.scoreTask');
+        // СНАЧАЛА — специфичные
+        Route::post('/{submission}/task/{taskId}/regen', [ReviewAiController::class, 'regen'])
+            ->where('taskId', '[^/]+')
+            ->name('task.regen');
 
-        // финализировать проверку попытки (фиксирует баллы, пересчитывает итог)
-        Route::post('/submissions/{submission}/finalize', [SubmissionReviewController::class, 'finalize'])
-            ->name('submissions.finalize');
+        Route::post('/{submission}/task/{taskId}/skip', [SubmissionReviewController::class, 'skipTask'])
+            ->where('taskId', '[^/]+')
+            ->name('task.skip');
+
+        Route::post('/{submission}/task/{taskId}/unskip', [SubmissionReviewController::class, 'unskipTask'])
+            ->where('taskId', '[^/]+')
+            ->name('task.unskip');
+
+        // ПОТОМ — общий
+        Route::post('/{submission}/task/{taskId}', [SubmissionReviewController::class, 'saveTask'])
+            ->where('taskId', '[^/]+')
+            ->name('task.save');
+
+        Route::post('/{submission}/finish', [SubmissionReviewController::class, 'finish'])->name('finish');
+        Route::post('/{submission}/finish-and-next', [SubmissionReviewController::class, 'finishAndNext'])->name('finish_next');
     });
+
+
+use App\Http\Controllers\Admin\TaskController;
+
+// --- Банк заданий (только админ) ---
+Route::prefix('admin/tasks')->middleware(['auth'])->group(function () {
+
+    Route::get('/',          [TaskController::class, 'index'])->name('admin.tasks.index');
+    Route::get('/create',    [TaskController::class, 'create'])->name('admin.tasks.create');
+    Route::post('/',         [TaskController::class, 'store'])->name('admin.tasks.store');
+
+    Route::get('/{task}',    [TaskController::class, 'show'])->name('admin.tasks.show');
+    Route::get('/{task}/edit', [TaskController::class, 'edit'])->name('admin.tasks.edit');
+    Route::put('/{task}',    [TaskController::class, 'update'])->name('admin.tasks.update');
+
+    // Публикация / Архивация
+    Route::post('/{task}/publish', [TaskController::class, 'publish'])->name('admin.tasks.publish');
+    Route::post('/{task}/archive', [TaskController::class, 'archive'])->name('admin.tasks.archive');
+});
+
+// Route::get('/admin/courses/{course}/tasks', function(\App\Models\Course $course) {
+//     return $course->category
+//         ? $course->category->tasks()->select('id','number')->orderBy('number')->get()
+//         : [];
+// });
+
+use App\Http\Controllers\Admin\CourseTaskController;
+
+Route::middleware(['auth'])->prefix('admin')->group(function () {
+    Route::get('/courses/{course}/tasks', [CourseTaskController::class, 'index'])
+        ->name('admin.courses.tasks');
+});
+
+
+use Illuminate\Support\Facades\Http;
+
+// Route::middleware(['auth', 'mentor']) // твой MentorMiddleware даёт доступ ментору/админу
+//     ->prefix('mentor/review')
+//     ->name('mentor.review.')
+//     ->group(function () {
+//         Route::post('/{submission}/{taskId}/regen', [ReviewAiController::class, 'regen'])
+//             ->where('taskId', '.*')
+//             ->name('task.regen');
+//     });
+
+
+// Route::get('/dev/ip', function () {
+//     $proxy = (string) config('openai.proxy', '');
+//     $options = ['verify' => false];
+//     if ($proxy !== '') {
+//         $options['proxy'] = ['http' => $proxy, 'https' => $proxy];
+//         $options['curl']  = [CURLOPT_HTTPPROXYTUNNEL => 1];
+//     }
+//     return Http::withOptions($options)->get('http://api.ipify.org')->body();
+// });
+
+Route::get('/dev/ip-https', function () {
+    return Http::withOptions([
+        'verify' => false, // только для теста
+        'curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4],
+    ])->get('https://api.ipify.org')->body();
+});
+
+
 
 
 Auth::routes(['verify' => true]);

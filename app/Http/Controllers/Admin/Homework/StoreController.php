@@ -46,10 +46,11 @@ class StoreController extends Controller
                     'image_path'    => $imagePath,
                     'answer'        => $task['answer'],
                     'order'         => $task['order'] ?? null,
-                    'task_number'   => $task['task_number'] ?? null,
+                    // 'task_number'   => $task['task_number'] ?? null,
                     'left_title'   => $task['left_title'] ?? null,
                     'right_title'  => $task['right_title'] ?? null,
-                    'max_score'     => isset($task['max_score']) ? (int)$task['max_score'] : 1,
+                    'max_score'     => isset($task['max_score']) ? (int)$task['max_score'] : 0,
+                    'task_id' => $task['task_id'],
                 ]);
             }
         }

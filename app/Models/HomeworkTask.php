@@ -21,6 +21,7 @@ class HomeworkTask extends Model
     'table_content',
     'media_path',
     'task_number',
+    'task_id',
     'order',
     'image_auto_options',
     'image_auto_strict',
@@ -61,5 +62,10 @@ class HomeworkTask extends Model
     public function homework()
     {
         return $this->belongsTo(Homework::class);
+    }
+
+    public function task()
+    {
+        return $this->belongsTo(\App\Models\Task::class);
     }
 }

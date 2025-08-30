@@ -4,6 +4,8 @@
 <div class="max-w-5xl mx-auto p-6 bg-white rounded-xl shadow-md">
     <h1 class="text-2xl font-semibold mb-6">Создание домашнего задания</h1>
 
+    @php($i = 0)
+
     @if ($errors->any())
         <div class="mb-4 text-red-600 text-sm">
             <ul class="list-disc pl-5">
@@ -31,10 +33,12 @@
 
         {{-- Курс --}}
         <div class="mb-4">
-            <label for="course_id">Курс</label>
-            <select class="w-full border rounded px-3 py-2" name="course_id" id="course_id" required>
+            <label class="block text-sm font-medium">Курс</label>
+            <select name="course_id" id="course_id" class="w-full border rounded px-3 py-2">
                 @foreach($courses as $course)
-                    <option value="{{ $course->id }}">{{ $course->title }}</option>
+                <option value="{{ $course->id }}" data-category="{{ $course->category_id }}">
+                    {{ $course->title }}
+                </option>
                 @endforeach
             </select>
         </div>
@@ -140,9 +144,15 @@
 
                 {{-- Порядок и номер --}}
                 <div class="flex gap-4">
-                    <div class="flex-1">
-                        <label class="block text-sm font-medium">Номер в пробнике</label>
-                        <input type="text" name="tasks[0][task_number]" class="w-full border rounded px-3 py-2">
+                    {{-- Номер в экзамене (Task) --}}
+                    <div>
+                    <label class="block text-sm font-medium mb-1">Номер в экзамене</label>
+                    <select name="tasks[{{ $i }}][task_id]"
+                            class="task-id-select w-full border rounded px-3 py-2"
+                            data-current="{{ old('tasks.'.$i.'.task_id') }}">
+                        <option value="">— выберите задание —</option>
+                        {{-- options подтянет JS через /admin/courses/{course}/tasks --}}
+                    </select>
                     </div>
                     <div class="flex-1">
                         <label class="block text-sm font-medium">Порядок</label>
@@ -150,7 +160,7 @@
                     </div>
                     <div class="flex-1">
                         <label class="block text-sm font-medium">Баллы</label>
-                        <input type="number" name="tasks[0][max_score]" class="w-full border rounded px-3 py-2" min="1" max="3" value="1">
+                        <input type="number" name="tasks[0][max_score]" class="w-full border rounded px-3 py-2" min="1" step="1" value="1">
                     </div>
                 </div>
 
@@ -217,6 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
                .forEach(el => el.classList.add('hidden'));
 
         tasksContainer.appendChild(newTask);
+        window.refreshTaskSelectsForCurrentCourse && window.refreshTaskSelectsForCurrentCourse();
         taskIndex++;
     });
 
@@ -258,4 +269,59 @@ document.addEventListener('DOMContentLoaded', () => {
     courseSelect.addEventListener('change', function() { fetchLessons(this.value); });
 });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const courseSelect = document.getElementById('course_id');
+
+  async function fetchTasks(courseId) {
+    if (!courseId) return [];
+    try {
+      const res = await fetch(`/admin/courses/${courseId}/tasks`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      if (!res.ok) return [];
+      return await res.json();
+    } catch(e) {
+      console.error(e);
+      return [];
+    }
+  }
+
+  function fillTaskSelects(taskList) {
+    document.querySelectorAll('select.task-id-select').forEach(sel => {
+      const current = sel.getAttribute('data-current') || '';
+      sel.innerHTML = '<option value="">— выбрать задание —</option>';
+      taskList.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = `№ ${t.number ?? '—'} (ID ${t.id})`;
+        if (current && String(current) === String(t.id)) {
+          opt.selected = true;
+        }
+        sel.appendChild(opt);
+      });
+    });
+  }
+
+  async function refreshTasks() {
+    const courseId = courseSelect ? courseSelect.value : null;
+    const list = await fetchTasks(courseId);
+    fillTaskSelects(list);
+  }
+
+  // Делаем функцию глобальной, чтобы можно было дернуть после добавления новой карточки
+  window.refreshTaskSelectsForCurrentCourse = refreshTasks;
+
+  // Первая загрузка
+  refreshTasks();
+
+  // Обновление при смене курса
+  if (courseSelect) {
+    courseSelect.addEventListener('change', refreshTasks);
+  }
+});
+</script>
+
+
 @endsection

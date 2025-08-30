@@ -13,6 +13,6 @@ class EditController extends Controller
     {
         $course->load('scheduleTemplates');
         $categories = Category::all();
-        return view('admin.courses.edit', compact('course'));
+        return view('admin.courses.edit', compact('course', 'categories'));
     }
 }

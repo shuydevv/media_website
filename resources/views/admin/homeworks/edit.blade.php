@@ -182,10 +182,15 @@
 
                 {{-- Порядок и номер --}}
                 <div class="flex gap-4">
-                    <div class="flex-1">
-                        <label class="block text-sm font-medium">Номер в пробнике</label>
-                        <input type="text" name="tasks[{{ $i }}][task_number]" class="w-full border rounded px-3 py-2"
-                               value="{{ old("tasks.$i.task_number", $t->task_number) }}">
+                    {{-- Номер в экзамене (Task) --}}
+                    <div>
+                    <label class="block text-sm font-medium mb-1">Номер в экзамене</label>
+                    <select name="tasks[{{ $i }}][task_id]"
+                            class="task-id-select w-full border rounded px-3 py-2"
+                            data-current="{{ old('tasks.'.$i.'.task_id', $t->task_id) }}">
+                        <option value="">— выберите задание —</option>
+                        {{-- options подтянет JS через /admin/courses/{course}/tasks --}}
+                    </select>
                     </div>
                     <div class="flex-1">
                         <label class="block text-sm font-medium">Порядок</label>
@@ -195,7 +200,7 @@
                     <div class="flex-1">
                         <label class="block text-sm font-medium">Баллы</label>
                         <input type="number" name="tasks[{{ $i }}][max_score]" class="w-full border rounded px-3 py-2"
-                            min="1" max="3" value="{{ old("tasks.$i.max_score", $t->max_score ?? 1) }}">
+                            min="1" step="1" value="{{ old("tasks.$i.max_score", $t->max_score ?? 1) }}">
                     </div>
                 </div>
 
@@ -284,4 +289,70 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const courseSelect = document.getElementById('course_id');
+
+  function toggleFields(container, type) {
+    container.querySelectorAll('.task-options, .task-matches, .task-image, .task-table, .task-passage, .task-image-auto-extra')
+      .forEach(el => el.classList.add('hidden'));
+
+    if (type === 'multiple_choice') container.querySelector('.task-options')?.classList.remove('hidden');
+    if (type === 'text_based')      container.querySelector('.task-passage')?.classList.remove('hidden');
+    if (type === 'matching')        container.querySelector('.task-matches')?.classList.remove('hidden');
+    if (type === 'table')           container.querySelector('.task-table')?.classList.remove('hidden');
+    if (type === 'text_based' || type === 'written')
+                                    container.querySelector('.task-passage')?.classList.remove('hidden');
+    if (type === 'image_auto') {
+      container.querySelector('.task-image')?.classList.remove('hidden');
+      container.querySelector('.task-image-auto-extra')?.classList.remove('hidden');
+    }
+    if (type === 'image_written')   container.querySelector('.task-image')?.classList.remove('hidden');
+  }
+
+  // Инициализируем видимость по текущему типу в КАЖДОЙ карточке
+  document.querySelectorAll('.task-item').forEach(card => {
+    const typeSel = card.querySelector('.task-type');
+    if (typeSel) toggleFields(card, typeSel.value);
+    typeSel?.addEventListener('change', (e) => toggleFields(card, e.target.value));
+  });
+
+  async function fetchTasks(courseId) {
+    if (!courseId) return [];
+    try {
+      const res = await fetch(`/admin/courses/${courseId}/tasks`, { headers: { 'X-Requested-With': 'XMLHttpRequest' }});
+      if (!res.ok) return [];
+      return await res.json();
+    } catch(e) {
+      console.error(e);
+      return [];
+    }
+  }
+
+  function fillTaskSelects(taskList) {
+    document.querySelectorAll('select.task-id-select').forEach(sel => {
+      const current = sel.getAttribute('data-current') || '';
+      sel.innerHTML = '<option value="">— выбрать задание —</option>';
+      taskList.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = `№ ${t.number ?? '—'} (ID ${t.id})`;
+        if (current && String(current) === String(t.id)) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    });
+  }
+
+  async function refreshTasks() {
+    const list = await fetchTasks(courseSelect?.value);
+    fillTaskSelects(list);
+  }
+
+  // Первая загрузка и при смене курса
+  refreshTasks();
+  courseSelect?.addEventListener('change', refreshTasks);
+});
+</script>
+
 @endsection

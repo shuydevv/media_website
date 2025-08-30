@@ -38,6 +38,10 @@
                     {{-- <li class="hover:text-amber-700 transition-all tracking-wide">Групповые занятия</li> --}}
                     <a class="tracking-wide" href="{{route('main.repetitor')}}"><li class="hover:text-amber-700 transition-all tracking-wide">Курсы</li></a>
                     <a class="tracking-wide" href="{{route('exercise.index')}}"><li class="hover:text-amber-700 transition-all tracking-wide">Упражнения</li></a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="text-red-600">Выйти</button>
+                    </form>
                     <!-- <li>Бесплатные статьи</li> -->
                     <!-- <li>Вход / Регистрация</li> -->
                 </ul>
@@ -45,5 +49,6 @@
         </div>
         @yield('content')
         @yield('scripts')
+        @stack('page-scripts')
     </body>
 </html>

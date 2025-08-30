@@ -28,6 +28,18 @@
             <textarea name="description" id="description" class="w-full border rounded px-3 py-2">{{ old('description', $course->description) }}</textarea>
         </div>
 
+        <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Категория</label>
+        <select name="category_id" class="w-full border rounded px-3 py-2" required>
+            @foreach($categories as $cat)
+            <option value="{{ $cat->id }}"
+                {{ old('category_id', $course->category_id ?? '') == $cat->id ? 'selected' : '' }}>
+                {{ $cat->title }}
+            </option>
+            @endforeach
+        </select>
+        </div>
+
         <div class="mb-4 grid grid-cols-2 gap-4">
             <div>
                 <label for="start_date" class="block font-medium text-sm">Дата начала</label>

@@ -1,0 +1,1 @@
+{"version":1,"defects":[],"times":{"Tests\\Feature\\OpenAIServiceTest::it_pings_openai_successfully":0.084,"Tests\\Feature\\OpenAIServiceTest::it_builds_score_draft_from_ai_json":0.004}}
