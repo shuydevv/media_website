@@ -35,6 +35,28 @@ class StoreController extends Controller
                     $imagePath = $task['image']->store('homework_images', 'public');
                 }
 
+                $type = $task['type'] ?? null;
+
+                // Нормализуем image_auto_options к массиву строк
+                $imageAutoOptions = [];
+                if (array_key_exists('image_auto_options', $task)) {
+                    $src = $task['image_auto_options'];
+                    if (is_string($src)) {
+                        $imageAutoOptions = array_values(array_filter(array_map('trim', preg_split('/\R/u', $src)), fn($v) => $v !== ''));
+                    } elseif (is_array($src)) {
+                        $imageAutoOptions = array_values(array_filter(array_map('trim', $src), fn($v) => $v !== ''));
+                    }
+                }
+
+                $tableContent = null;
+                if (($task['type'] ?? null) === 'table') {
+                    $raw = trim((string)($task['table_content'] ?? ''));
+                    if ($raw !== '') {
+                        $decoded = json_decode($raw, true);
+                        $tableContent = is_array($decoded) ? $decoded : null; // если кривая строка — просто null
+                    }
+                }
+
                 HomeworkTask::create([
                     'homework_id'   => $homework->id,
                     'type'          => $task['type'],
@@ -42,7 +64,7 @@ class StoreController extends Controller
                     'passage_text'  => $task['passage_text'] ?? null,
                     'options'       => $task['options'] ?? [],
                     'matches'       => $task['matches'] ?? [],
-                    'table'         => $task['table'] ?? [],
+                    'table_content' => $tableContent,
                     'image_path'    => $imagePath,
                     'answer'        => $task['answer'],
                     'order'         => $task['order'] ?? null,
@@ -51,6 +73,7 @@ class StoreController extends Controller
                     'right_title'  => $task['right_title'] ?? null,
                     'max_score'     => isset($task['max_score']) ? (int)$task['max_score'] : 0,
                     'task_id' => $task['task_id'],
+                    'image_auto_options' => $imageAutoOptions,
                 ]);
             }
         }

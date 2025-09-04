@@ -32,7 +32,7 @@
         {{-- Описание --}}
         <div class="mb-4">
             <label class="block text-sm font-medium">Описание</label>
-            <textarea name="description" class="w-full border rounded px-3 py-2">{{ old('description', $homework->description) }}</textarea>
+            <textarea name="description" class="w-full border rounded px-3 py-2">{{old('description', $homework->description)}}</textarea>
         </div>
 
         {{-- Курс --}}
@@ -100,7 +100,7 @@
                 {{-- Формулировка / вопрос --}}
                 <div class="mb-4">
                     <label class="block text-sm font-medium">Вопрос / текст</label>
-                    <textarea name="tasks[{{ $i }}][question_text]" class="w-full border rounded px-3 py-2">{{ old("tasks.$i.question_text", $t->question_text) }}</textarea>
+                    <textarea name="tasks[{{ $i }}][question_text]" class="w-full border rounded px-3 py-2">{{old("tasks.$i.question_text", $t->question_text)}}</textarea>
                 </div>
 
                 {{-- Правильный ответ --}}
@@ -112,7 +112,7 @@
 
                 {{-- Варианты (multiple_choice) --}}
                 <div class="mb-4 task-options {{ $t->type==='multiple_choice' ? '' : 'hidden' }}">
-                    <label class="block text-sm font-medium">Варианты ответа (по одному в строке)</label>
+                    <label class="block text-sm font-medium">Варианты ответа (Каждый вариант ответа с новой строки)</label>
                     <textarea name="tasks[{{ $i }}][options]" class="w-full border rounded px-3 py-2" rows="6">{{ old("tasks.$i.options", $optionsText) }}</textarea>
                 </div>
 
@@ -131,10 +131,10 @@
                         </div>
                     </div>
 
-                    <label class="block text-sm font-medium mt-3">Левая колонка (по одному в строке)</label>
+                    <label class="block text-sm font-medium mt-3">Левая колонка (Буквы "А,Б,В" писать не надо)</label>
                     <textarea name="tasks[{{ $i }}][matches][left]" class="w-full border rounded px-3 py-2" rows="4">{{ old("tasks.$i.matches.left", isset($t->matches['left']) ? (is_array($t->matches['left']) ? implode("\n", $t->matches['left']) : $t->matches['left']) : '') }}</textarea>
 
-                    <label class="block text-sm font-medium mt-3">Правая колонка (по одному в строке)</label>
+                    <label class="block text-sm font-medium mt-3">Правая колонка (Цифры "1,2,3" писать не надо)</label>
                     <textarea name="tasks[{{ $i }}][matches][right]" class="w-full border rounded px-3 py-2" rows="4">{{ old("tasks.$i.matches.right", isset($t->matches['right']) ? (is_array($t->matches['right']) ? implode("\n", $t->matches['right']) : $t->matches['right']) : '') }}</textarea>
 
                     {{-- matching — порядок важен всегда --}}
@@ -154,16 +154,14 @@
                     <label class="block text-sm font-medium">
                         {{ $t->type==='text_based' ? 'Текст (источник)' : 'Текст (пассаж)' }}
                     </label>
-                    <textarea name="tasks[{{ $i }}][passage_text]" class="w-full border rounded px-3 py-2" rows="5">
-                        {{ old("tasks.$i.passage_text", $t->passage_text) }}
-                    </textarea>
+                    <textarea name="tasks[{{ $i }}][passage_text]" class="w-full border rounded px-3 py-2" rows="5">{{ old("tasks.$i.passage_text", $t->passage_text) }}</textarea>
                 </div>
 
                 {{-- Изображение (в условии) --}}
                 <div class="mb-4 task-image {{ in_array($t->type, ['image_auto','image_written']) ? '' : 'hidden' }}">
                     <label class="block text-sm font-medium">Изображение</label>
-                    @if(!empty($t->media_path))
-                        <div class="text-xs text-gray-600 mb-1">Текущее: {{ $t->media_path }}</div>
+                    @if(!empty($t->image_path))
+                        <div class="text-xs text-gray-600 mb-1">Текущее: {{ $t->image_path }}</div>
                     @endif
                     <input type="file" name="tasks[{{ $i }}][image]" class="w-full text-sm mt-1">
                 </div>
@@ -239,7 +237,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (type === 'multiple_choice') container.querySelector('.task-options')?.classList.remove('hidden');
         if (type === 'text_based')     container.querySelector('.task-passage')?.classList.remove('hidden');
         if (type === 'matching')       container.querySelector('.task-matches')?.classList.remove('hidden');
-        if (type === 'table')          container.querySelector('.task-table')?.classList.remove('hidden');
+        if (type === 'table') {
+        container.querySelector('.task-table')?.classList.remove('hidden');
+        container.querySelector('.task-options')?.classList.remove('hidden'); // ← тоже видно
+        }
         if (type === 'text_based' || type === 'written') container.querySelector('.task-passage')?.classList.remove('hidden');
 
         if (type === 'image_auto') {
@@ -301,7 +302,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (type === 'multiple_choice') container.querySelector('.task-options')?.classList.remove('hidden');
     if (type === 'text_based')      container.querySelector('.task-passage')?.classList.remove('hidden');
     if (type === 'matching')        container.querySelector('.task-matches')?.classList.remove('hidden');
-    if (type === 'table')           container.querySelector('.task-table')?.classList.remove('hidden');
+    if (type === 'table') {
+  container.querySelector('.task-table')?.classList.remove('hidden');
+  container.querySelector('.task-options')?.classList.remove('hidden'); // ← тоже видно
+}
     if (type === 'text_based' || type === 'written')
                                     container.querySelector('.task-passage')?.classList.remove('hidden');
     if (type === 'image_auto') {

@@ -28,6 +28,7 @@ class StoreController extends Controller
             'description' => $validated['description'] ?? null,
             'meet_link'         => $validated['meet_link'] ?? null,
             'recording_link'    => $validated['recording_link'] ?? null,
+            'short_class' => $validated['short_class'] ?? null,
             'notes_link'        => $validated['notes_link'] ?? null,
             'image'             => $validated['image'] ?? null,
             // 'homework_id'       => $validated['homework_id'] ?? null,

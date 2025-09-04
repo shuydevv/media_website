@@ -41,7 +41,7 @@ class AutoGrader
             if (in_array($type, ['written','image_written','image_manual'], true)) {
                 $hasManual = true;
                 $perTask[$taskId] = [
-                    'score' => 0,
+                    // 'score' => null,
                     'max'   => $max,
                     'errors'=> 0,
                     'order_matters' => false,

@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="max-w-5xl mx-auto px-3 sm:px-4 py-5 sm:py-6">
-  <h1 class="text-xl sm:text-2xl font-semibold mb-5 sm:mb-6">
+  <h1 class="text-xl font-sans sm:text-2xl font-medium mb-5 sm:mb-6">
     Сдать домашку: {{ $homework->title ?? 'Домашнее задание' }}
   </h1>
 
@@ -51,7 +51,7 @@
         $questionText  = $task->question_text ?? null;
         $passageText   = $task->passage_text ?? null;
 
-        $mediaPath     = $task->media_path ?? $task->image_path ?? null;
+        $mediaPath     = $task->image_path ?? $task->image_path ?? null;
         $mediaUrl      = $storageUrl($mediaPath);
 
         $taskId        = $task->id ?? ('new_'.$idx);
@@ -87,7 +87,7 @@
       <div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6">
         <div class="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-5">
           <span class="inline-block px-2 py-0.5 text-xs rounded-full bg-gray-100 border border-gray-200 text-gray-700">
-            №{{ $task->order ?? ($idx+1) }} в ЕГЭ
+            №{{ $task->task->number }} в ЕГЭ
           </span>
           <span class="text-base sm:text-lg font-semibold text-gray-900">
             Задание №{{ $idx+1 }}
@@ -117,7 +117,7 @@
 
         {{-- ВОПРОС / ТЕКСТ --}}
         @if($questionText)
-          <div class="text-sm sm:text-[15px] text-gray-800 mt-1 whitespace-pre-wrap mb-5 sm:mb-6">{{ $questionText }}</div>
+          <div class="text-sm md:text-base text-gray-800 mt-1 whitespace-pre-wrap mb-5 sm:mb-6">{{ $questionText }}</div>
         @endif
 
         {{-- Пассаж для развёрнутого ответа --}}
@@ -140,6 +140,79 @@
             @endforeach
           </div>
         @endif
+
+        {{-- table --}}
+@if($type === 'table')
+  @php
+    // Безопасно распакуем table_content (мог быть строкой)
+    $tableRaw = $task->table_content ?? null;
+    if (is_string($tableRaw)) {
+      $decoded = json_decode($tableRaw, true);
+      $table = is_array($decoded) ? $decoded : [];
+    } elseif (is_array($tableRaw)) {
+      $table = $tableRaw;
+    } else {
+      $table = [];
+    }
+
+    $cols   = is_array($table['cols'] ?? null) ? $table['cols'] : [];
+    $rows   = is_array($table['rows'] ?? null) ? $table['rows'] : [];
+
+    // Back-compat: если колонки не заданы, возьмём ширину по первой строке
+    if (empty($cols) && !empty($rows) && is_array($rows[0] ?? null)) {
+      $cols = array_map(fn($i) => 'Колонка '.($i+1), range(0, count($rows[0])-1));
+    }
+
+    // (Опционально, если когда-то были "blanks")
+    $blanks = is_array($table['blanks'] ?? null) ? $table['blanks'] : [];
+    $blankMap = [];
+    foreach ($blanks as $b) {
+      if (isset($b['r'], $b['c'])) $blankMap[$b['r'].'_'.$b['c']] = $b['key'] ?? '';
+    }
+  @endphp
+
+  <div class="overflow-auto rounded-xl border border-gray-100 mt-1 mb-5 sm:mb-6">
+    <table class="min-w-full border-collapse">
+      @if(!empty($cols))
+        <thead class="bg-gray-50">
+          <tr>
+            @foreach($cols as $c)
+              <th class="border border-gray-200 px-3 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700">{{ $c }}</th>
+            @endforeach
+          </tr>
+        </thead>
+      @endif
+      <tbody>
+        @forelse($rows as $rIdx => $row)
+          <tr class="odd:bg-white ">
+            @foreach((array)$row as $cIdx => $cell)
+              @php
+                $k = $rIdx.'_'.$cIdx;
+                $isBlank = array_key_exists($k, $blankMap);
+                $badge = $isBlank ? ($blankMap[$k] ?: '') : '';
+              @endphp
+              <td class="px-3 py-2 sm:py-3 align-top border border-gray-200">
+                @if($isBlank)
+                  <div class="inline-flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-[10px] sm:text-xs font-semibold">{{ $badge }}</span>
+                    <span class="text-gray-500 text-xs sm:text-sm">— заполнить</span>
+                  </div>
+                @else
+                  <div class="text-sm sm:text-[15px] text-gray-800 whitespace-pre-wrap">{{ (string)$cell }}</div>
+                @endif
+              </td>
+            @endforeach
+          </tr>
+        @empty
+          <tr>
+            <td class="px-3 py-3 text-xs sm:text-sm text-gray-500">Таблица не задана</td>
+          </tr>
+        @endforelse
+      </tbody>
+    </table>
+  </div>
+@endif
+
 
         @if(in_array($type, ['image_auto','image_manual']) && $mediaUrl)
           <div class="mt-1 mb-5 sm:mb-6">
@@ -200,56 +273,7 @@
           </div>
         @endif
 
-        {{-- table --}}
-        @if($type === 'table')
-          @php
-            $cols   = is_array($table['cols'] ?? null) ? $table['cols'] : [];
-            $rows   = is_array($table['rows'] ?? null) ? $table['rows'] : [];
-            $blanks = is_array($table['blanks'] ?? null) ? $table['blanks'] : [];
-            $blankMap = [];
-            foreach ($blanks as $b) {
-              if (isset($b['r'], $b['c'])) $blankMap[$b['r'].'_'.$b['c']] = $b['key'] ?? '';
-            }
-          @endphp
-          <div class="overflow-auto rounded-xl border border-gray-200 mt-1 mb-5 sm:mb-6">
-            <table class="min-w-full border-collapse">
-              @if(!empty($cols))
-                <thead class="bg-gray-50">
-                  <tr>
-                    @foreach($cols as $c)
-                      <th class="border-b border-gray-200 px-3 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-700">{{ $c }}</th>
-                    @endforeach
-                  </tr>
-                </thead>
-              @endif
-              <tbody>
-                @forelse($rows as $rIdx => $row)
-                  <tr class="odd:bg-white even:bg-gray-50">
-                    @foreach((array)$row as $cIdx => $cell)
-                      @php
-                        $k = $rIdx.'_'.$cIdx;
-                        $isBlank = array_key_exists($k, $blankMap);
-                        $badge = $isBlank ? ($blankMap[$k] ?: '') : '';
-                      @endphp
-                      <td class="px-3 py-2 sm:py-3 align-top border-b border-gray-100">
-                        @if($isBlank)
-                          <div class="inline-flex items-center gap-2">
-                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-[10px] sm:text-xs font-semibold">{{ $badge }}</span>
-                            <span class="text-gray-500 text-xs sm:text-sm">— заполнить</span>
-                          </div>
-                        @else
-                          <div class="text-sm sm:text-[15px] text-gray-800">{{ $cell }}</div>
-                        @endif
-                      </td>
-                    @endforeach
-                  </tr>
-                @empty
-                  <tr><td class="px-3 py-3 text-xs sm:text-sm text-gray-500">Таблица не задана</td></tr>
-                @endforelse
-              </tbody>
-            </table>
-          </div>
-        @endif
+
 
         {{-- Поле ответа (PIN-style) --}}
         @if(in_array($type, ['test','text_with_questions','matching','image_auto','table']))
@@ -296,12 +320,7 @@
         @if(in_array($type, ['written','image_manual']))
           <div class="mt-1">
             <label class="block text-xs sm:text-sm text-gray-700 mb-2">Ваш ответ</label>
-            <textarea
-              name="answers[{{ $taskId }}]"
-              rows="4"
-              class="w-full border rounded-xl px-3 py-2 sm:py-3 text-sm sm:text-base"
-              placeholder="Введите развернутый ответ"
-            ></textarea>
+            <textarea name="answers[{{ $taskId }}]" rows="4" class="w-full border rounded-xl px-3 py-2 sm:py-3 text-sm sm:text-base" placeholder="Введите развернутый ответ"></textarea>
             <div class="text-[11px] sm:text-xs text-gray-500 mt-2">Ответ проверит преподаватель или его помощник.</div>
           </div>
         @endif

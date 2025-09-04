@@ -289,23 +289,13 @@
 
         <div>
           <label class="block text-sm font-medium mb-1">Обоснование баллов</label>
-          <textarea
-            name="reason"
-            rows="4"
-            class="smart-textarea w-full border rounded-xl px-3 py-2"
-            placeholder="По критериям экзамена..."
-          >{{ $curReason }}</textarea>
+          <textarea name="reason" rows="4" class="smart-textarea w-full border rounded-xl px-3 py-2" placeholder="По критериям экзамена...">{{ $curReason }}</textarea>
           <div class="text-[11px] text-gray-400 mt-1">Опишите, почему выставлены именно такие баллы.</div>
         </div>
 
         <div>
           <label class="block text-sm font-medium mb-1">Комментарий ученику</label>
-          <textarea
-            name="comment"
-            rows="5"
-            class="smart-textarea w-full border rounded-xl px-3 py-2"
-            placeholder="Понятный комментарий для ученика..."
-          >{{ $curComment }}</textarea>
+          <textarea name="comment" rows="5" class="smart-textarea w-full border rounded-xl px-3 py-2" placeholder="Понятный комментарий для ученика...">{{ $curComment }}</textarea>
         </div>
 
         {{-- Спойлер с критериями (из tasks.criteria) --}}

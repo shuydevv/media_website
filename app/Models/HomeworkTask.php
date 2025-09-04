@@ -19,7 +19,7 @@ class HomeworkTask extends Model
     'options',
     'matches',
     'table_content',
-    'media_path',
+    'image_path',
     'task_number',
     'task_id',
     'order',

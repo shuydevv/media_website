@@ -25,12 +25,11 @@ class StoreRequest extends FormRequest
             'tasks.*.options' => ['nullable', 'array'],
             'tasks.*.matches' => ['nullable', 'array'],
             'tasks.*.image_path' => ['nullable', 'string'],
-            'tasks.*.table' => ['nullable', 'array'],
             'tasks.*.answer' => ['required', 'string'],
             'tasks.*.order' => ['nullable', 'integer'],
             // 'tasks.*.task_number' => ['nullable', 'string'],
             'tasks.*.task_id' => ['required','exists:tasks,id'],
-            'tasks.*.max_score' => ['required','integer','min:1'],
+            'tasks.*.max_score' => ['nullable','integer','min:1'],
 
             // новые текстовые поля
             'tasks.*.passage_text'      => ['nullable', 'string'],   // художественный/публицистический текст
@@ -61,11 +60,10 @@ class StoreRequest extends FormRequest
             // 'tasks.*.options'           => ['nullable', 'array'],
             'tasks.*.options.*'         => ['nullable', 'string'],
 
-            // таблица остаётся как была (у тебя в форме name="tasks[i][table][]")
-            // 'tasks.*.table'             => ['nullable', 'array'],
-            'tasks.*.table.*'           => ['nullable', 'string'],
+            'tasks.*.table_content' => ['nullable','string'],
 
-            'tasks.*.max_score' => ['nullable','integer','min:1'],
+
+            // 'tasks.*.max_score' => ['nullable','integer','min:1'],
 
         ];
     }
@@ -91,7 +89,7 @@ class StoreRequest extends FormRequest
             'tasks.*.image'                => 'Изображение задания',
             'tasks.*.image_path'           => 'Путь к изображению',
             'tasks.*.options'              => 'Варианты ответа',
-            'tasks.*.table'                => 'Содержимое таблицы',
+            'tasks.*.table_content'        => 'Содержимое таблицы',
         ];
     }
 }

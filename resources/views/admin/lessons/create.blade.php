@@ -62,19 +62,26 @@
 
         {{-- Ссылка на трансляцию --}}
         <div class="mb-4">
-            <label for="meet_link" class="block text-sm font-medium">Ссылка на трансляцию (Google Meet)</label>
-            <input type="url" name="meet_link" id="meet_link" class="w-full border rounded px-3 py-2">
+            <label for="meet_link" class="block text-sm font-medium">Ссылка на трансляцию (https://kinescope.io/(ВСТАВЬТЕ ТОЛЬКО ЭТИ СИМВОЛЫ))</label>
+            <input type="text" name="meet_link" id="meet_link" class="w-full border rounded px-3 py-2">
         </div>
 
         {{-- Ссылка на запись --}}
         <div class="mb-4">
-            <label for="recording_link" class="block text-sm font-medium">Ссылка на запись</label>
-            <input type="url" name="recording_link" id="recording_link" class="w-full border rounded px-3 py-2">
+            <label for="recording_link" class="block text-sm font-medium">Ссылка на запись (https://kinescope.io/[ВСТАВЬТЕ ТОЛЬКО ЭТИ СИМВОЛЫ])</label>
+            <input type="text" name="recording_link" id="recording_link" class="w-full border rounded px-3 py-2">
+        </div>
+
+        {{-- Выжимка --}}
+        <div class="mb-4">
+            <label class="block text-sm font-medium">Выжимка — короткий урок (https://kinescope.io/[ВСТАВЬТЕ ТОЛЬКО ЭТИ СИМВОЛЫ])</label>
+            <input type="text" name="short_class" value="{{ old('short_class') }}"
+                class="w-full border rounded px-3 py-2" placeholder="Напр.: Урок 3.1 или Блок A" />
         </div>
 
         {{-- Ссылка на конспект --}}
         <div class="mb-4">
-            <label for="notes_link" class="block text-sm font-medium">Ссылка на конспект</label>
+            <label for="notes_link" class="block text-sm font-medium">Ссылка на конспект (Полная ссылка на файлообменник)</label>
             <input type="url" name="notes_link" id="notes_link" class="w-full border rounded px-3 py-2">
         </div>
 

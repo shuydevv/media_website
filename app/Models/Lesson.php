@@ -21,6 +21,7 @@ protected $fillable = [
     'description',
     'meet_link',
     'recording_link',
+    'short_class',
     'notes_link',
     'image',
 ];

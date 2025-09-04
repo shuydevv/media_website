@@ -98,7 +98,7 @@
 
                 {{-- Варианты (multiple_choice) --}}
                 <div class="mb-4 task-options hidden">
-                    <label class="block text-sm font-medium">Варианты ответа (по одному в строке)</label>
+                    <label class="block text-sm font-medium">Варианты ответа (Каждый вариант ответа с новой строки)</label>
                     <textarea name="tasks[0][options][]" class="w-full border rounded px-3 py-2" rows="6"></textarea>
                 </div>
 
@@ -119,8 +119,18 @@
 
                 {{-- Таблица --}}
                 <div class="mb-4 task-table hidden">
-                    <label class="block text-sm font-medium">Содержимое таблицы (3x4, 9 ячеек)</label>
-                    <textarea name="tasks[0][table][]" class="w-full border rounded px-3 py-2" rows="5"></textarea>
+                <label class="block text-sm font-medium">Содержимое таблицы (JSON)</label>
+                <textarea name="tasks[0][table_content]" class="w-full border rounded px-3 py-2 font-mono text-xs" rows="10">
+{
+    "cols": ["Географический объект", "Событие, явление, процесс", "Время, когда произошло событие"],
+    "rows": [
+        ["ячейка_01", "ячейка_02", "ячейка_03"],
+        ["ячейка_04", "ячейка_05", "ячейка_06"],
+        ["ячейка_07", "ячейка_08", "ячейка_09"],
+        ["ячейка_10", "ячейка_11", "ячейка_12"]
+    ]
+}</textarea>
+                <input type="hidden" name="tasks[0][order_matters]" value="1">
                 </div>
 
                 {{-- Изображение --}}
@@ -165,10 +175,10 @@
                 </div>
 
                 {{-- Текст (пассаж) для "Текст с вопросами" и "Развёрнутый ответ" --}}
-                <div class="mb-4 task-passage hidden">
+                {{-- <div class="mb-4 task-passage hidden">
                     <label class="block text-sm font-medium">Текст (источник)</label>
-                    <textarea name="tasks[0][passage_text]" class="w-full border rounded px-3 py-2" rows="5">{{ old('tasks.0.passage_text') }}</textarea>
-                </div>
+                    <textarea name="tasks[0][passage_text]" class="w-full border rounded px-3 py-2" rows="5">{{old('tasks.0.passage_text')}}</textarea>
+                </div> --}}
 
                 <div class="mt-4 text-right">
                     <button type="button" class="delete-task text-red-600 text-sm hover:underline">Удалить задание</button>
@@ -197,7 +207,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (type === 'multiple_choice') container.querySelector('.task-options')?.classList.remove('hidden');
         if (type === 'text_based') container.querySelector('.task-passage')?.classList.remove('hidden');
         if (type === 'matching') container.querySelector('.task-matches')?.classList.remove('hidden');
-        if (type === 'table') container.querySelector('.task-table')?.classList.remove('hidden');
+        if (type === 'table') {
+            container.querySelector('.task-table')?.classList.remove('hidden');
+            container.querySelector('.task-options')?.classList.remove('hidden'); // ← показываем варианты ответа
+        }
+
         if (type === 'text_based' || type === 'written') container.querySelector('.task-passage')?.classList.remove('hidden');
 
         if (type === 'image_auto') {
@@ -227,7 +241,17 @@ document.addEventListener('DOMContentLoaded', () => {
                .forEach(el => el.classList.add('hidden'));
 
         tasksContainer.appendChild(newTask);
-        window.refreshTaskSelectsForCurrentCourse && window.refreshTaskSelectsForCurrentCourse();
+        // заполняем ОПЦИИ ТОЛЬКО для нового селекта, не перезаполняя все
+  const firstSel = document.querySelector('select.task-id-select');
+  const newSel = newTask.querySelector('select.task-id-select');
+  if (firstSel && newSel) {
+    newSel.innerHTML = firstSel.innerHTML; // копия опций
+    newSel.value = '';
+    newSel.setAttribute('data-current','');
+  } else {
+    // на крайний случай — глобальное обновление (оно теперь сохраняет выбранные)
+    window.refreshTaskSelectsForCurrentCourse && window.refreshTaskSelectsForCurrentCourse();
+  }
         taskIndex++;
     });
 
@@ -288,21 +312,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function fillTaskSelects(taskList) {
-    document.querySelectorAll('select.task-id-select').forEach(sel => {
-      const current = sel.getAttribute('data-current') || '';
-      sel.innerHTML = '<option value="">— выбрать задание —</option>';
-      taskList.forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t.id;
-        opt.textContent = `№ ${t.number ?? '—'} (ID ${t.id})`;
-        if (current && String(current) === String(t.id)) {
-          opt.selected = true;
-        }
-        sel.appendChild(opt);
-      });
+function fillTaskSelects(taskList) {
+  document.querySelectorAll('select.task-id-select').forEach(sel => {
+    const prev = sel.value || sel.getAttribute('data-current') || '';
+
+    const frag = document.createDocumentFragment();
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = '— выбрать задание —';
+    frag.appendChild(placeholder);
+
+    taskList.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = String(t.id);
+      opt.textContent = `№ ${t.number ?? '—'} (ID ${t.id})`;
+      if (prev && String(prev) === String(t.id)) opt.selected = true;
+      frag.appendChild(opt);
     });
-  }
+
+    sel.innerHTML = '';
+    sel.appendChild(frag);
+
+    // если прежнее значение не найдено среди опций — добавим его как «выбранное»
+    if (prev && sel.value !== String(prev)) {
+      const extra = document.createElement('option');
+      extra.value = String(prev);
+      extra.textContent = `Выбранное (ID ${prev})`;
+      extra.selected = true;
+      sel.appendChild(extra);
+    }
+  });
+}
+
 
   async function refreshTasks() {
     const courseId = courseSelect ? courseSelect.value : null;
@@ -319,6 +360,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Обновление при смене курса
   if (courseSelect) {
     courseSelect.addEventListener('change', refreshTasks);
+  }
+});
+
+document.addEventListener('change', (e) => {
+  if (e.target.matches('select.task-id-select')) {
+    e.target.setAttribute('data-current', e.target.value || '');
   }
 });
 </script>

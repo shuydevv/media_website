@@ -47,6 +47,30 @@ public function __invoke(UpdateRequest $request, Homework $homework)
                 $task = new HomeworkTask(['homework_id' => $homework->id]);
             }
 
+            $type = $taskData['type'] ?? null;
+
+            // Нормализация image_auto_options
+            $imageAutoOptions = null;
+            if (array_key_exists('image_auto_options', $taskData)) {
+                $src = $taskData['image_auto_options'];
+                if (is_string($src)) {
+                    $imageAutoOptions = array_values(array_filter(array_map('trim', preg_split('/\R/u', $src)), fn($v) => $v !== ''));
+                } elseif (is_array($src)) {
+                    $imageAutoOptions = array_values(array_filter(array_map('trim', $src), fn($v) => $v !== ''));
+                } else {
+                    $imageAutoOptions = [];
+                }
+            }
+
+            $tableContent = null;
+            if (($taskData['type'] ?? null) === 'table') {
+                $raw = trim((string)($taskData['table_content'] ?? ''));
+                if ($raw !== '') {
+                    $decoded = json_decode($raw, true);
+                    $tableContent = is_array($decoded) ? $decoded : null;
+                }
+            }
+
             $task->fill([
                 'type'          => $taskData['type'],
                 'question_text' => $taskData['question_text'] ?? null,
@@ -56,7 +80,7 @@ public function __invoke(UpdateRequest $request, Homework $homework)
                 // JSON-поля
                 'options'       => $taskData['options'] ?? null,        // варианты ответа (multiple_choice)
                 'matches'       => $taskData['matches'] ?? null,        // соотнесение
-                'table'         => $taskData['table'] ?? null,          // содержимое таблицы (3x4)
+                'table_content' => $tableContent,          // содержимое таблицы (3x4)
 
                 // служебные
                 // 'task_number'   => $taskData['task_number'] ?? null,
@@ -70,6 +94,8 @@ public function __invoke(UpdateRequest $request, Homework $homework)
                 'left_title'   => $taskData['left_title'] ?? null,
                 'right_title'  => $taskData['right_title'] ?? null,
                 'max_score'     => isset($taskData['max_score']) ? (int)$taskData['max_score'] : 1,
+
+                'image_auto_options' => $imageAutoOptions,
 
             ]);
 

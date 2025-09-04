@@ -11,27 +11,38 @@ use Illuminate\Support\Facades\DB;
 
 class SubmissionController extends Controller
 {
-    public function create(Request $request, Homework $homework)
-    {
-        $user = $request->user();
+public function create(Request $request, Homework $homework)
+{
+    $user = $request->user();
 
-        // лимит попыток
-        $attemptsAllowed = (int)($homework->attempts_allowed ?? 1);
-        $attemptsUsed = Submission::where('user_id', $user->id)
+    $rawMax = $homework->attempts_allowed;      // может быть null/0 => безлимит
+    $isUnlimited = empty($rawMax) || (int)$rawMax === 0;
+    $attemptsAllowed = $isUnlimited ? null : (int)$rawMax;
+
+    $attemptsUsed = Submission::where('user_id', $user->id)
+        ->where('homework_id', $homework->id)
+        ->count();
+
+    if (!$isUnlimited && $attemptsUsed >= $attemptsAllowed) {
+        // Лучше вести на результат последней попытки, а не back()
+        $last = Submission::where('user_id', $user->id)
             ->where('homework_id', $homework->id)
-            ->count();
+            ->latest('id')->first();
 
-        if ($attemptsUsed >= $attemptsAllowed) {
-            return back()->withErrors(['attempts' => 'Вы исчерпали лимит попыток по этой работе.']);
-        }
-
-        return view('student.submissions.create', [
-            'homework'         => $homework,
-            'attempts_used'    => $attemptsUsed,
-            'attempts_allowed' => $attemptsAllowed,
-            'next_attempt_no'  => $attemptsUsed + 1,
-        ]);
+        return $last
+            ? redirect()->route('student.submissions.show', $last)
+                ->withErrors(['attempts' => 'Лимит попыток исчерпан.'])
+            : back()->withErrors(['attempts' => 'Лимит попыток исчерпан.']);
     }
+
+    return view('student.submissions.create', [
+        'homework'         => $homework,
+        'attempts_used'    => $attemptsUsed,
+        'attempts_allowed' => $attemptsAllowed, // null => безлимит
+        'next_attempt_no'  => $attemptsUsed + 1,
+        'is_unlimited'     => $isUnlimited,
+    ]);
+}
 
     public function store(Request $request, Homework $homework)
     {
@@ -44,7 +55,7 @@ class SubmissionController extends Controller
         $answers = $data['answers'] ?? [];
 
         // лимит попыток
-        $attemptsAllowed = (int)($homework->attempts_allowed ?? 1);
+        $attemptsAllowed = (int)($homework->attempts_allowed ?? 2);
         $attemptsUsed = Submission::where('user_id', $user->id)
             ->where('homework_id', $homework->id)
             ->count();
