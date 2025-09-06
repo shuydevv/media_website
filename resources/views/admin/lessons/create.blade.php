@@ -60,6 +60,17 @@
             <textarea name="description" id="description" rows="4" class="w-full border rounded px-3 py-2">{{ old('description', $lesson->description ?? '') }}</textarea>
         </div>
 
+        {{-- Тип урока --}}
+        <div class="mb-4">
+            <label class="block text-sm font-medium">Тип урока</label>
+            <select name="lesson_type" class="w-full border rounded px-3 py-2">
+                <option value="">— не выбран —</option>
+                <option value="lecture" @selected(old('lesson_type', $lesson->lesson_type ?? '') === 'lecture')>Теория</option>
+                {{-- <option value="webinar" @selected(old('lesson_type', $lesson->lesson_type ?? '') === 'webinar')>Вебинар</option> --}}
+                <option value="practice" @selected(old('lesson_type', $lesson->lesson_type ?? '') === 'practice')>Практика</option>
+            </select>
+        </div>
+
         {{-- Ссылка на трансляцию --}}
         <div class="mb-4">
             <label for="meet_link" class="block text-sm font-medium">Ссылка на трансляцию (https://kinescope.io/(ВСТАВЬТЕ ТОЛЬКО ЭТИ СИМВОЛЫ))</label>

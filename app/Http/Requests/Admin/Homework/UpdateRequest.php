@@ -40,6 +40,7 @@ public function rules(): array
         'tasks.*.image_auto_options.*' => ['nullable','string'],
 
         'tasks.*.table_content' => ['nullable','string'],
+        'due_at'    => ['nullable','date'],
 
     ];
 }

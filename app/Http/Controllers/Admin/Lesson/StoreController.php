@@ -26,6 +26,7 @@ class StoreController extends Controller
             'course_session_id' => $validated['course_session_id'],
             'title'             => $validated['title'],
             'description' => $validated['description'] ?? null,
+            'lesson_type' => $validated['lesson_type'] ?? null,
             'meet_link'         => $validated['meet_link'] ?? null,
             'recording_link'    => $validated['recording_link'] ?? null,
             'short_class' => $validated['short_class'] ?? null,

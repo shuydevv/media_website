@@ -20,6 +20,7 @@ class StoreController extends Controller
             'title'       => $validated['title'],
             'description' => $validated['description'] ?? null,
             'type'        => $validated['type'],
+            'due_at' => $validated['due_at'],
             'course_id' => $request->course_id,
             'lesson_id' => $request->lesson_id,
 

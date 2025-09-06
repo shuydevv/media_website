@@ -7,7 +7,7 @@
   </div>
 
   <div class="mb-6">
-    <h1 class="text-3xl mb-3 font-sans font-medium text-gray-900">{{ $course->title }}</h1>
+    <h1 class="md:text-3xl text-2xl md:mb-3 mb-2 font-sans font-medium text-gray-900">{{ $course->title }}</h1>
 
     {{-- Сроки курса: надёжный вывод, даже если поля не кастятся к Carbon --}}
     @if(!empty($course->start_date) || !empty($course->end_date))
@@ -28,7 +28,7 @@
 
 {{-- Ближайшая сессия --}}
 <div id="next-session" class="mb-10">
-  <h2 class="text-base md:text-lg font-sans font-semibold text-blue-900 mb-3">Следующее занятие</h2>
+  
 
   @if(!$nextSession)
     <div class="text-sm text-gray-600">Ближайшее занятие не запланировано.</div>
@@ -37,21 +37,23 @@
       $s = $nextSession;
       $lesson = $s->lesson; // может быть null
     @endphp
-    <div class="rounded-2xl bg-blue-50 border border-blue-200 p-4">
-      <div class="flex flex-col md:flex-row items-start md:gap-6 gap-4">
+    <div class="rounded-2xl bg-blue-50 border border-blue-200 md:p-4 p-4">
+      <div class="flex flex-col md:flex-row md:items-stretch md:gap-7 gap-4">
         {{-- Картинка урока (если есть) --}}
         @if($lesson && $lesson->image_url)
           <div class="w-full md:w-1/2">
-            <div class="aspect-[16/10]">
+            <div class="relative aspect-[16/10]">
               <img src="{{ $lesson->image_url }}" 
                    alt="" 
                    class="w-full h-full rounded-xl object-cover border border-blue-200">
+                
+              <h2 class="absolute top-3 left-3 bg-white/60 px-3 py-1 rounded-2xl text-xs md:text-base font-sans font-semibold text-blue-900 mb-3"><img class="inline-block md:mr-2 mr-1 md:w-auto w-4" src=" {{asset('/img/Return.svg')}} " alt="">Следующее занятие</h2>
             </div>
           </div>
         @endif
 
-        <div class="w-full md:w-1/2 flex flex-col md:mt-3 mt-0 md:mt-0">
-          <div class="text-sm md:text-base opacity-60 text-blue-800">
+        <div class="w-full md:w-1/2 flex flex-col mt-0 md:mt-1">
+          <div class="text-sm md:text-base tracking-wide opacity-60 text-blue-800">
             <img class="inline-block relative bottom-0.5 mr-1 w-4 h-4 md:w-5 md:h-5" 
                  src="{{ asset('img/Date_range.svg') }}" 
                  alt="Date">
@@ -63,10 +65,10 @@
             @endif
           </div>
 
-          <div class="mt-3 md:mt-5 md:mb-2 mb-1">
+          <div class="mt-4 md:mt-5 md:mb-2 mb-1">
             @if($lesson)
               <a href="{{ route('student.lessons.show', $lesson) }}" 
-                 class="text-2xl md:text-4xl font-medium text-blue-900">
+                 class="text-3xl md:text-4xl tracking-wide font-medium text-blue-900">
                 {{ $lesson->title }}
               </a>
             @else
@@ -75,15 +77,29 @@
           </div>
 
           @if($lesson?->description)
-            <div class="text-sm md:text-lg text-blue-800 mt-1">
+            <div class="text-sm md:text-lg tracking-wide text-blue-800 mt-1">
               {{ $lesson->description }}
+              {{-- <hr class="mt-8 mb-4 border-1 border-blue-200"> --}}
             </div>
           @endif
 
+            {{-- эластичный «разделитель» свободного пространства:
+       на десктопе растягиваем, на мобиле не мешаем естественному потоку --}}
+          <div class="md:block hidden flex-1"></div>
+
+          @if($lesson?->description)
+            {{-- hr с адаптивными отступами: верх меньше, низ больше.
+              clamp(min, preferred vw/vh, max) — чтобы красиво скейлилось --}}
+            <hr class="border-1 border-blue-200 
+                      mt-[clamp(6px,1.2vh,14px)] 
+                      mb-[clamp(16px,3.5vh,36px)]">
+          @endif
+          
+
           @if($lesson?->id)
-            <div class="mt-6 md:mt-10">
+            <div class="mt-8 md:mt-10">
               <a href="{{ route('student.lessons.show', $lesson) }}"
-                class="md:inline-block block text-center px-6 md:px-8 py-4 md:py-4 text-lg tracking-wide font-medium rounded-xl bg-zinc-800 border text-white hover:bg-zinc-900 transition">
+                class="md:inline-block block text-center px-6 md:px-8 py-4 md:py-4 md:text-base text-base tracking-wide font-medium rounded-xl bg-zinc-800 border text-white hover:bg-zinc-900 transition">
                 Перейти к уроку
               </a>
             </div>
@@ -114,9 +130,13 @@
       @foreach($pastByMonth as $monthKey => $items)
         {{-- Заголовок месяца, с заглавной буквы и двоеточием --}}
         <div>
-          <div class="text-2xl font-normal text-gray-900 mb-4">
-            {{ \Illuminate\Support\Str::ucfirst($monthKey) }}:
+          <div class="flex justify-center">
+            <div class="md:text-base tracking-wide text-lg border-2 rounded-2xl border-blue-100 inline-block py-1.5 px-4 font-normal text-blue-800 mt-6 md:mb-6 mb-4">
+              <img class="inline-block relative bottom-1 mr-1" src="{{ asset('img/Date_range.svg') }}" alt="">
+              {{ \Illuminate\Support\Str::ucfirst($monthKey) }}:
+            </div>
           </div>
+
 
           <div class="md:gap-6 gap-4 grid sm:grid-cols-1 lg:grid-cols-3">
             @foreach($items as $s)
@@ -131,13 +151,13 @@
                   @endif
 
                   {{-- Заголовок и ссылка на страницу урока --}}
-                  <h3 class="text-xl sans font-medium mt-3 mb-1 text-gray-900">
+                  <h3 class="text-xl sans font-medium mt-3 md:mb-2 mb-1 text-gray-900">
                     {{ $lesson->title }}
                   </h3>
 
                   <div class="flex-1">
                     {{-- Дата занятия: "2 сентября в 15:30" (без секунд, как договорились) --}}
-                    <div class="text-base text-gray-600">
+                    <div class="text-base text-gray-600 bg-white">
                       {{-- Дата занятия: --}}
                       <img class="inline-block opacity-50 relative bottom-0.5 mr-1 w-4 h-4 md:w-5 md:h-5" 
                       src="{{ asset('img/Date_range.svg') }}" 
@@ -153,7 +173,7 @@
 
                     @if(Route::has('student.lessons.show'))
                       <a href="{{ route('student.lessons.show', $lesson) }}"
-                        class="block mt-6 ml-auto text-center mr-auto w-full px-3 py-4 text-lg tracking-wide font-medium rounded-xl bg-zinc-800 border text-white hover:bg-zinc-900 transition">
+                        class="block mt-6 ml-auto text-center mr-auto w-full px-3 py-4 md:text-base text-base tracking-wide font-medium rounded-xl bg-zinc-800 border text-white hover:bg-zinc-900 transition">
                         Перейти к уроку
                       </a>
                     @endif

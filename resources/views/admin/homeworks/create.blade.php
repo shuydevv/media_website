@@ -49,6 +49,7 @@
             <select class="w-full border rounded px-3 py-2" name="lesson_id" id="lesson_id" required></select>
         </div>
 
+
         {{-- Тип домашней работы --}}
         <div class="mb-6">
             <label class="block text-sm font-medium">Тип</label>
@@ -56,6 +57,14 @@
                 <option value="homework">Обычное домашнее задание</option>
                 <option value="mock">Пробник</option>
             </select>
+        </div>
+
+        {{-- Дедлайн --}}
+        <div class="mb-4">
+            <label class="block text-sm font-medium">Дедлайн</label>
+            <input type="datetime-local" name="due_at" 
+                class="w-full border rounded px-3 py-2"
+                value="{{ old('due_at', isset($homework->due_at) ? $homework->due_at->format('Y-m-d\TH:i') : '') }}">
         </div>
 
         {{-- Список заданий --}}

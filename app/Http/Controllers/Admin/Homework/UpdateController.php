@@ -30,6 +30,7 @@ public function __invoke(UpdateRequest $request, Homework $homework)
         'title'       => $data['title'],
         'description' => $data['description'] ?? null,
         'type'        => $data['type'],
+        'due_at'      => $data['due_at'],
         'course_id'   => $data['course_id'],
         'lesson_id'   => $data['lesson_id'],
     ]);

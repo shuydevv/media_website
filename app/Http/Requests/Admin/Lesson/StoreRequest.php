@@ -23,6 +23,7 @@ class StoreRequest extends FormRequest
             'notes_link' => ['nullable', 'url'],
             'homework_id' => ['nullable', 'exists:homeworks,id'],
             'image' => ['nullable', 'image', 'max:5120'], // до 5MB
+            'lesson_type'       => ['required','in:theory,practice'],
         ];
     }
 

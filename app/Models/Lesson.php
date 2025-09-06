@@ -24,6 +24,7 @@ protected $fillable = [
     'short_class',
     'notes_link',
     'image',
+    'lesson_type',
 ];
 
     public function session()

@@ -4,23 +4,27 @@
 @php
     use Illuminate\Support\Carbon;
 
-    function money_fmt($cents, $cur='RUB') {
+if (!function_exists('money_fmt')) {
+    function money_fmt($cents, $cur = '₽') {
         return number_format(($cents ?? 0)/100, 2, ',', ' ') . ' ' . $cur;
     }
+}
 @endphp
 
 @section('content')
 <div class="max-w-6xl mx-auto px-4 py-6">
-    <h1 class="text-2xl font-semibold mb-6">Личный кабинет</h1>
+<h1 class="md:text-3xl text-2xl font-normal tracking-wide font-sans text-center mb-6">
+  Привет, {{ auth()->user()?->name ?? 'друг' }}!
+</h1>
 
     @if(session('success'))
         <div class="mb-4 text-green-600 text-sm">{{ session('success') }}</div>
     @endif
 
-    <div class="w-full py-3 sm:py-6">
+    {{-- <div class="w-full py-3 sm:py-6">
     <div class="max-w-6xl mx-auto bg-white rounded-xl border px-2 sm:px-4 py-4 sm:py-6">
         <div class="flex justify-between items-end mb-4 border-b border-gray-200 pb-2">
-            <h2 class="text-xl md:text-xl lg:text-2xl font-medium font-sans text-gray-800"><img class="inline-block relative bottom-0.5 mr-1" src="{{ asset('img/Date_range.svg') }}" alt=""> Расписание</h2>
+            <h2 class="text-xl md:text-2xl lg:text-3xl tracking-wide font-medium font-oktyabrina text-zinc-800"><img class="inline-block relative bottom-1 mr-1" src="{{ asset('img/Date_range.svg') }}" alt=""> Расписание уроков</h2>
             <div class="flex gap-3">
                 <button id="swiper-prev" class="text-2xl text-gray-500 hover:text-gray-700 disabled:text-gray-300" disabled>&larr;</button>
                 <button id="swiper-next" class="text-2xl text-gray-500 hover:text-gray-700">&rarr;</button>
@@ -101,12 +105,137 @@
             </div>
         </div>
     </div>
+</div> --}}
+
+    <div class="w-full py-3 sm:py-6">
+    <div class="max-w-6xl mx-auto bg-white rounded-xl border px-2 md:px-4 pt-4 pb-2 md:pt-6 md:pb-4">
+        <div class="flex justify-between items-end mb-4 border-b border-gray-200 pb-2 px-1">
+            <h2 class="text-base md:text-xl tracking-wide font-normal font-sans text-zinc-800"><img class="inline-block relative bottom-1 mr-1" src="{{ asset('img/Date_range.svg') }}" alt=""> Расписание уроков</h2>
+            <div class="flex gap-3">
+                <button id="swiper-prev" class="text-2xl text-gray-500 hover:text-gray-700 disabled:text-gray-300" disabled>&larr;</button>
+                <button id="swiper-next" class="text-2xl text-gray-500 hover:text-gray-700">&rarr;</button>
+            </div>
+        </div>
+
+        <div class="swiper mySwiper pt-8">
+            <div class="swiper-wrapper">
+
+
+                @foreach ($days as $day)
+  <div class="swiper-slide" data-highlight="{{ !empty($day['highlight']) ? 1 : 0 }}">
+    <div class="flex flex-col gap-4 w-full pr-2">
+      <div class="text-center font-medium text-sm text-gray-700">
+        <div class="block sm:hidden capitalize">
+            
+          <span class="uppercase {{ $day['highlight'] ? 'text-indigo-600 font-semibold ' : ' text-gray-700' }}">
+            {{ $day['day'] }}
+          </span>
+          <span class="text-gray-400 "> · {{ $day['date'] }}</span>
+        </div>
+        <div class="hidden sm:block">
+          <div class="uppercase font-medium {{ $day['highlight'] ? 'text-indigo-600 font-semibold' : 'text-gray-700' }}">{{ $day['day'] }}</div>
+          <div class="capitalize font-normal text-xs text-gray-400">{{ $day['date'] }}</div>
+        </div>
+      </div>
+
+      @if (empty($day['items']))
+        <div class="border border-dashed border-gray-300 rounded-xl px-3 py-4 text-left text-gray-600 space-y-2">
+          <div class="flex items-center text-xs">
+            <span class="icon mr-2">🌿</span>
+            <span class="tracking-wide text-gray-500">Выходной</span>
+          </div>
+          <div class="text-base text-gray-500">Сегодня нет занятий и домашек. Можно отдохнуть</div>
+        </div>
+      @else
+        @foreach ($day['items'] as $item)
+          @php
+            $status  = $item['status'] ?? null; // 'completed' | 'overdue' | null
+            $dim = $status === 'completed' ? 'opacity-60' : '';
+
+            // Статические классы Tailwind (чтобы их не выпилил purge)
+            $color     = $item['color'] ?? 'blue';
+            $bgMap     = [
+            'blue'   => 'bg-blue-100',
+            'purple' => 'bg-purple-100',
+            'orange' => 'bg-orange-100',
+            'yellow' => 'bg-yellow-100',
+            'red'    => 'bg-red-100',
+            ];
+            $borderMap = [
+            'blue'   => 'border-blue-200',
+            'purple' => 'border-purple-200',
+            'orange' => 'border-orange-200',
+            'yellow' => 'border-yellow-200',
+            'red'    => 'border-red-200',
+            ];
+            $textMap   = [
+            'blue'   => 'text-blue-700',
+            'purple' => 'text-purple-700',
+            'orange' => 'text-orange-700',
+            'yellow' => 'text-yellow-700',
+            'red'    => 'text-red-700',
+            ];
+
+            $bg     = $bgMap[$color]     ?? $bgMap['blue'];
+            $border = $borderMap[$color] ?? $borderMap['blue'];
+            $text   = $textMap[$color]   ?? $textMap['blue'];
+
+            // ссылки (если контроллер положил объекты)
+            $lesson   = $item['lesson']   ?? null;
+            $homework = $item['homework'] ?? null;
+            $title    = $item['title'] ?? '—';
+          @endphp
+
+          <div class="{{ $bg }} border {{ $border }} rounded-xl px-3 py-3 text-left space-y-2">
+             <div class="flex items-center text-xs {{ $text }}">
+               <span class="icon mr-1 {{ $dim }}">🔔</span>
+               <span class="{{ $dim }}">{{ $item['type'] }}</span>
+               @if($status === 'overdue')
+                 <span class="ml-2 inline-block px-1.5 pt-[1px] pb-[3px] text-xs border border-red-300 rounded text-red-700 {{ $dim }}">Срок истёк</span>
+               @elseif($status === 'completed')
+                 <span class="ml-2 inline-block px-1.5 pt-[1px] pb-[3px] rounded bg-emerald-500/20 text-emerald-700">Выполнена</span>
+               @endif
+               <span class="ml-auto text-gray-400 {{ $dim }}">{{ $item['time'] }}</span>
+             </div>
+
+            {{-- Заголовок: если это урок — линк на урок; если домашка — линк на форму/результат --}}
+            <div class="font-medium text-base text-gray-800 leading-snug {{ $dim }}">
+              @if($lesson && Route::has('student.lessons.show'))
+                <a href="{{ route('student.lessons.show', $lesson) }}" class="hover:underline">{{ $title }}</a>
+              @elseif($homework && Route::has('student.submissions.create'))
+                <a href="{{ route('student.submissions.create', $homework) }}" class="hover:underline">{{ $title }}</a>
+              @else
+                {{ $title }}
+              @endif
+            </div>
+
+            <div class="{{ $dim }}">
+              <span class="inline-block bg-white text-gray-700 text-xs px-2 pt-0.5 pb-1 rounded-md">
+                {{ $item['subject'] ?? 'Курс' }}
+              </span>
+            </div>
+          </div>
+        @endforeach
+      @endif
+    </div>
+  </div>
+@endforeach
+            </div>
+        </div>
+    </div>
 </div>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
 
 <script>
+
+   // NEW: найдём индекс опорного дня (highlight)
+   const slidesInDom = document.querySelectorAll('.mySwiper .swiper-slide');
+   const initialIndex = Array.from(slidesInDom).findIndex(
+     el => el.dataset.highlight === '1'
+   );
+
     const swiper = new Swiper(".mySwiper", {
         slidesPerView: 1.15,
         centeredSlides: false,
@@ -117,6 +246,7 @@
             1024: { slidesPerView: 4 },
         },
         navigation: false,
+        initialSlide: initialIndex > -1 ? initialIndex : 0,
     });
 
     const prevBtn = document.getElementById('swiper-prev');
@@ -137,7 +267,7 @@
     updateButtons();
 </script>
 
-    <h2 class="text-xl font-semibold mb-4">Мои курсы</h2>
+    <h2 class="text-base md:text-xl font-normal font-sans tracking-wide md:mb-4 mb-3 mt-4 text-zinc-800">Мои курсы</h2>
 
     @if($courses->isEmpty())
         <div class="p-6 rounded-xl border bg-white text-gray-600">
@@ -148,9 +278,10 @@
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
             @foreach($courses as $course)
                 @php
-                    $expiresAt = $course->pivot->expires_at ? Carbon::parse($course->pivot->expires_at) : null;
-                    $expiresSoon = $expiresAt && $expiresAt->isAfter(now()) && $expiresAt->diffInDays(now()) <= 3;
-                    $next = $course->nextSession;
+    $expiresAtRaw = data_get($course, 'pivot.expires_at'); // безопасно достаём поле
+    $expiresAt    = $expiresAtRaw ? \Illuminate\Support\Carbon::parse($expiresAtRaw) : null;
+    $expiresSoon  = $expiresAt?->isAfter(now()) && $expiresAt?->diffInDays(now()) <= 3;
+    $next         = $course->nextSession;
                 @endphp
 
                 <div class="rounded-2xl border bg-white p-4 flex flex-col">
@@ -160,12 +291,12 @@
                              class="w-full object-cover rounded-xl mb-3">
                     @endif
 
-                    <h3 class="font-medium text-2xl mb-2">{{ $course->title }}</h3>
+                    <h3 class="font-medium  text-xl mb-1">{{ $course->title }}</h3>
                     <p class="text-base text-gray-600 line-clamp-2 mb-8">{{ $course->description }}</p>
                     <div class="mt-auto flex gap-2">
                         @if(Route::has('student.courses.show'))
                             <a href="{{ route('student.courses.show', $course) }}"
-                            class="block ml-auto text-center mr-auto w-full px-3 py-4 text-lg tracking-wide font-medium rounded-xl bg-zinc-800 border text-white hover:bg-zinc-900 transition">
+                            class="block ml-auto text-center mr-auto w-full px-3 py-4 text-base tracking-wide font-medium rounded-xl bg-zinc-800 border text-white hover:bg-zinc-900 transition">
                             Перейти к курсу
                             </a>
 

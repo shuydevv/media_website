@@ -62,6 +62,8 @@ class StoreRequest extends FormRequest
 
             'tasks.*.table_content' => ['nullable','string'],
 
+            'due_at'    => ['nullable','date'],
+
 
             // 'tasks.*.max_score' => ['nullable','integer','min:1'],
 

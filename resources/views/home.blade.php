@@ -99,7 +99,7 @@
 <div class="w-full sm:px-4 px-2 py-3 sm:py-6">
     <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-sm px-2 sm:px-4 py-4 sm:py-6">
         <div class="flex justify-between items-end mb-4 border-b border-gray-200 pb-2">
-            <h2 class="text-xl md:text-xl lg:text-2xl font-medium font-sans text-gray-800">Расписание</h2>
+            <h2 class="text-xl md:text-xl lg:text-2xl font-medium text-gray-800 font-sans">Расписание</h2>
             <div class="flex gap-3">
                 <button id="swiper-prev" class="text-2xl text-gray-500 hover:text-gray-700 disabled:text-gray-300" disabled>&larr;</button>
                 <button id="swiper-next" class="text-2xl text-gray-500 hover:text-gray-700">&rarr;</button>
