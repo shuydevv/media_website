@@ -10,8 +10,9 @@ use Illuminate\Http\Request;
 class IndexController extends Controller
 {
     public function __invoke() {
-        $posts = Post::paginate(4);
-        $images = Image::all();
-        return view('main.index', compact('posts', 'images'));
+        return redirect()->route('home');
+        // $posts = Post::paginate(4);
+        // $images = Image::all();
+        // return view('main.index', compact('posts', 'images'));
     }
 }

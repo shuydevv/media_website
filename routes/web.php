@@ -272,7 +272,7 @@ Route::middleware(['auth'])
     });
 
 // Проверка домашних ментором
-Route::middleware(['auth'])
+Route::middleware(['auth', 'mentor'])
     ->prefix('mentor')
     ->name('mentor.')
     ->group(function () {
@@ -375,6 +375,44 @@ use Illuminate\Support\Facades\Http;
 //     return Http::withOptions($options)->get('http://api.ipify.org')->body();
 // });
 
+use App\Http\Controllers\Auth\PhoneAuthController;
+use App\Http\Controllers\Auth\EmailAuthController;
+use App\Http\Controllers\Onboarding\ProfileController;
+
+// Телефонный вход/регистрация (публичные)
+Route::get('/auth/phone', [PhoneAuthController::class, 'showPhoneForm'])->name('auth.phone.show');
+Route::post('/auth/phone', [PhoneAuthController::class, 'sendCode'])->name('auth.phone.send');
+Route::get('/auth/phone/verify', [PhoneAuthController::class, 'showVerifyForm'])->name('auth.phone.verify.show');
+Route::post('/auth/phone/verify', [PhoneAuthController::class, 'verifyCode'])->name('auth.phone.verify');
+Route::post('/auth/phone/resend', [PhoneAuthController::class, 'resend'])->name('auth.phone.resend');
+
+// Онбординг (только для аутентифицированных)
+Route::middleware('auth')->group(function () {
+    Route::get('/onboarding/profile', [ProfileController::class, 'show'])->name('onboarding.profile.show');
+    Route::post('/onboarding/profile', [ProfileController::class, 'save'])->name('onboarding.profile.save');
+});
+
+// E-mail вход/регистрация (гостевые)
+Route::middleware('guest')->group(function () {
+    // Шаг 1: форма e-mail
+    Route::get('/auth/email', [EmailAuthController::class, 'showEmailForm'])->name('auth.email.show');
+    Route::post('/auth/email', [EmailAuthController::class, 'send'])->name('auth.email.send');
+
+    // Шаг 2А: ввод кода из письма
+    Route::get('/auth/email/verify', [EmailAuthController::class, 'showVerifyForm'])->name('auth.email.verify.show');
+    Route::post('/auth/email/verify', [EmailAuthController::class, 'verify'])->name('auth.email.verify');
+
+    // Повторная отправка
+    Route::post('/auth/email/resend', [EmailAuthController::class, 'resend'])->name('auth.email.resend');
+
+    // Шаг 2Б: подтверждение по подписанной ссылке
+    Route::get('/auth/email/link/{id}', [EmailAuthController::class, 'verifyByLink'])
+        ->middleware(['signed','throttle:6,1'])
+        ->name('auth.email.link');
+});
+
+
+
 Route::get('/dev/ip-https', function () {
     return Http::withOptions([
         'verify' => false, // только для теста
@@ -385,6 +423,16 @@ Route::get('/dev/ip-https', function () {
 
 
 
-Auth::routes(['verify' => true]);
+// Auth::routes(['verify' => true]);
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+// Выключаем штатную /register, оставляем остальное (login, reset, verify)
+Auth::routes(['verify' => true, 'register' => false]);
+
+// На всякий случай перенаправим старые ссылки на наш новый поток
+Route::get('/register', fn() => redirect()->route('auth.email.show'))->name('register');
+
+use App\Http\Controllers\HomeRedirectController;
+
+Route::get('/home', HomeRedirectController::class)
+    ->middleware(['auth','verified'])
+    ->name('home');

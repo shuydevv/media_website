@@ -14,7 +14,7 @@ if (!function_exists('money_fmt')) {
 @section('content')
 <div class="max-w-6xl mx-auto px-4 py-6">
 <h1 class="md:text-3xl text-2xl font-normal tracking-wide font-sans text-center mb-6">
-  Привет, {{ auth()->user()?->name ?? 'друг' }}!
+  Привет, {{ auth()->user()?->first_name ?? 'друг' }}!
 </h1>
 
     @if(session('success'))
@@ -313,5 +313,13 @@ if (!function_exists('money_fmt')) {
             @endforeach
         </div>
     @endif
+    <div class="flex justify-between md:mt-12 mt-8 items-center border-t pt-4">
+    <div class="font-oktyabrina md:text-2xl text-xl">Школа Полтавского</div>
+                        <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="text-red-600">Выйти</button>
+                    </form>
+    </div>
+
 </div>
 @endsection

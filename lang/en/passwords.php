@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 return [
-    'reset'     => 'Your password has been reset.',
-    'sent'      => 'We have emailed your password reset link.',
-    'throttled' => 'Please wait before retrying.',
-    'token'     => 'This password reset token is invalid.',
-    'user'      => 'We can\'t find a user with that email address.',
+    'reset'     => 'Пароль был сброшен!',
+    'sent'      => 'Мы отправили ссылку для сброса пароля на вашу почту.',
+    'throttled' => 'Пожалуйста, подождите перед повторной попыткой.',
+    'token'     => 'Недействительный токен сброса пароля.',
+    'user'      => 'Пользователь с таким e-mail не найден.',
 ];

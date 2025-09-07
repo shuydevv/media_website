@@ -1,8 +1,8 @@
-@extends('admin.layouts.main') {{-- или твой общий layout --}}
+@extends('layouts.main') {{-- или твой общий layout --}}
 
 @section('content')
-<div class="max-w-md mx-auto p-6 bg-white rounded shadow">
-    <h1 class="text-xl font-bold mb-4">Активация промокода</h1>
+<div class="max-w-md mx-auto p-6 bg-white rounded shadow mt-12">
+    <h1 class="md:text-2xl text-xl font-bold sans mb-6">Активация промокода</h1>
 
     @if (session('success'))
         <div class="mb-3 text-green-600 text-sm">{{ session('success') }}</div>
@@ -35,7 +35,7 @@
             </div>
         @endif
 
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 mt-4 rounded">
             Активировать
         </button>
     </form>

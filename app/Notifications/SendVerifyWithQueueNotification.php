@@ -8,8 +8,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class SendVerifyWithQueueNotification extends VerifyEmail implements ShouldQueue
+class SendVerifyWithQueueNotification extends VerifyEmail
 {
-    use Queueable;
+    // use Queueable;
 
 }
