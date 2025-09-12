@@ -37,7 +37,7 @@
       $s = $nextSession;
       $lesson = $s->lesson; // может быть null
     @endphp
-    <div class="rounded-2xl bg-blue-50 border border-blue-200 md:p-4 p-4">
+    <div class="rounded-2xl bg-blue-50 border border-blue-200 md:p-4 p-3">
       <div class="flex flex-col md:flex-row md:items-stretch md:gap-7 gap-4">
         {{-- Картинка урока (если есть) --}}
         @if($lesson && $lesson->image_url)
@@ -143,7 +143,7 @@
               @php
                 $lesson = $s->lesson; // гарантированно есть
               @endphp
-              <div class="rounded-2xl bg-gray-50 border border-gray-200 p-4">
+              <div class="rounded-2xl bg-gray-50 border border-gray-200 bg-white md:p-4 p-3">
                 <div class="aspect-[16/10] gap-4">
                   {{-- Картинка урока (если есть) --}}
                   @if($lesson->image_url ?? false)
@@ -157,7 +157,7 @@
 
                   <div class="flex-1">
                     {{-- Дата занятия: "2 сентября в 15:30" (без секунд, как договорились) --}}
-                    <div class="text-base text-gray-600 bg-white">
+                    <div class="text-base text-gray-600">
                       {{-- Дата занятия: --}}
                       <img class="inline-block opacity-50 relative bottom-0.5 mr-1 w-4 h-4 md:w-5 md:h-5" 
                       src="{{ asset('img/Date_range.svg') }}" 

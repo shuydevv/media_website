@@ -65,7 +65,7 @@
             <label class="block text-sm font-medium">Тип урока</label>
             <select name="lesson_type" class="w-full border rounded px-3 py-2">
                 <option value="">— не выбран —</option>
-                <option value="lecture" @selected(old('lesson_type', $lesson->lesson_type ?? '') === 'lecture')>Теория</option>
+                <option value="theory" @selected(old('lesson_type', $lesson->lesson_type ?? '') === 'theory')>Теория</option>
                 {{-- <option value="webinar" @selected(old('lesson_type', $lesson->lesson_type ?? '') === 'webinar')>Вебинар</option> --}}
                 <option value="practice" @selected(old('lesson_type', $lesson->lesson_type ?? '') === 'practice')>Практика</option>
             </select>

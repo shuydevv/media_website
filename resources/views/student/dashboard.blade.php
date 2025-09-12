@@ -108,7 +108,7 @@ if (!function_exists('money_fmt')) {
 </div> --}}
 
     <div class="w-full py-3 sm:py-6">
-    <div class="max-w-6xl mx-auto bg-white rounded-xl border px-2 md:px-4 pt-4 pb-2 md:pt-6 md:pb-4">
+    <div class="max-w-6xl mx-auto bg-white rounded-xl border md:px-3 px-3 md:px-4 pt-4 pb-2 md:pt-6 md:pb-4">
         <div class="flex justify-between items-end mb-4 border-b border-gray-200 pb-2 px-1">
             <h2 class="text-base md:text-xl tracking-wide font-normal font-sans text-zinc-800"><img class="inline-block relative bottom-1 mr-1" src="{{ asset('img/Date_range.svg') }}" alt=""> Расписание уроков</h2>
             <div class="flex gap-3">
@@ -284,7 +284,7 @@ if (!function_exists('money_fmt')) {
     $next         = $course->nextSession;
                 @endphp
 
-                <div class="rounded-2xl border bg-white p-4 flex flex-col">
+                <div class="rounded-2xl border bg-white md:p-4 p-3 flex flex-col">
                     {{-- обложка, если есть --}}
                     @if(!empty($course->main_image))
                         <img src="{{ asset('storage/'.$course->main_image) }}" alt="{{ $course->title }}"
@@ -292,7 +292,7 @@ if (!function_exists('money_fmt')) {
                     @endif
 
                     <h3 class="font-medium  text-xl mb-1">{{ $course->title }}</h3>
-                    <p class="text-base text-gray-600 line-clamp-2 mb-8">{{ $course->description }}</p>
+                    <p class="text-base text-gray-600 line-clamp-2 md:mb-8 mb-6">{{ $course->description }}</p>
                     <div class="mt-auto flex gap-2">
                         @if(Route::has('student.courses.show'))
                             <a href="{{ route('student.courses.show', $course) }}"

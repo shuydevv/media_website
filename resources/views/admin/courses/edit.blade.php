@@ -63,8 +63,17 @@
                             <option value="{{ $code }}" {{ $item->day_of_week === $code ? 'selected' : '' }}>{{ $name }}</option>
                         @endforeach
                     </select>
-                    <input type="time" name="schedule[{{ $i }}][start_time]" class="border rounded px-2 py-1" value="{{ $item->start_time }}" required>
-                    <input type="number" name="schedule[{{ $i }}][duration_minutes]" class="border rounded px-2 py-1" value="{{ $item->duration_minutes }}" min="1" required>
+                @php
+                    $val = old("schedule.$i.start_time",
+                        \Illuminate\Support\Str::of($item->start_time)->substr(0,5)
+                    );
+                @endphp
+                <input type="time"
+                    name="schedule[{{ $i }}][start_time]"
+                    class="border rounded px-2 py-1"
+                    value="{{ $val }}"
+                    required>
+                <input type="number" name="schedule[{{ $i }}][duration_minutes]" class="border rounded px-2 py-1" value="{{ $item->duration_minutes }}" min="1" required>
                 </div>
                 @endforeach
             </div>
