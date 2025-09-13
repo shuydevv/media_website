@@ -8,21 +8,48 @@ use Illuminate\Support\Facades\Log;
 
 class LeadController extends Controller
 {
+    /** =======================
+     *  Telegram hardcoded cfg
+     *  ======================= */
+    private const TG_BOT_TOKEN  = '5910283688:AAGo0furmlOMxZwLicJendluOUGyaJ7odR8'; // <-- сюда токен
+    private const TG_CHAT_ID    = '-890259428';                      // <-- сюда chat_id (или -1001234567890)
+    private const TG_API_BASE   = 'https://api.telegram.org';
+    private const TG_METHOD     = 'sendMessage';
+    private const TG_PARSE_MODE = 'HTML';
+    private const TG_DISABLE_WEB_PREVIEW = true;
+
     public function store(Request $request)
     {
-        // Базовая валидация — подстрой под свои поля при необходимости
+        // Валидация — подстрой под свои поля
         $data = $request->validate([
             'name'    => 'nullable|string|max:255',
             'phone'   => 'required|string|max:50',
             'email'   => 'nullable|email|max:255',
             'message' => 'nullable|string|max:2000',
-            // добавь другие поля при необходимости
         ]);
+
+        // Проверка наличия "конфига" (константы)
+        if (trim(self::TG_BOT_TOKEN) === '' || trim(self::TG_CHAT_ID) === '') {
+            $debug = [
+                'where'             => 'missing tg hardcoded config',
+                'bot_token_present' => trim(self::TG_BOT_TOKEN) !== '',
+                'chat_id'           => self::TG_CHAT_ID,
+            ];
+            Log::error('Telegram config (hardcoded) error', $debug);
+
+            if (config('app.debug')) {
+                dd($debug);
+            }
+
+            return back()
+                ->withErrors(['form' => 'Ошибка конфигурации Telegram (пустой токен или chat_id).'])
+                ->withInput();
+        }
 
         // Безопасное экранирование для HTML parse_mode
         $safe = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
-        // Сбор текста
+        // Сбор текста сообщения
         $rows   = [];
         $rows[] = '<b>Новая заявка</b>';
         $rows[] = 'Страница: ' . $safe($request->fullUrl());
@@ -33,7 +60,7 @@ class LeadController extends Controller
         if (isset($data['email']))   { $rows[] = 'Email: ' . $safe($data['email']); }
         if (isset($data['message'])) { $rows[] = 'Сообщение: ' . $safe($data['message']); }
 
-        // Подхватим любые дополнительные поля формы (кроме _token и уже учтённых)
+        // Подхватим любые доп. поля формы (кроме _token и уже учтённых)
         $extra = collect($request->except(['_token']))->forget(array_keys($data))->all();
         if (!empty($extra)) {
             $rows[] = '';
@@ -48,37 +75,18 @@ class LeadController extends Controller
 
         $text = implode("\n", $rows);
 
-        $botToken = config('services.telegram.bot_token');
-        $chatId   = config('services.telegram.chat_id');
-
-        if (!$botToken || !$chatId) {
-            $debug = [
-                'where'              => 'missing tg config',
-                'bot_token_present'  => (bool) $botToken,
-                'chat_id'            => $chatId,
-            ];
-            Log::error('Telegram config error', $debug);
-
-            if (config('app.debug')) {
-                dd($debug);
-            }
-
-            return back()
-                ->withErrors(['form' => 'Ошибка конфигурации Telegram. Обратитесь к администратору.'])
-                ->withInput();
-        }
-
-        $url = "https://api.telegram.org/bot{$botToken}/sendMessage";
+        // Формируем URL метода API
+        $url = rtrim(self::TG_API_BASE, '/') . '/bot' . self::TG_BOT_TOKEN . '/' . self::TG_METHOD;
 
         try {
             $resp = Http::asForm()
                 ->timeout(15)
                 ->connectTimeout(10)
                 ->post($url, [
-                    'chat_id'                  => $chatId,
+                    'chat_id'                  => self::TG_CHAT_ID,
                     'text'                     => $text,
-                    'parse_mode'               => 'HTML', // используем HTML, т.к. экранируем всё выше
-                    'disable_web_page_preview' => true,
+                    'parse_mode'               => self::TG_PARSE_MODE,
+                    'disable_web_page_preview' => self::TG_DISABLE_WEB_PREVIEW,
                 ]);
 
             if ($resp->failed()) {
@@ -88,18 +96,19 @@ class LeadController extends Controller
                     'reason'  => $resp->reason(),
                     'body'    => $resp->body(),
                     'json'    => $resp->json(),
+                    // замаскируем токен, если выведется
                     'url'     => preg_replace('/bot(\d+):[A-Za-z0-9_-]+/', 'bot$1:***', $url),
                     'payload' => [
-                        'chat_id'    => $chatId,
+                        'chat_id'    => self::TG_CHAT_ID,
                         'text'       => $text,
-                        'parse_mode' => 'HTML',
+                        'parse_mode' => self::TG_PARSE_MODE,
                     ],
                 ];
 
-                Log::error('Telegram send failed', $debug);
+                Log::error('Telegram send failed (hardcoded)', $debug);
 
                 if (config('app.debug')) {
-                    dd($debug); // ВРЕМЕННЫЙ дебаг — в проде отключится при APP_DEBUG=false
+                    dd($debug); // В dev-режиме покажем всю причину сразу
                 }
 
                 return back()
@@ -115,10 +124,10 @@ class LeadController extends Controller
                 'file'    => $e->getFile() . ':' . $e->getLine(),
             ];
 
-            Log::error('Telegram exception', $debug);
+            Log::error('Telegram exception (hardcoded)', $debug);
 
             if (config('app.debug')) {
-                dd($debug); // Покажем точную причину в dev-среде
+                dd($debug);
             }
 
             return back()
