@@ -354,7 +354,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
         <div class="rounded-2xl border-2 border-dashed border-emerald-200 bg-white p-3 md:p-4 shadow-sm flex-1 w-full">
           <div class="flex items-end gap-2">
             <span class="text-lg leading-none self-center relative top-1">
-              @if ($manualMax > 0)
+              @if ($manualMax > 0 && !$hasPendingManual)
                 @if ($manualPct > 70)
                   <img class="w-5 md:w-6 mr-1.5 md:mr-2" src="{{ asset('/img/noto_fire.svg') }}" alt="fire">
                 @elseif ($manualPct > 50)
@@ -550,7 +550,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
       $correctAns = $row['correct'] ?? ($t->answer ?? null);
 
       // Пояснение куратора (может храниться в reason/comment)
-      $mentorNote = $row['reason']  ?? ($row['comment'] ?? null);
+      $mentorNote   = $row['comment'] ?? null;
 
       $mentorReason = $row['reason']  ?? '';
 
@@ -871,9 +871,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
     @if($hasScore && !$skipped)
     <div class="rounded-xl border border-gray-200 p-3">
       <div class="text-xs text-gray-500 mb-1">Обоснование баллов</div>
-      <div class="text-sm whitespace-pre-wrap break-words">
-        {{ trim($norm($mentorReason)) !== '' ? $norm($mentorReason) : '—' }}
-      </div>
+      <div class="text-sm whitespace-pre-wrap break-words">{{ trim($norm($mentorReason)) !== '' ? $norm($mentorReason) : '—' }}</div>
     </div>
     @endif
   </div>

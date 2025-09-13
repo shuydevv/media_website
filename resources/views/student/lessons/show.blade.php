@@ -79,10 +79,20 @@
     <div class="flex-1 text-center sm:text-left">
       @if ($lesson->homework)
         <h3 class="text-xl sm:text-2xl font-medium text-blue-900 mb-10 sm:mb-4">Домашнее задание</h3>
-        <a href="{{ route('student.submissions.create', $lesson->homework) }}"
-           class="block sm:inline-block w-full sm:w-auto text-center px-6 py-4 text-base tracking-wide font-medium rounded-xl bg-zinc-800 border-2 border-zinc-800 text-white hover:bg-zinc-900 transition">
-          Перейти к домашке
-        </a>
+
+        @if(!empty($mySubmission))
+          {{-- Есть попытка → показываем результаты --}}
+          <a href="{{ route('student.submissions.show', $mySubmission) }}"
+            class="block sm:inline-block w-full sm:w-auto text-center px-6 py-4 text-base tracking-wide font-medium rounded-xl bg-zinc-800 border-2 border-zinc-800 text-white hover:bg-zinc-900 transition">
+            Смотреть результаты
+          </a>
+        @else
+          {{-- Нет попыток → на форму сдачи --}}
+          <a href="{{ route('student.submissions.create', $lesson->homework) }}"
+            class="block sm:inline-block w-full sm:w-auto text-center px-6 py-4 text-base tracking-wide font-medium rounded-xl bg-zinc-800 border-2 border-zinc-800 text-white hover:bg-zinc-900 transition">
+            Перейти к домашке
+          </a>
+        @endif
       @else
         <h3 class="text-xl sm:text-2xl font-medium text-blue-900 mb-10 sm:mb-3">Домашнего задания пока нет</h3>
         <p class="text-base text-blue-900/80">Возможно, оно будет позже. А может и не будет</p>

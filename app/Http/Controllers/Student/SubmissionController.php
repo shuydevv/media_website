@@ -23,6 +23,16 @@ public function create(Request $request, Homework $homework)
         ->where('homework_id', $homework->id)
         ->count();
 
+    // NEW: если попытка уже существует — сразу показываем результаты
+    $existing = Submission::where('homework_id', $homework->id)
+        ->where('user_id', $user->id)
+        ->latest('id')
+        ->first();
+
+    if ($existing) {
+        return redirect()->route('student.submissions.show', $existing);
+    }
+
     if (!$isUnlimited && $attemptsUsed >= $attemptsAllowed) {
         // Лучше вести на результат последней попытки, а не back()
         $last = Submission::where('user_id', $user->id)
