@@ -443,3 +443,5 @@ Route::post('/lead', [LeadController::class, 'store'])
     ->name('lead.store')
     ->middleware('throttle:10,1'); // базовая защита от спама
 
+Route::view('/thank-you', 'thank-you')->name('thankyou');
+
