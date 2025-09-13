@@ -4,14 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class LeadController extends Controller
 {
     public function store(Request $request)
     {
-        // Валидация (минимально строгая)
+        // 1) валидация
         $data = $request->validate([
             'name'       => ['nullable','string','max:255'],
             'method'     => ['nullable','in:whatsapp,telegram'],
@@ -22,9 +22,9 @@ class LeadController extends Controller
             'page'       => ['nullable','string','max:2048'],
         ]);
 
-        // Собираем полезные поля
+        // 2) полезные поля
         $payload = [
-            'site'      => 'poltavskiy-school.ru',
+            'site'      => 'Групповые занятия (Основной лендинг)',
             'form'      => $data['form_type']  ?? '',
             'name'      => $data['name']       ?? '',
             'method'    => $data['method']     ?? '',
@@ -36,7 +36,7 @@ class LeadController extends Controller
             'ua'        => Str::limit($request->userAgent() ?? '', 256),
         ];
 
-        // Экранируем под parse_mode=HTML
+        // 3) соберём HTML текст для TG (parse_mode=HTML)
         $escape = fn($v) => e((string)$v);
         $lines  = [];
         foreach ($payload as $k => $v) {
@@ -49,26 +49,31 @@ class LeadController extends Controller
         $token  = config('services.telegram.bot_token');
         $chatId = config('services.telegram.chat_id');
 
-        // Отправляем POST в Telegram
-        $resp = Http::asForm()->post("https://api.telegram.org/bot{$token}/sendMessage", [
-            'chat_id'    => $chatId,
-            'parse_mode' => 'HTML',
-            'text'       => $text,
-        ]);
+        try {
+            $resp = Http::asForm()->post("https://api.telegram.org/bot{$token}/sendMessage", [
+                'chat_id'    => $chatId,
+                'parse_mode' => 'HTML',
+                'text'       => $text,
+            ]);
 
-        if ($resp->ok() && data_get($resp->json(), 'ok') === true) {
-            // редирект на "спасибо" — как вам удобно
-            return redirect()->route('thankyou'); // создайте такой маршрут/страницу
-            // или: return redirect('/thank-you');
+            if ($resp->ok() && data_get($resp->json(), 'ok') === true) {
+                return redirect('/thank-you'); // сделай простую страницу "спасибо"
+            }
+
+            Log::error('Telegram send failed', [
+                'status' => $resp->status(),
+                'body'   => $resp->body(),
+            ]);
+
+            return back()
+                ->withErrors(['form' => 'Не удалось отправить заявку. Попробуйте ещё раз.'])
+                ->withInput();
+
+        } catch (\Throwable $e) {
+            Log::error('Telegram exception', ['e' => $e]);
+            return back()
+                ->withErrors(['form' => 'Внутренняя ошибка отправки.'])
+                ->withInput();
         }
-
-        Log::error('Telegram send failed', [
-            'status' => $resp->status(),
-            'body'   => $resp->body(),
-        ]);
-
-        return back()
-            ->withErrors(['form' => 'Не удалось отправить заявку. Попробуйте ещё раз.'])
-            ->withInput();
     }
 }

@@ -89,6 +89,9 @@
           <input required name="phone" type="text" placeholder="Номер телефона или Username" class="w-full bg-purple-50 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300">
           <button class="w-full bg-pink-500 text-white font-bold py-3 rounded-lg">Начать обучение</button>
           <p class="text-xs text-gray-500">Нажимая кнопку, вы принимаете <a href="#" class="underline">положение об обработке персональных данных</a></p>
+            @error('form')
+                <div class="mt-2 text-red-600 text-sm">{{ $message }}</div>
+            @enderror
         </div>  
         </form>
         
