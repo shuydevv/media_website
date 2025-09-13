@@ -13,6 +13,6 @@ class IndexController extends Controller
         return redirect()->route('home');
         // $posts = Post::paginate(4);
         // $images = Image::all();
-        // return view('main.index', compact('posts', 'images'));
+        // return view('main.index');
     }
 }

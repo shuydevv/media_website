@@ -436,3 +436,10 @@ use App\Http\Controllers\HomeRedirectController;
 Route::get('/home', HomeRedirectController::class)
     ->middleware(['auth','verified'])
     ->name('home');
+
+    use App\Http\Controllers\LeadController;
+
+Route::post('/lead', [LeadController::class, 'store'])
+    ->name('lead.store')
+    ->middleware('throttle:10,1'); // базовая защита от спама
+
