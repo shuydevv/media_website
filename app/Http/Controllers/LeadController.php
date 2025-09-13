@@ -5,74 +5,124 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class LeadController extends Controller
 {
     public function store(Request $request)
     {
-        // 1) валидация
+        // Базовая валидация — подстрой под свои поля при необходимости
         $data = $request->validate([
-            'name'       => ['nullable','string','max:255'],
-            'method'     => ['nullable','in:whatsapp,telegram'],
-            'phone'      => ['required','string','max:255'],
-            'form_type'  => ['nullable','string','max:255'],
-            'cta'        => ['nullable','string','max:255'],
-            'cta_label'  => ['nullable','string','max:255'],
-            'page'       => ['nullable','string','max:2048'],
+            'name'    => 'nullable|string|max:255',
+            'phone'   => 'required|string|max:50',
+            'email'   => 'nullable|email|max:255',
+            'message' => 'nullable|string|max:2000',
+            // добавь другие поля при необходимости
         ]);
 
-        // 2) полезные поля
-        $payload = [
-            'site'      => 'Групповые занятия (Основной лендинг)',
-            'form'      => $data['form_type']  ?? '',
-            'name'      => $data['name']       ?? '',
-            'method'    => $data['method']     ?? '',
-            'phone'     => $data['phone'],
-            'cta'       => $data['cta']        ?? '',
-            'cta_label' => $data['cta_label']  ?? '',
-            'page'      => $data['page']       ?? $request->headers->get('referer'),
-            'ip'        => $request->ip(),
-            'ua'        => Str::limit($request->userAgent() ?? '', 256),
-        ];
+        // Безопасное экранирование для HTML parse_mode
+        $safe = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
-        // 3) соберём HTML текст для TG (parse_mode=HTML)
-        $escape = fn($v) => e((string)$v);
-        $lines  = [];
-        foreach ($payload as $k => $v) {
-            if ($v !== null && $v !== '') {
-                $lines[] = '<b>'.$escape($k).':</b> '.$escape($v);
+        // Сбор текста
+        $rows   = [];
+        $rows[] = '<b>Новая заявка</b>';
+        $rows[] = 'Страница: ' . $safe($request->fullUrl());
+        $rows[] = 'Форма: ' . $safe($request->input('form') ?? $request->input('source') ?? 'не указано');
+
+        if (isset($data['name']))    { $rows[] = 'Имя: ' . $safe($data['name']); }
+        if (isset($data['phone']))   { $rows[] = 'Телефон: ' . $safe($data['phone']); }
+        if (isset($data['email']))   { $rows[] = 'Email: ' . $safe($data['email']); }
+        if (isset($data['message'])) { $rows[] = 'Сообщение: ' . $safe($data['message']); }
+
+        // Подхватим любые дополнительные поля формы (кроме _token и уже учтённых)
+        $extra = collect($request->except(['_token']))->forget(array_keys($data))->all();
+        if (!empty($extra)) {
+            $rows[] = '';
+            $rows[] = '<b>Дополнительно:</b>';
+            foreach ($extra as $k => $v) {
+                if (is_array($v)) {
+                    $v = json_encode($v, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                }
+                $rows[] = $safe($k) . ': ' . $safe($v);
             }
         }
-        $text = implode("\n", $lines);
 
-        $token  = config('services.telegram.bot_token');
-        $chatId = config('services.telegram.chat_id');
+        $text = implode("\n", $rows);
 
-        try {
-            $resp = Http::asForm()->post("https://api.telegram.org/bot{$token}/sendMessage", [
-                'chat_id'    => $chatId,
-                'parse_mode' => 'HTML',
-                'text'       => $text,
-            ]);
+        $botToken = config('services.telegram.bot_token');
+        $chatId   = config('services.telegram.chat_id');
 
-            if ($resp->ok() && data_get($resp->json(), 'ok') === true) {
-                return redirect('/thank-you'); // сделай простую страницу "спасибо"
+        if (!$botToken || !$chatId) {
+            $debug = [
+                'where'              => 'missing tg config',
+                'bot_token_present'  => (bool) $botToken,
+                'chat_id'            => $chatId,
+            ];
+            Log::error('Telegram config error', $debug);
+
+            if (config('app.debug')) {
+                dd($debug);
             }
 
-            Log::error('Telegram send failed', [
-                'status' => $resp->status(),
-                'body'   => $resp->body(),
-            ]);
+            return back()
+                ->withErrors(['form' => 'Ошибка конфигурации Telegram. Обратитесь к администратору.'])
+                ->withInput();
+        }
+
+        $url = "https://api.telegram.org/bot{$botToken}/sendMessage";
+
+        try {
+            $resp = Http::asForm()
+                ->timeout(15)
+                ->connectTimeout(10)
+                ->post($url, [
+                    'chat_id'                  => $chatId,
+                    'text'                     => $text,
+                    'parse_mode'               => 'HTML', // используем HTML, т.к. экранируем всё выше
+                    'disable_web_page_preview' => true,
+                ]);
+
+            if ($resp->failed()) {
+                $debug = [
+                    'where'   => 'telegram sendMessage failed',
+                    'status'  => $resp->status(),
+                    'reason'  => $resp->reason(),
+                    'body'    => $resp->body(),
+                    'json'    => $resp->json(),
+                    'url'     => preg_replace('/bot(\d+):[A-Za-z0-9_-]+/', 'bot$1:***', $url),
+                    'payload' => [
+                        'chat_id'    => $chatId,
+                        'text'       => $text,
+                        'parse_mode' => 'HTML',
+                    ],
+                ];
+
+                Log::error('Telegram send failed', $debug);
+
+                if (config('app.debug')) {
+                    dd($debug); // ВРЕМЕННЫЙ дебаг — в проде отключится при APP_DEBUG=false
+                }
+
+                return back()
+                    ->withErrors(['form' => 'Не удалось отправить заявку. Попробуйте ещё раз.'])
+                    ->withInput();
+            }
+
+            return redirect('/thank-you')->with('sent', true);
+        } catch (\Throwable $e) {
+            $debug = [
+                'where'   => 'exception',
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile() . ':' . $e->getLine(),
+            ];
+
+            Log::error('Telegram exception', $debug);
+
+            if (config('app.debug')) {
+                dd($debug); // Покажем точную причину в dev-среде
+            }
 
             return back()
                 ->withErrors(['form' => 'Не удалось отправить заявку. Попробуйте ещё раз.'])
-                ->withInput();
-
-        } catch (\Throwable $e) {
-            Log::error('Telegram exception', ['e' => $e]);
-            return back()
-                ->withErrors(['form' => 'Внутренняя ошибка отправки.'])
                 ->withInput();
         }
     }

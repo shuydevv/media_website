@@ -437,11 +437,11 @@ Route::get('/home', HomeRedirectController::class)
     ->middleware(['auth','verified'])
     ->name('home');
 
-    use App\Http\Controllers\LeadController;
+use App\Http\Controllers\LeadController;
 
 Route::post('/lead', [LeadController::class, 'store'])
     ->name('lead.store')
-    ->middleware('throttle:10,1'); // базовая защита от спама
+    ->middleware('throttle:10,1'); // необязательно, но полезно
 
-Route::view('/thank-you', 'thank-you')->name('thankyou');
+Route::view('/thank-you', 'thank-you');
 
