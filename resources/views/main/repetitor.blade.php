@@ -407,7 +407,7 @@
     <input type="hidden" name="form_type" value="Форма №2">
     <div class="relative">
     <select name="method"
-            class="contact-method w-full   rounded-xl px-3 h-12 appearance-none text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-300">
+            class="contact-method w-full bg-white  rounded-xl px-3 h-12 appearance-none text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-300">
         <option value="" disabled selected class="text-gray-400">Как с вами связаться?</option>
         <option value="whatsapp">WhatsApp</option>
         <option value="telegram">Telegram</option>
