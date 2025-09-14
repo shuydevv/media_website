@@ -13,6 +13,32 @@
       display: none;
     }
   </style>
+<style>
+  /* Вся модалка поверх всего сайта */
+  #lead-modal { z-index: 9999; }
+
+  /* Внутри модалки: оверлей ниже карточки */
+  #lead-overlay { z-index: 10; }
+  #lead-modal [data-card-wrap] { z-index: 20; }
+</style>
+<style>
+  /* iOS-специфика для селекта «Как связаться» */
+  .contact-method {
+    font-size: 16px;            /* чтобы не было зума на фокус в iOS */
+    min-height: 44px;           /* доступная высота тач-таргета */
+  }
+
+  /* Убираем нативный рендер у iOS/бразуеров WebKit и разрешаем паддинги */
+  @supports (-webkit-touch-callout: none) {
+    .contact-method {
+      -webkit-appearance: none;
+      appearance: none;
+      padding-top: .75rem;      /* = py-3 */
+      padding-bottom: .75rem;
+      line-height: 1.25rem;     /* leading-5 */
+    }
+  }
+</style>
 
 
 
@@ -55,7 +81,7 @@
           Внимательный подход с нуля до результата — помогу сдать на 85+ и поступить на бюджет в вуз мечты
         </p>
 
-      <div class="block relative md:hidden z-20 w-64 !mt-24 mx-auto rounded-2xl 
+      <div class="block relative md:hidden z-10 w-64 !mt-24 mx-auto rounded-2xl 
              border-4 border-blue-200">
             <img style="rotate: 3deg"
             src="img/smile_prepod.jpg"
@@ -101,13 +127,21 @@
             <input type="hidden" name="cta_label" value="">
             <input type="hidden" name="page" value="">
 
-          <div class="relative">
-            <select name="method" class="contact-method w-full bg-purple-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-300">
+            <div class="relative">
+            <select name="method"
+                    class="contact-method w-full bg-purple-50 border border-gray-300 rounded-lg px-3 h-12 appearance-none text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-300">
                 <option value="" disabled selected class="text-gray-400">Как с вами связаться?</option>
-                <option value="whatsapp" style="color: #111827;">WhatsApp</option>
-                <option value="telegram" style="color: #111827;">Telegram</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="telegram">Telegram</option>
             </select>
-                <p class="telegram-warning text-xs mt-2 text-yellow-500 hidden">
+
+            <!-- своя стрелка -->
+            <svg class="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"
+                viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/>
+            </svg>
+
+            <p class="telegram-warning text-xs mt-2 text-yellow-500 hidden">
                 Если у вас скрыт номер телефона в ТГ, указывайте свой ник
             </p>
             </div>
@@ -372,18 +406,22 @@
     <input type="text" name="name" placeholder="Имя" class="w-full px-4 py-3 rounded-xl bg-white text-gray-700 focus:outline-none">
     <input type="hidden" name="form_type" value="Форма №2">
     <div class="relative">
-      <select
-        name="method"
-        class="contact-method w-full px-3 py-3 rounded-xl bg-white text-gray-500 focus:outline-none"
-      >
+    <select name="method"
+            class="contact-method w-full   rounded-xl px-3 h-12 appearance-none text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-300">
+        <option value="" disabled selected class="text-gray-400">Как с вами связаться?</option>
+        <option value="whatsapp">WhatsApp</option>
+        <option value="telegram">Telegram</option>
+    </select>
 
-        <option value="" disabled selected hidden class="text-gray-400">Как с вами связаться?</option>
-        <option value="whatsapp" class="text-black">WhatsApp</option>
-        <option value="telegram" class="text-black">Telegram</option>
-      </select>
-      <p class="telegram-warning text-xs text-pink-500 mt-1 hidden">
+    <!-- своя стрелка -->
+    <svg class="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"
+        viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/>
+    </svg>
+
+    <p class="telegram-warning text-xs mt-2 text-yellow-500 hidden">
         Если у вас скрыт номер телефона в ТГ, указывайте свой ник
-      </p>
+    </p>
     </div>
 
         <input type="hidden" name="cta" value="">
@@ -493,7 +531,7 @@
                 <!-- иконка кавычки -->
                 <img src="img/chat-quote.svg" class="absolute -left-1 top-1 h-8 w-8 text-purple-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <blockquote class="pl-10">
-                <p class="text-lg italic text-purple-700">
+                <p class="md:text-lg text-base italic text-purple-700">
                     «Я пришла на экзамен и поняла, что незнакомых тем тут нет... Некоторые задания были точь-в-точь такими, как давал Александр»
                 </p>
                 </blockquote>
@@ -539,7 +577,7 @@
                 <!-- иконка кавычки -->
                 <img src="img/chat-quote.svg" class="absolute -left-1 top-1 h-8 w-8 text-purple-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <blockquote class="pl-10">
-                <p class="text-lg italic text-purple-700">
+                <p class="md:text-lg text-base italic text-purple-700">
                     «Сначала моя семья с недоверием отнеслась к Александру. Мол, он слишком молодой. Но за одно занятие с ним я узнал больше, чем за год в школе»
                 </p>
                 </blockquote>
@@ -585,7 +623,7 @@
                 <!-- иконка кавычки -->
                 <img src="img/chat-quote.svg" class="absolute -left-1 top-1 h-8 w-8 text-purple-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <blockquote class="pl-10">
-                <p class="text-lg italic text-purple-700">
+                <p class="md:text-lg text-base italic text-purple-700">
                     «Благодаря Саше я полюбила историю и обществознание и с удовольствием ходила к нему на занятия»
                 </p>
                 </blockquote>
@@ -800,12 +838,20 @@
             <input type="hidden" name="page" value="">
 
             <div class="relative">
-            <select name="method" class="contact-method w-full bg-purple-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-300">
+            <select name="method"
+                    class="contact-method w-full bg-purple-50 border border-gray-300 rounded-lg px-3 h-12 appearance-none text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-300">
                 <option value="" disabled selected class="text-gray-400">Как с вами связаться?</option>
-                <option value="whatsapp" style="color: #111827;">WhatsApp</option>
-                <option value="telegram" style="color: #111827;">Telegram</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="telegram">Telegram</option>
             </select>
-                <p class="telegram-warning text-xs mt-2 text-yellow-500 hidden">
+
+            <!-- своя стрелка -->
+            <svg class="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"
+                viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/>
+            </svg>
+
+            <p class="telegram-warning text-xs mt-2 text-yellow-500 hidden">
                 Если у вас скрыт номер телефона в ТГ, указывайте свой ник
             </p>
             </div>
@@ -870,15 +916,15 @@
 
 
 <!-- === МОДАЛЬНОЕ ОКНО (вставить один раз перед </body>) ================== -->
-<div id="lead-modal" class="fixed inset-0 z-[9998] hidden" role="dialog" aria-modal="true" aria-labelledby="lead-modal-title" aria-hidden="true">
+<div id="lead-modal" class="fixed inset-0 z-40 hidden" role="dialog" aria-modal="true" aria-labelledby="lead-modal-title" aria-hidden="true">
   <!-- Полноэкранный тёмный фон -->
   <div id="lead-overlay"
-       class="fixed inset-0 z-[9998] bg-black opacity-70 transition-opacity duration-200 pointer-events-none"
+       class="fixed inset-0 z-40 bg-black opacity-70 transition-opacity duration-200 pointer-events-none"
        data-close-modal>
   </div>
 
   <!-- Контейнер карточки поверх оверлея -->
-  <div class="relative z-[9999] w-full h-full flex items-center justify-center p-4">
+  <div class="relative z-30 w-full h-full flex items-center justify-center p-4">
     <!-- Карточка модалки -->
     <div data-card
          class="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl ring-1 ring-black/5 opacity-0 translate-y-4 transition duration-200">
@@ -906,17 +952,24 @@
           <input type="hidden" name="cta_label" value="">
           <input type="hidden" name="page" value="">
 
-          <div class="relative">
+            <div class="relative">
             <select name="method"
-                    class="contact-method w-full bg-purple-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-300">
-              <option value="" disabled selected class="text-gray-400">Как с вами связаться?</option>
-              <option value="whatsapp">WhatsApp</option>
-              <option value="telegram">Telegram</option>
+                    class="contact-method w-full bg-purple-50 border border-gray-300 rounded-lg px-3 h-12 appearance-none text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-300">
+                <option value="" disabled selected class="text-gray-400">Как с вами связаться?</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="telegram">Telegram</option>
             </select>
+
+            <!-- своя стрелка -->
+            <svg class="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"
+                viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/>
+            </svg>
+
             <p class="telegram-warning text-xs mt-2 text-yellow-500 hidden">
-              Если у вас скрыт номер телефона в ТГ, указывайте свой ник
+                Если у вас скрыт номер телефона в ТГ, указывайте свой ник
             </p>
-          </div>
+            </div>
 
           <input required name="phone" type="text" placeholder="Номер телефона или @Username"
                  class="w-full bg-purple-50 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300">
