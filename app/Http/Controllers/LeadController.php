@@ -51,14 +51,10 @@ class LeadController extends Controller
 
         // Сбор текста сообщения
         $rows   = [];
-        $rows[] = '<b>Новая заявка</b>';
-        $rows[] = 'Страница: ' . $safe($request->fullUrl());
-        $rows[] = 'Форма: ' . $safe($request->input('form') ?? $request->input('source') ?? 'не указано');
+        $rows[] = '<b>Новая заявка (poltavskiy-school)</b>';
 
         if (isset($data['name']))    { $rows[] = 'Имя: ' . $safe($data['name']); }
         if (isset($data['phone']))   { $rows[] = 'Телефон: ' . $safe($data['phone']); }
-        if (isset($data['email']))   { $rows[] = 'Email: ' . $safe($data['email']); }
-        if (isset($data['message'])) { $rows[] = 'Сообщение: ' . $safe($data['message']); }
 
         // Подхватим любые доп. поля формы (кроме _token и уже учтённых)
         $extra = collect($request->except(['_token']))->forget(array_keys($data))->all();

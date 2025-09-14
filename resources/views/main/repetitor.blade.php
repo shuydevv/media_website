@@ -33,7 +33,7 @@
       </nav> -->
       <div class="flex items-center md:space-x-3 space-x-1">
         <!-- <a href="#" class="px-4 py-2 bg-purple-100 text-purple-800 text-sm rounded font-semibold">НАЧАТЬ БЕСПЛАТНО</a> -->
-        <a data-open-form="header" data-label="Кнопка в шапке сайта" class="btn md:py-2 py-1 md:px-2 px-1 bg-pink-500 text-white md:text-sm text-xs rounded font-semibold uppercase">Записаться на урок</a>
+        <a data-open-form="header" data-label="Кнопка в шапке сайта" class="btn cursor-pointer md:py-2 py-1 md:px-2 px-1 bg-pink-500 text-white md:text-sm text-xs rounded font-semibold uppercase">Записаться на урок</a>
         {{-- <a href="{{route('home')}}" class="py-1 px-1 md:text-sm text-xs text-indigo-900 font-semibold uppercase">Войти</a> --}}
       </div>
     </div>
@@ -54,15 +54,40 @@
         <p class="text-gray-800 md:text-xl text-base max-w-md ">
           Внимательный подход с нуля до результата — помогу сдать на 85+ и поступить на бюджет в вуз мечты
         </p>
-        <div class="flex flex-wrap gap-3">
-          <span class="bg-green-100 border border-green-300 text-green-700 md:text-sm text-sm font-semibold px-4 py-2 rounded-full tracking-wide">Занятия на удобной платформе</span>
-          <span class="bg-pink-100 border border-pink-300 text-pink-700 md:text-sm text-sm font-semibold px-4 py-2 rounded-full tracking-wide">Интересные и полезные уроки</span>
-          <span class="bg-blue-100 border border-blue-300 text-blue-700 md:text-sm text-sm font-semibold px-4 py-2 rounded-full tracking-wide">Максимальная поддержка и результат</span>
-        </div>
+
+      <div class="block relative md:hidden z-20 w-64 !mt-24 mx-auto rounded-2xl 
+             border-4 border-blue-200">
+            <img style="rotate: 3deg"
+            src="img/smile_prepod.jpg"
+            alt=""
+            aria-hidden="true"
+            class="rounded-xl"
+            >
+            <p style="rotate: 3deg" class="absolute bottom-2 bg-blue-500 text-white font-medium  rounded-2xl px-2 pb-1 pt-0.5 text-xs">Александр Полтавский</p>
+      </div>
+
+            <div class="flex flex-wrap gap-3"> 
+            <span class="bg-green-100 border border-green-300 text-green-700 md:text-sm text-sm font-semibold px-4 py-2 rounded-full tracking-wide">💻 Занятия на удобной платформе</span>
+            <span class="bg-pink-100 border border-pink-300 text-pink-700 md:text-sm text-sm font-semibold px-4 py-2 rounded-full tracking-wide">📚 Интересные и полезные уроки</span>
+            <span class="bg-blue-100 border border-blue-300 text-blue-700 md:text-sm text-sm font-semibold px-4 py-2 rounded-full tracking-wide">🎯 Максимальная поддержка и результат</span>
+            </div>
+      </div>
+
+      <div class="hidden md:block absolute z-20 w-48 rounded-2xl 
+             left-1/2 -translate-x-1/2 top-1/2 -translate-y-[60%]
+             pointer-events-none select-none drop-shadow-xl border-4 border-blue-200">
+            <img style="rotate: 5deg"
+            src="img/smile_prepod.jpg"
+            alt=""
+            aria-hidden="true"
+            class="rounded-xl"
+            >
+            <p style="rotate: 5deg" class="absolute bottom-2 bg-blue-500 text-white font-medium  rounded-2xl px-2 pb-1 pt-0.5 text-xs">Александр Полтавский</p>
       </div>
 
       <!-- Форма -->
       <div class="md:w-1/2 mt-10 md:mt-0 flex justify-end">
+
       <form method="POST" action="{{ route('lead.store') }}">
         @csrf
         <div class="bg-white rounded-3xl p-6 space-y-4 w-full max-w-sm">
@@ -256,10 +281,10 @@
                 <img class="rounded-xl" src="img/orange_juice_blue.jpg" alt="">
             </div>
             <div class="flex items-center justify-between mb-2">
-            <h3 style="color: #0dbfeb"  class="md:text-xl text-lg font-semibold text-purple-800">"Сок" — видео-выжимка урока, если нет времени смотреть урок целиком</h3>
+            <h3 style="color: #0dbfeb"  class="md:text-xl text-lg font-semibold text-purple-800">"Сок" — видео-выжимка урока, если нет времени на урок целиком</h3>
             <!-- <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg> -->
             </div>
-            <p class="md:text-base text-sm text-gray-600">На записанных видеоуроках преподаватель кратко пересказывает занятие по презентации. Идеально для повторения.</p>
+            <p class="md:text-base text-sm text-gray-600">Можно пересматривать видеоуроки, где я кратко пересказываю занятие по презентации. Идеально для повторения.</p>
         </div>
 
         <div style="background-color: oklch(98.062% 0.02404 200.191);" class="md:p-6 p-4 rounded-2xl flex flex-col h-full">
@@ -352,10 +377,6 @@
         class="contact-method w-full px-3 py-3 rounded-xl bg-white text-gray-500 focus:outline-none"
       >
 
-        <input type="hidden" name="cta" value="">
-        <input type="hidden" name="cta_label" value="">
-        <input type="hidden" name="page" value="">
-
         <option value="" disabled selected hidden class="text-gray-400">Как с вами связаться?</option>
         <option value="whatsapp" class="text-black">WhatsApp</option>
         <option value="telegram" class="text-black">Telegram</option>
@@ -364,6 +385,10 @@
         Если у вас скрыт номер телефона в ТГ, указывайте свой ник
       </p>
     </div>
+
+        <input type="hidden" name="cta" value="">
+        <input type="hidden" name="cta_label" value="">
+        <input type="hidden" name="page" value="">
 
     <input required name="phone" type="text" placeholder="Номер телефона или @Username" class="w-full px-4 py-3 rounded-xl bg-white text-gray-700 focus:outline-none">
 
@@ -425,6 +450,160 @@
     </div>
   </div>
 </section> -->
+
+<section class="px-3">
+    <h2 class="max-w-6xl mx-auto text-2xl md:text-4xl font-bold md:mb-8 mb-4">Отзывы моих учеников</h2>
+<link rel="stylesheet" href="https://unpkg.com/swiper@10/swiper-bundle.min.css" />
+
+<div class="w-full mb-8">
+  <div class="swiper reviews-swiper w-full max-w-6xl mx-auto">
+    <div class="swiper-wrapper ">
+
+      <!-- СЛАЙД 1 -->
+      <div class="swiper-slide">
+        <div class="bg-white rounded-2xl overflow-hidden h-full flex flex-col">
+          <div class="relative w-full pb-[56.25%]">
+            <iframe class="frame-video w-full h-64" src="https://dzen.ru/embed/vnG99BqO9U2k?from_block=partner&from=zen&backoffice=1&mute=0&autoplay=0&tv=0" allow="autoplay; fullscreen; accelerometer; gyroscope; picture-in-picture; encrypted-media" frameborder="0" scrolling="no" allowfullscreen=""></iframe>
+          </div>
+
+          <div class="p-3 space-y-4 border-b-4 border-l-4 border-r-4 border-blue-100 rounded-bl-2xl rounded-br-2xl">
+            <div class="flex items-center">
+              <img src="img/avatars/otz-1.png" alt="Отзыв-1" class="w-14 h-14 border-3 border-purple-100 rounded-full object-cover">
+              <div class="ml-4">
+                <p class="text-lg font-semibold">Полина</p>
+                <p class="text-sm text-gray-500">Срок подготовки: 12 месяцев</p>
+              </div>
+            </div>
+
+            <hr class="border-blue-100">
+
+            <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                <img class="w-5 h-5" src="img/soc_icon.svg" alt="">
+                <p class="text-base">ЕГЭ Обществознание: <b>100 баллов</b></p>
+                </div>
+                {{-- <div class="flex items-center gap-2">
+                <img class="w-5 h-5" src="img/hist_icon.svg" alt="">
+                <p class="text-base">ЕГЭ История: <b>94 балла</b></p>
+                </div> --}}
+            </div>
+
+            <figure class="mt-8 max-w-3xl overflow-hidden rounded-2xl py-2 px-4 shadow-sm bg-purple-50">
+            <div class="relative">
+                <!-- иконка кавычки -->
+                <img src="img/chat-quote.svg" class="absolute -left-1 top-1 h-8 w-8 text-purple-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <blockquote class="pl-10">
+                <p class="text-lg italic text-purple-700">
+                    «Я пришла на экзамен и поняла, что незнакомых тем тут нет... Некоторые задания были точь-в-точь такими, как давал Александр»
+                </p>
+                </blockquote>
+            </div>
+            <!-- <figcaption class="mt-4 text-sm text-gray-500">— Автор цитаты</figcaption> -->
+            </figure>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- СЛАЙД 2 -->
+      <div class="swiper-slide">
+        <div class="bg-white rounded-2xl overflow-hidden h-full flex flex-col">
+          <div class="relative w-full pb-[56.25%]">
+            <iframe class="frame-video w-full h-64" src="https://dzen.ru/embed/vRU-E1_bGeFk?from_block=partner&from=zen&backoffice=1&mute=1&autoplay=0&tv=0" allow="autoplay; fullscreen; accelerometer; gyroscope; picture-in-picture; encrypted-media" frameborder="0" scrolling="no" allowfullscreen=""></iframe>
+          </div>
+
+          <div class="p-3 space-y-4 border-b-4 border-l-4 border-r-4 border-blue-100 rounded-bl-2xl rounded-br-2xl">
+            <div class="flex items-center">
+              <img src="img/avatars/otz-2.png" alt="Отзыв-2" class="w-14 h-14 border-3 border-purple-100 rounded-full object-cover">
+              <div class="ml-4">
+                <p class="text-lg font-semibold">Сергей</p>
+                <p class="text-sm text-gray-500">Срок подготовки: 9 месяцев</p>
+              </div>
+            </div>
+
+            <hr class="border-blue-100">
+
+            <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                <img class="w-5 h-5" src="img/soc_icon.svg" alt="">
+                <p class="text-base">ЕГЭ Обществознание: <b>98 баллов</b></p>
+                </div>
+                <div class="flex items-center gap-2">
+                <img class="w-5 h-5" src="img/hist_icon.svg" alt="">
+                <p class="text-base">ЕГЭ История: <b>94 балла</b></p>
+                </div>
+            </div>
+
+            <figure class="mt-8 max-w-3xl overflow-hidden rounded-2xl py-2 px-4 shadow-sm bg-purple-50">
+            <div class="relative">
+                <!-- иконка кавычки -->
+                <img src="img/chat-quote.svg" class="absolute -left-1 top-1 h-8 w-8 text-purple-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <blockquote class="pl-10">
+                <p class="text-lg italic text-purple-700">
+                    «Сначала моя семья с недоверием отнеслась к Александру. Мол, он слишком молодой. Но за одно занятие с ним я узнал больше, чем за год в школе»
+                </p>
+                </blockquote>
+            </div>
+            <!-- <figcaption class="mt-4 text-sm text-gray-500">— Автор цитаты</figcaption> -->
+            </figure>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- СЛАЙД 3 -->
+      <div class="swiper-slide">
+        <div class="bg-white rounded-2xl overflow-hidden h-full flex flex-col">
+          <div class="relative w-full pb-[56.25%]">
+            <iframe class="frame-video w-full h-64" src="https://dzen.ru/embed/vAKuN44E4BU4?from_block=partner&from=zen&backoffice=1&mute=0&autoplay=0&tv=0" allow="autoplay; fullscreen; accelerometer; gyroscope; picture-in-picture; encrypted-media" frameborder="0" scrolling="no" allowfullscreen=""></iframe>
+          </div>
+
+          <div class="p-3 space-y-4 border-b-4 border-l-4 border-r-4 border-blue-100 rounded-bl-2xl rounded-br-2xl">
+            <div class="flex items-center">
+              <img src="img/avatars/otz-5.png" alt="Отзыв-3" class="w-14 h-14 border-3 border-purple-100 rounded-full object-cover">
+              <div class="ml-4">
+                <p class="text-lg font-semibold">Настя</p>
+                <p class="text-sm text-gray-500">Срок подготовки: 10 месяцев</p>
+              </div>
+            </div>
+
+            <hr class="border-blue-100">
+
+            <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                <img class="w-5 h-5" src="img/soc_icon.svg" alt="">
+                <p class="text-base">ЕГЭ Обществознание: <b>94 балла</b></p>
+                </div>
+                <div class="flex items-center gap-2">
+                <img class="w-5 h-5" src="img/hist_icon.svg" alt="">
+                <p class="text-base">ЕГЭ История: <b>89 баллов</b></p>
+                </div>
+            </div>
+
+            <figure class="mt-8 max-w-3xl overflow-hidden rounded-2xl py-2 px-4 shadow-sm bg-purple-50">
+            <div class="relative">
+                <!-- иконка кавычки -->
+                <img src="img/chat-quote.svg" class="absolute -left-1 top-1 h-8 w-8 text-purple-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <blockquote class="pl-10">
+                <p class="text-lg italic text-purple-700">
+                    «Благодаря Саше я полюбила историю и обществознание и с удовольствием ходила к нему на занятия»
+                </p>
+                </blockquote>
+            </div>
+            <!-- <figcaption class="mt-4 text-sm text-gray-500">— Автор цитаты</figcaption> -->
+            </figure>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Пагинация: только на мобильных -->
+    <div class="swiper-pagination mt-6 md:hidden"></div>
+  </div>
+</div>
+</section>
 
 
 <!-- Блок "Единый тариф для всех" -->
@@ -721,7 +900,7 @@
           <input name="name" type="text" placeholder="Имя"
                  class="w-full bg-purple-50 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300">
 
-          <input type="hidden" name="form_type" value="Форма №3">
+          <input type="hidden" name="form_type" value="Форма №4">
           <!-- Новые скрытые поля -->
           <input type="hidden" name="cta" value="">
           <input type="hidden" name="cta_label" value="">
@@ -860,6 +1039,56 @@
 })();
 </script>
 <!-- ====================================================================== -->
+
+<!-- Swiper JS (убери, если уже подключено) -->
+<script src="https://unpkg.com/swiper@10/swiper-bundle.min.js"></script>
+
+<script>
+  // Инициализация
+  const reviewsSwiper = new Swiper('.reviews-swiper', {
+    // Мобильная базовая конфигурация
+    slidesPerView: 1.1,          // видно 1.7 карточки
+    spaceBetween: 16,            // отступ между карточками
+    centeredSlides: false,
+    centeredSlidesBounds: true,
+    roundLengths: true,
+    watchOverflow: true,         // если карточек мало, Swiper сам отключится
+    grabCursor: true,
+
+    // Пагинация — только мобильная (элемент скрыт на md+)
+    pagination: {
+      el: '.reviews-swiper .swiper-pagination',
+      clickable: true,
+    },
+
+    // Чтобы не было скачков при скрытии/появлении контейнера
+    observer: true,
+    observeParents: true,
+
+    // На десктопах — 3 карточки, свайп отключён
+    breakpoints: {
+      1024: {
+        slidesPerView: 3,
+        spaceBetween: 24,
+        allowTouchMove: false,
+        grabCursor: false,
+      }
+    }
+  });
+
+  // На всякий случай дополнительно гасим пагинацию, если она не нужна
+  const onResize = () => {
+    const pagEl = document.querySelector('.reviews-swiper .swiper-pagination');
+    if (!pagEl) return;
+    if (window.innerWidth >= 1024) {
+      pagEl.style.display = 'none';
+    } else {
+      pagEl.style.display = '';
+    }
+  };
+  window.addEventListener('resize', onResize);
+  onResize();
+</script>
 
 
 </body>
