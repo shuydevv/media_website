@@ -41,7 +41,7 @@
                         <a href="{{route('admin.courses.index')}}"><li class="mb-2 hover:opacity-50">Курсы</li></a>
                         <a href="{{route('admin.lessons.index')}}"><li class="mb-2 hover:opacity-50">Уроки</li></a>
                         <a href="{{route('admin.sessions.index')}}"><li class="mb-2 hover:opacity-50">Сессии</li></a>
-                        <a href="{{route('admin.courses.index')}}"><li class="mb-2 hover:opacity-50">Курсы</li></a>
+                        <a href="{{route('admin.homeworks.index')}}"><li class="mb-2 hover:opacity-50">Домашки</li></a>
                         {{-- <a href="{{route('admin.topic.index')}}"><li class="mb-2 hover:opacity-50">Тема</li></a>
                         <a href="{{route('admin.section.index')}}"><li class="mb-2 hover:opacity-50">Раздел</li></a> --}}
                         

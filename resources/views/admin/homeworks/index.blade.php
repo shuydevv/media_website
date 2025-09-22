@@ -47,5 +47,6 @@
             @endforelse
         </tbody>
     </table>
+    <a class="bg-blue-600 rounded text-white px-4 py-3 mt-8 inline-block" href="{{route('admin.homeworks.create')}}">Создать домашку</a>
 </div>
 @endsection

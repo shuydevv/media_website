@@ -1,7 +1,7 @@
 @extends('layouts.main') {{-- или твой общий layout --}}
 
 @section('content')
-<div class="max-w-md mx-auto p-6 bg-white rounded shadow mt-12">
+<div class="max-w-md sm:mx-auto mx-2 p-6 bg-white rounded shadow mt-12">
     <h1 class="md:text-2xl text-xl font-bold sans mb-6">Активация промокода</h1>
 
     @if (session('success'))

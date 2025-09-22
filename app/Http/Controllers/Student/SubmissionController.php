@@ -15,29 +15,35 @@ public function create(Request $request, Homework $homework)
 {
     $user = $request->user();
 
-    $rawMax = $homework->attempts_allowed;      // может быть null/0 => безлимит
+    // attempts_allowed: null/0 => безлимит
+    $rawMax      = $homework->attempts_allowed;
     $isUnlimited = empty($rawMax) || (int)$rawMax === 0;
-    $attemptsAllowed = $isUnlimited ? null : (int)$rawMax;
+    $attemptsMax = $isUnlimited ? null : (int)$rawMax;
 
-    $attemptsUsed = Submission::where('user_id', $user->id)
+    $attemptsUsed = \App\Models\Submission::where('user_id', $user->id)
         ->where('homework_id', $homework->id)
         ->count();
 
-    // NEW: если попытка уже существует — сразу показываем результаты
-    $existing = Submission::where('homework_id', $homework->id)
-        ->where('user_id', $user->id)
-        ->latest('id')
-        ->first();
+    $retry = $request->boolean('retry'); // ← флажок из ссылки «Перерешать работу»
 
-    if ($existing) {
-        return redirect()->route('student.submissions.show', $existing);
+    // Если уже есть попытка и НЕ просили «перерешать», ведём на неё
+    if (!$retry) {
+        $existing = \App\Models\Submission::where('homework_id', $homework->id)
+            ->where('user_id', $user->id)
+            ->latest('id')
+            ->first();
+
+        if ($existing) {
+            return redirect()->route('student.submissions.show', $existing);
+        }
     }
 
-    if (!$isUnlimited && $attemptsUsed >= $attemptsAllowed) {
-        // Лучше вести на результат последней попытки, а не back()
-        $last = Submission::where('user_id', $user->id)
+    // Лимит попыток: если исчерпан — ведём на последнюю с ошибкой
+    if (!$isUnlimited && $attemptsMax !== null && $attemptsUsed >= $attemptsMax) {
+        $last = \App\Models\Submission::where('user_id', $user->id)
             ->where('homework_id', $homework->id)
-            ->latest('id')->first();
+            ->latest('id')
+            ->first();
 
         return $last
             ? redirect()->route('student.submissions.show', $last)
@@ -45,14 +51,16 @@ public function create(Request $request, Homework $homework)
             : back()->withErrors(['attempts' => 'Лимит попыток исчерпан.']);
     }
 
+    // Открываем форму создания новой попытки (№ next_attempt_no)
     return view('student.submissions.create', [
         'homework'         => $homework,
         'attempts_used'    => $attemptsUsed,
-        'attempts_allowed' => $attemptsAllowed, // null => безлимит
+        'attempts_allowed' => $attemptsMax, // null => безлимит
         'next_attempt_no'  => $attemptsUsed + 1,
         'is_unlimited'     => $isUnlimited,
     ]);
 }
+
 
     public function store(Request $request, Homework $homework)
     {

@@ -12,18 +12,18 @@
     @csrf
     <div class="mb-4">
       <label class="block text-sm mb-1">Имя</label>
-      <input name="first_name" value="{{ old('first_name', $user->first_name) }}"
+      <input required name="first_name" value="{{ old('first_name', $user->first_name) }}"
              class="w-full border rounded-lg px-3 py-2" required>
     </div>
     <div class="mb-4">
       <label class="block text-sm mb-1">Фамилия</label>
-      <input name="last_name" value="{{ old('last_name', $user->last_name) }}"
+      <input required name="last_name" value="{{ old('last_name', $user->last_name) }}"
              class="w-full border rounded-lg px-3 py-2">
     </div>
     
     <div class="mb-4">
-      <label class="block text-sm mb-1">Id в телеграм (или номер телефона)</label>
-      <input name="name" value=""
+      <label class="block text-sm mb-1">Логин в телеграм</label>
+      <input required name="name" value=""
              class="w-full border rounded-lg px-3 py-2">
     </div>
 

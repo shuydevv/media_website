@@ -679,7 +679,7 @@
 
           <!-- Цена -->
           <div class="text-start">
-            <p class="md:text-4xl text-3xl font-bold text-gray-900 text-purple-600 mb-6">4300 ₽<span class="text-lg font-semibold text-gray-400"> / в месяц</span></p>
+            <p class="md:text-4xl text-3xl font-bold text-gray-900 text-purple-600 mb-6">540 ₽<span class="text-lg font-semibold text-gray-400"> / за урок</span></p>
           </div>
 
           <!-- Скидки и бонусы -->
@@ -687,8 +687,8 @@
             <div class="rounded-xl bg-purple-50 border border-purple-200 p-3 flex md:items-center items-start gap-3 justify-center">
                 <img class="rounded-full border-4 border-blue-200 p-2" src="img/discount.svg" alt="discount">
                 <div>
-                    <p class="text-lg font-bold text-gray-800 md:mb-1 mb-3 leading-tight">6000 ₽ <span class="font-normal text-base">в месяц, если занимаетесь по двум предметам!</span></p>
-                    <p class="text-xs text-green-600 font-bold">СКИДКА 30% на два предмета (история и общество)</p>
+                    <p class="text-lg font-bold text-gray-800 md:mb-1 mb-3 leading-tight">250 ₽ <span class="font-normal text-base">за второй предмет!</span></p>
+                    <p class="text-xs text-green-600 font-bold">СКИДКА 50% на второй предмет (история и общество)</p>
                 </div>
             </div>
           </div>

@@ -11,6 +11,9 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
+use Illuminate\Support\Facades\Mail;
+use App\Mail\HomeworkReviewedMail;
+
 class SubmissionReviewController extends Controller
 {
     /** Проверка прав простая: ментор или админ */
@@ -219,6 +222,34 @@ class SubmissionReviewController extends Controller
         $submission->lock_expires_at = null;
 
         $submission->save();
+
+        // Отправка уведомления ученику после сохранения итогов
+        try {
+            $student = $submission->user; // связь уже подгружается в show(), но здесь подстрахуемся
+            if (!$student->relationLoaded('user')) {
+                $submission->loadMissing('user');
+                $student = $submission->user;
+            }
+
+            if ($student && filter_var($student->email, FILTER_VALIDATE_EMAIL)) {
+                $link = route('student.submissions.show', $submission->homework_id); // поправь под ваш роут
+                Mail::to($student->email)->queue(
+                    new HomeworkReviewedMail(
+                        studentName: $student->first_name ?? null,
+                        assignmentTitle: $submission->homework->title ?? 'Домашняя работа',
+                        mentorName: $request->user()->name ?? null,
+                        score: (string)($submission->total_score ?? ''),
+                        comment: null, // при желании можно собрать summary из per_task_results
+                        linkToResult: $link
+                    )
+                );
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Не удалось отправить письмо о проверке', [
+                'submission_id' => $submission->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

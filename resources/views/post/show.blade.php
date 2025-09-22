@@ -18,7 +18,7 @@ for ($i = 0; $i <= count($postTagsArr) - 1; $i++) {
 // dd(count($postTagsArr) - 1);
 
 @endphp
-    <body>
+    <body data-protect-preps>
         <style>
             a:not([class]) {
                 color: rgb(180 83 9);
@@ -131,7 +131,7 @@ for ($i = 0; $i <= count($postTagsArr) - 1; $i++) {
                  --}}
         </x-block>
 
-        <x-ad_course />
+        <x-ad_course subject="{{$post->category->title}}" />
 
         @if ($is_there_plans == null)
         <x-more_cards_div title="Другие статьи:">
@@ -172,6 +172,47 @@ for ($i = 0; $i <= count($postTagsArr) - 1; $i++) {
                 },
             });
         </script>
+        <script>
+// Защитить короткие слова (1–2 буквы) от "висячих" переносов
+(() => {
+  const SELECTOR = '[data-protect-preps]';
+
+  // 1-буквенные: типичные предлоги/союзы
+  const ONES = ['в','к','с','у','о','и','а'];
+
+  // 2-буквенные: предлоги + союз "но" (можно править под себя)
+  const TWOS = ['во','ко','по','за','из','от','до','на','об','со','но'];
+
+  // при желании добавьте частицы:
+  // const PARTICLES = ['не','ни','же','бы','ли','то'];
+  const PARTICLES = [];
+
+  const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const WORDS = [...ONES, ...TWOS, ...PARTICLES].map(esc).join('|');
+  if (!WORDS) return;
+
+  // (^|[\s(«„—-])  — граница (начало строки/пробел/открывающая пунктуация)
+  // (WORDS)        — слово из белого списка (1–2 буквы)
+  // ([ \t]+)       — обычные пробелы (NBSP не трогаем ⇒ скрипт идемпотентен)
+  // (?=\S)         — дальше видимый символ
+  const re = new RegExp(`(^|[\\s(«„—-])(${WORDS})([ \\t]+)(?=\\S)`, 'gimu');
+
+  const skipTag = t => /^(SCRIPT|STYLE|CODE|PRE|KBD|SAMP)$/i.test(t);
+  const fix = s => s.replace(re, (_, b, w) => `${b}${w}\u00A0`);
+
+  document.querySelectorAll(SELECTOR).forEach(el => {
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+      acceptNode: n =>
+        n.parentNode && !skipTag(n.parentNode.tagName) && /\S/.test(n.nodeValue)
+          ? NodeFilter.FILTER_ACCEPT
+          : NodeFilter.FILTER_REJECT
+    });
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(n => (n.nodeValue = fix(n.nodeValue)));
+  });
+})();
+</script>
         
     </body>
 

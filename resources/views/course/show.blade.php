@@ -115,7 +115,7 @@
                  --}}
         </x-block>
 
-        <x-ad_course />
+        <x-ad_course subject="{{$post->category->title}}" />
 
         <x-more_cards_div title="Другие статьи по теме:">
             @foreach ($posts as $post)

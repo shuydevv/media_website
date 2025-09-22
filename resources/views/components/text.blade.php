@@ -1,1 +1,1 @@
-<p class="sans md:text-xl text-l text-zinc-800 md:mt-5 mt-3 leading-relaxed">{{$text}}</p>
+<p class="sans md:text-xl/8 text-base/8 text-zinc-800 md:mt-5 mt-3 leading-relaxed">{{$text}}</p>

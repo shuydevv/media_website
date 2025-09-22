@@ -41,7 +41,7 @@
                     <h3 class=" p-2 pl-5 pr-8 grow-0 font-medium text-white tracking-wide">Все карты для ЕГЭ по истории!</h3>
                     <img class="absolute" style="right: -16px; width: 40px; height: 40px;" src="/img/map.png" alt="123" srcset="">
                 </div> --}}
-                <a class="inline-block" href="{{route('index')}}"><h2 class=" md:text-[26px] md:mt-0 md:mb-0 mb-4 text-xl tracking-wide absolute left-0 right-0 ml-0 mr-0 text-center font-oktyabrina antialiased text-zinc-800 mb-4">Школа Полтавского</h2></a>
+                <a class="inline-block" href="{{route('index')}}"><h2 class="font-oktyabrina md:text-[26px] md:mt-0 md:mb-0 mb-4 text-xl tracking-wide absolute left-0 right-0 ml-0 mr-0 text-center antialiased text-zinc-800 mb-4">Школа Полтавского</h2></a>
                 {{-- <ul class="gap-10 md:flex hidden">
                     <li style="color: rgb(217 119 6);" class="tracking-wide"></li>
                     <li class="tracking-wide"><span><img class="inline-block mr-1 b-4 w-5" src="{{asset('img/person.svg')}}" alt="alt" srcset=""> Войти</span><span></span></li>

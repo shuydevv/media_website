@@ -4,8 +4,8 @@ dd($isTherePlans)
 @endphp --}}
 
 <div class="container mx-auto max-w-screen-lg md:mt-20 mt-12 md:mb-16 mb-8 px-3">
-    <h1 class="md:leading-normal leading-normal md:text-4xl text-2xl font-medium md:mb-6 mb-4 {{$img == '/storage' ? 'md:text-center text-start' : 'text-center'}} tracking-wide text-zinc-900"><span class="sans">{{$title1}}</span><span class="md:text-4xl text-2xl font-normal tracking-wider">{{$title2}}</span></h1>
-    {{-- <p class="md:text-xl text-center text-l flex justify-center opacity-90 tracking-wide text-zinc-900">{{$description}}</p> --}}
+    <h1 class=" md:text-4xl text-2xl font-medium md:mb-6 mb-4 {{$img == '/storage' ? 'md:text-center text-start' : 'text-center'}} tracking-wide text-zinc-900"><span class="sans">{{$title1}}</span><span class="md:text-4xl text-2xl font-normal tracking-wider">{{$title2}}</span></h1>
+    <p class="md:text-xl text-center text-base flex justify-center opacity-90 tracking-wide text-zinc-900">{{$description}}</p>
 
     {{-- <div>
         <div class="md:mt-12 mt-8 md:mb-16 mb-12 flex md:gap-4 gap-3 justify-center flex-wrap">

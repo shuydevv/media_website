@@ -221,7 +221,7 @@ Route::middleware(['auth'])->group(function () {
 //     ->middleware('auth')
 //     ->name('promo.redeem');
 
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/promos', [PromoCodeController::class, 'index'])->name('promos.index');
     Route::get('/promos/create', [PromoCodeController::class, 'create'])->name('promos.create');
     Route::post('/promos', [PromoCodeController::class, 'store'])->name('promos.store');
