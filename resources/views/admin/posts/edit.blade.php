@@ -3,7 +3,7 @@
 @section('content')
     <div>
         <h1 class="text-xl sans mb-4">Редактировать пост</h1>
-        <form action="{{ route('admin.post.update', $post->path) }}" method="post" enctype="multipart/form-data">
+        <form action="{{ route('admin.post.update', $post->id) }}" method="post" enctype="multipart/form-data">
             @csrf
             @method('PATCH')
             <div>
@@ -90,7 +90,7 @@
                 <p class="mb-2 mt-5 font-medium">Изображения в посте</p>
                 <div class="flex gap-2 items-start flex-wrap">
                     @foreach ($images as $image)
-                    @if ($image->post_id == $post->path)
+                    @if ($image->post_id == $post->id)
                             <img class="w-36" src="{{ asset('storage/' . $image->name) }}" alt="img">
                     @endif
                     @endforeach

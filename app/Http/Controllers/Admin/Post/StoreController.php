@@ -14,6 +14,7 @@ class StoreController extends BaseController
 {
     public function __invoke(StoreRequest $request) {
         $data = $request->validated();
+        // dd(array_keys($data), $data);
         $this->service->store($data);
         
 

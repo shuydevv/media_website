@@ -10,7 +10,7 @@ return new class extends Migration {
         Schema::table('submissions', function (Blueprint $table) {
             // На SQLite тип json будет создан как TEXT — это нормально
             if (!Schema::hasColumn('submissions', 'ai_drafts')) {
-                $table->json('ai_drafts')->nullable()->after('data'); // подправь after под свою схему
+                $table->json('ai_drafts')->nullable(); // подправь after под свою схему
             }
             if (!Schema::hasColumn('submissions', 'ai_frozen_hash')) {
                 $table->json('ai_frozen_hash')->nullable()->after('ai_drafts');

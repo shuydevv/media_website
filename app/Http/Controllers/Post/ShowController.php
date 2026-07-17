@@ -20,7 +20,7 @@ class ShowController extends Controller
         // dd($post);
 
         
-        $images = Image::all()->where('post_id', $post->path);
+        $images = Image::all()->where('post_id', $post->id);
         $i = 0;
         $new_images = [];
         foreach ($images as $image) {

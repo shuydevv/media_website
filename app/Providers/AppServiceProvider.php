@@ -6,6 +6,7 @@ use App\Policies\CoursePolicy;
 
 use App\Service\Sms\SmsSender;
 use App\Service\Sms\FakeSmsSender;
+use Illuminate\Support\Facades\Schema;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -30,6 +31,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Schema::defaultStringLength(191);
     }
 }

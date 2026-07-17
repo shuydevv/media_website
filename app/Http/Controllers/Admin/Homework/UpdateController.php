@@ -77,6 +77,7 @@ public function __invoke(UpdateRequest $request, Homework $homework)
                 'question_text' => $taskData['question_text'] ?? null,
                 'passage_text'  => $taskData['passage_text'] ?? null,   // художественный / публицистический текст
                 'answer'        => $taskData['answer'] ?? null,
+                'hint'          => $taskData['hint'] ?? null,
 
                 // JSON-поля
                 'options'       => $taskData['options'] ?? null,        // варианты ответа (multiple_choice)

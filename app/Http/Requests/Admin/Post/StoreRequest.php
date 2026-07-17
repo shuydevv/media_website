@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Admin\Post;
 
+use Illuminate\Validation\Rule;
+
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreRequest extends FormRequest
@@ -31,7 +33,7 @@ class StoreRequest extends FormRequest
             'tag_id' => 'nullable|array',
             'tag_ids.*' => 'nullable|integer|exists:tags,id',
             'multi_images' => 'nullable',
-            'path' => 'nullable|string',
+            'path'  => ['nullable','alpha_dash','max:150', Rule::unique('posts','path')],
             'html_title' => 'nullable|string',
             'html_description' => 'nullable|string',
         ];

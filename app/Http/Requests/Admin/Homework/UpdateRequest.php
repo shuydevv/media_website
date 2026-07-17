@@ -29,6 +29,7 @@ public function rules(): array
         'tasks.*.matches'         => ['nullable'],
         'tasks.*.image'           => ['nullable','image','max:5120'], // <= картинка
         'tasks.*.answer'          => ['required_with:tasks','string'],
+        'tasks.*.hint'            => ['nullable','string'],
         'tasks.*.order'           => ['nullable','integer'],
         'tasks.*.task_number'     => ['nullable','string'],
         'tasks.*.task_id' => ['required','exists:tasks,id'],

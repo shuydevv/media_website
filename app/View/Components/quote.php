@@ -33,7 +33,7 @@ class quote extends Component
         $postId = $matches[0];
         $post = Post::all()->where('path', $postId)->first();
         // dd($post);        
-        $imagesDB = Image::all()->where('post_id', $post->path);
+        $imagesDB = Image::all()->where('post_id', $post->id);
         // dd($imagesDB);
         $i = 0;
         $images = [];

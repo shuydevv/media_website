@@ -6,6 +6,7 @@ use App\Models\Image;
 use App\Models\Post;
 use Closure;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request as HttpRequest;
 use Request;
 use Illuminate\View\Component;
 
@@ -34,7 +35,7 @@ class person extends Component
         $postId = $matches[0];
         $post = Post::all()->where('path', $postId)->first();
         // dd($post);        
-        $imagesDB = Image::all()->where('post_id', $post->path);
+        $imagesDB = Image::all()->where('post_id', $post->id);
         // dd($imagesDB);
         $i = 0;
         $images = [];

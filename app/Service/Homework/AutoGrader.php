@@ -3,9 +3,40 @@
 namespace App\Service\Homework;
 
 use App\Models\Homework;
+use App\Models\HomeworkTask;
 
 class AutoGrader
 {
+    /**
+     * Проверка одного задания (для пошагового прохождения домашки).
+     * Не пишет ничего в БД — просто считает результат по той же логике,
+     * что используется в gradeWithTasks().
+     */
+    public function scoreOne(HomeworkTask $task, ?string $answer): array
+    {
+        $max = (int) ($task->max_score ?? 1);
+        $correct = $task->answer ?? null;
+        $orderMatters = in_array($task->type, ['matching', 'table'], true) || (bool) ($task->order_matters ?? false);
+
+        [$score, $errors] = $this->scoreAuto($answer, $correct, $max, $orderMatters, $task->type);
+
+        $status = 'fail';
+        if ($max > 0 && $score >= $max) {
+            $status = 'ok';
+        } elseif ($score > 0) {
+            $status = 'partial';
+        }
+
+        return [
+            'status'  => $status,
+            'score'   => $score,
+            'max'     => $max,
+            'errors'  => $errors,
+            'answer'  => $answer,
+            'correct' => $correct,
+        ];
+    }
+
     /**
      * Старый метод — оставляем для совместимости
      */

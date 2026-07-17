@@ -53,7 +53,7 @@
                 @endphp
                 @if (isset($post->tags))
                     @if ($is_there_plans == false)
-                    <a class="noclass" href="{{route('post.show', $post->path)}}"><x-more_card title="{{$post->title}}" title2="{{$post->title2}}" description="Подзаголовок" :tags="$post->tags" img="{{'storage/' . $post->main_image}}" /></a>
+                    <a class="noclass" href="{{route('post.show', ['post' => $post->path])}}"><x-more_card title="{{$post->title}}" title2="{{$post->title2}}" description="Подзаголовок" :tags="$post->tags" img="{{'storage/' . $post->main_image}}" /></a>
                     @endif
                 @endif
 

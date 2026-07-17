@@ -172,10 +172,10 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
         Route::get('/', 'IndexController')->name('admin.post.index');
         Route::get('/create', 'CreateController')->name('admin.post.create');
         Route::post('/store', 'StoreController')->name('admin.post.store');
-        Route::get('/{post:path}', 'ShowController')->name('admin.post.show');
-        Route::get('/{post:path}/edit', 'EditController')->name('admin.post.edit');
-        Route::patch('/{post:path}', 'UpdateController')->name('admin.post.update');
-        Route::delete('/{post:path}', 'DeleteController')->name('admin.post.delete');
+        Route::get('/{post}', 'ShowController')->name('admin.post.show');
+        Route::get('/{post}/edit', 'EditController')->name('admin.post.edit');
+        Route::patch('/{post}', 'UpdateController')->name('admin.post.update');
+        Route::delete('/{post}', 'DeleteController')->name('admin.post.delete');
     });
 
     Route::group(['namespace' => 'Exercise', 'prefix' => 'exercises'], function() {
@@ -260,15 +260,28 @@ Route::middleware(['auth'])
             ->name('lessons.show');
     });
 
-// Сдача домашки студентом
+// Сдача домашки студентом — пошагово, по одному вопросу на странице
 Route::middleware(['auth'])
     ->prefix('student')
     ->name('student.')
     ->group(function () {
         Route::get('/homeworks/{homework}/submit', [StudentSubmissionController::class, 'create'])
             ->name('submissions.create');
-        Route::post('/homeworks/{homework}/submit', [StudentSubmissionController::class, 'store'])
-            ->name('submissions.store');
+
+        Route::get('/submissions/{submission}/questions/{position}', [StudentSubmissionController::class, 'question'])
+            ->name('submissions.question')
+            ->whereNumber('position');
+        Route::post('/submissions/{submission}/questions/{position}', [StudentSubmissionController::class, 'check'])
+            ->name('submissions.question.check')
+            ->whereNumber('position');
+        Route::post('/submissions/{submission}/questions/{position}/save', [StudentSubmissionController::class, 'save'])
+            ->name('submissions.question.save')
+            ->whereNumber('position');
+
+        Route::get('/submissions/{submission}/finish', [StudentSubmissionController::class, 'finish'])
+            ->name('submissions.finish');
+        Route::post('/submissions/{submission}/finish', [StudentSubmissionController::class, 'finishSubmit'])
+            ->name('submissions.finish.submit');
     });
 
 // Проверка домашних ментором

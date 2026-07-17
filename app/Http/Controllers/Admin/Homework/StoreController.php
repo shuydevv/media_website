@@ -68,6 +68,7 @@ class StoreController extends Controller
                     'table_content' => $tableContent,
                     'image_path'    => $imagePath,
                     'answer'        => $task['answer'],
+                    'hint'          => $task['hint'] ?? null,
                     'order'         => $task['order'] ?? null,
                     // 'task_number'   => $task['task_number'] ?? null,
                     'left_title'   => $task['left_title'] ?? null,

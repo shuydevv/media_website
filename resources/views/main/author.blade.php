@@ -24,6 +24,5 @@
 
         <x-footer></x-footer>
     </body>
-</html>
 
 @endsection

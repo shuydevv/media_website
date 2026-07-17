@@ -102,7 +102,13 @@
                 {{-- Ответ --}}
                 <div class="mb-4">
                     <label class="block text-sm font-medium">Правильный ответ</label>
-                    <input type="text" name="tasks[0][answer]" class="w-full border rounded px-3 py-2" required>
+                    <textarea name="tasks[0][answer]" class="w-full border rounded px-3 py-2" required></textarea>
+                </div>
+
+                {{-- Подсказка --}}
+                <div class="mb-4">
+                    <label class="block text-sm font-medium">Подсказка (необязательно, покажется студенту по кнопке)</label>
+                    <textarea name="tasks[0][hint]" class="w-full border rounded px-3 py-2"></textarea>
                 </div>
 
                 {{-- Варианты (multiple_choice) --}}

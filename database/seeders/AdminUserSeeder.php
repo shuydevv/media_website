@@ -7,6 +7,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
+
 class AdminUserSeeder extends Seeder
 {
     public function run(): void
@@ -46,7 +47,7 @@ class AdminUserSeeder extends Seeder
         } else {
             // простая колонка role
             if (property_exists($user, 'fillable') && in_array('role', $user->getFillable())) {
-                $user->role = 'Admin';
+                $user->role = '1';
                 $user->save();
             }
         }

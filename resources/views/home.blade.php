@@ -250,7 +250,7 @@
     @endphp
     {{-- <x-more_cards_div title="{{$post_category_name}}">
         @foreach ($posts as $post)
-            <a href="{{route('post.show', $post->path)}}"><x-more_card title="{{$post->title}}" title2="{{$post->title2}}" description="Подзаголовок" :tags="$post->tags" img="{{'storage/' . $post->main_image}}" /></a>
+            <a href="{{route('post.show', $post->id)}}"><x-more_card title="{{$post->title}}" title2="{{$post->title2}}" description="Подзаголовок" :tags="$post->tags" img="{{'storage/' . $post->main_image}}" /></a>
         @endforeach
 
         

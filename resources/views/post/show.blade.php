@@ -136,7 +136,7 @@ for ($i = 0; $i <= count($postTagsArr) - 1; $i++) {
         @if ($is_there_plans == null)
         <x-more_cards_div title="Другие статьи:">
             @foreach ($posts as $post)
-            <a class="noclass" href="{{route('post.show', $post->path)}}"><x-more_card title="{{$post->title}}" title2="{{$post->title2}}" description="Подзаголовок" :tags="$post->tags" img="{{'storage/' . $post->main_image}}" /></a>
+            <a class="noclass" href="{{route('post.show', $post->id)}}"><x-more_card title="{{$post->title}}" title2="{{$post->title2}}" description="Подзаголовок" :tags="$post->tags" img="{{'storage/' . $post->main_image}}" /></a>
             @endforeach
             
             <x-slot:pagination>

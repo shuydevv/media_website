@@ -26,6 +26,7 @@ class StoreRequest extends FormRequest
             'tasks.*.matches' => ['nullable', 'array'],
             'tasks.*.image_path' => ['nullable', 'string'],
             'tasks.*.answer' => ['required', 'string'],
+            'tasks.*.hint' => ['nullable', 'string'],
             'tasks.*.order' => ['nullable', 'integer'],
             // 'tasks.*.task_number' => ['nullable', 'string'],
             'tasks.*.task_id' => ['required','exists:tasks,id'],
@@ -80,6 +81,7 @@ class StoreRequest extends FormRequest
             'tasks.*.type' => 'Тип задания',
             'tasks.*.question_text' => 'Текст задания',
             'tasks.*.answer' => 'Ответ',
+            'tasks.*.hint' => 'Подсказка',
 
             'tasks.*.passage_text'         => 'Текст задания (пассаж)',
             'tasks.*.left_title'           => 'Заголовок левой колонки',

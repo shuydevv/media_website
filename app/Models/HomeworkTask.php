@@ -28,7 +28,8 @@ class HomeworkTask extends Model
     'order_matters',
     'left_title',
     'right_title',
-    'max_score', 
+    'max_score',
+    'hint',
     ];
 
     protected $casts = [

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin\Post;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+use Illuminate\Validation\Rule;
 class UpdateRequest extends FormRequest
 {
     /**
@@ -21,6 +22,7 @@ class UpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $post = $this->route('post');
         return [
             'title' => 'required|string',
             'title2' => 'nullable|string',
@@ -31,7 +33,7 @@ class UpdateRequest extends FormRequest
             'tag_id' => 'nullable|array',
             'tag_ids.*' => 'nullable|integer|exists:tags,id',
             'multi_images' => 'nullable',
-            'path' => 'nullable|string',
+            'path'  => ['nullable','alpha_dash','max:150', Rule::unique('posts','path')->ignore($post->id)],
             'html_title' => 'nullable|string',
             'html_description' => 'nullable|string',
         ];

@@ -52,7 +52,7 @@ class PostService
                     $image_name = $image->getClientOriginalName(); 
                     // dd($image_name);
                     $images = Image::firstOrCreate(
-                        ['post_id' => $post->path,
+                        ['post_id' => $post->id,
                                     'name' => $multi_images[$i],
                                     'original_name' => $image_name],
                     );
@@ -111,7 +111,7 @@ class PostService
             $post->update($data_without_multi);
 
             // dd($data['multi_images']);
-            $toDelete = Image::where('post_id', $post->path)->get();
+            $toDelete = Image::where('post_id', $post->id)->get();
             
             if (isset($data['multi_images'])) {
                 $arrayLenght = count($data['multi_images']);
@@ -119,13 +119,13 @@ class PostService
                     foreach ($toDelete as $item) {
                         Storage::disk('public')->delete($item->name);
                     }
-                    $deleted = Image::where('post_id', $post->path)->delete();
+                    $deleted = Image::where('post_id', $post->id)->delete();
                 
                     $i = 0;
                     foreach ($data['multi_images'] as $image) { 
                         $image_name = $image->getClientOriginalName(); 
                         $images = Image::firstOrCreate(
-                            ['post_id' => $post->path,
+                            ['post_id' => $post->id,
                                         'name' => $multi_images[$i],
                                         'original_name' => $image_name],
                         );

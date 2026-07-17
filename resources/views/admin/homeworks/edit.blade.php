@@ -114,8 +114,14 @@
                 {{-- Правильный ответ --}}
                 <div class="mb-4">
                     <label class="block text-sm font-medium">Правильный ответ</label>
-                    <input type="text" name="tasks[{{ $i }}][answer]" class="w-full border rounded px-3 py-2"
-                           value="{{ old("tasks.$i.answer", $t->answer) }}" required>
+                    <textarea name="tasks[{{ $i }}][answer]" class="w-full border rounded px-3 py-2"
+                              required>{{ old("tasks.$i.answer", $t->answer) }}</textarea>
+                </div>
+
+                {{-- Подсказка --}}
+                <div class="mb-4">
+                    <label class="block text-sm font-medium">Подсказка</label>
+                    <textarea name="tasks[{{ $i }}][hint]" class="w-full border rounded px-3 py-2">{{ old("tasks.$i.hint", $t->hint) }}</textarea>
                 </div>
 
                 {{-- Варианты (multiple_choice) --}}
