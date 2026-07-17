@@ -1,6 +1,8 @@
 {{-- resources/views/student/submissions/show.blade.php --}}
 @extends('layouts.main')
 
+@section('title', $homework->title ?? 'Домашнее задание')
+
 @section('content')
 @php
   /** @var \App\Models\Submission $submission */
@@ -97,18 +99,29 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
   });
 
   $studentStatusLabel = $hasPendingManual ? 'Ожидает проверки' : 'Проверено';
+
+  // Маскот по итоговому проценту — та же заглушка, что в попапе/тосте визарда.
+  $overallPct = $pct($totalScore, $totalMax);
+  $resultMascotSrc = $overallPct > 70
+    ? asset('img/like.svg')
+    : ($overallPct >= 40 ? asset('img/person.svg') : asset('img/crying.svg'));
 @endphp
 
 <div class="max-w-6xl mx-auto px-4 py-6">
   {{-- Заголовок --}}
   <div class="mb-6 flex items-start justify-between gap-4">
-    <div>
-      <h1 class="text-2xl font-semibold">
-        Результаты: {{ $homework->title ?? 'Домашнее задание' }}
-      </h1>
-      <div class="text-gray-500 mt-1">
-        Попытка № {{ $submission->attempt_no ?? 1 }} ·
-        Статус: <span class="font-medium text-gray-700">{{ $studentStatusLabel }}</span>
+    <div class="flex items-start gap-4">
+      <div id="result-mascot" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+        <img src="{{ $resultMascotSrc }}" alt="" class="w-9 h-9 sm:w-12 sm:h-12">
+      </div>
+      <div>
+        <h1 class="text-2xl font-semibold">
+          Результаты: {{ $homework->title ?? 'Домашнее задание' }}
+        </h1>
+        <div class="text-gray-500 mt-1">
+          Попытка № {{ $submission->attempt_no ?? 1 }} ·
+          Статус: <span class="font-medium text-gray-700">{{ $studentStatusLabel }}</span>
+        </div>
       </div>
     </div>
     <div class="shrink-0">
@@ -1011,4 +1024,67 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
     });
   })();
   </script>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // GSAP подключён с defer — ждём DOMContentLoaded, чтобы он точно успел загрузиться
+    // (см. такой же приём и комментарий у конфетти чуть выше).
+    var mascot = document.getElementById('result-mascot');
+    if (!mascot || typeof window.gsap === 'undefined') return;
+
+    gsap.fromTo(mascot,
+      { autoAlpha: 0, scale: .5, rotate: -8, y: -16 },
+      { autoAlpha: 1, scale: 1, rotate: 0, y: 0, duration: .6, ease: 'elastic.out(1, .5)' }
+    );
+  });
+  </script>
+
+  @if(session('just_submitted'))
+    {{-- Разовое конфетти сразу после отправки всей домашки (флаг ставит SubmissionController::finishSubmit) --}}
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // GSAP подключён с defer — ждём DOMContentLoaded, чтобы он гарантированно успел
+      // выполниться (иначе этот inline-скрипт, который парсится раньше, видит window.gsap
+      // ещё не определённым и молча ничего не делает).
+      if (typeof window.gsap === 'undefined') return;
+
+      const colors = ['#7C3AED', '#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#EC4899'];
+      const count = 60;
+      const container = document.createElement('div');
+      container.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:70;overflow:hidden;';
+      document.body.appendChild(container);
+
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement('div');
+        const size = 6 + Math.random() * 6;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        el.style.cssText = 'position:absolute; left:50%; top:18%; width:' + size + 'px; height:' + (size * 0.4) + 'px; background:' + color + '; border-radius:2px;';
+        container.appendChild(el);
+
+        const dx = (Math.random() - 0.5) * window.innerWidth * 0.8;
+        const dy = window.innerHeight * (0.5 + Math.random() * 0.5);
+        const rotation = (Math.random() - 0.5) * 720;
+
+        gsap.timeline({ onComplete: () => el.remove() })
+          .to(el, {
+            x: dx * 0.4,
+            y: -80 - Math.random() * 80,
+            rotation: rotation * 0.3,
+            duration: .35 + Math.random() * .15,
+            ease: 'power2.out',
+          })
+          .to(el, {
+            x: dx,
+            y: dy,
+            rotation: rotation,
+            opacity: 0,
+            duration: 1.1 + Math.random() * .5,
+            ease: 'power1.in',
+          });
+      }
+
+      setTimeout(function () { container.remove(); }, 2500);
+    });
+    </script>
+  @endif
 @endsection

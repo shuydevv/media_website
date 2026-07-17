@@ -91,37 +91,28 @@ class SubmissionController extends Controller
     public function question(Request $request, Submission $submission, int $position)
     {
         $this->assertOwner($request, $submission);
-        if ($redirect = $this->ensureInProgress($submission)) {
+        if ($redirect = $this->ensureInProgress($request, $submission)) {
             return $redirect;
         }
 
         [$tasks, $task, $total] = $this->resolvePosition($submission, $position);
 
-        $answers = $submission->answers ?? [];
-        $perTask = $submission->per_task_results ?? [];
-
-        return view('student.submissions.question', [
-            'submission'  => $submission,
-            'homework'    => Homework::find($submission->homework_id),
-            'tasks'       => $tasks,
-            'task'        => $task,
-            'position'    => $position,
-            'total'       => $total,
-            'savedAnswer' => $answers[$task->id] ?? null,
-            'savedResult' => $perTask[$task->id] ?? null,
-            'checkResult' => null,
-            'checkAnswer' => null,
-        ]);
+        return view(
+            $this->view($request, 'question'),
+            $this->questionData($submission, $tasks, $task, $position, $total)
+        );
     }
 
     /**
-     * Проверка ответа на авто-проверяемый вопрос без сохранения —
-     * показывает верно/частично/неверно и даёт выбор: сохранить или переответить.
+     * Проверка ответа на авто-проверяемый вопрос.
+     * Если ответ полностью верный — сразу сохраняется, и пользователь
+     * переходит дальше (с тост-уведомлением). Если нет — ничего не
+     * сохраняется, показывается модалка с выбором «переответить» / «дальше».
      */
     public function check(Request $request, Submission $submission, int $position)
     {
         $this->assertOwner($request, $submission);
-        if ($redirect = $this->ensureInProgress($submission)) {
+        if ($redirect = $this->ensureInProgress($request, $submission)) {
             return $redirect;
         }
 
@@ -136,21 +127,14 @@ class SubmissionController extends Controller
 
         $result = app(AutoGrader::class)->scoreOne($task, $answer);
 
-        $answers = $submission->answers ?? [];
-        $perTask = $submission->per_task_results ?? [];
+        if ($result['status'] === 'ok') {
+            return $this->persistAnswerAndAdvance($request, $submission, $task, $answer, $result);
+        }
 
-        return view('student.submissions.question', [
-            'submission'  => $submission,
-            'homework'    => Homework::find($submission->homework_id),
-            'tasks'       => $tasks,
-            'task'        => $task,
-            'position'    => $position,
-            'total'       => $total,
-            'savedAnswer' => $answers[$task->id] ?? null,
-            'savedResult' => $perTask[$task->id] ?? null,
-            'checkResult' => $result,
-            'checkAnswer' => $answer,
-        ]);
+        return view(
+            $this->view($request, 'question'),
+            $this->questionData($submission, $tasks, $task, $position, $total, $result, $answer)
+        );
     }
 
     /**
@@ -160,7 +144,7 @@ class SubmissionController extends Controller
     public function save(Request $request, Submission $submission, int $position)
     {
         $this->assertOwner($request, $submission);
-        if ($redirect = $this->ensureInProgress($submission)) {
+        if ($redirect = $this->ensureInProgress($request, $submission)) {
             return $redirect;
         }
 
@@ -169,13 +153,25 @@ class SubmissionController extends Controller
         $data = $request->validate(['answer' => 'nullable|string']);
         $answer = $data['answer'] ?? null;
 
+        $result = $task->isAutoGradable() ? app(AutoGrader::class)->scoreOne($task, $answer) : null;
+
+        return $this->persistAnswerAndAdvance($request, $submission, $task, $answer, $result);
+    }
+
+    /**
+     * Сохраняет ответ на вопрос (и результат авто-проверки, если есть)
+     * и переходит к следующему шагу. При полностью верном ответе
+     * добавляет HX-Trigger, чтобы клиент показал тост-уведомление.
+     */
+    private function persistAnswerAndAdvance(Request $request, Submission $submission, HomeworkTask $task, ?string $answer, ?array $result)
+    {
         $answers = $submission->answers ?? [];
         $perTask = $submission->per_task_results ?? [];
 
         $answers[$task->id] = $answer;
 
-        if ($task->isAutoGradable()) {
-            $perTask[$task->id] = app(AutoGrader::class)->scoreOne($task, $answer);
+        if ($result !== null) {
+            $perTask[$task->id] = $result;
         } else {
             unset($perTask[$task->id]); // ручные проверяет куратор — результата пока нет
         }
@@ -184,7 +180,11 @@ class SubmissionController extends Controller
         $submission->per_task_results = $perTask;
         $submission->save();
 
-        return $this->redirectToNextQuestion($submission);
+        $trigger = ($result !== null && $result['status'] === 'ok')
+            ? ['toast' => ['message' => "Верно! {$result['score']} / {$result['max']} баллов"]]
+            : null;
+
+        return $this->respondNext($request, $submission, $trigger);
     }
 
     /**
@@ -193,22 +193,16 @@ class SubmissionController extends Controller
     public function finish(Request $request, Submission $submission)
     {
         $this->assertOwner($request, $submission);
-        if ($redirect = $this->ensureInProgress($submission)) {
+        if ($redirect = $this->ensureInProgress($request, $submission)) {
             return $redirect;
         }
 
         $tasks = $this->orderedTasks($submission->homework_id);
-        $answers = $submission->answers ?? [];
-        $perTask = $submission->per_task_results ?? [];
 
-        return view('student.submissions.finish', [
-            'submission'  => $submission,
-            'homework'    => Homework::find($submission->homework_id),
-            'tasks'       => $tasks,
-            'answers'     => $answers,
-            'perTask'     => $perTask,
-            'allAnswered' => $tasks->every(fn (HomeworkTask $t) => array_key_exists($t->id, $answers)),
-        ]);
+        return view(
+            $this->view($request, 'finish'),
+            $this->finishData($submission, $tasks)
+        );
     }
 
     /**
@@ -217,7 +211,7 @@ class SubmissionController extends Controller
     public function finishSubmit(Request $request, Submission $submission)
     {
         $this->assertOwner($request, $submission);
-        if ($redirect = $this->ensureInProgress($submission)) {
+        if ($redirect = $this->ensureInProgress($request, $submission)) {
             return $redirect;
         }
 
@@ -225,6 +219,13 @@ class SubmissionController extends Controller
         $answers = $submission->answers ?? [];
 
         if (!$tasks->every(fn (HomeworkTask $t) => array_key_exists($t->id, $answers))) {
+            if ($this->isHtmx($request)) {
+                return view(
+                    'student.submissions.partials.finish-region',
+                    $this->finishData($submission, $tasks, 'Сначала ответьте на все вопросы.')
+                );
+            }
+
             return redirect()
                 ->route('student.submissions.finish', $submission)
                 ->withErrors(['submission' => 'Сначала ответьте на все вопросы.']);
@@ -246,6 +247,13 @@ class SubmissionController extends Controller
         }
 
         $submission->save();
+
+        // Одноразовый флаг для конфетти на странице результата — не должен переживать обновление страницы.
+        session()->flash('just_submitted', true);
+
+        if ($this->isHtmx($request)) {
+            return response('')->header('HX-Redirect', route('student.submissions.show', $submission));
+        }
 
         return redirect()
             ->route('student.submissions.show', $submission)
@@ -282,6 +290,110 @@ class SubmissionController extends Controller
             ->get(['id', 'attempt_no', 'autocheck_score', 'total_score', 'status', 'created_at']);
 
         return view('student.submissions.show', compact('submission', 'homework', 'attempts'));
+    }
+
+    /**
+     * Имя вьюхи в зависимости от того, htmx-запрос это или обычная навигация:
+     * htmx получает только фрагмент (#wizard-app), обычный запрос — полную страницу.
+     */
+    private function view(Request $request, string $page): string
+    {
+        return $this->isHtmx($request)
+            ? "student.submissions.partials.{$page}-region"
+            : "student.submissions.{$page}";
+    }
+
+    private function isHtmx(Request $request): bool
+    {
+        return $request->header('HX-Request') === 'true';
+    }
+
+    private function questionData(
+        Submission $submission,
+        $tasks,
+        HomeworkTask $task,
+        int $position,
+        int $total,
+        ?array $checkResult = null,
+        ?string $checkAnswer = null
+    ): array {
+        $answers = $submission->answers ?? [];
+        $perTask = $submission->per_task_results ?? [];
+
+        return [
+            'submission'  => $submission,
+            'homework'    => Homework::find($submission->homework_id),
+            'tasks'       => $tasks,
+            'task'        => $task,
+            'position'    => $position,
+            'total'       => $total,
+            'savedAnswer' => $answers[$task->id] ?? null,
+            'savedResult' => $perTask[$task->id] ?? null,
+            'checkResult' => $checkResult,
+            'checkAnswer' => $checkAnswer,
+        ];
+    }
+
+    private function finishData(Submission $submission, $tasks, ?string $error = null): array
+    {
+        $answers = $submission->answers ?? [];
+        $perTask = $submission->per_task_results ?? [];
+
+        return [
+            'submission'  => $submission,
+            'homework'    => Homework::find($submission->homework_id),
+            'tasks'       => $tasks,
+            'answers'     => $answers,
+            'perTask'     => $perTask,
+            'allAnswered' => $tasks->every(fn (HomeworkTask $t) => array_key_exists($t->id, $answers)),
+            'error'       => $error,
+        ];
+    }
+
+    /**
+     * После сохранения ответа: обычный запрос получает редирект (fallback без JS),
+     * htmx — сразу фрагмент следующего состояния + заголовок HX-Push-Url,
+     * чтобы адресная строка/история браузера обновились без лишнего round-trip.
+     */
+    private function respondNext(Request $request, Submission $submission, ?array $trigger = null)
+    {
+        $tasks = $this->orderedTasks($submission->homework_id);
+        $answers = $submission->answers ?? [];
+        $total = $tasks->count();
+
+        $nextPosition = null;
+        foreach ($tasks as $i => $t) {
+            if (!array_key_exists($t->id, $answers)) {
+                $nextPosition = $i + 1;
+                break;
+            }
+        }
+
+        if (!$this->isHtmx($request)) {
+            return $nextPosition
+                ? redirect()->route('student.submissions.question', [$submission, $nextPosition])
+                : redirect()->route('student.submissions.finish', $submission);
+        }
+
+        if ($nextPosition) {
+            $task = $tasks[$nextPosition - 1];
+            $html = view(
+                'student.submissions.partials.question-region',
+                $this->questionData($submission, $tasks, $task, $nextPosition, $total)
+            );
+            $url = route('student.submissions.question', [$submission, $nextPosition]);
+        } else {
+            $html = view('student.submissions.partials.finish-region', $this->finishData($submission, $tasks));
+            $url = route('student.submissions.finish', $submission);
+        }
+
+        $response = response($html)->header('HX-Push-Url', $url);
+
+        if ($trigger) {
+            $response->headers->set('HX-Trigger', json_encode($trigger));
+        }
+
+        return $response;
     }
 
     private function orderedTasks(int $homeworkId)
@@ -328,9 +440,13 @@ class SubmissionController extends Controller
         }
     }
 
-    private function ensureInProgress(Submission $submission)
+    private function ensureInProgress(Request $request, Submission $submission)
     {
         if ($submission->status !== 'in_progress') {
+            if ($this->isHtmx($request)) {
+                return response('')->header('HX-Redirect', route('student.submissions.show', $submission));
+            }
+
             return redirect()->route('student.submissions.show', $submission);
         }
 

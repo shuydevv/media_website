@@ -193,3 +193,86 @@ li::marker {
 .blue-color {
     color: #7a9dff;
 }
+
+/* Спиннер загрузки на htmx-кнопках: пока запрос летит, htmx сам вешает
+   класс .htmx-request на элемент с hx-get/hx-post (или на форму).
+   Подпись не убираем из потока (visibility, не display) — иначе кнопка
+   «сжимается» до размера спиннера. .btn-spinner — обёртка, центрируется
+   через flex (не transform/translate — иначе конфликтует с вращением
+   вложенной иконки через animate-spin, и она не крутится, а «плавает»). */
+.btn-spinner {
+    display: none;
+    position: absolute;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+}
+.htmx-request .btn-label {
+    visibility: hidden;
+}
+.htmx-request .btn-spinner {
+    display: flex;
+}
+.pill-nav-item.htmx-request {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Тост-уведомление (см. layouts/main.blade.php) */
+.toast-item {
+    opacity: 0;
+    transform: translateY(-12px);
+    transition: opacity .25s ease, transform .25s ease;
+}
+.toast-item.toast-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+.toast-item.toast-out {
+    opacity: 0;
+    transform: translateY(-12px);
+}
+
+/* Квадратики-инпут для авто-проверяемых заданий (student/submissions/partials/question-region.blade.php).
+   Вынесено из инлайнового <style> внутри htmx-фрагмента: тот style-тег пересоздавался
+   при каждой подмене #wizard-app и вызывал мелькание (браузер каждый раз заново
+   парсил CSS и пересчитывал layout грида). Общий файл грузится один раз и свапами не трогается. */
+.pin-field { position: relative; display:block; cursor:text; width:100%; }
+
+.pin-boxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+    gap: 12px;
+    width: 100%;
+}
+
+.pin-box {
+    aspect-ratio: 1 / 1;
+    min-width: 42px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; font-weight:600; background:#fff;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.pin-box.filled { border-color:#2563eb; }
+.pin-box.active { border-color:#2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25); }
+
+@media (max-width: 640px) {
+    .pin-boxes {
+        grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+        gap: 10px;
+    }
+    .pin-box {
+        min-width: 32px;
+        font-size: 18px;
+        border-radius: 9px;
+    }
+}
+
+.pin-hidden-input { position:absolute; left:-99999px; width:1px; height:1px; opacity:0; }
+
+/* Модалка результата проверки — анимация теперь через GSAP (см. question-region.blade.php),
+   тут только гарантируем, что до инициализации скрипта модалка не мелькает видимой. */
+#check-modal { visibility: hidden; }
