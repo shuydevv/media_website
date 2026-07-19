@@ -34,6 +34,14 @@
     </div>
 @endif
 
+@if($errors->any())
+    <div class="mb-4 rounded-lg bg-rose-50 text-rose-800 px-4 py-3 text-sm">
+        @foreach($errors->all() as $e)
+            <div>{{ $e }}</div>
+        @endforeach
+    </div>
+@endif
+
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Карточка статусов -->
     <div class="bg-white rounded-2xl shadow-sm ring-1 ring-black/5 p-5 space-y-4">
@@ -153,6 +161,95 @@
             @endif
         </div>
     </div>
+</div>
+
+<div class="mt-6 bg-white rounded-2xl shadow-sm ring-1 ring-black/5 p-5">
+    <h2 class="text-lg font-medium mb-4">Оплата курсов</h2>
+
+    @forelse($enrollments as $course)
+        @php
+            $attachedPromo = $billing->attachedPromoCode($user, $course);
+            $suggestedRub = number_format($billing->priceForEnrollment($user, $course) / 100, 2, '.', '');
+        @endphp
+        <div class="border rounded-xl p-4 mb-3">
+            <div class="font-medium mb-2">{{ $course->title }}</div>
+            <div class="text-xs text-zinc-500 mb-2">
+                Следующий платёж: {{ optional($course->pivot->next_payment_due_at)->format('d.m.Y H:i') ?? '—' }}
+            </div>
+
+            <form method="POST" action="{{ route('admin.billing.autopay.update', [$user, $course]) }}" class="flex items-center gap-2 mb-3 text-xs">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="enabled" value="{{ $course->pivot->autopay_enabled ? '0' : '1' }}">
+                <span class="text-zinc-500">Автоплатёж:</span>
+                <span class="{{ $course->pivot->autopay_enabled ? 'text-emerald-700' : 'text-zinc-500' }}">
+                    {{ $course->pivot->autopay_enabled ? 'включён' : 'выключен' }}
+                </span>
+                <button class="underline text-blue-700">{{ $course->pivot->autopay_enabled ? 'выключить' : 'включить' }}</button>
+                <span class="text-zinc-400">(пока без реального списания — только переключает уведомления)</span>
+            </form>
+
+            @if($attachedPromo)
+                <div class="flex items-center gap-2 mb-3 text-xs">
+                    <span class="text-zinc-500">Промокод:</span>
+                    <span class="font-mono px-1.5 py-0.5 bg-zinc-100 rounded">{{ $attachedPromo->code }}</span>
+                    <form method="POST" action="{{ route('admin.billing.promo.destroy', [$user, $course]) }}">
+                        @csrf
+                        @method('DELETE')
+                        <button class="text-rose-600 hover:underline">убрать</button>
+                    </form>
+                </div>
+            @else
+                <form method="POST" action="{{ route('admin.billing.promo.store', [$user, $course]) }}" class="flex gap-2 items-end mb-3">
+                    @csrf
+                    <div>
+                        <label class="block text-xs text-zinc-500">Промокод</label>
+                        <input type="text" name="code" class="border rounded px-2 py-1 text-sm" placeholder="код">
+                    </div>
+                    <button class="px-2 py-1 border rounded-lg text-xs hover:bg-gray-50">Подключить</button>
+                </form>
+            @endif
+
+            <form method="POST" action="{{ route('admin.billing.payments.store', [$user, $course]) }}" class="flex flex-wrap gap-2 items-end">
+                @csrf
+                <div>
+                    <label class="block text-xs text-zinc-500">Сумма, ₽</label>
+                    <input type="number" step="0.01" name="amount_rub" value="{{ $suggestedRub }}" class="border rounded px-2 py-1 w-28" required>
+                </div>
+                <div>
+                    <label class="block text-xs text-zinc-500">Периодичность</label>
+                    <select name="billing_interval_days" class="border rounded px-2 py-1">
+                        <option value="">оставить как есть</option>
+                        <option value="14">14 дней</option>
+                        <option value="30">30 дней</option>
+                    </select>
+                </div>
+                <div class="flex-1 min-w-[160px]">
+                    <label class="block text-xs text-zinc-500">Заметка</label>
+                    <input type="text" name="note" class="border rounded px-2 py-1 w-full" placeholder="напр. номер перевода">
+                </div>
+                <button class="px-3 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700">Записать платёж</button>
+            </form>
+        </div>
+    @empty
+        <p class="text-sm text-zinc-500">Активных записей на курсы нет.</p>
+    @endforelse
+
+    @if($payments->isNotEmpty())
+        <table class="w-full text-xs mt-4">
+            <thead><tr class="text-zinc-500 text-left"><th class="py-1">Дата</th><th>Курс</th><th>Сумма</th><th>Тип</th></tr></thead>
+            <tbody>
+            @foreach($payments as $p)
+                <tr class="border-t">
+                    <td class="py-1">{{ $p->created_at->format('d.m.Y H:i') }}</td>
+                    <td>{{ $p->course->title ?? '—' }}</td>
+                    <td>{{ $p->is_promise ? '—' : number_format($p->amount_cents / 100, 2) . ' ₽' }}</td>
+                    <td>{{ $p->method }}</td>
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
+    @endif
 </div>
 
 <div class="mt-8">

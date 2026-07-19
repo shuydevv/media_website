@@ -32,6 +32,11 @@
   // Прогресс прохождения домашки — для полосы над навигацией по вопросам.
   $answeredCount = collect($tasks)->filter(fn ($t) => array_key_exists($t->id, $answers))->count();
   $progressPercent = $total > 0 ? round($answeredCount / $total * 100) : 0;
+
+  // Нормализуем один раз: и для проверки "есть ли подсказка" (иначе строка
+  // из одних пробелов/переносов считалась бы непустой и рисовала пустую
+  // кнопку/плашку), и для самого рендера через white-space:pre-wrap.
+  $hintText = \App\Support\Text::normalize($task->hint ?? null);
 @endphp
 
 <div class="max-w-3xl mx-auto px-3 sm:px-4 py-5 sm:py-6">
@@ -96,18 +101,27 @@
         <span class="text-base sm:text-lg font-semibold text-gray-900">Вопрос {{ $position }} из {{ $total }}</span>
       </div>
 
-      @if(!empty($task->hint))
+      @if($hintText)
         <button type="button" id="hint-toggle" class="text-xs sm:text-sm text-blue-600 hover:underline whitespace-nowrap">
           Показать подсказку
         </button>
       @endif
     </div>
 
-    @if(!empty($task->hint))
-      <div id="hint-box" class="overflow-hidden mb-5 sm:mb-6" style="height:0;">
-        <div id="hint-box-inner" class="p-3 sm:p-4 rounded-xl bg-blue-50 border border-blue-100 text-sm text-blue-900 whitespace-pre-wrap">
-          {{ $task->hint }}
-        </div>
+    @if($hintText)
+      {{-- Отступ после плашки с подсказкой — отдельный пустой спейсер ВНУТРИ
+           этого же схлопывающегося контейнера (а не margin/padding на самой
+           плашке): padding внутри плашки просто увеличивает синий фон, а не
+           создаёт зазор ПОСЛЕ неё; margin на внешнем блоке не обрезается
+           overflow:hidden и остаётся даже когда блок закрыт (height:0) — из-за
+           этого отступ над текстом вопроса раньше был то с подсказкой, то без.
+           Спейсер же — часть содержимого, которое подрезается вместе со всем
+           остальным при сворачивании. Высоту при открытии JS теперь считает
+           по box.scrollHeight (весь контент контейнера), а не по одному
+           дочернему элементу — иначе спейсер не попадал бы в расчёт. --}}
+      <div id="hint-box" class="overflow-hidden" style="height:0;">
+        <div id="hint-box-inner" class="p-4 sm:p-4 rounded-xl bg-blue-50 border border-blue-100 text-sm text-blue-900 whitespace-pre-wrap">{{$hintText}}</div>
+        <div class="h-5 sm:h-6" aria-hidden="true"></div>
       </div>
     @endif
 
@@ -523,7 +537,7 @@
 </script>
 @endunless
 
-@if(!empty($task->hint))
+@if($hintText)
 <script>
 (function () {
   const btn = document.getElementById('hint-toggle');
@@ -546,7 +560,9 @@
     }
 
     if (open) {
-      gsap.to(box, { height: inner.offsetHeight, duration: .35, ease: 'power2.out' });
+      // scrollHeight всего контейнера, а не offsetHeight одной только плашки —
+      // иначе спейсер после неё не попадал бы в расчёт высоты открытия.
+      gsap.to(box, { height: box.scrollHeight, duration: .35, ease: 'power2.out' });
       gsap.to(inner, { autoAlpha: 1, y: 0, duration: .3, delay: .08, ease: 'power2.out' });
     } else {
       gsap.to(inner, { autoAlpha: 0, y: -6, duration: .15 });

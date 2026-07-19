@@ -6,7 +6,9 @@ use App\Policies\CoursePolicy;
 
 use App\Service\Sms\SmsSender;
 use App\Service\Sms\FakeSmsSender;
+use App\View\Composers\BillingBannerComposer;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\View;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -32,5 +34,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
+
+        View::composer('layouts.main', BillingBannerComposer::class);
     }
 }

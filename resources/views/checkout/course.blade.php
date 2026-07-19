@@ -1,9 +1,7 @@
 @extends('layouts.main')
 
 @php
-    function money_fmt($cents, $cur='RUB') {
-        return number_format($cents/100, 2, ',', ' ') . ' ' . $cur;
-    }
+    use App\Support\Money;
 @endphp
 
 @section('content')
@@ -15,16 +13,16 @@
         <div class="text-gray-600">{{ $course->description }}</div>
 
         <div class="mt-3 text-sm">
-            <div>Базовая цена: <b>{{ money_fmt($baseCents, $baseCurrency) }}</b></div>
+            <div>Базовая цена: <b>{{ Money::format($baseCents, $baseCurrency) }}</b></div>
             @if(isset($appliedPromo) && $appliedPromo)
                 <div class="mt-1">
                     Применён промокод <span class="font-mono px-2 py-0.5 bg-gray-100 rounded">{{ $appliedPromo->code }}</span> —
                     @if($appliedPromo->discount_mode === 'percent')
                         скидка {{ $appliedPromo->discount_percent }}%
                     @elseif($appliedPromo->discount_mode === 'amount')
-                        минус {{ money_fmt($appliedPromo->discount_value_cents, $baseCurrency) }}
+                        минус {{ Money::format($appliedPromo->discount_value_cents, $baseCurrency) }}
                     @elseif($appliedPromo->discount_mode === 'fixed_price')
-                        фиксированная цена {{ money_fmt($appliedPromo->discount_value_cents, $baseCurrency) }}
+                        фиксированная цена {{ Money::format($appliedPromo->discount_value_cents, $baseCurrency) }}
                     @elseif($appliedPromo->discount_mode === 'free')
                         бесплатно
                     @endif
@@ -33,7 +31,7 @@
         </div>
 
         <div class="mt-3 text-xl">
-            Итог к оплате: <span class="font-bold">{{ money_fmt($finalCents, $baseCurrency) }}</span>
+            Итог к оплате: <span class="font-bold">{{ Money::format($finalCents, $baseCurrency) }}</span>
         </div>
     </div>
 
@@ -59,7 +57,7 @@
 
     {{-- заглушка оплаты --}}
     <div class="mt-6">
-        <button class="px-4 py-2 bg-blue-600 text-white rounded" onclick="alert('Здесь будет оплата. Итог: {{ money_fmt($finalCents, $baseCurrency) }}')">
+        <button class="px-4 py-2 bg-blue-600 text-white rounded" onclick="alert('Здесь будет оплата. Итог: {{ Money::format($finalCents, $baseCurrency) }}')">
             Перейти к оплате
         </button>
         <p class="text-xs text-gray-500 mt-2">Платёжная интеграция подключается позже. Сейчас мы лишь применяем промокод и считаем итоговую цену.</p>

@@ -32,7 +32,7 @@
       return (object)[];
   });
 
-  $manualTypes = ['written','image_written','image_manual'];
+  $manualTypes = \App\Models\HomeworkTask::MANUAL_TYPES;
   $autoTasks   = $tasksCol->filter(fn($t) => !in_array(($t->type ?? ''), $manualTypes, true))->values();
   $manualTasks = $tasksCol->filter(fn($t) =>  in_array(($t->type ?? ''), $manualTypes, true))->values();
 

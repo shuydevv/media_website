@@ -22,7 +22,7 @@
   
 
   // Типы, проверяемые вручную
-  $manualTypes = ['written','image_written','image_manual'];
+  $manualTypes = \App\Models\HomeworkTask::MANUAL_TYPES;
 
   $autoTasks   = $tasksCol->filter(fn($t) => !in_array($t->type ?? '', $manualTypes, true))->values();
   $manualTasks = $tasksCol->filter(fn($t) =>  in_array($t->type ?? '', $manualTypes, true))->values();
@@ -81,7 +81,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
 @endphp
 
 @php
-  $manualTypes = ['written','image_written','image_manual'];
+  $manualTypes = \App\Models\HomeworkTask::MANUAL_TYPES;
 
   $tasksRaw = $homework->tasks ?? [];
   $tasksCol = collect($tasksRaw)->map(fn($t) => is_array($t) ? (object)$t : $t);
@@ -787,7 +787,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
 @php
   // Определяем тип текущего задания
   $curType   = $t->type ?? ($task->type ?? '');
-  $isManual  = in_array($curType, ['written','image_written','image_manual'], true);
+  $isManual  = in_array($curType, \App\Models\HomeworkTask::MANUAL_TYPES, true);
 
   // Достаём per-task результаты
   $curId   = $t->id ?? ($task->id ?? null);

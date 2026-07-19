@@ -21,6 +21,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(\Illuminate\Console\Scheduling\Schedule $schedule): void
     {
         $schedule->command('enrollments:expire')->dailyAt('03:00');
+        $schedule->command('billing:send-reminders')->dailyAt('08:00');
     }
 
 }

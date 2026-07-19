@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Lesson;
 use App\Models\User;
+use App\Service\BillingService;
 
 class LessonPolicy
 {
@@ -15,6 +16,6 @@ class LessonPolicy
         $course  = $session?->course;            // belongsTo Course
         if (!$course) return false;
 
-        return $user->hasActiveEnrollment($course->id);
+        return app(BillingService::class)->hasAccess($user, $course);
     }
 }

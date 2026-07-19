@@ -35,8 +35,8 @@ class StoreRequest extends FormRequest
             'schedule.*.start_time' => 'required|date_format:H:i',
             'schedule.*.duration_minutes' => 'required|integer|min:1',
 
-            'price' => 'required|string|max:255',
-            'old_price' => 'nullable|string|max:255',
+            'price_rub' => 'required|numeric|min:0',
+            'old_price_rub' => 'nullable|numeric|min:0',
             'main_image' => 'nullable|image|max:2048', // если будет загрузка
             'content' => 'nullable|string',
             'path' => [

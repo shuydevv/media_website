@@ -39,7 +39,7 @@
                     $options = is_array($decoded) ? $decoded : [];
                 }
             @endphp
-            @if(!empty($options) && in_array($task->type, ['multiple_choice','image_auto']))
+            @if(!empty($options) && in_array($task->type, ['test','image_auto']))
                 <div class="mb-3">
                     <strong>Варианты ответа:</strong>
                     <ul class="list-disc pl-5">

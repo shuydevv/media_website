@@ -12,18 +12,17 @@ class Post extends Model
     use HasFactory;
     use SoftDeletes;
     protected $table = 'posts';
-    protected $guarded = false;
 
-        protected $fillable = [
+    protected $fillable = [
         'title',
         'title2',
         'description',
-        'content',        // <— добавить!
+        'content',
         'category_id',
         'path',
         'html_title',
         'html_description',
-        'main_image',     // если пишешь путь строки в колонку
+        'main_image',
     ];
 
     protected static function booted(): void
@@ -51,8 +50,17 @@ class Post extends Model
     public function image() {
         return $this->hasMany(Image::class);
     }
-    // public function getRouteKeyName(): string
-    // {
-    //     return 'path';
-    // }
+
+    /**
+     * Абсолютный URL обложки поста или null, если её нет. Раньше в разных
+     * местах (список постов, "другие статьи" на странице поста) URL
+     * собирали вручную по-разному — где-то через asset(), где-то просто
+     * конкатенацией строки без него (что давало битую относительную
+     * ссылку, резолвящуюся браузером от текущего пути, а не от корня
+     * сайта), и без проверки на null. Теперь один источник правды.
+     */
+    public function getMainImageUrlAttribute(): ?string
+    {
+        return $this->main_image ? asset('storage/' . $this->main_image) : null;
+    }
 }

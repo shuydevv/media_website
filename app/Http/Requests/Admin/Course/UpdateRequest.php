@@ -17,8 +17,8 @@ class UpdateRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'price' => 'required|string|max:255',
-            'old_price' => 'nullable|string|max:255',
+            'price_rub' => 'required|numeric|min:0',
+            'old_price_rub' => 'nullable|numeric|min:0',
             'content' => 'nullable|string',
             'path' => [
                 'nullable',

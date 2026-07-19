@@ -69,7 +69,7 @@ class AutoGrader
             $answer = $answers[$taskId] ?? null;
 
             // ручные типы
-            if (in_array($type, ['written','image_written','image_manual'], true)) {
+            if (in_array($type, HomeworkTask::MANUAL_TYPES, true)) {
                 $hasManual = true;
                 $perTask[$taskId] = [
                     // 'score' => null,

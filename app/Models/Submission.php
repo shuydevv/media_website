@@ -127,8 +127,7 @@ public function getManualTasks(): array
         return (object)[];
     });
 
-    $manualTypes = ['written','image_written','image_manual'];
-    return $items->filter(fn($t) => in_array(($t->type ?? ''), $manualTypes, true))->values()->all();
+    return $items->filter(fn($t) => in_array(($t->type ?? ''), HomeworkTask::MANUAL_TYPES, true))->values()->all();
 }
 
 /**

@@ -36,5 +36,19 @@ class Homework extends Model
         return $this->hasMany(\App\Models\Submission::class);
     }
 
+    /**
+     * Урок, к которому привязана домашка, ещё не наступил — до этого момента
+     * ученик вообще не должен знать о существовании домашки (не в расписании,
+     * не в списке домашек, и напрямую по ссылке зайти тоже нельзя). Если
+     * домашка ни к какому уроку не привязана, или у урока не определена
+     * дата/время сессии — ничего не можем утверждать, поэтому не прячем.
+     */
+    public function isLessonUpcoming(): bool
+    {
+        $session = $this->lesson?->courseSession;
 
+        return $session !== null
+            && $session->start_date_time !== null
+            && now()->lt($session->start_date_time);
+    }
 }

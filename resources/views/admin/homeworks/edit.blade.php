@@ -94,11 +94,11 @@
                     <label class="block text-sm font-medium">Тип задания</label>
                     <select name="tasks[{{ $i }}][type]" class="task-type w-full border rounded px-3 py-2" required>
                         <option value="">Выберите тип</option>
-                        <option value="multiple_choice" @selected($t->type==='multiple_choice')>Тест с вариантами</option>
-                        <option value="text_based" @selected($t->type==='text_based')>Текст с вопросами</option>
+                        <option value="test" @selected($t->type==='test')>Тест с вариантами</option>
+                        <option value="text_with_questions" @selected($t->type==='text_with_questions')>Текст с вопросами</option>
                         <option value="matching" @selected($t->type==='matching')>Соотнесение</option>
                         <option value="image_auto" @selected($t->type==='image_auto')>Картинка (авто)</option>
-                        <option value="image_written" @selected($t->type==='image_written')>Картинка (ручная)</option>
+                        <option value="image_manual" @selected($t->type==='image_manual')>Картинка (ручная)</option>
                         <option value="written" @selected($t->type==='written')>Развёрнутый ответ</option>
                         <option value="table" @selected($t->type==='table')>Таблица</option>
                     </select>
@@ -124,8 +124,8 @@
                     <textarea name="tasks[{{ $i }}][hint]" class="w-full border rounded px-3 py-2">{{ old("tasks.$i.hint", $t->hint) }}</textarea>
                 </div>
 
-                {{-- Варианты (multiple_choice) --}}
-                <div class="mb-4 task-options {{ $t->type==='multiple_choice' ? '' : 'hidden' }}">
+                {{-- Варианты (test) --}}
+                <div class="mb-4 task-options {{ $t->type==='test' ? '' : 'hidden' }}">
                     <label class="block text-sm font-medium">Варианты ответа (Каждый вариант ответа с новой строки)</label>
                     <textarea name="tasks[{{ $i }}][options]" class="w-full border rounded px-3 py-2" rows="6">{{ old("tasks.$i.options", $optionsText) }}</textarea>
                 </div>
@@ -164,15 +164,15 @@
                 </div>
 
                 {{-- Текст (источник / пассаж) --}}
-                <div class="mb-4 task-passage {{ in_array($t->type, ['text_based','written']) ? '' : 'hidden' }}">
+                <div class="mb-4 task-passage {{ in_array($t->type, ['text_with_questions','written']) ? '' : 'hidden' }}">
                     <label class="block text-sm font-medium">
-                        {{ $t->type==='text_based' ? 'Текст (источник)' : 'Текст (пассаж)' }}
+                        {{ $t->type==='text_with_questions' ? 'Текст (источник)' : 'Текст (пассаж)' }}
                     </label>
                     <textarea name="tasks[{{ $i }}][passage_text]" class="w-full border rounded px-3 py-2" rows="5">{{ old("tasks.$i.passage_text", $t->passage_text) }}</textarea>
                 </div>
 
                 {{-- Изображение (в условии) --}}
-                <div class="mb-4 task-image {{ in_array($t->type, ['image_auto','image_written']) ? '' : 'hidden' }}">
+                <div class="mb-4 task-image {{ in_array($t->type, ['image_auto','image_manual']) ? '' : 'hidden' }}">
                     <label class="block text-sm font-medium">Изображение</label>
                     @if(!empty($t->image_path))
                         <div class="text-xs text-gray-600 mb-1">Текущее: {{ $t->image_path }}</div>
@@ -248,20 +248,20 @@ document.addEventListener('DOMContentLoaded', () => {
         container.querySelectorAll('.task-options, .task-matches, .task-image, .task-table, .task-passage, .task-image-auto-extra')
                  .forEach(el => el.classList.add('hidden'));
 
-        if (type === 'multiple_choice') container.querySelector('.task-options')?.classList.remove('hidden');
-        if (type === 'text_based')     container.querySelector('.task-passage')?.classList.remove('hidden');
+        if (type === 'test') container.querySelector('.task-options')?.classList.remove('hidden');
+        if (type === 'text_with_questions')     container.querySelector('.task-passage')?.classList.remove('hidden');
         if (type === 'matching')       container.querySelector('.task-matches')?.classList.remove('hidden');
         if (type === 'table') {
         container.querySelector('.task-table')?.classList.remove('hidden');
         container.querySelector('.task-options')?.classList.remove('hidden'); // ← тоже видно
         }
-        if (type === 'text_based' || type === 'written') container.querySelector('.task-passage')?.classList.remove('hidden');
+        if (type === 'text_with_questions' || type === 'written') container.querySelector('.task-passage')?.classList.remove('hidden');
 
         if (type === 'image_auto') {
             container.querySelector('.task-image')?.classList.remove('hidden');
             container.querySelector('.task-image-auto-extra')?.classList.remove('hidden');
         }
-        if (type === 'image_written')  container.querySelector('.task-image')?.classList.remove('hidden');
+        if (type === 'image_manual')  container.querySelector('.task-image')?.classList.remove('hidden');
     }
 
     document.addEventListener('change', e => {
@@ -313,20 +313,20 @@ document.addEventListener('DOMContentLoaded', () => {
     container.querySelectorAll('.task-options, .task-matches, .task-image, .task-table, .task-passage, .task-image-auto-extra')
       .forEach(el => el.classList.add('hidden'));
 
-    if (type === 'multiple_choice') container.querySelector('.task-options')?.classList.remove('hidden');
-    if (type === 'text_based')      container.querySelector('.task-passage')?.classList.remove('hidden');
+    if (type === 'test') container.querySelector('.task-options')?.classList.remove('hidden');
+    if (type === 'text_with_questions')      container.querySelector('.task-passage')?.classList.remove('hidden');
     if (type === 'matching')        container.querySelector('.task-matches')?.classList.remove('hidden');
     if (type === 'table') {
   container.querySelector('.task-table')?.classList.remove('hidden');
   container.querySelector('.task-options')?.classList.remove('hidden'); // ← тоже видно
 }
-    if (type === 'text_based' || type === 'written')
+    if (type === 'text_with_questions' || type === 'written')
                                     container.querySelector('.task-passage')?.classList.remove('hidden');
     if (type === 'image_auto') {
       container.querySelector('.task-image')?.classList.remove('hidden');
       container.querySelector('.task-image-auto-extra')?.classList.remove('hidden');
     }
-    if (type === 'image_written')   container.querySelector('.task-image')?.classList.remove('hidden');
+    if (type === 'image_manual')   container.querySelector('.task-image')?.classList.remove('hidden');
   }
 
   // Инициализируем видимость по текущему типу в КАЖДОЙ карточке

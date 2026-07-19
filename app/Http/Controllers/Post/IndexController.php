@@ -5,36 +5,37 @@ namespace App\Http\Controllers\Post;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Post;
-use Illuminate\Http\Request;
 
 class IndexController extends Controller
 {
-    public function __invoke() {
-        // $posts = [];
-        if (request()->query('post_category') == 'history') {
-            $category = Category::all()->where('title', 'История')->first();
-            $items = Post::where('category_id', $category->id);
-            $posts = $items->paginate(4)->withQueryString();;
-        } else if (request()->query('post_category') == 'social_science') {
-            $category = Category::all()->where('title', 'Обществознание')->first();
-            $items = Post::where('category_id', $category->id);
-            $posts = $items->paginate(4)->withQueryString();;
-        } 
-        // dd($posts);
-        else {
-            $categories = Category::all();
-            $category_plan = "wrong";
-            foreach ($categories as $category) {
-                if ($category->title == "Планы по обществознанию") {
-                    $category_plan = $category->id;
-                } 
+    public function __invoke()
+    {
+        $postCategory = request()->query('post_category');
+
+        $categoryTitle = match ($postCategory) {
+            'history' => 'История',
+            'social_science' => 'Обществознание',
+            default => null,
+        };
+
+        $query = Post::query()->with(['tags', 'category']);
+
+        if ($categoryTitle !== null) {
+            $category = Category::where('title', $categoryTitle)->first();
+            // Категория могла быть переименована/удалена — тогда просто
+            // ничего не находим, а не падаем на ->id от null (как было).
+            $query->where('category_id', $category?->id ?? 0);
+        } else {
+            // "Планы по обществознанию" — служебная категория, которую не
+            // показываем в общей ленте статей.
+            $excludedCategoryId = Category::where('title', 'Планы по обществознанию')->value('id');
+            if ($excludedCategoryId !== null) {
+                $query->where('category_id', '!=', $excludedCategoryId);
             }
-            $posts = Post::where('category_id', '!=', $category_plan)->paginate(4)->withQueryString();
-            // ->paginate(4)->withQueryString();
-            // dd($posts);
         }
 
-        // dd(request()->query('post_category'));
+        $posts = $query->paginate(4)->withQueryString();
+
         return view('post.index', compact('posts'));
     }
 }

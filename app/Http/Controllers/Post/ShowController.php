@@ -6,45 +6,28 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Image;
 use App\Models\Post;
-use Illuminate\Support\Facades\DB;
-use Request;
-// use Illuminate\Http\Request;
 
 class ShowController extends Controller
 {
+    public function __invoke(Post $post)
+    {
+        // Раньше "текущий пост" для похожих статей заново находился регуляркой
+        // по Request::url() вместо использования $post, который Laravel уже
+        // резолвил через route model binding — ломалось на любом отклонении
+        // URL (конечный слэш и т.п.) и требовало лишнего запроса в БД.
+        $images = Image::where('post_id', $post->id)->orderBy('id')->get();
 
-    // public function getPost(Post $post) {
-    //     return $post;
-    // }
-    public function __invoke(Post $post) {
-        // dd($post);
+        // "Планы по обществознанию" — служебная категория, не показываем
+        // такие статьи в блоке "Другие статьи".
+        $excludedCategoryId = Category::where('title', 'Планы по обществознанию')->value('id');
 
-        
-        $images = Image::all()->where('post_id', $post->id);
-        $i = 0;
-        $new_images = [];
-        foreach ($images as $image) {
-            array_push($new_images, $image);
-            $i++;
-        }
-        $url = Request::url();
-        preg_match('([^\/]+$)', $url, $matches);
-        $postId = $matches[0]; //Получаем path из адресной строки
-        $currentPost = Post::where('path', $postId)->first(); // текущий пост
-        
-        $categories = Category::all();
-        $category_plan = "wrong";
-        foreach ($categories as $category) {
-            if ($category->title == "Планы по обществознанию") {
-                $category_plan = $category->id;
-            } 
-        }
-        // dd($category_plan);
-        
-        $posts = Post::where('category_id', $currentPost->category_id)->where('path', '!=' , $postId)->where('category_id', '!=', $category_plan)->paginate(4);
-        // Передаются все посты, кроме текущего, чтобы не повторять его в рекомендациях 
-        
-        
-        return view('post.show', compact('post', 'posts', 'images', 'new_images'));
+        $posts = Post::query()
+            ->with(['tags', 'category'])
+            ->where('category_id', $post->category_id)
+            ->where('path', '!=', $post->path)
+            ->when($excludedCategoryId !== null, fn ($q) => $q->where('category_id', '!=', $excludedCategoryId))
+            ->paginate(4);
+
+        return view('post.show', compact('post', 'posts', 'images'));
     }
 }

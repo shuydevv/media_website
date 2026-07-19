@@ -48,7 +48,7 @@
 
 
     </head>
-    <body>
+    <body class="{{ request()->routeIs('student.*') ? 'pb-20' : '' }}">
         <div class="relative border-b pb-3">
             <div class=" flex relative justify-between p-4 w-full z-10 items-center flex-wrap grow-0 md:mb-4 mb-2 max-w-6xl mx-auto">
 
@@ -76,9 +76,14 @@
                 </ul> --}}
             {{-- </div> --}}
         </div>
+        @include('partials.billing-banner')
         @yield('content')
         @yield('scripts')
         @stack('page-scripts')
+
+        @if(request()->routeIs('student.*'))
+            @include('partials.student-bottom-nav')
+        @endif
 
         {{-- Тост-уведомления (например, «Верно!» после авто-перехода на следующий вопрос).
              Живёт вне #wizard-app, чтобы не зависеть от того, что сейчас подменено htmx. --}}
@@ -236,5 +241,22 @@
             document.body.addEventListener('htmx:sendError', notifyNetworkError);
         })();
         </script>
+
+        @auth
+        {{-- Раз в 10 минут проверяем, жива ли сессия на сервере: если её выбило
+             лимитом одновременных входов (см. App\Listeners\EnforceSessionLimit),
+             редиректим на логин сразу, не дожидаясь обычной навигации. --}}
+        <script>
+        setInterval(function () {
+            fetch('{{ route('session.heartbeat') }}', { headers: { 'Accept': 'application/json' } })
+                .then(function (res) {
+                    if (res.status === 401) {
+                        window.location.href = '{{ route('login') }}?expired=1';
+                    }
+                })
+                .catch(function () {});
+        }, 10 * 60 * 1000);
+        </script>
+        @endauth
     </body>
 </html>

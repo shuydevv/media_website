@@ -27,8 +27,8 @@ class StoreController extends Controller
         $course = Course::create([
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
-            'price' => $validated['price'],
-            'old_price' => $validated['old_price'] ?? null,
+            'price_cents' => (int) round($validated['price_rub'] * 100),
+            'old_price_cents' => isset($validated['old_price_rub']) ? (int) round($validated['old_price_rub'] * 100) : null,
             'content' => $validated['content'] ?? null,
             'path' => $validated['path'] ?? null,
             'html_title' => $validated['html_title'] ?? null,

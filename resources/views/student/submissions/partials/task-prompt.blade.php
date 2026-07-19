@@ -3,7 +3,7 @@
      Ожидает переменную $task. Поле ответа сюда не входит — это только «условие». --}}
 @php
   $type         = $task->type ?? 'unknown';
-  $questionText = $task->question_text ?? null;
+  $questionText = \App\Support\Text::normalize($task->question_text ?? null);
   $passageText  = $task->passage_text ?? null;
 
   $storageUrl = function ($path) {
@@ -42,7 +42,7 @@
 
 {{-- Текстовый фрагмент для text_with_questions --}}
 @if($type === 'text_with_questions' && $passageText)
-  <div class="mt-1 mb-5 sm:mb-6 p-4 sm:p-5 rounded-xl bg-gray-50 border border-gray-200 leading-relaxed text-sm sm:text-base">
+  <div class="mb-5 sm:mb-6 p-4 sm:p-5 rounded-xl bg-gray-50 border border-gray-200 leading-relaxed text-sm sm:text-base">
     @foreach($normText($passageText) as $p)
       <p class="mb-3 sm:mb-4 last:mb-0">{{ $p }}</p>
     @endforeach
@@ -51,7 +51,7 @@
 
 {{-- Вопрос / текст --}}
 @if($questionText)
-  <div class="text-sm md:text-base text-gray-800 mt-1 whitespace-pre-wrap mb-5 sm:mb-6">{{ $questionText }}</div>
+  <div class="text-sm md:text-base text-gray-800 whitespace-pre-wrap mb-5 sm:mb-6">{{ $questionText }}</div>
 @endif
 
 {{-- Пассаж для развёрнутого ответа --}}
@@ -89,7 +89,7 @@
     }
   @endphp
 
-  <div class="overflow-auto rounded-xl border border-gray-100 mt-1 mb-5 sm:mb-6">
+  <div class="overflow-auto rounded-xl border border-gray-100 mb-5 sm:mb-6">
     <table class="min-w-full border-collapse">
       @if(!empty($cols))
         <thead class="bg-gray-50">
@@ -131,14 +131,14 @@
 
 {{-- Картинка --}}
 @if(in_array($type, ['image_auto','image_manual']) && $mediaUrl)
-  <div class="mt-1 mb-5 sm:mb-6">
+  <div class="mb-5 sm:mb-6">
     <img src="{{ $mediaUrl }}" alt="" class="w-full max-h-[360px] sm:max-h-[380px] object-contain rounded-xl border">
   </div>
 @endif
 
 {{-- Варианты --}}
 @if(!empty($options))
-  <div class="mt-1 mb-5 sm:mb-6 text-gray-900 text-sm sm:text-base flex flex-col flex-wrap gap-2 sm:gap-3 items-start">
+  <div class="mb-5 sm:mb-6 text-gray-900 text-sm sm:text-base flex flex-col flex-wrap gap-2 sm:gap-3 items-start">
     @foreach($options as $opt)
       <div class="px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg border border-gray-200 bg-gray-50">{{ $opt }}</div>
     @endforeach
@@ -162,7 +162,7 @@
     }
     $letters = ['А','Б','В','Г','Д','Е','Ж','З','И','К','Л','М'];
   @endphp
-  <div class="grid md:grid-cols-2 gap-4 sm:gap-6 mt-1 mb-5 sm:mb-6">
+  <div class="grid md:grid-cols-2 gap-4 sm:gap-6 mb-5 sm:mb-6">
     <div class="rounded-xl border bg-white">
       <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-gray-700">{{ $task->left_title ?? 'Левая колонка' }}</div>
       <div class="divide-y">

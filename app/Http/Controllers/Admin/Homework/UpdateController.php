@@ -80,7 +80,7 @@ public function __invoke(UpdateRequest $request, Homework $homework)
                 'hint'          => $taskData['hint'] ?? null,
 
                 // JSON-поля
-                'options'       => $taskData['options'] ?? null,        // варианты ответа (multiple_choice)
+                'options'       => $taskData['options'] ?? null,        // варианты ответа (test)
                 'matches'       => $taskData['matches'] ?? null,        // соотнесение
                 'table_content' => $tableContent,          // содержимое таблицы (3x4)
 

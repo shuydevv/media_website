@@ -20,6 +20,11 @@ class SubmissionController extends Controller
     {
         $this->authorize('view', $homework);
 
+        // Пока урок, к которому привязана домашка, ещё не наступил, доступа
+        // к ней быть не должно вообще — 404, а не 403, чтобы прямой ссылкой
+        // тоже нельзя было узнать о её существовании (см. Homework::isLessonUpcoming()).
+        abort_if($homework->isLessonUpcoming(), 404);
+
         $user = $request->user();
 
         $inProgress = Submission::where('homework_id', $homework->id)
@@ -239,7 +244,7 @@ class SubmissionController extends Controller
         $submission->total_score      = (int) ($grade['score'] ?? 0);
         $submission->per_task_results = $grade['per_task'] ?? null;
 
-        $hasManual = $tasks->contains(fn (HomeworkTask $t) => in_array($t->type, ['written', 'image_written', 'image_manual'], true));
+        $hasManual = $tasks->contains(fn (HomeworkTask $t) => in_array($t->type, HomeworkTask::MANUAL_TYPES, true));
         $submission->status = (!$hasManual && !empty($grade['fully_auto'])) ? 'checked' : 'pending';
 
         if (!empty($homework->due_at) && now()->isAfter($homework->due_at)) {

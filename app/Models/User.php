@@ -32,7 +32,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function courses()
     {
         return $this->belongsToMany(\App\Models\Course::class, 'course_user')
-            ->withPivot(['status','enrolled_at','expires_at','source','payment_id','promo_code'])
+            ->withPivot([
+                'status', 'enrolled_at', 'expires_at', 'source', 'payment_id', 'promo_code',
+                'billing_interval_days', 'next_payment_due_at', 'autopay_enabled',
+                'promised_payment_expires_at', 'promised_payment_used_at', 'reminder_sent_at',
+            ])
             ->withTimestamps();
     }
 

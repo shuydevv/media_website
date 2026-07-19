@@ -197,6 +197,18 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
         Route::patch('/{user}', 'UpdateController')->name('admin.user.update');
         Route::delete('/{user}', 'DeleteController')->name('admin.user.delete');
     });
+
+    // Без 'namespace' => 'User' — контроллер лежит в Admin\Billing, передан полным классом
+    Route::post('/users/{user}/courses/{course}/payments', \App\Http\Controllers\Admin\Billing\RecordPaymentController::class)
+        ->name('admin.billing.payments.store');
+
+    Route::post('/users/{user}/courses/{course}/promo', [\App\Http\Controllers\Admin\Billing\PromoAttachmentController::class, 'store'])
+        ->name('admin.billing.promo.store');
+    Route::delete('/users/{user}/courses/{course}/promo', [\App\Http\Controllers\Admin\Billing\PromoAttachmentController::class, 'destroy'])
+        ->name('admin.billing.promo.destroy');
+
+    Route::put('/users/{user}/courses/{course}/autopay', [\App\Http\Controllers\Admin\Billing\AutopayController::class, 'update'])
+        ->name('admin.billing.autopay.update');
 });
 Route::group(['namespace' => 'App\Http\Controllers\Controller'], function() {
     Route::get('/1', 'ComponentController');
@@ -248,7 +260,31 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/student/dashboard', DashboardController::class)->name('student.dashboard');
 });
 
-Route::middleware(['auth'])
+Route::middleware(['auth'])->group(function () {
+    Route::get('/student/homeworks', [\App\Http\Controllers\Student\HomeworkController::class, 'index'])
+        ->name('student.homeworks.index');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/session/heartbeat', fn () => response()->json(['ok' => true]))->name('session.heartbeat');
+});
+
+// Экран просрочки оплаты — вне billing.current, иначе будет петля редиректов
+Route::middleware(['auth'])->group(function () {
+    Route::get('/billing/overdue/{course}', [\App\Http\Controllers\Billing\OverdueController::class, 'show'])
+        ->name('billing.overdue');
+    Route::post('/billing/overdue/{course}/promise', [\App\Http\Controllers\Billing\OverdueController::class, 'promise'])
+        ->name('billing.promise');
+
+    Route::get('/student/billing', [\App\Http\Controllers\Student\BillingSettingsController::class, 'show'])
+        ->name('student.billing.show');
+    Route::post('/student/billing/{course}', [\App\Http\Controllers\Student\BillingSettingsController::class, 'update'])
+        ->name('student.billing.update');
+    Route::post('/student/billing/{course}/promo', [\App\Http\Controllers\Student\BillingSettingsController::class, 'applyPromo'])
+        ->name('student.billing.promo.apply');
+});
+
+Route::middleware(['auth', 'billing.current'])
     ->prefix('student')
     ->name('student.')
     ->group(function () {
@@ -266,6 +302,7 @@ Route::middleware(['auth'])
     ->name('student.')
     ->group(function () {
         Route::get('/homeworks/{homework}/submit', [StudentSubmissionController::class, 'create'])
+            ->middleware('billing.current')
             ->name('submissions.create');
 
         Route::get('/submissions/{submission}/questions/{position}', [StudentSubmissionController::class, 'question'])

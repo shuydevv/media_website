@@ -81,13 +81,13 @@
         </div>
 
         <div class="mb-4">
-            <label for="price" class="block text-sm font-medium">Цена</label>
-            <input type="text" name="price" id="price" value="{{ old('price', $course->price) }}" required class="w-full border rounded px-3 py-2">
+            <label for="price_rub" class="block text-sm font-medium">Цена, ₽</label>
+            <input type="number" step="0.01" min="0" name="price_rub" id="price_rub" value="{{ old('price_rub', $course->price_cents / 100) }}" required class="w-full border rounded px-3 py-2">
         </div>
 
         <div class="mb-4">
-            <label for="old_price" class="block text-sm font-medium">Старая цена</label>
-            <input type="text" name="old_price" id="old_price" value="{{ old('old_price', $course->old_price) }}" class="w-full border rounded px-3 py-2">
+            <label for="old_price_rub" class="block text-sm font-medium">Старая цена, ₽</label>
+            <input type="number" step="0.01" min="0" name="old_price_rub" id="old_price_rub" value="{{ old('old_price_rub', $course->old_price_cents !== null ? $course->old_price_cents / 100 : null) }}" class="w-full border rounded px-3 py-2">
         </div>
 
         <div class="mb-4">

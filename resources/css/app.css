@@ -259,6 +259,75 @@ li::marker {
 .pin-box.filled { border-color:#2563eb; }
 .pin-box.active { border-color:#2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25); }
 
+/* Единое голубое выделение полей при фокусе (формы входа/регистрации/OTP/сброса пароля) —
+   тот же цвет и то же мягкое кольцо-свечение, что у .pin-box.active в визарде домашки.
+   :not(:placeholder-shown) — «заполнено» (требует атрибут placeholder на самом инпуте). */
+.input-focus {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.input-focus:not(:placeholder-shown) {
+    border-color: #93c5fd;
+    background-color: #eff6ff;
+}
+.input-focus:focus {
+    outline: none;
+    border-color: #2563eb;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+}
+
+/* Кастомный чекбокс (например «Запомнить меня» на странице входа):
+   appearance:none снимает системный вид, галочка — псевдоэлемент ::after. */
+.checkbox-custom {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border: 2px solid #d1d5db;
+    border-radius: 6px;
+    background-color: #fff;
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.checkbox-custom:checked {
+    background-color: #2563eb;
+    border-color: #2563eb;
+}
+.checkbox-custom:checked::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+.checkbox-custom:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+}
+
+/* Кастомное подчёркивание ссылок (вместо дефолтного text-decoration:underline):
+   полоска растёт слева направо при наведении, цвет берётся из текста ссылки (currentColor). */
+.link-custom {
+    text-decoration: none;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-size: 0% 1.5px;
+    transition: background-size 0.2s ease;
+    padding-bottom: 1px;
+}
+.link-custom:hover {
+    background-size: 100% 1.5px;
+}
+
 @media (max-width: 640px) {
     .pin-boxes {
         grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));

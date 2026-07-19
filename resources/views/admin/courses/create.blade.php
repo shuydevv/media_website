@@ -74,12 +74,12 @@
             <button type="button" id="add-schedule" class="mt-2 text-blue-600 hover:underline text-sm">+ Добавить день</button>
         </div>
 
-        <div class="mb-4"><label for="price" class="block text-sm font-medium">Цена</label>
-            <input type="text" name="price" id="price" value="{{ old('price') }}" required class="w-full border rounded px-3 py-2">
+        <div class="mb-4"><label for="price_rub" class="block text-sm font-medium">Цена, ₽</label>
+            <input type="number" step="0.01" min="0" name="price_rub" id="price_rub" value="{{ old('price_rub') }}" required class="w-full border rounded px-3 py-2">
         </div>
 
-        <div class="mb-4"><label for="old_price" class="block text-sm font-medium">Старая цена</label>
-            <input type="text" name="old_price" id="old_price" value="{{ old('old_price') }}" class="w-full border rounded px-3 py-2">
+        <div class="mb-4"><label for="old_price_rub" class="block text-sm font-medium">Старая цена, ₽</label>
+            <input type="number" step="0.01" min="0" name="old_price_rub" id="old_price_rub" value="{{ old('old_price_rub') }}" class="w-full border rounded px-3 py-2">
         </div>
 
         <div class="mb-4"><label for="content" class="block text-sm font-medium">Контент</label>

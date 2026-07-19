@@ -77,17 +77,17 @@
                     <label class="block text-sm font-medium">Тип задания</label>
                     <select name="tasks[0][type]" class="task-type w-full border rounded px-3 py-2" required>
                         <option value="">Выберите тип</option>
-                        <option value="multiple_choice">Тест с вариантами</option>
-                        <option value="text_based">Текст с вопросами</option>
+                        <option value="test">Тест с вариантами</option>
+                        <option value="text_with_questions">Текст с вопросами</option>
                         <option value="matching">Соотнесение</option>
                         <option value="image_auto">Картинка (автопроверка)</option>
-                        <option value="image_written">Картинка (ручная проверка)</option>
+                        <option value="image_manual">Картинка (ручная проверка)</option>
                         <option value="written">Развёрнутый ответ</option>
                         <option value="table">Таблица</option>
                     </select>
                 </div>
 
-                {{-- Дополнительный текст (для text_based) --}}
+                {{-- Дополнительный текст (для text_with_questions) --}}
                 <div class="mb-4 task-passage hidden">
                     <label class="block text-sm font-medium">Текст задания (художественный / публицистический)</label>
                     <textarea name="tasks[0][passage_text]" class="w-full border rounded px-3 py-2" rows="4"></textarea>
@@ -111,7 +111,7 @@
                     <textarea name="tasks[0][hint]" class="w-full border rounded px-3 py-2"></textarea>
                 </div>
 
-                {{-- Варианты (multiple_choice) --}}
+                {{-- Варианты (test) --}}
                 <div class="mb-4 task-options hidden">
                     <label class="block text-sm font-medium">Варианты ответа (Каждый вариант ответа с новой строки)</label>
                     <textarea name="tasks[0][options][]" class="w-full border rounded px-3 py-2" rows="6"></textarea>
@@ -219,21 +219,21 @@ document.addEventListener('DOMContentLoaded', () => {
         container.querySelectorAll('.task-options, .task-matches, .task-image, .task-table, .task-passage, .task-image-auto-extra')
                  .forEach(el => el.classList.add('hidden'));
 
-        if (type === 'multiple_choice') container.querySelector('.task-options')?.classList.remove('hidden');
-        if (type === 'text_based') container.querySelector('.task-passage')?.classList.remove('hidden');
+        if (type === 'test') container.querySelector('.task-options')?.classList.remove('hidden');
+        if (type === 'text_with_questions') container.querySelector('.task-passage')?.classList.remove('hidden');
         if (type === 'matching') container.querySelector('.task-matches')?.classList.remove('hidden');
         if (type === 'table') {
             container.querySelector('.task-table')?.classList.remove('hidden');
             container.querySelector('.task-options')?.classList.remove('hidden'); // ← показываем варианты ответа
         }
 
-        if (type === 'text_based' || type === 'written') container.querySelector('.task-passage')?.classList.remove('hidden');
+        if (type === 'text_with_questions' || type === 'written') container.querySelector('.task-passage')?.classList.remove('hidden');
 
         if (type === 'image_auto') {
             container.querySelector('.task-image')?.classList.remove('hidden');
             container.querySelector('.task-image-auto-extra')?.classList.remove('hidden');
         }
-        if (type === 'image_written') container.querySelector('.task-image')?.classList.remove('hidden');
+        if (type === 'image_manual') container.querySelector('.task-image')?.classList.remove('hidden');
     }
 
     document.addEventListener('change', e => {

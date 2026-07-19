@@ -90,7 +90,7 @@ class CourseDemoSeeder extends Seeder
         return Course::create([
             'title'       => 'Демо-курс ' . now()->format('d.m.Y H:i:s'),
             'description' => 'Курс, сгенерированный сидером для тестирования расписания/уроков/домашек',
-            'price'       => '990',
+            'price_cents' => 99000,
             'category_id' => $category->id,
             'start_date'  => $start->toDateString(),
             'end_date'    => $end->toDateString(),
@@ -193,7 +193,7 @@ class CourseDemoSeeder extends Seeder
 
         $grade = app(AutoGrader::class)->gradeWithTasks($tasks, $answers);
 
-        $hasManual = $tasks->contains(fn (HomeworkTask $t) => in_array($t->type, ['written', 'image_written', 'image_manual'], true));
+        $hasManual = $tasks->contains(fn (HomeworkTask $t) => in_array($t->type, HomeworkTask::MANUAL_TYPES, true));
 
         $submission->autocheck_score  = (int) ($grade['score'] ?? 0);
         $submission->total_score      = (int) ($grade['score'] ?? 0);

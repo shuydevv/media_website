@@ -9,11 +9,12 @@ use App\Models\Course;
 use App\Models\Lesson;
 use App\Models\Homework;
 use App\Models\Submission;
+use App\Service\BillingService;
 
 
 class DashboardController extends Controller
 {
-    public function __invoke()
+    public function __invoke(BillingService $billing)
     {
         $user = auth()->user();
 
@@ -57,6 +58,19 @@ class DashboardController extends Controller
 
         $courseIds = $courses->pluck('id')->all();
 
+        // Курс может остаться в списке «Мои курсы» (мы его не прячем — он
+        // оплачен, просто сейчас просрочен), но его уроки, домашки, очередь
+        // и «ближайшее событие» ниже не должны подмешиваться на дашборд, если
+        // доступ приостановлен (см. BillingService::hasAccess()) — иначе
+        // блокировка де-факто работает только на странице самого курса, а с
+        // дашборда всё видно и доступно так, будто ничего не просрочено.
+        $blockedCourseIds = $courses
+            ->reject(fn ($course) => $billing->hasAccess($user, $course))
+            ->pluck('id')
+            ->all();
+
+        $courseIds = array_values(array_diff($courseIds, $blockedCourseIds));
+
         // Уроки в окне дат по курсам пользователя
         // $lessons = Lesson::query()
         //     ->whereHas('courseSession', fn($q) => $q->whereIn('course_id', $courseIds))
@@ -98,7 +112,11 @@ $homeworks = Homework::query()
     ->whereNotNull('due_at')
     ->whereBetween('due_at', [$from, $to])
     ->with(['lesson.courseSession.course'])
-    ->get();
+    ->get()
+    // Пока урок ещё не наступил, ученик не должен знать о домашке к нему —
+    // ни в расписании, ни где-либо ещё (см. Homework::isLessonUpcoming()).
+    ->reject(fn (Homework $hw) => $hw->isLessonUpcoming())
+    ->values();
 
         // Сабмишены пользователя по этим домашкам — без $user->submissions()
         $userSubmissions = Submission::query()
@@ -246,6 +264,72 @@ foreach ($daysMap as $dateKey => &$dayRow) {
 
         $days = array_values($daysMap);
 
-        return view('student.dashboard', compact('courses', 'days'));
+        // ────────────────────────────────────────────────────────────────────
+        // Карточка «Ближайшее событие»: первый ещё не выполненный урок/домашка
+        // начиная с сегодняшнего дня (уже отсортировано выше по времени внутри дня).
+        // ────────────────────────────────────────────────────────────────────
+        $nextItem = null;
+        $todayIndex = null;
+        foreach ($days as $i => $d) {
+            if (!empty($d['is_today'])) { $todayIndex = $i; break; }
+        }
+        if ($todayIndex !== null) {
+            for ($i = $todayIndex; $i < count($days); $i++) {
+                foreach ($days[$i]['items'] as $it) {
+                    if (($it['status'] ?? null) !== 'completed') {
+                        $nextItem = $it + ['day' => $days[$i]['day'], 'date' => $days[$i]['date']];
+                        break 2;
+                    }
+                }
+            }
+        }
+
+        // ────────────────────────────────────────────────────────────────────
+        // Карточка «Ближайшие домашки»: очередь домашек, которые ещё не сданы
+        // (не считая уже завершённых попыток), отсортирована по дедлайну.
+        // Отдельно помечаем те, что уже начаты (есть открытая in_progress-попытка).
+        // ────────────────────────────────────────────────────────────────────
+        $latestSubmissionByHomework = Submission::query()
+            ->where('user_id', $user->id)
+            ->whereIn('homework_id', Homework::query()->whereIn('course_id', $courseIds)->pluck('id'))
+            ->orderByDesc('id')
+            ->get()
+            ->groupBy('homework_id')
+            ->map(fn ($group) => $group->first());
+
+        $homeworksQueue = Homework::query()
+            ->whereIn('course_id', $courseIds)
+            ->whereNotNull('due_at')
+            ->where('due_at', '>=', now()->subDays(30))
+            ->with('lesson.courseSession.course')
+            ->orderBy('due_at')
+            ->get()
+            ->reject(fn (Homework $hw) => $hw->isLessonUpcoming())
+            ->map(function ($hw) use ($latestSubmissionByHomework) {
+                $sub = $latestSubmissionByHomework->get($hw->id);
+                $courseTitle = optional($hw->lesson?->courseSession?->course)->title ?? 'Курс';
+
+                $isStarted = $sub && $sub->status === 'in_progress';
+                $isOverdue = !$sub && $hw->due_at->isPast();
+
+                return [
+                    'homework'   => $hw,
+                    'subject'    => preg_replace('/,.*$/u', '', $courseTitle),
+                    'is_started' => $isStarted,
+                    'is_done'    => $sub && $sub->status !== 'in_progress',
+                    'is_overdue' => $isOverdue,
+                    'color'      => $isStarted ? 'blue' : ($isOverdue ? 'red' : 'yellow'),
+                ];
+            })
+            ->reject(fn ($row) => $row['is_done'])
+            ->take(3)
+            ->values();
+
+        // Есть ли просроченные домашки прямо сейчас — влияет на настроение маскота в приветствии
+        $overdueCount = collect($days)->flatMap(fn ($d) => $d['items'])
+            ->where('status', 'overdue')
+            ->count();
+
+        return view('student.dashboard', compact('courses', 'days', 'nextItem', 'homeworksQueue', 'overdueCount', 'blockedCourseIds'));
     }
 }

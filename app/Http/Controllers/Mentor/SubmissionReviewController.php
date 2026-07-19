@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Mentor;
 
 use App\Http\Controllers\Controller;
+use App\Models\HomeworkTask;
 use App\Models\Submission;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -265,9 +266,8 @@ class SubmissionReviewController extends Controller
         }
         $tasks = collect($tasksRaw)->map(fn($t) => (object)$t);
 
-        $manualTypes = ['written','image_written','image_manual'];
-        $auto   = $tasks->filter(fn($t) => !in_array(($t->type ?? ''), $manualTypes, true));
-        $manual = $tasks->filter(fn($t) =>  in_array(($t->type ?? ''), $manualTypes, true));
+        $auto   = $tasks->filter(fn($t) => !in_array(($t->type ?? ''), HomeworkTask::MANUAL_TYPES, true));
+        $manual = $tasks->filter(fn($t) =>  in_array(($t->type ?? ''), HomeworkTask::MANUAL_TYPES, true));
 
         $per = $submission->per_task_results ?? [];
 
