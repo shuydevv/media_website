@@ -16,6 +16,8 @@ class CourseUser extends Model
         'promised_payment_expires_at' => 'datetime',
         'promised_payment_used_at' => 'datetime',
         'reminder_sent_at' => 'datetime',
+        'overdue_notified_at' => 'datetime',
+        'promise_expiring_notified_at' => 'datetime',
         'autopay_enabled' => 'boolean',
     ];
 

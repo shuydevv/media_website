@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Course;
 use App\Service\CourseScheduleService;
 use App\Http\Requests\Admin\Course\StoreRequest;
+use App\Service\ImageCompressor;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -20,7 +21,7 @@ class StoreController extends Controller
         $validated = $request->validated();
 
         if( array_key_exists('main_image', $validated)) {
-            $validated['main_image'] = Storage::disk('public')->put('/images', $validated['main_image']);
+            $validated['main_image'] = ImageCompressor::forContent()->storeAs($validated['main_image'], 'images');
         }
 
         // только поля, которые действительно есть в таблице courses

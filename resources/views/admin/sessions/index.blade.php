@@ -8,6 +8,9 @@
     @if (session('success'))
         <div class="mb-4 text-green-600">{{ session('success') }}</div>
     @endif
+    @if (session('error'))
+        <div class="mb-4 text-red-600">{{ session('error') }}</div>
+    @endif
 
 
 <form method="GET" action="{{ route('admin.sessions.index') }}" class="mb-4 grid md:grid-cols-4 gap-4 items-end">
@@ -77,8 +80,14 @@
                         <td class="px-4 py-3">{{ $session->duration_minutes }} мин</td>
                         <td class="px-4 py-3">{{ $session->course->title ?? '-' }}</td>
                         <td class="px-4 py-3 capitalize text-gray-700">{{ $session->status }}</td>
-                        <td class="px-4 py-3 flex gap-2">
+                        <td class="px-4 py-3 flex gap-2 items-center">
                             <a href="{{ route('admin.sessions.edit', $session->id) }}" class="text-blue-600 hover:underline">Редактировать</a>
+                            <form method="POST" action="{{ route('admin.sessions.destroy', $session->id) }}"
+                                  onsubmit="return confirm('{{ $session->lesson ? 'К этой сессии привязан урок — сначала удалите его отдельно. Всё равно попробовать удалить сессию?' : 'Удалить это занятие?' }}');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-600 hover:underline">Удалить</button>
+                            </form>
                         </td>
                     </tr>
                 @empty

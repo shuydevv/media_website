@@ -10,25 +10,29 @@ use Illuminate\Http\Request;
 
 class IndexController extends Controller
 {
+    private const CATEGORY_TITLES_BY_SLUG = [
+        'history' => 'История',
+        'social_science' => 'Обществознание',
+    ];
+
     public function __invoke() {
-        // $posts = [];
-        if (request()->query('post_category') == 'history') {
-            $category = Category::all()->where('title', 'История')->first();
-            $items = Exercise::where('category_id', $category->id);
-            $posts = $items->paginate(4)->withQueryString();;
-        } else if (request()->query('post_category') == 'social_science') {
-            $category = Category::all()->where('title', 'Обществознание')->first();
-            $items = Exercise::where('category_id', $category->id);
-            $posts = $items->paginate(4)->withQueryString();;
-        } 
-        // dd($posts);
-        else {
-            $posts = Exercise::paginate(4)->withQueryString();;
-            // dd($posts);
-            
+        $slug = request()->query('post_category');
+        $categoryTitle = self::CATEGORY_TITLES_BY_SLUG[$slug] ?? null;
+
+        if ($categoryTitle !== null) {
+            // exercises не имеют собственной колонки category_id — категория
+            // определяется через цепочку topic -> section -> category
+            // (см. Exercise::getCategoryAttribute()), поэтому фильтруем через
+            // whereHas по этой цепочке, а не прямым where по несуществующей колонке.
+            $category = Category::where('title', $categoryTitle)->first();
+            $posts = $category
+                ? Exercise::whereHas('topic.section', fn ($q) => $q->where('category_id', $category->id))
+                    ->paginate(4)->withQueryString()
+                : Exercise::whereRaw('1 = 0')->paginate(4)->withQueryString();
+        } else {
+            $posts = Exercise::paginate(4)->withQueryString();
         }
 
-        // dd(request()->query('post_category'));
         return view('exercise.index', compact('posts'));
     }
 }

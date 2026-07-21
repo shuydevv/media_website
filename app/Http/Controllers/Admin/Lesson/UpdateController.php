@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Admin\Lesson;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Lesson\UpdateRequest;
 use App\Models\Lesson;
+use App\Notifications\LessonRecordingAvailableNotification;
+use App\Service\BillingService;
+use App\Service\ImageCompressor;
 use Illuminate\Support\Facades\Storage;
 
 class UpdateController extends Controller
@@ -21,8 +24,10 @@ class UpdateController extends Controller
             }
 
             // Сохраняем новое изображение
-            $validated['image'] = $validated['image']->store('lessons', 'public');
+            $validated['image'] = ImageCompressor::forContent()->storeAs($validated['image'], 'lessons');
         }
+
+        $recordingWasEmpty = blank($lesson->recording_link);
 
         // Обновляем остальные поля
         $lesson->update([
@@ -38,7 +43,25 @@ class UpdateController extends Controller
             // 'homework_id'       => $validated['homework_id'] ?? null,
         ]);
 
+        // Уведомляем учеников только на переходе "ссылки не было -> появилась",
+        // а не на каждое сохранение формы.
+        if ($recordingWasEmpty && filled($validated['recording_link'] ?? null)) {
+            $this->notifyRecordingAvailable($lesson);
+        }
+
         return redirect()->route('admin.lessons.index')
             ->with('success', 'Урок успешно обновлён');
+    }
+
+    private function notifyRecordingAvailable(Lesson $lesson): void
+    {
+        $course = $lesson->courseSession?->course;
+        if (!$course) {
+            return;
+        }
+
+        foreach (app(BillingService::class)->activeStudentsWithAccess($course) as $student) {
+            $student->notify(new LessonRecordingAvailableNotification($lesson));
+        }
     }
 }

@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Image;
 use App\Models\Exercise;
 use App\Models\Tag;
+use App\Service\ImageCompressor;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -19,7 +20,7 @@ class UpdateController extends BaseController
     public function __invoke(UpdateRequest $request, Exercise $exercise) {
         $data = $request->validated();
         if( array_key_exists('main_image', $data)) {
-            $data['main_image'] = Storage::disk('public')->put('/images', $data['main_image']);
+            $data['main_image'] = ImageCompressor::forContent()->storeAs($data['main_image'], 'images');
         }
         $exercise->update($data);
         // $exercise = $this->service->update($data, $exercise);

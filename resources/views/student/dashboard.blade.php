@@ -1,29 +1,6 @@
 {{-- resources/views/student/dashboard.blade.php --}}
 @extends('layouts.main') {{-- замени на свой layout, если другой --}}
 
-@php
-    use Illuminate\Support\Carbon;
-
-if (!function_exists('ru_plural')) {
-    function ru_plural($n, $one, $few, $many) {
-        $n = abs($n);
-        $mod10 = $n % 10;
-        $mod100 = $n % 100;
-        if ($mod10 === 1 && $mod100 !== 11) return $one;
-        if (in_array($mod10, [2, 3, 4]) && !in_array($mod100, [12, 13, 14])) return $few;
-        return $many;
-    }
-}
-
-$hour = now()->hour;
-$greetingWord = match (true) {
-    $hour < 6  => 'Доброй ночи',
-    $hour < 12 => 'Доброе утро',
-    $hour < 18 => 'Добрый день',
-    default    => 'Добрый вечер',
-};
-@endphp
-
 @section('content')
 <div class="max-w-6xl mx-auto px-4 py-6">
 
@@ -31,103 +8,163 @@ $greetingWord = match (true) {
         <div class="mb-4 text-green-600 text-sm">{{ session('success') }}</div>
     @endif
 
-    <div class="grid grid-cols-1 md:grid-cols-[1.15fr_1fr_1fr] gap-4 mb-6">
-        {{-- Карточка 1: маскот-приветствие --}}
-        <div class="bg-white border rounded-2xl p-5 flex items-center gap-4">
-            <div id="greeting-mascot" class="w-1/2 aspect-square shrink-0 rounded-xl bg-gray-100 flex items-center justify-center">
-                <img src="{{ asset('img/'.($overdueCount > 0 ? 'person.svg' : 'like.svg')) }}" alt="" class="w-2/3 h-2/3 object-contain">
+    {{-- Ширина колонок — обычным <style>, не Tailwind-классом с квадратными
+         скобками (md:grid-cols-[...]): в этом браузере часть таких классов
+         ненадёжно применяется, уже несколько раз ловили на хедере и нижнем
+         меню. Так 2-я и 3-я карточки гарантированно получают одинаковую
+         ширину (1fr каждая). --}}
+    <style>
+        #dashboard-cards-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            #dashboard-cards-grid {
+                grid-template-columns: 1.7fr 1fr 1fr;
+            }
+        }
+
+        /* Клик по «Покормить»: волна из точки клика на самой кнопке, и
+           крошки корма, падающие сверху на маскота (спавнятся и анимируются
+           через GSAP в скрипте ниже, как и конфетти на странице результата
+           домашки — student/submissions/show.blade.php). #fish-card (вместе
+           с кнопкой) целиком пересоздаётся при каждом htmx-свапе, поэтому
+           обработчик клика навешан через делегирование на document, а не на
+           саму кнопку. */
+        #greeting-mascot {
+            position: relative;
+            overflow: hidden;
+        }
+        .fish-feed-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        .fish-feed-ripple {
+            position: absolute;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, .55);
+            transform: scale(0);
+            pointer-events: none;
+            animation: fish-ripple-wave .6s ease-out forwards;
+        }
+        @keyframes fish-ripple-wave {
+            to {
+                transform: scale(2.6);
+                opacity: 0;
+            }
+        }
+
+        /* Баннер левел-апа — прямо в рамке маскота (#greeting-mascot), не
+           по центру экрана: фокус внимания должен оставаться на персонаже,
+           не уходить в сторону общего toast-root. */
+        .fish-levelup-banner {
+            position: absolute;
+            left: 50%;
+            bottom: 10px;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1px;
+            padding: 6px 14px;
+            border-radius: 10px;
+            background: rgba(17, 24, 39, .82);
+            color: #fff;
+            text-align: center;
+            pointer-events: none;
+            z-index: 10;
+            white-space: nowrap;
+        }
+        .fish-levelup-banner-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fbbf24;
+        }
+
+        /* Мобильная версия карточек 1/2 — обычным media-query, не Tailwind-
+           префиксами (sm:/md:): в этом браузере часть таких классов
+           ненадёжно применяется, уже несколько раз ловили на других
+           страницах. На узких экранах маскот и блок кормления в карточке 1
+           не помещаются в один ряд по половине ширины каждый (кнопке
+           "Покормить" и прогресс-бару тесно) — на мобильном они идут друг
+           под другом на всю ширину карточки. */
+        @media (max-width: 480px) {
+            .dashboard-card {
+                padding: 1rem;
+            }
+            .dashboard-mascot-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1.5rem;
+            }
+            .dashboard-mascot-row #greeting-mascot {
+                width: 100%;
+            }
+        }
+    </style>
+    <div id="dashboard-cards-grid">
+        {{-- Карточка 1: маскот-рыба (пошире остальных) — интерфейс кормления
+             расположен так же, как раньше в отдельной карточке 3 (см.
+             partials/fish-card.blade.php: тот же flex-1/flex-col/mt-auto). --}}
+        <div class="dashboard-card dashboard-mascot-row bg-white border rounded-2xl p-5 flex md:gap-8 gap-4">
+            <div id="greeting-mascot" class="w-1/2 aspect-square shrink-0 rounded-xl bg-gray-100 flex items-center justify-center" style="background-image: url('{{ $fishBackgroundImage }}'); background-size: cover; background-position: center;">
+                <img id="fish-mascot-img"
+                     src="{{ $fishMascotImage }}"
+                     data-default-src="{{ $fishMascotImage }}"
+                     data-eating-src="{{ $fishMascotEatingImage }}"
+                     alt="" class="w-full h-full object-contain">
             </div>
-            <div class="min-w-0">
-                <div class="text-lg font-medium text-gray-900">
-                    {{ $greetingWord }}, {{ auth()->user()?->first_name ?? 'друг' }}!
+            @include('student.partials.fish-card')
+        </div>
+
+        {{-- Карточка 2: ближайшие события — урок и домашка в одном общем
+             дизайне (см. partials/student-dashboard-event-card.blade.php).
+             min-w-0 на каждом уровне — иначе длинный заголовок без пробелов
+             может распереть колонку грида шире контейнера (truncate внутри
+             partial-а тут бессилен, если родитель по цепочке не даёт сжаться). --}}
+        <div class="dashboard-card bg-white border rounded-2xl p-5 flex flex-col min-w-0">
+            <div class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Ближайшие события</div>
+            <div class="flex-1 flex flex-col gap-3 min-w-0">
+                @php
+                    $nlLesson = $nextLesson['lesson'] ?? null;
+                    $nlHref = $nlLesson && Route::has('student.lessons.show') ? route('student.lessons.show', $nlLesson) : null;
+                @endphp
+                <div class="flex-1 min-w-0">
+                    @include('partials.student-dashboard-event-card', [
+                        'item' => $nextLesson,
+                        'type' => $nextLesson['type'] ?? null,
+                        'color' => $nextLesson['color'] ?? null,
+                        'title' => $nextLesson['title'] ?? null,
+                        'subject' => $nextLesson['subject'] ?? 'Курс',
+                        'dateLabel' => ($nextLesson['date'] ?? '') . ' · ' . ($nextLesson['time'] ?? ''),
+                        'href' => $nlHref,
+                        'emptyText' => 'Уроков пока не запланировано',
+                    ])
                 </div>
-                <p class="text-sm text-gray-500 mt-1">
-                    @if($overdueCount > 0)
-                        {{ $overdueCount }} {{ ru_plural($overdueCount, 'просроченная домашка ждёт', 'просроченные домашки ждут', 'просроченных домашек ждут') }} внимания
-                    @else
-                        Хорошего дня и продуктивной учёбы!
-                    @endif
-                </p>
+
+                @php
+                    $nhHomework = $nextHomework['homework'] ?? null;
+                    $nhHref = $nhHomework && Route::has('student.submissions.create') ? route('student.submissions.create', $nhHomework) : null;
+                @endphp
+                <div class="flex-1 min-w-0">
+                    @include('partials.student-dashboard-event-card', [
+                        'item' => $nextHomework,
+                        'type' => $nextHomework['type'] ?? null,
+                        'color' => $nextHomework['color'] ?? null,
+                        'title' => $nextHomework['title'] ?? null,
+                        'subject' => $nextHomework['subject'] ?? 'Курс',
+                        'dateLabel' => ($nextHomework['date'] ?? '') . ' · ' . ($nextHomework['time'] ?? ''),
+                        'href' => $nhHref,
+                        'emptyText' => 'Домашек в очереди нет 🎉',
+                    ])
+                </div>
             </div>
         </div>
 
-        {{-- Карточка 2: ближайшее событие --}}
-        <div class="bg-white border rounded-2xl p-5 flex flex-col">
-            <div class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Ближайшее событие</div>
-
-            @if($nextItem)
-                @php
-                    $niColor = $nextItem['color'] ?? 'blue';
-                    $niBgMap = ['blue' => 'bg-blue-100', 'purple' => 'bg-purple-100', 'orange' => 'bg-orange-100', 'yellow' => 'bg-yellow-100', 'red' => 'bg-red-100'];
-                    $niTextMap = ['blue' => 'text-blue-700', 'purple' => 'text-purple-700', 'orange' => 'text-orange-700', 'yellow' => 'text-yellow-700', 'red' => 'text-red-700'];
-                    $niBg = $niBgMap[$niColor] ?? $niBgMap['blue'];
-                    $niText = $niTextMap[$niColor] ?? $niTextMap['blue'];
-                    $niLesson = $nextItem['lesson'] ?? null;
-                    $niHomework = $nextItem['homework'] ?? null;
-                @endphp
-                <div class="flex-1 flex flex-col">
-                    <div class="inline-flex self-start px-2 py-0.5 rounded-md text-xs font-medium {{ $niBg }} {{ $niText }}">
-                        {{ $nextItem['type'] }}
-                    </div>
-                    <div class="font-medium text-gray-900 mt-2 leading-snug">
-                        @if($niLesson && Route::has('student.lessons.show'))
-                            <a href="{{ route('student.lessons.show', $niLesson) }}" class="hover:underline">{{ $nextItem['title'] }}</a>
-                        @elseif($niHomework && Route::has('student.submissions.create'))
-                            <a href="{{ route('student.submissions.create', $niHomework) }}" class="hover:underline">{{ $nextItem['title'] }}</a>
-                        @else
-                            {{ $nextItem['title'] }}
-                        @endif
-                    </div>
-                    <div class="text-xs text-gray-500 mt-1">{{ $nextItem['subject'] ?? 'Курс' }}</div>
-                    <div class="mt-auto pt-3 text-sm text-gray-600">
-                        {{ $nextItem['day'] }}, {{ $nextItem['date'] }} · {{ $nextItem['time'] }}
-                    </div>
-                </div>
-            @else
-                <div class="flex-1 flex items-center justify-center text-center text-gray-500 text-sm">
-                    На ближайшее время ничего не запланировано ✨
-                </div>
-            @endif
-        </div>
-
-        {{-- Карточка 3: ближайшие домашки --}}
-        <div class="bg-white border rounded-2xl p-5 flex flex-col">
-            <div class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Ближайшие домашки</div>
-
-            @if($homeworksQueue->isEmpty())
-                <div class="flex-1 flex items-center justify-center text-center text-gray-500 text-sm">
-                    Домашек в очереди нет 🎉
-                </div>
-            @else
-                @php
-                    $hqBgMap = ['blue' => 'bg-blue-100', 'red' => 'bg-red-100', 'yellow' => 'bg-yellow-100'];
-                    $hqBorderMap = ['blue' => 'border-blue-200', 'red' => 'border-red-200', 'yellow' => 'border-yellow-200'];
-                    $hqTextMap = ['blue' => 'text-blue-700', 'red' => 'text-red-700', 'yellow' => 'text-yellow-700'];
-                @endphp
-                <ul class="flex-1 flex flex-col gap-2">
-                    @foreach($homeworksQueue as $row)
-                        @php
-                            $hw = $row['homework'];
-                            $href = Route::has('student.submissions.create') ? route('student.submissions.create', $hw) : '#';
-                            $hqBg = $hqBgMap[$row['color']] ?? $hqBgMap['yellow'];
-                            $hqBorder = $hqBorderMap[$row['color']] ?? $hqBorderMap['yellow'];
-                            $hqText = $hqTextMap[$row['color']] ?? $hqTextMap['yellow'];
-                            $statusLabel = $row['is_started'] ? 'Начато' : ($row['is_overdue'] ? 'Просрочено' : 'Ждёт выполнения');
-                        @endphp
-                        <li class="flex-1">
-                            <a href="{{ $href }}" class="h-full flex flex-col justify-center gap-1 rounded-xl border {{ $hqBg }} {{ $hqBorder }} px-3 py-3 hover:opacity-90 transition">
-                                <div class="flex items-center justify-between text-xs {{ $hqText }}">
-                                    <span class="font-medium">{{ $statusLabel }}</span>
-                                    <span>{{ $hw->due_at->format('d.m') }}</span>
-                                </div>
-                                <div class="text-sm font-medium text-gray-900 leading-snug truncate">{{ $hw->title ?? 'Задание' }}</div>
-                                <div class="text-xs text-gray-600 truncate">{{ $row['subject'] }}</div>
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </div>
+        {{-- Карточка 3: пока пустая --}}
+        <div class="dashboard-card bg-white border rounded-2xl p-5 min-w-0"></div>
     </div>
 
     <script>
@@ -139,6 +176,233 @@ $greetingWord = match (true) {
                 { scale: 0.5, rotate: -8, autoAlpha: 0 },
                 { scale: 1, rotate: 0, autoAlpha: 1, duration: 0.5, ease: 'elastic.out(1, .5)' }
             );
+        });
+
+        // Таймер возврата картинки маскота с "eating" на "default" после
+        // кормления — общий для всех кликов (не локальная переменная внутри
+        // обработчика), чтобы серия быстрых кликов продлевала его, а не
+        // плодила гонки между несколькими независимыми таймерами.
+        var fishRevertTimer = null;
+
+        // src, который был показан прямо перед последним кормлением — нужен
+        // для перехода при левел-апе (см. обработчик 'fish-level-up' ниже):
+        // к моменту, когда он срабатывает, #fish-mascot-img уже пересоздан
+        // OOB-свапом с картинкой НОВОГО уровня (OOB применяется раньше, чем
+        // htmx триггерит событие), так что "старую" картинку неоткуда взять
+        // из DOM — только из этой переменной, захваченной заранее в клике.
+        var fishPreLevelUpSrc = null;
+
+        // Клик по «Покормить»: волна на кнопке + корм, падающий на маскота +
+        // сам маскот на время анимации переключается на позу "eating".
+        // #fish-card (вместе с кнопкой) целиком пересоздаётся htmx-свапом на
+        // каждое кормление — обработчик навешан делегированием на document,
+        // а не на саму кнопку, иначе он бы слетал после первого же клика.
+        document.addEventListener('click', function (evt) {
+            var btn = evt.target.closest('.fish-feed-btn');
+            if (!btn || btn.disabled) return;
+
+            var rect = btn.getBoundingClientRect();
+            var size = Math.max(rect.width, rect.height);
+            var ripple = document.createElement('span');
+            ripple.className = 'fish-feed-ripple';
+            ripple.style.width = size + 'px';
+            ripple.style.height = size + 'px';
+            ripple.style.left = (evt.clientX - rect.left - size / 2) + 'px';
+            ripple.style.top = (evt.clientY - rect.top - size / 2) + 'px';
+            btn.appendChild(ripple);
+            ripple.addEventListener('animationend', function () { ripple.remove(); });
+
+            // Поза "ест" на время падения крошек. Ищем элемент заново (не
+            // храним ссылку между кликами) — на левел-апе #fish-mascot-img
+            // целиком пересоздаётся OOB-свапом (см. FishController::feed()),
+            // старая ссылка на узел стала бы "мёртвой". По той же причине
+            // таймер возврата ниже тоже ищет узел заново в момент срабатывания,
+            // а не захватывает его в замыкании.
+            var feedImg = document.getElementById('fish-mascot-img');
+            if (feedImg && feedImg.dataset.eatingSrc) {
+                fishPreLevelUpSrc = feedImg.dataset.eatingSrc;
+                feedImg.src = fishPreLevelUpSrc;
+            }
+            clearTimeout(fishRevertTimer);
+            fishRevertTimer = setTimeout(function () {
+                var img = document.getElementById('fish-mascot-img');
+                if (img && img.dataset.defaultSrc) {
+                    img.src = img.dataset.defaultSrc;
+                }
+            }, 2400); // чуть дольше максимальной длительности анимации крошек ниже
+
+            var mascot = document.getElementById('greeting-mascot');
+            if (!mascot || typeof window.gsap === 'undefined') return;
+
+            // Крошки корма, сыплющиеся на маскота — та же техника, что и у
+            // конфетти на странице результата домашки (много мелких div-ов,
+            // каждый со своим GSAP-твином и случайными размером/цветом/
+            // траекторией), только контейнер — сам #greeting-mascot
+            // (position:relative; overflow:hidden), а не весь экран.
+            var crumbColors = ['#D97706', '#B45309', '#F59E0B', '#92400E'];
+            var crumbCount = 22;
+            var w = mascot.clientWidth;
+            var h = mascot.clientHeight;
+
+            for (var i = 0; i < crumbCount; i++) {
+                var crumb = document.createElement('div');
+                var size = 3 + Math.random() * 4;
+                var color = crumbColors[Math.floor(Math.random() * crumbColors.length)];
+                var startX = Math.random() * w;
+                crumb.style.cssText = 'position:absolute; top:-8px; left:' + startX + 'px; width:' + size + 'px; height:' + size + 'px; background:' + color + '; border-radius:' + (Math.random() > .5 ? '50%' : '2px') + '; pointer-events:none; z-index:5; opacity:0;';
+                mascot.appendChild(crumb);
+
+                (function (el) {
+                    var driftX = (Math.random() - 0.5) * 24;
+                    var rotation = (Math.random() - 0.5) * 360;
+                    var fallTo = h * (0.5 + Math.random() * 0.4);
+                    var duration = 1.1 + Math.random() * 0.6;
+                    var delay = Math.random() * 0.4;
+
+                    gsap.to(el, {
+                        y: fallTo,
+                        x: driftX,
+                        rotation: rotation,
+                        opacity: 1,
+                        duration: duration,
+                        delay: delay,
+                        ease: 'power1.in',
+                        onComplete: function () {
+                            gsap.to(el, { opacity: 0, duration: .3, onComplete: function () { el.remove(); } });
+                        },
+                    });
+                })(crumb);
+            }
+        });
+
+        // Левел-ап: сервер шлёт отдельное htmx-событие 'fish-level-up' (не
+        // общий 'toast' из main.blade.php — тот всплывает по центру экрана,
+        // а внимание должно оставаться на самом маскоте). Картинки нового
+        // уровня приходят в детали события (evt.detail), а не через OOB-свап
+        // DOM-узла: OOB подменяет узел мгновенно и никак не согласован по
+        // времени с запуском этого обработчика — картинка успевала смениться
+        // раньше, чем стартовала анимация, и появление выглядело мгновенным.
+        // Теперь узел #fish-mascot-img один и тот же всё время, а src меняет
+        // сам GSAP-таймлайн ниже — ровно в момент, когда картинка уже скрыта
+        // (scale:0), так что подмена невидима и её "проявляет" анимация роста.
+        document.body.addEventListener('fish-level-up', function (evt) {
+            var mascot = document.getElementById('greeting-mascot');
+            var img = document.getElementById('fish-mascot-img');
+            if (!mascot || !img) return;
+
+            var detail = evt.detail || {};
+
+            function applyNewImageSources() {
+                if (detail.defaultSrc) {
+                    img.dataset.defaultSrc = detail.defaultSrc;
+                    img.src = detail.defaultSrc;
+                }
+                if (detail.eatingSrc) {
+                    img.dataset.eatingSrc = detail.eatingSrc;
+                }
+            }
+
+            // Баннер — в той же рамке, что и маскот, не по центру экрана.
+            var banner = document.createElement('div');
+            banner.className = 'fish-levelup-banner';
+            banner.innerHTML = '<span class="fish-levelup-banner-title">Новый уровень!</span>';
+            mascot.appendChild(banner);
+
+            if (typeof window.gsap === 'undefined') {
+                applyNewImageSources();
+                setTimeout(function () { banner.remove(); }, 2600);
+                return;
+            }
+
+            gsap.fromTo(banner,
+                { y: 10, autoAlpha: 0, scale: .85 },
+                { y: 0, autoAlpha: 1, scale: 1, duration: .4, delay: .55, ease: 'back.out(2)' }
+            );
+            gsap.to(banner, { autoAlpha: 0, y: -6, duration: .35, delay: 2.6, onComplete: function () { banner.remove(); } });
+
+            // Вспышка на весь блок маскота.
+            var flash = document.createElement('div');
+            flash.style.cssText = 'position:absolute; inset:0; background:radial-gradient(circle, rgba(255,255,255,.95), rgba(255,255,255,0) 72%); pointer-events:none; z-index:9; opacity:0;';
+            mascot.appendChild(flash);
+
+            // Смена картинки — не мгновенная подмена, а сжатие старой в точку
+            // и распускание новой из точки на том же месте. "Призрак" старой
+            // позы — отдельный временный <img> поверх настоящего, со src,
+            // захваченным в момент клика (fishPreLevelUpSrc); сам img сперва
+            // прячем (scale:0) и проявляем уже в таймлайне, подставив ему
+            // новый src через tl.call() ровно пока он невидим.
+            gsap.set(img, { scale: 0, autoAlpha: 0 });
+
+            var ghost = null;
+            if (fishPreLevelUpSrc) {
+                ghost = document.createElement('img');
+                ghost.src = fishPreLevelUpSrc;
+                ghost.alt = '';
+                ghost.className = 'w-full h-full object-contain';
+                ghost.style.cssText = 'position:absolute; inset:0; z-index:6; pointer-events:none;';
+                mascot.appendChild(ghost);
+            }
+
+            var tl = gsap.timeline({ onComplete: function () { flash.remove(); } });
+
+            tl.to(flash, { opacity: 1, duration: .18 });
+            if (ghost) {
+                tl.to(ghost, {
+                    scale: 0, rotation: -14, duration: .4, ease: 'power2.in',
+                    onComplete: function () { ghost.remove(); },
+                }, '<');
+            }
+            tl.call(applyNewImageSources)
+              .to(flash, { opacity: 0, duration: .3 })
+              .to(img, { scale: 1, autoAlpha: 1, duration: .6, ease: 'elastic.out(1, .5)' }, '<')
+              .to(img, { scale: 1.08, duration: .16, ease: 'sine.inOut', yoyo: true, repeat: 3 }, '-=0.15');
+
+            // Расходящиеся кольца.
+            for (var i = 0; i < 3; i++) {
+                (function (i) {
+                    var ring = document.createElement('div');
+                    ring.style.cssText = 'position:absolute; left:50%; top:50%; width:30%; height:30%; margin-left:-15%; margin-top:-15%; border-radius:50%; border:3px solid #f59e0b; pointer-events:none; z-index:7; opacity:0;';
+                    mascot.appendChild(ring);
+                    gsap.fromTo(ring,
+                        { scale: .4, opacity: .9 },
+                        {
+                            scale: 2.8, opacity: 0, duration: 1.1, delay: .5 + i * .18, ease: 'power2.out',
+                            onComplete: function () { ring.remove(); },
+                        }
+                    );
+                })(i);
+            }
+
+            // Золотые искры, разлетающиеся из центра.
+            var sparkleColors = ['#fbbf24', '#f59e0b', '#fde68a', '#ffffff'];
+            var w = mascot.clientWidth;
+            var h = mascot.clientHeight;
+
+            for (var s = 0; s < 26; s++) {
+                var sparkle = document.createElement('div');
+                var size = 3 + Math.random() * 5;
+                var color = sparkleColors[Math.floor(Math.random() * sparkleColors.length)];
+                sparkle.style.cssText = 'position:absolute; left:50%; top:50%; width:' + size + 'px; height:' + size + 'px; background:' + color + '; border-radius:50%; pointer-events:none; z-index:8; opacity:0; box-shadow:0 0 4px ' + color + ';';
+                mascot.appendChild(sparkle);
+
+                (function (el) {
+                    var angle = Math.random() * Math.PI * 2;
+                    var distance = (Math.min(w, h) / 2) * (0.6 + Math.random() * 0.6);
+                    var dx = Math.cos(angle) * distance;
+                    var dy = Math.sin(angle) * distance;
+                    var delay = .45 + Math.random() * .3;
+
+                    gsap.fromTo(el,
+                        { x: 0, y: 0, opacity: 1, scale: 0 },
+                        {
+                            x: dx, y: dy, scale: 1, duration: .5 + Math.random() * .3, delay: delay, ease: 'power2.out',
+                            onComplete: function () {
+                                gsap.to(el, { opacity: 0, duration: .3, onComplete: function () { el.remove(); } });
+                            },
+                        }
+                    );
+                })(sparkle);
+            }
         });
     </script>
 
@@ -228,7 +492,7 @@ $greetingWord = match (true) {
     </div>
 </div> --}}
 
-    <div class="w-full py-3 sm:py-6">
+    <div class="w-full md:mb-16 mb-12">
     <div class="max-w-6xl mx-auto bg-white rounded-xl border md:px-3 px-3 md:px-4 pt-4 pb-2 md:pt-6 md:pb-4">
         <div class="flex justify-between items-end mb-4 border-b border-gray-200 pb-2 px-1">
             <h2 class="text-base md:text-xl tracking-wide font-normal font-sans text-zinc-800"><img class="inline-block relative bottom-1 mr-1" src="{{ asset('img/Date_range.svg') }}" alt=""> Расписание уроков</h2>
@@ -406,15 +670,15 @@ $greetingWord = match (true) {
     $isBlocked    = in_array($course->id, $blockedCourseIds ?? [], true);
                 @endphp
 
-                <div class="rounded-2xl border bg-white md:p-4 p-3 flex flex-col">
+                <div class="rounded-2xl border bg-white md:p-4 p-3 flex flex-col min-w-0">
                     {{-- обложка, если есть --}}
                     @if(!empty($course->main_image))
                         <img src="{{ asset('storage/'.$course->main_image) }}" alt="{{ $course->title }}"
                              class="w-full object-cover rounded-xl mb-3 {{ $isBlocked ? 'grayscale' : '' }}">
                     @endif
 
-                    <div class="flex items-start justify-between gap-2 mb-1">
-                        <h3 class="font-medium text-xl">{{ $course->title }}</h3>
+                    <div class="flex items-start justify-between gap-2 mb-1 min-w-0">
+                        <h3 class="font-medium text-xl truncate min-w-0">{{ $course->title }}</h3>
                         @if($isBlocked)
                             <span class="shrink-0 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700">
                                 Доступ приостановлен

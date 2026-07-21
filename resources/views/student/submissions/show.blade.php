@@ -2,6 +2,7 @@
 @extends('layouts.main')
 
 @section('title', $homework->title ?? 'Домашнее задание')
+@section('back_url', route('student.courses.show', $submission->homework?->lesson?->courseSession?->course))
 
 @section('content')
 @php
@@ -123,12 +124,6 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
           Статус: <span class="font-medium text-gray-700">{{ $studentStatusLabel }}</span>
         </div>
       </div>
-    </div>
-    <div class="shrink-0">
-      <a href="{{ route('student.courses.show', $submission->homework?->lesson?->courseSession?->course) }}"
-         class="text-blue-600 hover:underline">
-        ← Вернуться к курсу
-      </a>
     </div>
   </div>
 
@@ -903,11 +898,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
 
 
   {{-- Низ страницы --}}
-  <div class="mt-6 flex items-center justify-between flex-wrap gap-3">
-    <a href="{{ route('student.courses.show', $submission->homework?->lesson?->courseSession?->course) }}"
-       class="text-blue-600 hover:underline">
-      ← Вернуться к курсу
-    </a>
+  <div class="mt-6 flex items-center justify-end flex-wrap gap-3">
     <div class="text-sm text-gray-500">
       Отправлено: {{ optional($submission->created_at)->format('d.m.Y H:i') ?? '—' }}
       @if($submission->updated_at && $submission->updated_at != $submission->created_at)

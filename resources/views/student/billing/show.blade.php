@@ -21,11 +21,11 @@
     @endif
 
     @if ($enrollments->isEmpty())
-        <div class="p-6 rounded-xl border bg-white text-gray-600">
+        <div class="p-6 rounded-xl border bg-white text-gray-600 mb-4">
             Активных курсов нет.
         </div>
     @else
-        <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-4 mb-4">
             @foreach ($enrollments as $row)
                 @php $course = $row['course']; @endphp
                 <div class="bg-white border rounded-2xl p-5">
@@ -79,5 +79,48 @@
             @endforeach
         </div>
     @endif
+
+    {{-- История платежей — по всем курсам сразу, не только активным. --}}
+    <div class="bg-white border rounded-2xl p-5">
+        <div class="font-medium text-lg text-gray-900 mb-4">История платежей</div>
+
+        @if ($payments->isEmpty())
+            <p class="text-sm text-gray-500">Платежей пока нет.</p>
+        @else
+            <div class="flex flex-col divide-y divide-gray-100">
+                @foreach ($payments as $payment)
+                    <div class="py-3 flex items-center justify-between gap-4">
+                        <div class="min-w-0">
+                            <div class="text-sm font-medium text-gray-900 truncate">
+                                {{ $payment->course->title ?? 'Курс' }}
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                {{ ($payment->paid_at ?? $payment->created_at)->format('d.m.Y H:i') }}
+                                @if ($payment->is_promise)
+                                    &middot; <span class="text-amber-700">Обещанный платёж</span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <div class="text-sm font-medium text-gray-900">
+                                {{ $payment->is_promise ? '—' : Money::format($payment->amount_cents, $payment->currency) }}
+                            </div>
+                            <div class="text-xs
+                                @if ($payment->status === 'succeeded') text-emerald-600
+                                @elseif ($payment->status === 'failed') text-rose-600
+                                @else text-gray-400
+                                @endif">
+                                @if ($payment->status === 'succeeded') Успешно
+                                @elseif ($payment->status === 'failed') Не удалось
+                                @elseif ($payment->status === 'pending') В обработке
+                                @else {{ $payment->status }}
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
 </div>
 @endsection

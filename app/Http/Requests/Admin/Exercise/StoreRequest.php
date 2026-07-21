@@ -36,7 +36,7 @@ class StoreRequest extends FormRequest
             'short_answer' => 'nullable|string',
             'text_spoiler' => 'nullable|string',
             'topic_id' => 'nullable|string',
-            'main_image' => 'nullable|file',
+            'main_image' => 'nullable|image|max:5120',
         ];
     }
 }

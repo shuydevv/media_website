@@ -1,10 +1,10 @@
 <?php
 namespace App\Notifications;
 
+use App\Mail\NotificationMail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\URL;
 
 class VerifyEmailWithCode extends Notification implements ShouldQueue
@@ -15,7 +15,7 @@ class VerifyEmailWithCode extends Notification implements ShouldQueue
 
     public function via($notifiable): array { return ['mail']; }
 
-    public function toMail($notifiable): MailMessage
+    public function toMail($notifiable): NotificationMail
     {
         $url = URL::temporarySignedRoute(
             'auth.email.link',
@@ -23,13 +23,10 @@ class VerifyEmailWithCode extends Notification implements ShouldQueue
             ['id' => $this->userId]
         );
 
-        return (new MailMessage)
-            ->subject('Подтвердите e-mail')
-            ->greeting('Привет!')
-            ->line('Ваш код подтверждения:')
-            ->line("**{$this->code}**")
-            ->line('Код действует 15 минут. Либо нажмите кнопку ниже:')
-            ->action('Подтвердить e-mail', $url)
-            ->line('Если вы не запрашивали регистрацию, просто проигнорируйте это письмо.');
+        return (new NotificationMail(
+            'Подтвердите e-mail',
+            'mail.auth.verify_email_code',
+            ['code' => $this->code, 'url' => $url]
+        ))->to($notifiable->email);
     }
 }

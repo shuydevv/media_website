@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Homework\StoreRequest;
 use App\Models\Homework;
 use App\Models\HomeworkTask;
+use App\Service\ImageCompressor;
 use Illuminate\Support\Facades\Storage;
 
 class StoreController extends Controller
@@ -33,7 +34,7 @@ class StoreController extends Controller
 
                 // Загрузка изображения (если есть)
                 if (isset($task['image']) && $task['image']->isValid()) {
-                    $imagePath = $task['image']->store('homework_images', 'public');
+                    $imagePath = ImageCompressor::forContent()->storeAs($task['image'], 'homework_images');
                 }
 
                 $type = $task['type'] ?? null;

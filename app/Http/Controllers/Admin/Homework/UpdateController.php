@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\Homework\UpdateRequest;
 use App\Models\Homework;
 use App\Models\HomeworkTask;
 use App\Models\Lesson;
+use App\Service\ImageCompressor;
 
 class UpdateController extends Controller
 {
@@ -103,8 +104,7 @@ public function __invoke(UpdateRequest $request, Homework $homework)
 
             // если загрузили новое изображение — сохраним
             if (!empty($taskData['image']) && $taskData['image'] instanceof \Illuminate\Http\UploadedFile) {
-                $path = $taskData['image']->store('homework_images', 'public');
-                $task->image_path = $path;
+                $task->image_path = ImageCompressor::forContent()->storeAs($taskData['image'], 'homework_images');
             }
 
             $task->homework_id = $homework->id;

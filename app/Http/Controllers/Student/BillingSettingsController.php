@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\BillingIntervalRequest;
 use App\Http\Requests\Student\BillingPromoRequest;
 use App\Models\Course;
+use App\Models\Payment;
 use App\Service\BillingService;
 
 class BillingSettingsController extends Controller
@@ -26,7 +27,14 @@ class BillingSettingsController extends Controller
                 'priceCents' => $billing->priceForEnrollment($user, $course),
             ]);
 
-        return view('student.billing.show', compact('enrollments'));
+        // История платежей — по всем курсам сразу (в т.ч. по уже неактивным
+        // записям), не только по текущим активным enrollments выше.
+        $payments = Payment::where('user_id', $user->id)
+            ->with('course')
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('student.billing.show', compact('enrollments', 'payments'));
     }
 
     public function update(BillingIntervalRequest $request, Course $course, BillingService $billing)

@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\Exercise\StoreRequest;
 use App\Models\Category;
 use App\Models\Exercise;
 use App\Models\Tag;
+use App\Service\ImageCompressor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -28,7 +29,7 @@ class StoreController extends Controller
         // dd($data);
 
         if( array_key_exists('main_image', $data)) {
-            $data['main_image'] = Storage::disk('public')->put('/images', $data['main_image']);
+            $data['main_image'] = ImageCompressor::forContent()->storeAs($data['main_image'], 'images');
         }
 
         Exercise::firstOrCreate($data);

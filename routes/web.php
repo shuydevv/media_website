@@ -90,6 +90,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
             Route::post('/store', 'StoreController')->name('admin.sessions.store');
             Route::get('{session}/edit', 'EditController')->name('admin.sessions.edit');
             Route::put('{session}', 'UpdateController')->name('admin.sessions.update');
+            Route::delete('{session}', 'DestroyController')->name('admin.sessions.destroy');
     });
 
     Route::group(['namespace' => 'Lesson', 'prefix' => 'lessons'], function() {
@@ -234,6 +235,8 @@ Route::middleware(['auth'])->group(function () {
 //     ->name('promo.redeem');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::view('/design-system', 'admin.design-system')->name('design-system');
+
     Route::get('/promos', [PromoCodeController::class, 'index'])->name('promos.index');
     Route::get('/promos/create', [PromoCodeController::class, 'create'])->name('promos.create');
     Route::post('/promos', [PromoCodeController::class, 'store'])->name('promos.store');
@@ -263,6 +266,42 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/student/homeworks', [\App\Http\Controllers\Student\HomeworkController::class, 'index'])
         ->name('student.homeworks.index');
+});
+
+// Уведомления — намеренно без billing.current: ученик с приостановленным
+// доступом должен по-прежнему видеть и открыть уведомление о просрочке.
+Route::middleware(['auth'])->prefix('student')->name('student.')->group(function () {
+    Route::get('/notifications', [\App\Http\Controllers\Student\NotificationController::class, 'index'])
+        ->name('notifications.index');
+    Route::post('/notifications/{notification}/read', [\App\Http\Controllers\Student\NotificationController::class, 'markRead'])
+        ->name('notifications.markRead');
+    Route::post('/notifications/read-all', [\App\Http\Controllers\Student\NotificationController::class, 'markAllRead'])
+        ->name('notifications.markAllRead');
+    Route::delete('/notifications/{notification}', [\App\Http\Controllers\Student\NotificationController::class, 'destroy'])
+        ->name('notifications.destroy');
+
+    // Профиль — тоже без billing.current, доступен независимо от статуса оплаты.
+    Route::get('/profile', [\App\Http\Controllers\Student\ProfileController::class, 'show'])
+        ->name('profile.show');
+    Route::post('/profile', [\App\Http\Controllers\Student\ProfileController::class, 'update'])
+        ->name('profile.update');
+    Route::post('/profile/notifications', [\App\Http\Controllers\Student\ProfileController::class, 'updateNotifications'])
+        ->name('profile.notifications.update');
+    Route::post('/profile/character', [\App\Http\Controllers\Student\ProfileController::class, 'updateCharacter'])
+        ->name('profile.character.update');
+    Route::post('/profile/background/select', [\App\Http\Controllers\Student\ProfileController::class, 'selectBackground'])
+        ->name('profile.background.select');
+    Route::post('/profile/background/purchase', [\App\Http\Controllers\Student\ProfileController::class, 'purchaseBackground'])
+        ->name('profile.background.purchase');
+    Route::post('/profile/avatar', [\App\Http\Controllers\Student\ProfileController::class, 'updateAvatar'])
+        ->name('profile.avatar.update');
+    Route::delete('/profile/avatar', [\App\Http\Controllers\Student\ProfileController::class, 'removeAvatar'])
+        ->name('profile.avatar.remove');
+
+    // Кормление рыбы — чисто косметическое, без billing.current: доступ к
+    // маскоту не должен зависеть от статуса оплаты.
+    Route::post('/fish/feed', [\App\Http\Controllers\Student\FishController::class, 'feed'])
+        ->name('fish.feed');
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -389,12 +428,6 @@ Route::prefix('admin/tasks')->middleware(['auth'])->group(function () {
     Route::post('/{task}/archive', [TaskController::class, 'archive'])->name('admin.tasks.archive');
 });
 
-// Route::get('/admin/courses/{course}/tasks', function(\App\Models\Course $course) {
-//     return $course->category
-//         ? $course->category->tasks()->select('id','number')->orderBy('number')->get()
-//         : [];
-// });
-
 use App\Http\Controllers\Admin\CourseTaskController;
 
 Route::middleware(['auth'])->prefix('admin')->group(function () {
@@ -404,26 +437,6 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
 
 
 use Illuminate\Support\Facades\Http;
-
-// Route::middleware(['auth', 'mentor']) // твой MentorMiddleware даёт доступ ментору/админу
-//     ->prefix('mentor/review')
-//     ->name('mentor.review.')
-//     ->group(function () {
-//         Route::post('/{submission}/{taskId}/regen', [ReviewAiController::class, 'regen'])
-//             ->where('taskId', '.*')
-//             ->name('task.regen');
-//     });
-
-
-// Route::get('/dev/ip', function () {
-//     $proxy = (string) config('openai.proxy', '');
-//     $options = ['verify' => false];
-//     if ($proxy !== '') {
-//         $options['proxy'] = ['http' => $proxy, 'https' => $proxy];
-//         $options['curl']  = [CURLOPT_HTTPPROXYTUNNEL => 1];
-//     }
-//     return Http::withOptions($options)->get('http://api.ipify.org')->body();
-// });
 
 use App\Http\Controllers\Auth\PhoneAuthController;
 use App\Http\Controllers\Auth\EmailAuthController;

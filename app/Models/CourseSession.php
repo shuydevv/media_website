@@ -19,6 +19,11 @@ class CourseSession extends Model
         'end_time',
         'status',
         'duration_minutes',
+        'notified_starting_soon_at',
+    ];
+
+    protected $casts = [
+        'notified_starting_soon_at' => 'datetime',
     ];
 
     /**
@@ -80,9 +85,15 @@ public function getStartDateTimeAttribute(): ?Carbon
     $candidates = [
         $this->start_at ?? null,
         $this->start_datetime ?? null,
-        ($this->start_date ?? null) && ($this->start_time ?? null)
-            ? ($this->start_date.' '.$this->start_time) : null,
-        $this->date ?? null, // если дата с временем хранится в одном поле
+        // Реальные колонки в этой схеме — date + start_time (см. миграцию
+        // course_sessions). Раньше здесь ошибочно стояло $this->start_date
+        // (несуществующая колонка) — условие всегда было ложным, и метод
+        // тихо проваливался до кандидата ниже (date без времени, то есть
+        // полночь), из-за чего "начало сессии" считалось с 00:00 её дня,
+        // а не с реального времени начала.
+        ($this->date ?? null) && ($this->start_time ?? null)
+            ? ($this->date.' '.$this->start_time) : null,
+        $this->date ?? null, // последний резерв, если start_time всё же нет
     ];
 
     foreach ($candidates as $val) {

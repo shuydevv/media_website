@@ -28,7 +28,7 @@ class PasswordMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Password Mail',
+            subject: 'Пароль для входа',
         );
     }
 
@@ -38,7 +38,8 @@ class PasswordMail extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            markdown: 'mail.user.password',
+            view: 'mail.user.password',
+            with: ['loginUrl' => route('login')],
         );
     }
 

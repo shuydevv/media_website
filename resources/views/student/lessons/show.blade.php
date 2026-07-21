@@ -1,9 +1,9 @@
 @extends('layouts.main')
 
+@section('back_url', route('student.courses.show', $course))
+
 @section('content')
 <div class="max-w-6xl mx-auto md:px-6 px-4 py-6">
-  <a href="{{ route('student.courses.show', $course) }}" class="text-sm text-gray-500 hover:text-gray-700">← Назад к курсу</a>
-
   <h1 class="text-2xl md:text-4xl font-medium font-sans mt-6 mb-3">{{ $lesson->title }}</h1>
   @if($lesson->description)
     <p class="mt-2 md:mb-12 mb-8 text-gray-700 md:text-lg text-base">{{ $lesson->description }}</p>
@@ -72,26 +72,35 @@
   {{-- Домашка --}}
   <div class="flex-1 bg-blue-50 border border-blue-200 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-center sm:items-center gap-0 sm:gap-6">
     <img
-      class="w-40 h-40 sm:w-36 sm:h-36 lg:w-48 lg:h-48 -scale-x-100 {{ $lesson->homework ? '' : 'opacity-40' }}"
+      class="w-40 h-40 sm:w-36 sm:h-36 lg:w-48 lg:h-48 -scale-x-100 {{ ($lesson->homework && !$homeworkUpcoming) ? '' : 'opacity-40' }}"
       src="{{ asset('img/homework-icon.webp') }}"
       alt="Иконка домашнего задания"
     >
     <div class="flex-1 text-center sm:text-left">
       @if ($lesson->homework)
-        <h3 class="text-xl sm:text-2xl font-medium text-blue-900 mb-10 sm:mb-4">Домашнее задание</h3>
-
-        @if(!empty($mySubmission))
-          {{-- Есть попытка → показываем результаты --}}
-          <a href="{{ route('student.submissions.show', $mySubmission) }}"
-            class="block sm:inline-block w-full sm:w-auto text-center px-6 py-4 text-base tracking-wide font-medium rounded-xl bg-zinc-800 border-2 border-zinc-800 text-white hover:bg-zinc-900 transition">
-            Смотреть результаты
-          </a>
+        @if($homeworkUpcoming)
+          {{-- Домашка привязана к этому уроку, но сам урок ещё не наступил —
+               выглядит так же "неактивно", как и полное отсутствие домашки
+               выше, без кликабельной кнопки. --}}
+          <h3 class="text-xl sm:text-2xl font-medium text-blue-900 mb-10 sm:mb-3">ДЗ откроется позже</h3>
+          <p class="text-base text-blue-900/80">Домашнее задание станет доступно после урока</p>
         @else
-          {{-- Нет попыток → на форму сдачи --}}
-          <a href="{{ route('student.submissions.create', $lesson->homework) }}"
-            class="block sm:inline-block w-full sm:w-auto text-center px-6 py-4 text-base tracking-wide font-medium rounded-xl bg-zinc-800 border-2 border-zinc-800 text-white hover:bg-zinc-900 transition">
-            Перейти к домашке
-          </a>
+          <h3 class="text-xl sm:text-2xl font-medium text-blue-900 mb-10 sm:mb-4">Домашнее задание</h3>
+
+          @if(!empty($mySubmission))
+            {{-- Есть завершённая попытка → показываем результаты --}}
+            <a href="{{ route('student.submissions.show', $mySubmission) }}"
+              class="block sm:inline-block w-full sm:w-auto text-center px-6 py-4 text-base tracking-wide font-medium rounded-xl bg-zinc-800 border-2 border-zinc-800 text-white hover:bg-zinc-900 transition">
+              Смотреть результаты
+            </a>
+          @else
+            {{-- Нет завершённых попыток (в т.ч. если есть незаконченная —
+                 create() сам продолжит её с того же места) → на сдачу --}}
+            <a href="{{ route('student.submissions.create', $lesson->homework) }}"
+              class="block sm:inline-block w-full sm:w-auto text-center px-6 py-4 text-base tracking-wide font-medium rounded-xl bg-zinc-800 border-2 border-zinc-800 text-white hover:bg-zinc-900 transition">
+              Перейти к домашке
+            </a>
+          @endif
         @endif
       @else
         <h3 class="text-xl sm:text-2xl font-medium text-blue-900 mb-10 sm:mb-3">Домашнего задания пока нет</h3>

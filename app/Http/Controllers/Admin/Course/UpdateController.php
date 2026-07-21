@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Course\UpdateRequest;
 use App\Models\Course;
 use App\Service\CourseScheduleService;
+use App\Service\ImageCompressor;
 use Illuminate\Support\Facades\Storage;
 
 class UpdateController extends Controller
@@ -21,7 +22,7 @@ class UpdateController extends Controller
             if ($course->main_image && Storage::disk('public')->exists($course->main_image)) {
                 Storage::disk('public')->delete($course->main_image);
             }
-            $validated['main_image'] = Storage::disk('public')->put('/images', $validated['main_image']);
+            $validated['main_image'] = ImageCompressor::forContent()->storeAs($validated['main_image'], 'images');
         } else {
             $validated['main_image'] = $course->main_image;
         }

@@ -6,23 +6,25 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Lesson\StoreRequest;
 use App\Models\Lesson;
 use App\Models\CourseSession;
+use App\Notifications\LessonRecordingAvailableNotification;
+use App\Service\BillingService;
+use App\Service\ImageCompressor;
 use Illuminate\Support\Facades\Storage;
 
 class StoreController extends Controller
 {
     public function __invoke(StoreRequest $request)
     {
-        
+
         $validated = $request->validated();
 
         // Загружаем изображение, если есть
         if (isset($validated['image'])) {
-            $path = $validated['image']->store('lessons', 'public');
-            $validated['image'] = $path;
+            $validated['image'] = ImageCompressor::forContent()->storeAs($validated['image'], 'lessons');
         }
 
         // Создание урока
-        Lesson::create([
+        $lesson = Lesson::create([
             'course_session_id' => $validated['course_session_id'],
             'title'             => $validated['title'],
             'description' => $validated['description'] ?? null,
@@ -35,7 +37,24 @@ class StoreController extends Controller
             // 'homework_id'       => $validated['homework_id'] ?? null,
         ]);
 
+        // Редкий случай — ссылку на запись указали сразу при создании урока.
+        if (filled($validated['recording_link'] ?? null)) {
+            $this->notifyRecordingAvailable($lesson);
+        }
+
         return redirect()->route('admin.lessons.index')
             ->with('success', 'Урок успешно создан');
+    }
+
+    private function notifyRecordingAvailable(Lesson $lesson): void
+    {
+        $course = $lesson->courseSession?->course;
+        if (!$course) {
+            return;
+        }
+
+        foreach (app(BillingService::class)->activeStudentsWithAccess($course) as $student) {
+            $student->notify(new LessonRecordingAvailableNotification($lesson));
+        }
     }
 }

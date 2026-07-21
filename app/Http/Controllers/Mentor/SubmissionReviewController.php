@@ -12,8 +12,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
-use Illuminate\Support\Facades\Mail;
-use App\Mail\HomeworkReviewedMail;
+use App\Notifications\HomeworkGradedNotification;
 
 class SubmissionReviewController extends Controller
 {
@@ -174,11 +173,28 @@ class SubmissionReviewController extends Controller
         $this->assertMentorOrAdmin($request);
         $this->finalizeSubmission($request, $submission);
 
-        // здесь можешь реализовать переадресацию на следующую работу
-        // пример-заглушка:
+        // Очередь — та же логика, что и в MentorSubmissionController::index():
+        // не залоченные (либо лок истёк) работы в статусе pending, старые впереди.
+        $next = Submission::query()
+            ->where('id', '!=', $submission->id)
+            ->where('status', 'pending')
+            ->where(function ($q) {
+                $q->whereNull('locked_by')
+                    ->orWhereNull('lock_expires_at')
+                    ->orWhere('lock_expires_at', '<=', now());
+            })
+            ->orderBy('created_at')
+            ->first();
+
+        if ($next) {
+            return redirect()
+                ->route('mentor.review.show', $next)
+                ->with('success', 'Проверка завершена. Открыта следующая работа.');
+        }
+
         return redirect()
-            ->route('mentor.review.inbox')
-            ->with('success', 'Проверка завершена. Открыта следующая работа.');
+            ->route('mentor.submissions.index')
+            ->with('success', 'Проверка завершена. Очередь пуста.');
     }
 
     /* ==========================
@@ -224,7 +240,8 @@ class SubmissionReviewController extends Controller
 
         $submission->save();
 
-        // Отправка уведомления ученику после сохранения итогов
+        // Уведомление ученику (в БД + письмо, см. HomeworkGradedNotification)
+        // после сохранения итогов
         try {
             $student = $submission->user; // связь уже подгружается в show(), но здесь подстрахуемся
             if (!$student->relationLoaded('user')) {
@@ -233,20 +250,10 @@ class SubmissionReviewController extends Controller
             }
 
             if ($student && filter_var($student->email, FILTER_VALIDATE_EMAIL)) {
-                $link = route('student.submissions.show', $submission->homework_id); // поправь под ваш роут
-                Mail::to($student->email)->queue(
-                    new HomeworkReviewedMail(
-                        studentName: $student->first_name ?? null,
-                        assignmentTitle: $submission->homework->title ?? 'Домашняя работа',
-                        mentorName: $request->user()->name ?? null,
-                        score: (string)($submission->total_score ?? ''),
-                        comment: null, // при желании можно собрать summary из per_task_results
-                        linkToResult: $link
-                    )
-                );
+                $student->notify(new HomeworkGradedNotification($submission, $request->user()->name ?? null));
             }
         } catch (\Throwable $e) {
-            Log::warning('Не удалось отправить письмо о проверке', [
+            Log::warning('Не удалось отправить уведомление о проверке', [
                 'submission_id' => $submission->id,
                 'error' => $e->getMessage(),
             ]);

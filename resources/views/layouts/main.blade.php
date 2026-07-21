@@ -49,14 +49,36 @@
 
     </head>
     <body class="{{ request()->routeIs('student.*') ? 'pb-20' : '' }}">
-        <div class="relative border-b pb-3">
-            <div class=" flex relative justify-between p-4 w-full z-10 items-center flex-wrap grow-0 md:mb-4 mb-2 max-w-6xl mx-auto">
+        <div class="relative border-b ">
+            {{-- Обычный <style>, не Tailwind-классы (max-w-6xl/p-4 и т.п.) —
+                 в этом браузере часть Tailwind-классов ненадёжно
+                 применяется, уже несколько раз ловили на этом хедере и на
+                 нижнем меню. #site-header-row задаёт и колонку контента (та
+                 же ширина, что max-w-6xl в остальном сайте), и реальную
+                 высоту хедера — без неё колокольчику не по чему
+                 центрироваться (и он, и лого — position: absolute, высоту
+                 строки не формируют). --}}
+            <style>
+                #site-header-row {
+                    position: relative;
+                    max-width: 72rem;
+                    margin: 0 auto;
+                    padding: 16px;
+                }
+            </style>
+            <div id="site-header-row">
 
                 {{-- <div class="relative blue-bg rounded-full flex grow-0 self-center">
                     <h3 class=" p-2 pl-5 pr-8 grow-0 font-medium text-white tracking-wide">Все карты для ЕГЭ по истории!</h3>
                     <img class="absolute" style="right: -16px; width: 40px; height: 40px;" src="/img/map.png" alt="123" srcset="">
                 </div> --}}
-                <a class="inline-block" href="{{route('index')}}"><h2 class="font-oktyabrina md:text-[26px] md:mt-0 md:mb-0 mb-4 text-xl tracking-wide absolute left-0 right-0 ml-0 mr-0 text-center antialiased text-zinc-800 mb-4">Школа Полтавского</h2></a>
+                <a class="inline-block" href="{{route('index')}}"><h2 class="font-oktyabrina leading-none md:text-[26px] md:mt-0 md:mb-0 text-xl tracking-wide absolute left-0 right-0 ml-0 mr-0 py-2 bottom-1 text-center antialiased text-zinc-800">Школа Полтавского</h2></a>
+                @hasSection('back_url')
+                    @include('partials.student-back-button')
+                @endif
+                @if(auth()->check() && request()->routeIs('student.*'))
+                    @include('partials.student-notification-bell')
+                @endif
                 {{-- <ul class="gap-10 md:flex hidden">
                     <li style="color: rgb(217 119 6);" class="tracking-wide"></li>
                     <li class="tracking-wide"><span><img class="inline-block mr-1 b-4 w-5" src="{{asset('img/person.svg')}}" alt="alt" srcset=""> Войти</span><span></span></li>

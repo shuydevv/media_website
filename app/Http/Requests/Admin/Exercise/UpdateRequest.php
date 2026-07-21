@@ -35,7 +35,7 @@ class UpdateRequest extends FormRequest
             'comment' => 'nullable|string',
             'short_answer' => 'nullable|string',
             'text_spoiler' => 'nullable|string',
-            'main_image' => 'nullable|file',
+            'main_image' => 'nullable|image|max:5120',
         ];
     }
 }

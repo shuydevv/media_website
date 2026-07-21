@@ -1,14 +1,17 @@
-<!doctype html>
-<html lang="ru">
-  <body style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;">
-    <p>Здравствуйте, {{ $studentName ?? 'ученик' }}!</p>
+@extends('mail.layout')
 
-    <p>Наставник проверил(а) вашу работу: <strong>«{{ $assignmentTitle }}»</strong>.</p>
+@section('title', 'Домашняя работа проверена')
 
-    @if($linkToResult)
-      <p><a class="p-4 bg-blue-600 text-white" href="{{ $linkToResult }}">Посмотреть результат</a></p>
-    @endif
+@section('preheader')
+Наставник проверил(а) вашу работу: «{{ $assignmentTitle }}»
+@endsection
 
-    <p style="color:#666">Если вы не ожидали это письмо, просто проигнорируйте его.</p>
-  </body>
-</html>
+@section('content')
+<p style="margin:0 0 16px;">Здравствуйте, {{ $studentName ?? 'ученик' }}!</p>
+
+<p style="margin:0 0 24px;">Ваша работа по теме <strong>«{{ $assignmentTitle }}»</strong> проверена.</p>
+
+@if($linkToResult)
+  @include('mail.partials.button', ['url' => $linkToResult, 'label' => 'Посмотреть результат →'])
+@endif
+@endsection

@@ -6,6 +6,7 @@ use App\Models\Course;
 use App\Models\CourseUser;
 use App\Models\Payment;
 use App\Models\User;
+use App\Notifications\PaymentConfirmedNotification;
 use App\Service\Pricing\PromoLookup;
 use App\Service\Pricing\PromoPricing;
 use Carbon\Carbon;
@@ -25,6 +26,24 @@ class BillingService
 
     public function __construct(private EnrollmentService $enroll)
     {
+    }
+
+    /**
+     * Активные ученики курса, у которых прямо сейчас есть доступ (не
+     * приостановлен просрочкой) — общий источник "кому слать курсовые
+     * уведомления" (запись урока появилась, урок скоро начнётся и т.п.),
+     * тот же billing-фильтр, что уже применяется в HomeworkController и
+     * DashboardController для списков.
+     *
+     * @return \Illuminate\Support\Collection<int, User>
+     */
+    public function activeStudentsWithAccess(Course $course): \Illuminate\Support\Collection
+    {
+        return $course->students()
+            ->wherePivot('status', 'active')
+            ->get()
+            ->filter(fn (User $user) => $this->hasAccess($user, $course))
+            ->values();
     }
 
     public function hasAccess(User $user, Course $course): bool
@@ -205,9 +224,15 @@ class BillingService
             $pivot->promised_payment_used_at = null;
             $pivot->promised_payment_expires_at = null;
             $pivot->reminder_sent_at = null;
+            // Новый платёж закрывает и просрочку, и обещанный период — сбрасываем
+            // оба dedup-флага уведомлений, иначе при следующей просрочке эти
+            // уведомления больше никогда не придут (колонка так и останется
+            // занятой с первого раза).
+            $pivot->overdue_notified_at = null;
+            $pivot->promise_expiring_notified_at = null;
             $pivot->save();
 
-            return Payment::create([
+            $payment = Payment::create([
                 'course_user_id' => $pivot->id,
                 'user_id' => $user->id,
                 'course_id' => $course->id,
@@ -220,6 +245,10 @@ class BillingService
                 'recorded_by_user_id' => $meta['recorded_by_user_id'] ?? null,
                 'note' => $meta['note'] ?? null,
             ]);
+
+            $user->notify(new PaymentConfirmedNotification($payment));
+
+            return $payment;
         });
     }
 
@@ -235,6 +264,11 @@ class BillingService
 
             $pivot->promised_payment_expires_at = $expiresAt;
             $pivot->promised_payment_used_at = now();
+            // Обещанный платёж снимает текущую просрочку (доступ снова есть) и
+            // открывает новое окно на дедлайн "обещание скоро истечёт" — оба
+            // dedup-флага нужно перевзвести.
+            $pivot->overdue_notified_at = null;
+            $pivot->promise_expiring_notified_at = null;
             $pivot->save();
 
             return Payment::create([

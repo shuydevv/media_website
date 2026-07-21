@@ -2,10 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Mail\PaymentReminderMail;
 use App\Models\CourseUser;
+use App\Notifications\PaymentDueSoonNotification;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Mail;
 
 class SendBillingReminders extends Command
 {
@@ -28,7 +27,7 @@ class SendBillingReminders extends Command
                 continue;
             }
 
-            Mail::to($pivot->user->email)->queue(new PaymentReminderMail(
+            $pivot->user->notify(new PaymentDueSoonNotification(
                 $pivot->user->first_name ?? $pivot->user->name,
                 $pivot->course->title,
                 $pivot->next_payment_due_at

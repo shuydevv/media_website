@@ -7,6 +7,7 @@ use App\Models\Post;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Service\ImageCompressor;
 
 
 class PostService 
@@ -18,9 +19,9 @@ class PostService
             } else $tagIds = [];
 
             if (isset($data['main_image'])) {
-                $data['main_image'] = Storage::disk('public')->put('/images', $data['main_image']);
+                $data['main_image'] = ImageCompressor::forContent()->storeAs($data['main_image'], 'images');
             }
-            
+
             $latestPost = Post::latest()->first();
             if (isset($latestPost)) {
                 $newPostId = $latestPost->toArray()['id'] + 1;
@@ -42,10 +43,10 @@ class PostService
             if (isset($data['multi_images'])) {
                 foreach ($data['multi_images'] as $image) {
                     // dd($image);
-                    $multi_images[] = Storage::disk('public')->put('/images', $image);
+                    $multi_images[] = ImageCompressor::forContent()->storeAs($image, 'images');
                 }
                 unset($data_without_multi['multi_images']);
-                $post = Post::firstOrCreate($data_without_multi);            
+                $post = Post::firstOrCreate($data_without_multi);
 
                 $i = 0;
                 foreach ($data['multi_images'] as $image) {
@@ -96,13 +97,13 @@ class PostService
             $post->tags()->sync($tagIds);
 
             if( array_key_exists('main_image', $data)) {
-                $data['main_image'] = Storage::disk('public')->put('/images', $data['main_image']);
+                $data['main_image'] = ImageCompressor::forContent()->storeAs($data['main_image'], 'images');
             }
 
             $multi_images = [];
             if( array_key_exists('multi_images', $data)) {
                 foreach ($data['multi_images'] as $image) {
-                    $multi_images[] = Storage::disk('public')->put('/images', $image);
+                    $multi_images[] = ImageCompressor::forContent()->storeAs($image, 'images');
                 }
             }
 

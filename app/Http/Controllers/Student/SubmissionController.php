@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Homework;
 use App\Models\HomeworkTask;
 use App\Models\Submission;
+use App\Service\FishFoodService;
 use App\Service\Homework\AutoGrader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -173,6 +174,13 @@ class SubmissionController extends Controller
         $answers = $submission->answers ?? [];
         $perTask = $submission->per_task_results ?? [];
 
+        // Корм за верный ответ — только если вопрос ещё не был отвечен:
+        // без этой проверки переответ на уже сохранённый верный вопрос
+        // (answers просто перезаписывается) начислял бы корм повторно.
+        if ($result !== null && $result['status'] === 'ok' && !array_key_exists($task->id, $answers)) {
+            app(FishFoodService::class)->awardCorrectAnswer($request->user());
+        }
+
         $answers[$task->id] = $answer;
 
         if ($result !== null) {
@@ -252,6 +260,12 @@ class SubmissionController extends Controller
         }
 
         $submission->save();
+
+        // finishSubmit() гарантированно one-shot на сабмишен: ensureInProgress()
+        // не пускает сюда повторно после того, как статус перестал быть
+        // in_progress (выставляется чуть выше), так что доп. флаг "уже
+        // начислено" не нужен — см. FishFoodService::awardHomeworkCompletion().
+        app(FishFoodService::class)->awardHomeworkCompletion($request->user(), $submission);
 
         // Одноразовый флаг для конфетти на странице результата — не должен переживать обновление страницы.
         session()->flash('just_submitted', true);

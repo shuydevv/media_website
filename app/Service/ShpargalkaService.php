@@ -7,6 +7,7 @@ use App\Models\Shpargalka;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Service\ImageCompressor;
 
 
 class ShpargalkaService 
@@ -18,9 +19,9 @@ class ShpargalkaService
             // } else $tagIds = [];
 
             if (isset($data['main_image'])) {
-                $data['main_image'] = Storage::disk('public')->put('/images', $data['main_image']);
+                $data['main_image'] = ImageCompressor::forContent()->storeAs($data['main_image'], 'images');
             }
-            
+
             $latestPost = Shpargalka::latest()->first();
             if (isset($latestPost)) {
                 $newPostId = $latestPost->toArray()['id'] + 1;
@@ -41,7 +42,7 @@ class ShpargalkaService
             if (isset($data['multi_images'])) {
                 foreach ($data['multi_images'] as $image) {
                     // dd($image);
-                    $multi_images[] = Storage::disk('public')->put('/images', $image);
+                    $multi_images[] = ImageCompressor::forContent()->storeAs($image, 'images');
                 }
                 unset($data_without_multi['multi_images']);
                 $post = Shpargalka::firstOrCreate($data_without_multi);
@@ -97,13 +98,13 @@ class ShpargalkaService
             // $post->tags()->sync($tagIds);
 
             if( array_key_exists('main_image', $data)) {
-                $data['main_image'] = Storage::disk('public')->put('/images', $data['main_image']);
+                $data['main_image'] = ImageCompressor::forContent()->storeAs($data['main_image'], 'images');
             }
 
             $multi_images = [];
             if( array_key_exists('multi_images', $data)) {
                 foreach ($data['multi_images'] as $image) {
-                    $multi_images[] = Storage::disk('public')->put('/images', $image);
+                    $multi_images[] = ImageCompressor::forContent()->storeAs($image, 'images');
                 }
             }
 

@@ -6,15 +6,17 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;
 use App\Models\Course;
+use App\Models\CourseSession;
 use App\Models\Lesson;
 use App\Models\Homework;
 use App\Models\Submission;
 use App\Service\BillingService;
+use App\Service\FishFoodService;
 
 
 class DashboardController extends Controller
 {
-    public function __invoke(BillingService $billing)
+    public function __invoke(BillingService $billing, FishFoodService $fish)
     {
         $user = auth()->user();
 
@@ -96,6 +98,16 @@ class DashboardController extends Controller
                 });
             })
             ->with(['homework', 'courseSession.course'])
+            ->get();
+
+        // Сессии, для которых время уже назначено, а сам урок (тема/контент)
+        // ещё не создан — раньше такой день выглядел как "Выходной", хотя
+        // занятие фактически есть, просто тема пока не заведена.
+        $sessionsWithoutLesson = CourseSession::query()
+            ->whereIn('course_id', $courseIds)
+            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereDoesntHave('lesson')
+            ->with('course')
             ->get();
 
 
@@ -182,6 +194,28 @@ foreach ($lessons as $lesson) {
     ];
 }
 
+// Сессии без урока — занятие назначено, но тема ещё не заведена
+foreach ($sessionsWithoutLesson as $session) {
+    $dKey = Carbon::parse($session->date)->toDateString();
+    if (!isset($daysMap[$dKey])) continue;
+
+    $courseTitle = optional($session->course)->title ?? 'Курс';
+    $subject     = preg_replace('/,.*$/u', '', $courseTitle);
+
+    $daysMap[$dKey]['items'][] = [
+        'type'    => 'Урок',
+        'subject' => $subject,
+        'title'   => 'Тема пока неизвестна',
+        'time'    => $session->start_time ? mb_substr($session->start_time, 0, 5) : '—:—',
+        'color'   => 'blue',
+        'status'  => null,
+        // Ни lesson, ни homework — Blade отрисует обычный текст без ссылки
+        // (переходить пока некуда). 'session' нужен только для сортировки
+        // по времени внутри дня, см. ниже.
+        'session' => $session,
+    ];
+}
+
 
         // Домашки/Пробники
         foreach ($homeworks as $hw) {
@@ -257,6 +291,13 @@ foreach ($daysMap as $dateKey => &$dayRow) {
             return $dt ? $dt->timestamp : PHP_INT_MAX;
         }
 
+        // Сессия без урока: сортируем по её собственному времени начала
+        if (!empty($it['session']) && $it['session'] instanceof \App\Models\CourseSession) {
+            try {
+                return \Illuminate\Support\Carbon::parse($it['session']->date . ' ' . ($it['session']->start_time ?? '00:00'))->timestamp;
+            } catch (\Throwable $e) {}
+        }
+
         // На всякий случай — в конец
         return PHP_INT_MAX;
     })->values()->all();
@@ -265,10 +306,13 @@ foreach ($daysMap as $dateKey => &$dayRow) {
         $days = array_values($daysMap);
 
         // ────────────────────────────────────────────────────────────────────
-        // Карточка «Ближайшее событие»: первый ещё не выполненный урок/домашка
-        // начиная с сегодняшнего дня (уже отсортировано выше по времени внутри дня).
+        // Карточка «Ближайшие события»: отдельно ближайший ещё не прошедший
+        // урок и отдельно ближайшая ещё не сданная домашка (каждый — первый
+        // подходящий пункт начиная с сегодняшнего дня; $days уже отсортирован
+        // по времени внутри дня выше).
         // ────────────────────────────────────────────────────────────────────
-        $nextItem = null;
+        $nextLesson = null;
+        $nextHomework = null;
         $todayIndex = null;
         foreach ($days as $i => $d) {
             if (!empty($d['is_today'])) { $todayIndex = $i; break; }
@@ -276,8 +320,16 @@ foreach ($daysMap as $dateKey => &$dayRow) {
         if ($todayIndex !== null) {
             for ($i = $todayIndex; $i < count($days); $i++) {
                 foreach ($days[$i]['items'] as $it) {
-                    if (($it['status'] ?? null) !== 'completed') {
-                        $nextItem = $it + ['day' => $days[$i]['day'], 'date' => $days[$i]['date']];
+                    if (($it['status'] ?? null) === 'completed') {
+                        continue;
+                    }
+                    if ($nextLesson === null && (!empty($it['lesson']) || !empty($it['session']))) {
+                        $nextLesson = $it + ['day' => $days[$i]['day'], 'date' => $days[$i]['date']];
+                    }
+                    if ($nextHomework === null && !empty($it['homework'])) {
+                        $nextHomework = $it + ['day' => $days[$i]['day'], 'date' => $days[$i]['date']];
+                    }
+                    if ($nextLesson !== null && $nextHomework !== null) {
                         break 2;
                     }
                 }
@@ -285,51 +337,44 @@ foreach ($daysMap as $dateKey => &$dayRow) {
         }
 
         // ────────────────────────────────────────────────────────────────────
-        // Карточка «Ближайшие домашки»: очередь домашек, которые ещё не сданы
-        // (не считая уже завершённых попыток), отсортирована по дедлайну.
-        // Отдельно помечаем те, что уже начаты (есть открытая in_progress-попытка).
+        // Карточка «Оплата»: ближайший предстоящий платёж среди курсов на
+        // регулярной оплате (billing_interval_days задан) — просроченные
+        // приоритетнее (даже если про них уже есть баннер в шапке, полезно
+        // видеть их и здесь), иначе — тот, что должен списаться раньше всех.
+        // Курсы без регулярной оплаты (промокод/разовый доступ) сюда не
+        // попадают — им нечего показывать.
         // ────────────────────────────────────────────────────────────────────
-        $latestSubmissionByHomework = Submission::query()
-            ->where('user_id', $user->id)
-            ->whereIn('homework_id', Homework::query()->whereIn('course_id', $courseIds)->pluck('id'))
-            ->orderByDesc('id')
-            ->get()
-            ->groupBy('homework_id')
-            ->map(fn ($group) => $group->first());
-
-        $homeworksQueue = Homework::query()
-            ->whereIn('course_id', $courseIds)
-            ->whereNotNull('due_at')
-            ->where('due_at', '>=', now()->subDays(30))
-            ->with('lesson.courseSession.course')
-            ->orderBy('due_at')
-            ->get()
-            ->reject(fn (Homework $hw) => $hw->isLessonUpcoming())
-            ->map(function ($hw) use ($latestSubmissionByHomework) {
-                $sub = $latestSubmissionByHomework->get($hw->id);
-                $courseTitle = optional($hw->lesson?->courseSession?->course)->title ?? 'Курс';
-
-                $isStarted = $sub && $sub->status === 'in_progress';
-                $isOverdue = !$sub && $hw->due_at->isPast();
+        $nextPayment = $courses
+            ->filter(fn (Course $course) => $billing->isBillingEnabled($user, $course))
+            ->map(function (Course $course) use ($billing, $user) {
+                $due = $billing->nextDueDate($user, $course);
+                if (!$due) {
+                    return null;
+                }
 
                 return [
-                    'homework'   => $hw,
-                    'subject'    => preg_replace('/,.*$/u', '', $courseTitle),
-                    'is_started' => $isStarted,
-                    'is_done'    => $sub && $sub->status !== 'in_progress',
-                    'is_overdue' => $isOverdue,
-                    'color'      => $isStarted ? 'blue' : ($isOverdue ? 'red' : 'yellow'),
+                    'course'          => $course,
+                    'due'             => $due,
+                    'daysLeft'        => $billing->dueInDays($user, $course),
+                    'isOverdue'       => $billing->isPastDue($user, $course),
+                    'isPromiseActive' => $billing->isPromiseActive($user, $course),
                 ];
             })
-            ->reject(fn ($row) => $row['is_done'])
-            ->take(3)
-            ->values();
+            ->filter()
+            ->sortBy(fn (array $row) => $row['isOverdue'] ? (PHP_INT_MIN + $row['due']->timestamp) : $row['due']->timestamp)
+            ->first();
 
-        // Есть ли просроченные домашки прямо сейчас — влияет на настроение маскота в приветствии
-        $overdueCount = collect($days)->flatMap(fn ($d) => $d['items'])
-            ->where('status', 'overdue')
-            ->count();
+        // Заход на дашборд — это и есть «визит на платформу» для ежедневного
+        // бонуса корма (не чаще раза в день, см. FishFoodService::awardDailyVisit()).
+        $fish->awardDailyVisit($user);
+        $fishLevel = $fish->levelFor((int) $user->fish_total_fed);
+        $fishProgress = $fish->progressFor((int) $user->fish_total_fed);
+        $fishBalance = (int) $user->fish_corm_balance;
+        $fishMascotImage = $fish->mascotImageUrl($fishLevel);
+        $fishMascotEatingImage = $fish->mascotImageUrl($fishLevel, 'eating');
+        $fishBackgroundImage = $fish->backgroundImageUrl($user->fish_background);
+        $fishName = $user->fish_name ?: $fish->levelName($fishLevel);
 
-        return view('student.dashboard', compact('courses', 'days', 'nextItem', 'homeworksQueue', 'overdueCount', 'blockedCourseIds'));
+        return view('student.dashboard', compact('courses', 'days', 'nextLesson', 'nextHomework', 'nextPayment', 'blockedCourseIds', 'fishLevel', 'fishProgress', 'fishBalance', 'fishMascotImage', 'fishMascotEatingImage', 'fishBackgroundImage', 'fishName'));
     }
 }

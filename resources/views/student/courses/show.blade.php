@@ -1,11 +1,40 @@
 @extends('layouts.main')
 
-@section('content')
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-  <div class="mb-6">
-    <a href="{{ route('student.dashboard') }}" class="text-sm text-gray-500 hover:text-gray-700">← Назад в дашборд</a>
-  </div>
+@section('back_url', route('student.dashboard'))
 
+@section('content')
+{{-- Обычным <style>, не Tailwind-классами с квадратными скобками
+     (mt-[clamp(...)]) и не sm:/md:/lg:-вариантами для сетки прошедших
+     занятий: в этом браузере часть таких классов ненадёжно применяется —
+     та же причина, по которой на дашборде (dashboard.blade.php) сетку
+     карточек и ширину колонок в итоге тоже перевели на обычный CSS. --}}
+<style>
+    .course-hero-divider {
+        border-width: 1px;
+        border-color: #bfdbfe;
+        margin-top: 10px;
+        margin-bottom: 28px;
+    }
+    .course-past-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    @media (min-width: 768px) {
+        .course-past-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+    }
+    @media (min-width: 1024px) {
+        .course-past-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+</style>
+{{-- Отступы контейнера — как на остальных student-страницах (dashboard,
+     homeworks/index и т.д.): плоский px-4, без sm:/lg: прогрессии. --}}
+<div class="max-w-6xl mx-auto px-4 py-6">
   <div class="mb-6">
     <h1 class="md:text-3xl text-2xl md:mb-3 mb-2 font-sans font-medium text-gray-900">{{ $course->title }}</h1>
 
@@ -24,6 +53,10 @@
     @if(optional($course->category)->name)
       <div class="mt-1 text-sm text-gray-600">Категория: {{ $course->category->name }}</div>
     @endif
+
+    {{-- @if(!empty($course->description))
+      <p class="mt-3 text-sm md:text-base text-gray-600">{{ $course->description }}</p>
+    @endif --}}
   </div>
 
 {{-- Ближайшая сессия --}}
@@ -36,26 +69,45 @@
     @php
       $s = $nextSession;
       $lesson = $s->lesson; // может быть null
+      // route('student.lessons.show', ...) проверяется один раз здесь и
+      // переиспользуется ниже (заголовок + кнопка "Перейти к уроку") —
+      // раньше заголовок ссылку на урок не проверял вовсе, а карточки
+      // прошедших занятий (ниже) проверяли — несогласованно.
+      $lessonHref = $lesson && \Illuminate\Support\Facades\Route::has('student.lessons.show')
+          ? route('student.lessons.show', $lesson)
+          : null;
     @endphp
-    <div class="rounded-2xl bg-blue-50 border border-blue-200 md:p-4 p-3">
+    <div class="rounded-2xl bg-blue-50 border border-blue-200 shadow-sm p-5 md:p-6">
       <div class="flex flex-col md:flex-row md:items-stretch md:gap-7 gap-4">
-        {{-- Картинка урока (если есть) --}}
-        @if($lesson && $lesson->image_url)
+        {{-- Картинка урока: заглушка, если у урока нет image_url --}}
+        @if($lesson)
           <div class="w-full md:w-1/2">
             <div class="relative aspect-[16/10]">
-              <img src="{{ $lesson->image_url }}" 
-                   alt="" 
-                   class="w-full h-full rounded-xl object-cover border border-blue-200">
-                
+              @if($lesson->image_url)
+                <img src="{{ $lesson->image_url }}"
+                     alt="{{ $lesson->title }}"
+                     class="w-full h-full rounded-xl object-cover border border-blue-200">
+              @else
+                <div class="w-full h-full rounded-xl border border-blue-200 bg-blue-100/50 flex items-center justify-center text-blue-300">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12">
+                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <path d="M21 15l-5-5L5 21"></path>
+                  </svg>
+                </div>
+              @endif
+
               <h2 class="absolute top-3 left-3 bg-white/60 px-3 py-1 rounded-2xl text-xs md:text-base font-sans font-semibold text-blue-900 mb-3"><img class="inline-block md:mr-2 mr-1 md:w-auto w-4" src=" {{asset('/img/Return.svg')}} " alt="">Следующее занятие</h2>
+
+              @include('student.partials.lesson-image-badges', ['lesson' => $lesson, 'homeworkColor' => $s->_homeworkColor])
             </div>
           </div>
         @endif
 
-        <div class="w-full md:w-1/2 flex flex-col mt-0 md:mt-1">
+        <div class="w-full md:w-1/2 flex flex-col mt-0 md:mt-1 min-w-0">
           <div class="text-sm md:text-base tracking-wide opacity-60 text-blue-800">
-            <img class="inline-block relative bottom-0.5 mr-1 w-4 h-4 md:w-5 md:h-5" 
-                 src="{{ asset('img/Date_range.svg') }}" 
+            <img class="inline-block relative bottom-0.5 mr-1 w-4 h-4 md:w-5 md:h-5"
+                 src="{{ asset('img/Date_range.svg') }}"
                  alt="Date">
             @if($s->display_date)
               {{ \Illuminate\Support\Carbon::parse($s->display_date)->translatedFormat('j F') }}
@@ -65,12 +117,29 @@
             @endif
           </div>
 
-          <div class="mt-4 md:mt-5 md:mb-2 mb-1">
-            @if($lesson)
-              <a href="{{ route('student.lessons.show', $lesson) }}" 
-                 class="text-3xl md:text-4xl tracking-wide font-medium text-blue-900">
+          {{-- Живой отсчёт: время старта передаём в ISO8601 со смещением
+               (toIso8601String даёт "+03:00", т.к. $s->_start уже в
+               config('app.timezone') = Europe/Moscow) — так JS парсит его
+               однозначно на любом устройстве, независимо от часового пояса
+               браузера пользователя. --}}
+          @if($s->_start)
+            <div id="next-session-countdown" class="mt-1 text-sm md:text-base font-medium text-blue-900" data-start="{{ $s->_start->toIso8601String() }}"></div>
+          @endif
+
+          {{-- truncate + min-w-0 — иначе длинное название урока без
+               пробелов может распереть колонку шире контейнера (та же
+               причина, что уже задокументирована в dashboard.blade.php
+               для карточки ближайших событий). --}}
+          <div class="mt-4 md:mt-5 md:mb-2 mb-1 min-w-0">
+            @if($lesson && $lessonHref)
+              <a href="{{ $lessonHref }}"
+                 class="block truncate text-3xl md:text-4xl tracking-wide font-medium text-blue-900">
                 {{ $lesson->title }}
               </a>
+            @elseif($lesson)
+              <div class="truncate text-3xl md:text-4xl tracking-wide font-medium text-blue-900">
+                {{ $lesson->title }}
+              </div>
             @else
               <div class="text-base md:text-lg font-semibold text-blue-900">Тема урока пока неизвестна</div>
             @endif
@@ -88,17 +157,13 @@
           <div class="md:block hidden flex-1"></div>
 
           @if($lesson?->description)
-            {{-- hr с адаптивными отступами: верх меньше, низ больше.
-              clamp(min, preferred vw/vh, max) — чтобы красиво скейлилось --}}
-            <hr class="border-1 border-blue-200 
-                      mt-[clamp(6px,1.2vh,14px)] 
-                      mb-[clamp(16px,3.5vh,36px)]">
+            <hr class="course-hero-divider">
           @endif
-          
 
-          @if($lesson?->id)
+
+          @if($lessonHref)
             <div class="mt-8 md:mt-10">
-              <a href="{{ route('student.lessons.show', $lesson) }}"
+              <a href="{{ $lessonHref }}"
                 class="md:inline-block block text-center px-6 md:px-8 py-4 md:py-4 md:text-base text-base tracking-wide font-medium rounded-xl bg-zinc-800 border text-white hover:bg-zinc-900 transition">
                 Перейти к уроку
               </a>
@@ -138,17 +203,29 @@
           </div>
 
 
-          <div class="md:gap-6 gap-4 grid sm:grid-cols-1 lg:grid-cols-3">
+          <div class="course-past-grid">
             @foreach($items as $s)
               @php
                 $lesson = $s->lesson; // гарантированно есть
               @endphp
-              <div class="rounded-2xl bg-gray-50 border border-gray-200 bg-white md:p-4 p-3">
-                <div class="aspect-[16/10] gap-4">
-                  {{-- Картинка урока (если есть) --}}
-                  @if($lesson->image_url ?? false)
-                    <img src="{{ $lesson->image_url }}" alt="cover" class="w-full h-full object-cover rounded-xl object-cover border border-gray-200">
-                  @endif
+              <div class="rounded-2xl bg-gray-50 border border-gray-200 shadow-sm p-5 md:p-6">
+                <div class="gap-4">
+                  {{-- Картинка урока: заглушка, если у урока нет image_url --}}
+                  <div class="relative aspect-[16/10]">
+                    @if($lesson->image_url ?? false)
+                      <img src="{{ $lesson->image_url }}" alt="{{ $lesson->title }}" class="w-full h-full object-cover rounded-xl object-cover border border-gray-200">
+                    @else
+                      <div class="w-full h-full rounded-xl border border-gray-200 bg-gray-100 flex items-center justify-center text-gray-300">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-10">
+                          <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                          <path d="M21 15l-5-5L5 21"></path>
+                        </svg>
+                      </div>
+                    @endif
+
+                    @include('student.partials.lesson-image-badges', ['lesson' => $lesson, 'homeworkColor' => $s->_homeworkColor])
+                  </div>
 
                   {{-- Заголовок и ссылка на страницу урока --}}
                   <h3 class="text-xl sans font-medium mt-3 md:mb-2 mb-1 text-gray-900">
@@ -193,5 +270,43 @@
     </div>
   @endif
 </div>
+
+<script>
+    (function () {
+        var el = document.getElementById('next-session-countdown');
+        if (!el) return;
+
+        var startMs = new Date(el.dataset.start).getTime();
+
+        function pad(n) {
+            return String(n).padStart(2, '0');
+        }
+
+        function render() {
+            var diff = startMs - Date.now();
+
+            if (diff <= 0) {
+                el.textContent = 'Занятие уже началось';
+                return;
+            }
+
+            var totalSeconds = Math.floor(diff / 1000);
+            var days = Math.floor(totalSeconds / 86400);
+            var hours = Math.floor((totalSeconds % 86400) / 3600);
+            var minutes = Math.floor((totalSeconds % 3600) / 60);
+            var seconds = totalSeconds % 60;
+
+            el.textContent = 'До занятия: ' + (days > 0 ? days + ' дн ' : '') + pad(hours) + ':' + pad(minutes) + ':' + pad(seconds);
+        }
+
+        render();
+        var timer = setInterval(function () {
+            render();
+            if (startMs - Date.now() <= 0) {
+                clearInterval(timer);
+            }
+        }, 1000);
+    })();
+</script>
 
 @endsection

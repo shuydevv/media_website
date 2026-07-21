@@ -37,10 +37,6 @@ class LeadController extends Controller
             ];
             Log::error('Telegram config (hardcoded) error', $debug);
 
-            if (config('app.debug')) {
-                dd($debug);
-            }
-
             return back()
                 ->withErrors(['form' => 'Ошибка конфигурации Telegram (пустой токен или chat_id).'])
                 ->withInput();
@@ -103,10 +99,6 @@ class LeadController extends Controller
 
                 Log::error('Telegram send failed (hardcoded)', $debug);
 
-                if (config('app.debug')) {
-                    dd($debug); // В dev-режиме покажем всю причину сразу
-                }
-
                 return back()
                     ->withErrors(['form' => 'Не удалось отправить заявку. Попробуйте ещё раз.'])
                     ->withInput();
@@ -121,10 +113,6 @@ class LeadController extends Controller
             ];
 
             Log::error('Telegram exception (hardcoded)', $debug);
-
-            if (config('app.debug')) {
-                dd($debug);
-            }
 
             return back()
                 ->withErrors(['form' => 'Не удалось отправить заявку. Попробуйте ещё раз.'])
