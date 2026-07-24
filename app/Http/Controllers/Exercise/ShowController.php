@@ -3,16 +3,14 @@
 namespace App\Http\Controllers\Exercise;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
-use App\Models\Exercise;
-use App\Models\Section;
+use App\Models\Task;
 
 class ShowController extends Controller
 {
-    public function __invoke(Exercise $exercise) {
-        $categories = Category::all();
-        $sections = Section::all();
+    public function __invoke(Task $exercise)
+    {
+        abort_unless($exercise->is_public && $exercise->type, 404);
 
-        return view('exercise.show', compact('exercise', 'categories', 'sections'));
+        return view('exercise.show', ['task' => $exercise]);
     }
 }

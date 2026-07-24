@@ -3,8 +3,11 @@
 @section('content')
 <div class="max-w-7xl mx-auto px-4 py-6">
   <div class="flex items-center justify-between mb-4">
-    <h1 class="text-2xl font-semibold">Банк критериев (Task)</h1>
-    <a href="{{ route('admin.tasks.create') }}" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Создать</a>
+    <h1 class="text-2xl font-semibold">Банк заданий</h1>
+    <div class="flex items-center gap-2">
+      <a href="{{ route('admin.tasks.import') }}" class="px-4 py-2 rounded-lg border hover:bg-gray-50">Импорт</a>
+      <a href="{{ route('admin.tasks.create') }}" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Создать</a>
+    </div>
   </div>
 
   @foreach (['success'=>'green','error'=>'red'] as $k=>$c)
@@ -34,6 +37,9 @@
           <th class="text-left px-4 py-2">ID</th>
           <th class="text-left px-4 py-2">Категория</th>
           <th class="text-left px-4 py-2">Номер</th>
+          <th class="text-left px-4 py-2">Тип</th>
+          <th class="text-left px-4 py-2">Вопрос</th>
+          <th class="text-left px-4 py-2">Публично</th>
           <th class="px-4 py-2"></th>
         </tr>
       </thead>
@@ -43,12 +49,15 @@
             <td class="px-4 py-2">#{{ $t->id }}</td>
             <td class="px-4 py-2">{{ $t->category?->title ?? '—' }}</td>
             <td class="px-4 py-2">{{ $t->number ?? '—' }}</td>
+            <td class="px-4 py-2">{{ $t->type ?? '—' }}</td>
+            <td class="px-4 py-2 max-w-xs truncate">{{ \Illuminate\Support\Str::limit(strip_tags((string) $t->question_text), 60) ?: '—' }}</td>
+            <td class="px-4 py-2">{{ $t->is_public ? 'Да' : 'Нет' }}</td>
             <td class="px-4 py-2 text-right">
               <a href="{{ route('admin.tasks.show', $t) }}" class="text-blue-600 hover:underline">Открыть</a>
             </td>
           </tr>
         @empty
-          <tr><td colspan="4" class="px-4 py-6 text-center text-gray-500">Пусто</td></tr>
+          <tr><td colspan="7" class="px-4 py-6 text-center text-gray-500">Пусто</td></tr>
         @endforelse
       </tbody>
     </table>

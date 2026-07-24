@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>Школа Полтавского</title>
 
@@ -36,7 +37,7 @@
                         <a href="{{route('admin.shpargalka.index')}}"><li class="mb-2 hover:opacity-50">Шпаргалки</li></a>
                         <hr class="mt-4 mb-4">
                         
-                        <a href="{{route('admin.exercise.index')}}"><li class="mb-2 hover:opacity-50">Упражнения</li></a>
+                        <a href="{{route('admin.tasks.index')}}"><li class="mb-2 hover:opacity-50">Банк заданий</li></a>
                         <hr class="mt-4 mb-4">
                         <a href="{{route('admin.courses.index')}}"><li class="mb-2 hover:opacity-50">Курсы</li></a>
                         <a href="{{route('admin.lessons.index')}}"><li class="mb-2 hover:opacity-50">Уроки</li></a>

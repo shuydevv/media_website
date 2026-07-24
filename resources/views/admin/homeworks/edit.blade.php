@@ -67,7 +67,7 @@
         {{-- Дедлайн --}}
         <div class="mb-4">
             <label class="block text-sm font-medium">Дедлайн</label>
-            <input type="datetime-local" name="due_at" 
+            <input type="datetime-local" name="due_at"
                 class="w-full border rounded px-3 py-2"
                 value="{{ old('due_at', isset($homework->due_at) ? $homework->due_at->format('Y-m-d\TH:i') : '') }}">
         </div>
@@ -76,143 +76,65 @@
         <div id="tasks-container" class="space-y-8">
             @php $i = 0; @endphp
             @forelse($homework->tasks as $t)
-            @php
-                // Безопасно распакуем возможные массивы/строки
-                $optionsText = is_array($t->options) ? implode("\n", $t->options) : ($t->options ?? '');
-                $imageAutoOptionsText = is_array($t->image_auto_options ?? null) ? implode("\n", $t->image_auto_options) : '';
-                $tableJson = $t->table_content
-                    ? (is_array($t->table_content) ? json_encode($t->table_content, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE) : (string)$t->table_content)
-                    : '';
-            @endphp
+            @php $isBankItem = !empty($t->task_id); @endphp
             <div class="task-item border rounded p-4 bg-gray-50">
-                <h2 class="text-lg font-semibold mb-4">Задание</h2>
+                <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <span class="drag-handle cursor-grab select-none text-gray-400 hover:text-gray-600" draggable="true" title="Перетащите, чтобы изменить порядок">⠿⠿</span>
+                    Задание <span class="task-item-number">{{ $i + 1 }}</span>
+                </h2>
 
                 <input type="hidden" name="tasks[{{ $i }}][id]" value="{{ $t->id }}">
 
-                {{-- Тип задания --}}
                 <div class="mb-4">
-                    <label class="block text-sm font-medium">Тип задания</label>
-                    <select name="tasks[{{ $i }}][type]" class="task-type w-full border rounded px-3 py-2" required>
-                        <option value="">Выберите тип</option>
-                        <option value="test" @selected($t->type==='test')>Тест с вариантами</option>
-                        <option value="text_with_questions" @selected($t->type==='text_with_questions')>Текст с вопросами</option>
-                        <option value="matching" @selected($t->type==='matching')>Соотнесение</option>
-                        <option value="image_auto" @selected($t->type==='image_auto')>Картинка (авто)</option>
-                        <option value="image_manual" @selected($t->type==='image_manual')>Картинка (ручная)</option>
-                        <option value="written" @selected($t->type==='written')>Развёрнутый ответ</option>
-                        <option value="table" @selected($t->type==='table')>Таблица</option>
-                    </select>
-                </div>
-
-
-                {{-- Формулировка / вопрос --}}
-                <div class="mb-4">
-                    <label class="block text-sm font-medium">Вопрос / текст</label>
-                    <textarea name="tasks[{{ $i }}][question_text]" class="w-full border rounded px-3 py-2">{{old("tasks.$i.question_text", $t->question_text)}}</textarea>
-                </div>
-
-                {{-- Правильный ответ --}}
-                <div class="mb-4">
-                    <label class="block text-sm font-medium">Правильный ответ</label>
-                    <textarea name="tasks[{{ $i }}][answer]" class="w-full border rounded px-3 py-2"
-                              required>{{ old("tasks.$i.answer", $t->answer) }}</textarea>
-                </div>
-
-                {{-- Подсказка --}}
-                <div class="mb-4">
-                    <label class="block text-sm font-medium">Подсказка</label>
-                    <textarea name="tasks[{{ $i }}][hint]" class="w-full border rounded px-3 py-2">{{ old("tasks.$i.hint", $t->hint) }}</textarea>
-                </div>
-
-                {{-- Варианты (test) --}}
-                <div class="mb-4 task-options {{ $t->type==='test' ? '' : 'hidden' }}">
-                    <label class="block text-sm font-medium">Варианты ответа (Каждый вариант ответа с новой строки)</label>
-                    <textarea name="tasks[{{ $i }}][options]" class="w-full border rounded px-3 py-2" rows="6">{{ old("tasks.$i.options", $optionsText) }}</textarea>
-                </div>
-
-                {{-- Соотнесение --}}
-                <div class="mb-4 task-matches {{ $t->type==='matching' ? '' : 'hidden' }}">
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium">Заголовок левой колонки</label>
-                            <input type="text" name="tasks[{{ $i }}][left_title]" class="w-full border rounded px-3 py-2"
-                                   value="{{ old("tasks.$i.left_title", $t->left_title) }}">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium">Заголовок правой колонки</label>
-                            <input type="text" name="tasks[{{ $i }}][right_title]" class="w-full border rounded px-3 py-2"
-                                   value="{{ old("tasks.$i.right_title", $t->right_title) }}">
-                        </div>
-                    </div>
-
-                    <label class="block text-sm font-medium mt-3">Левая колонка (Буквы "А,Б,В" писать не надо)</label>
-                    <textarea name="tasks[{{ $i }}][matches][left]" class="w-full border rounded px-3 py-2" rows="4">{{ old("tasks.$i.matches.left", isset($t->matches['left']) ? (is_array($t->matches['left']) ? implode("\n", $t->matches['left']) : $t->matches['left']) : '') }}</textarea>
-
-                    <label class="block text-sm font-medium mt-3">Правая колонка (Цифры "1,2,3" писать не надо)</label>
-                    <textarea name="tasks[{{ $i }}][matches][right]" class="w-full border rounded px-3 py-2" rows="4">{{ old("tasks.$i.matches.right", isset($t->matches['right']) ? (is_array($t->matches['right']) ? implode("\n", $t->matches['right']) : $t->matches['right']) : '') }}</textarea>
-
-                    {{-- matching — порядок важен всегда --}}
-                    <input type="hidden" name="tasks[{{ $i }}][order_matters]" value="1">
-                </div>
-
-                {{-- Таблица --}}
-                <div class="mb-4 task-table {{ $t->type==='table' ? '' : 'hidden' }}">
-                    <label class="block text-sm font-medium">Содержимое таблицы (JSON)</label>
-                    <textarea name="tasks[{{ $i }}][table_content]" class="w-full border rounded px-3 py-2 font-mono text-xs" rows="8">{{ old("tasks.$i.table_content", $tableJson) }}</textarea>
-                    {{-- table — порядок важен всегда --}}
-                    <input type="hidden" name="tasks[{{ $i }}][order_matters]" value="1">
-                </div>
-
-                {{-- Текст (источник / пассаж) --}}
-                <div class="mb-4 task-passage {{ in_array($t->type, ['text_with_questions','written']) ? '' : 'hidden' }}">
-                    <label class="block text-sm font-medium">
-                        {{ $t->type==='text_with_questions' ? 'Текст (источник)' : 'Текст (пассаж)' }}
+                    <label class="inline-flex items-center gap-2 mr-6 text-sm font-medium">
+                        <input type="radio" name="tasks[{{ $i }}][source]" value="own" class="task-source-toggle" @checked(!$isBankItem)>
+                        Только для этой домашки
                     </label>
-                    <textarea name="tasks[{{ $i }}][passage_text]" class="w-full border rounded px-3 py-2" rows="5">{{ old("tasks.$i.passage_text", $t->passage_text) }}</textarea>
+                    <label class="inline-flex items-center gap-2 text-sm font-medium">
+                        <input type="radio" name="tasks[{{ $i }}][source]" value="bank" class="task-source-toggle" @checked($isBankItem)>
+                        Из банка заданий
+                    </label>
                 </div>
 
-                {{-- Изображение (в условии) --}}
-                <div class="mb-4 task-image {{ in_array($t->type, ['image_auto','image_manual']) ? '' : 'hidden' }}">
-                    <label class="block text-sm font-medium">Изображение</label>
-                    @if(!empty($t->image_path))
-                        <div class="text-xs text-gray-600 mb-1">Текущее: {{ $t->image_path }}</div>
-                    @endif
-                    <input type="file" name="tasks[{{ $i }}][image]" class="w-full text-sm mt-1">
+                <div class="task-own-fields {{ $isBankItem ? 'hidden' : '' }}">
+                    <x-task-content-fields :name="'tasks['.$i.']'" :task="$t" />
+
+                    <label class="inline-flex items-center gap-2 mt-4 mb-4 text-sm">
+                        <input type="checkbox" name="tasks[{{ $i }}][save_to_bank]" value="1">
+                        Также сохранить в банк заданий (станет доступно в личном кабинете и в других домашках)
+                    </label>
                 </div>
 
-                {{-- image_auto: опции и "порядок важен" --}}
-                <div class="mb-4 task-image-auto-extra {{ $t->type==='image_auto' ? '' : 'hidden' }}">
-                    <label class="block text-sm font-medium">Варианты ответа (по одному в строке, необязательно)</label>
-                    <textarea name="tasks[{{ $i }}][image_auto_options]" class="w-full border rounded px-3 py-2" rows="4">{{ old("tasks.$i.image_auto_options", $imageAutoOptionsText) }}</textarea>
-                    <div class="mt-2">
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" name="tasks[{{ $i }}][image_auto_strict]" value="1" @checked(old("tasks.$i.image_auto_strict", $t->image_auto_strict))>
-                            Порядок цифр/ответов важен
-                        </label>
-                    </div>
-                </div>
-
-                {{-- Порядок и номер --}}
-                <div class="flex gap-4">
-                    {{-- Номер в экзамене (Task) --}}
-                    <div>
-                    <label class="block text-sm font-medium mb-1">Номер в экзамене</label>
+                <div class="task-bank-fields {{ $isBankItem ? '' : 'hidden' }} mb-4">
+                    <label class="block text-sm font-medium mb-1">Задание из банка</label>
                     <select name="tasks[{{ $i }}][task_id]"
                             class="task-id-select w-full border rounded px-3 py-2"
                             data-current="{{ old('tasks.'.$i.'.task_id', $t->task_id) }}">
                         <option value="">— выберите задание —</option>
                         {{-- options подтянет JS через /admin/courses/{course}/tasks --}}
                     </select>
+                    <div class="mt-1 text-sm">
+                        <a href="{{ route('admin.tasks.create') }}" target="_blank" class="text-blue-600 hover:underline">Создать новое в банке →</a>
+                        <button type="button" class="task-bank-refresh ml-3 text-gray-600 hover:underline">Обновить список</button>
                     </div>
+                </div>
+
+                {{-- Порядок и баллы — общие для обоих режимов. Баллы: пусто =
+                     взять из банка (для "своих" заданий пусто = 1, см.
+                     UpdateController) — поэтому предзаполняем СЫРЫМ
+                     значением колонки, а не эффективным (через прокси),
+                     иначе при каждом сохранении текущее значение банка
+                     тихо "замораживалось" бы как персональное переопределение. --}}
+                <div class="flex gap-4">
                     <div class="flex-1">
                         <label class="block text-sm font-medium">Порядок</label>
                         <input type="number" name="tasks[{{ $i }}][order]" class="w-full border rounded px-3 py-2"
                                value="{{ old("tasks.$i.order", $t->order) }}">
                     </div>
                     <div class="flex-1">
-                        <label class="block text-sm font-medium">Баллы</label>
+                        <label class="block text-sm font-medium">Баллы @if($isBankItem)<span class="text-gray-400 font-normal">(сейчас: {{ $t->max_score }}, из банка)</span>@endif</label>
                         <input type="number" name="tasks[{{ $i }}][max_score]" class="w-full border rounded px-3 py-2"
-                            min="1" step="1" value="{{ old("tasks.$i.max_score", $t->max_score ?? 1) }}">
+                            min="1" step="1" value="{{ old("tasks.$i.max_score", $t->getRawOriginal('max_score')) }}">
                     </div>
                 </div>
 
@@ -240,33 +162,36 @@
     </form>
 </div>
 
+@include('admin.tasks.partials.task-editor-script')
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     let taskIndex = document.querySelectorAll('#tasks-container .task-item').length;
 
-    function toggleFields(container, type) {
-        container.querySelectorAll('.task-options, .task-matches, .task-image, .task-table, .task-passage, .task-image-auto-extra')
-                 .forEach(el => el.classList.add('hidden'));
-
-        if (type === 'test') container.querySelector('.task-options')?.classList.remove('hidden');
-        if (type === 'text_with_questions')     container.querySelector('.task-passage')?.classList.remove('hidden');
-        if (type === 'matching')       container.querySelector('.task-matches')?.classList.remove('hidden');
-        if (type === 'table') {
-        container.querySelector('.task-table')?.classList.remove('hidden');
-        container.querySelector('.task-options')?.classList.remove('hidden'); // ← тоже видно
+    // Своё содержание / из банка — переключатель на каждой карточке задания.
+    // Показ/скрытие полей ПО ТИПУ задания обслуживает общий
+    // task-editor-script.blade.php, не этот файл.
+    function toggleSource(container, source) {
+        const own = container.querySelector('.task-own-fields');
+        const bank = container.querySelector('.task-bank-fields');
+        if (source === 'bank') {
+            own?.classList.add('hidden');
+            bank?.classList.remove('hidden');
+        } else {
+            own?.classList.remove('hidden');
+            bank?.classList.add('hidden');
         }
-        if (type === 'text_with_questions' || type === 'written') container.querySelector('.task-passage')?.classList.remove('hidden');
-
-        if (type === 'image_auto') {
-            container.querySelector('.task-image')?.classList.remove('hidden');
-            container.querySelector('.task-image-auto-extra')?.classList.remove('hidden');
-        }
-        if (type === 'image_manual')  container.querySelector('.task-image')?.classList.remove('hidden');
     }
 
     document.addEventListener('change', e => {
-        if (e.target.classList.contains('task-type')) {
-            toggleFields(e.target.closest('.task-item'), e.target.value);
+        if (e.target.classList.contains('task-source-toggle')) {
+            toggleSource(e.target.closest('.task-item'), e.target.value);
+        }
+    });
+
+    document.addEventListener('click', e => {
+        if (e.target.classList.contains('task-bank-refresh')) {
+            window.refreshTaskSelectsForCurrentCourse && window.refreshTaskSelectsForCurrentCourse();
         }
     });
 
@@ -282,14 +207,71 @@ document.addEventListener('DOMContentLoaded', () => {
             if (el.name) el.name = el.name.replace(/\[\d+]/, `[${taskIndex}]`);
             if (el.type === 'file') el.value = null;
             else if (el.type === 'checkbox') el.checked = false;
+            else if (el.type === 'radio') el.checked = (el.value === 'own');
             else el.value = '';
         });
 
-        tpl.querySelectorAll('.task-options, .task-matches, .task-image, .task-table, .task-passage, .task-image-auto-extra')
-           .forEach(el => el.classList.add('hidden'));
+        toggleSource(tpl, 'own');
 
         tasksContainer.appendChild(tpl);
+        window.initTaskContentFields && window.initTaskContentFields(tpl.querySelector('.task-content-fields'));
         taskIndex++;
+        renumberTaskOrders();
+    });
+
+    // --- Drag-n-drop сортировка заданий (только эта страница — здесь уже
+    // есть карточки .task-item и числовое поле order). Нативный HTML5
+    // drag-and-drop, без сторонних библиотек. Перетаскивание начинается
+    // только с ручки .drag-handle — иначе клики/выделение текста в полях
+    // формы конфликтовали бы с началом перетаскивания всей карточки. ---
+    const tasksContainerForDrag = document.getElementById('tasks-container');
+    let draggedItem = null;
+
+    function renumberTaskOrders() {
+        document.querySelectorAll('#tasks-container .task-item').forEach((item, idx) => {
+            const orderInput = item.querySelector('input[name*="[order]"]');
+            if (orderInput) orderInput.value = idx + 1;
+            const numberLabel = item.querySelector('.task-item-number');
+            if (numberLabel) numberLabel.textContent = idx + 1;
+        });
+    }
+
+    function elementAfterDragPosition(container, y) {
+        const items = [...container.querySelectorAll('.task-item:not(.dragging)')];
+        return items.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset, element: child };
+            }
+            return closest;
+        }, { offset: -Infinity }).element;
+    }
+
+    tasksContainerForDrag.addEventListener('dragstart', (e) => {
+        const handle = e.target.closest('.drag-handle');
+        if (!handle) { e.preventDefault(); return; }
+        draggedItem = handle.closest('.task-item');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', '');
+        draggedItem.classList.add('dragging', 'opacity-50');
+    });
+
+    tasksContainerForDrag.addEventListener('dragover', (e) => {
+        if (!draggedItem) return;
+        e.preventDefault();
+        const after = elementAfterDragPosition(tasksContainerForDrag, e.clientY);
+        if (after == null) {
+            tasksContainerForDrag.appendChild(draggedItem);
+        } else {
+            tasksContainerForDrag.insertBefore(draggedItem, after);
+        }
+    });
+
+    tasksContainerForDrag.addEventListener('dragend', () => {
+        draggedItem?.classList.remove('dragging', 'opacity-50');
+        draggedItem = null;
+        renumberTaskOrders();
     });
 
     document.addEventListener('click', e => {
@@ -300,6 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             container.remove(); // inputs удалятся — контроллер может это трактовать как удаление
+            renumberTaskOrders();
         }
     });
 });
@@ -308,33 +291,6 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const courseSelect = document.getElementById('course_id');
-
-  function toggleFields(container, type) {
-    container.querySelectorAll('.task-options, .task-matches, .task-image, .task-table, .task-passage, .task-image-auto-extra')
-      .forEach(el => el.classList.add('hidden'));
-
-    if (type === 'test') container.querySelector('.task-options')?.classList.remove('hidden');
-    if (type === 'text_with_questions')      container.querySelector('.task-passage')?.classList.remove('hidden');
-    if (type === 'matching')        container.querySelector('.task-matches')?.classList.remove('hidden');
-    if (type === 'table') {
-  container.querySelector('.task-table')?.classList.remove('hidden');
-  container.querySelector('.task-options')?.classList.remove('hidden'); // ← тоже видно
-}
-    if (type === 'text_with_questions' || type === 'written')
-                                    container.querySelector('.task-passage')?.classList.remove('hidden');
-    if (type === 'image_auto') {
-      container.querySelector('.task-image')?.classList.remove('hidden');
-      container.querySelector('.task-image-auto-extra')?.classList.remove('hidden');
-    }
-    if (type === 'image_manual')   container.querySelector('.task-image')?.classList.remove('hidden');
-  }
-
-  // Инициализируем видимость по текущему типу в КАЖДОЙ карточке
-  document.querySelectorAll('.task-item').forEach(card => {
-    const typeSel = card.querySelector('.task-type');
-    if (typeSel) toggleFields(card, typeSel.value);
-    typeSel?.addEventListener('change', (e) => toggleFields(card, e.target.value));
-  });
 
   async function fetchTasks(courseId) {
     if (!courseId) return [];
@@ -355,7 +311,8 @@ document.addEventListener('DOMContentLoaded', () => {
       taskList.forEach(t => {
         const opt = document.createElement('option');
         opt.value = t.id;
-        opt.textContent = `№ ${t.number ?? '—'} (ID ${t.id})`;
+        const label = [`№ ${t.number ?? '—'}`, t.type, t.preview].filter(Boolean).join(' — ');
+        opt.textContent = `${label} (ID ${t.id})`;
         if (current && String(current) === String(t.id)) opt.selected = true;
         sel.appendChild(opt);
       });
@@ -366,6 +323,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const list = await fetchTasks(courseSelect?.value);
     fillTaskSelects(list);
   }
+
+  // Делаем функцию глобальной — используется кнопкой "Обновить список" и
+  // при добавлении новой карточки задания.
+  window.refreshTaskSelectsForCurrentCourse = refreshTasks;
 
   // Первая загрузка и при смене курса
   refreshTasks();

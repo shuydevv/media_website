@@ -4,84 +4,102 @@ namespace App\Http\Controllers\Admin\Homework;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Homework\StoreRequest;
+use App\Models\Course;
 use App\Models\Homework;
 use App\Models\HomeworkTask;
+use App\Models\Task;
 use App\Service\ImageCompressor;
-use Illuminate\Support\Facades\Storage;
 
 class StoreController extends Controller
 {
+    use NormalizesTaskContent;
+
     public function __invoke(StoreRequest $request)
     {
-        // dd($request->all());
         $validated = $request->validated();
-        
-        // Создание домашней работы
+
         $homework = Homework::create([
             'title'       => $validated['title'],
             'description' => $validated['description'] ?? null,
             'type'        => $validated['type'],
-            'due_at' => $validated['due_at'],
-            'course_id' => $request->course_id,
-            'lesson_id' => $request->lesson_id,
-
+            'due_at'      => $validated['due_at'] ?? null,
+            'course_id'   => $request->course_id,
+            'lesson_id'   => $request->lesson_id,
         ]);
 
-        // Обработка задач (если есть)
         if (!empty($validated['tasks'])) {
-            foreach ($validated['tasks'] as $task) {
-                $imagePath = null;
-
-                // Загрузка изображения (если есть)
-                if (isset($task['image']) && $task['image']->isValid()) {
-                    $imagePath = ImageCompressor::forContent()->storeAs($task['image'], 'homework_images');
-                }
-
-                $type = $task['type'] ?? null;
-
-                // Нормализуем image_auto_options к массиву строк
-                $imageAutoOptions = [];
-                if (array_key_exists('image_auto_options', $task)) {
-                    $src = $task['image_auto_options'];
-                    if (is_string($src)) {
-                        $imageAutoOptions = array_values(array_filter(array_map('trim', preg_split('/\R/u', $src)), fn($v) => $v !== ''));
-                    } elseif (is_array($src)) {
-                        $imageAutoOptions = array_values(array_filter(array_map('trim', $src), fn($v) => $v !== ''));
-                    }
-                }
-
-                $tableContent = null;
-                if (($task['type'] ?? null) === 'table') {
-                    $raw = trim((string)($task['table_content'] ?? ''));
-                    if ($raw !== '') {
-                        $decoded = json_decode($raw, true);
-                        $tableContent = is_array($decoded) ? $decoded : null; // если кривая строка — просто null
-                    }
-                }
-
-                HomeworkTask::create([
-                    'homework_id'   => $homework->id,
-                    'type'          => $task['type'],
-                    'question_text' => $task['question_text'] ?? null,
-                    'passage_text'  => $task['passage_text'] ?? null,
-                    'options'       => $task['options'] ?? [],
-                    'matches'       => $task['matches'] ?? [],
-                    'table_content' => $tableContent,
-                    'image_path'    => $imagePath,
-                    'answer'        => $task['answer'],
-                    'hint'          => $task['hint'] ?? null,
-                    'order'         => $task['order'] ?? null,
-                    // 'task_number'   => $task['task_number'] ?? null,
-                    'left_title'   => $task['left_title'] ?? null,
-                    'right_title'  => $task['right_title'] ?? null,
-                    'max_score'     => isset($task['max_score']) ? (int)$task['max_score'] : 0,
-                    'task_id' => $task['task_id'],
-                    'image_auto_options' => $imageAutoOptions,
-                ]);
+            foreach ($validated['tasks'] as $taskData) {
+                $this->saveTaskLink($homework, $taskData, (int) $request->course_id);
             }
         }
 
         return redirect()->route('admin.homeworks.index')
             ->with('success', 'Домашняя работа успешно создана');
+    }
+
+    /**
+     * Задание — либо связка с уже существующим банковским Task («из банка»),
+     * либо содержание сохраняется прямо на HomeworkTask («только для этой
+     * домашки», как раньше). У обоих режимов общие order/max_score.
+     */
+    private function saveTaskLink(Homework $homework, array $taskData, int $courseId): void
+    {
+        $source = $taskData['source'] ?? 'own';
+        $overrideScore = (isset($taskData['max_score']) && $taskData['max_score'] !== '')
+            ? (int) $taskData['max_score']
+            : null;
+
+        if ($source === 'bank' && !empty($taskData['task_id'])) {
+            HomeworkTask::create([
+                'homework_id' => $homework->id,
+                'task_id'     => (int) $taskData['task_id'],
+                'order'       => $taskData['order'] ?? null,
+                'max_score'   => $overrideScore,
+            ]);
+
+            return;
+        }
+
+        $imagePath = null;
+        if (isset($taskData['image']) && $taskData['image']->isValid()) {
+            $imagePath = ImageCompressor::forContent()->storeAs($taskData['image'], 'homework_images');
+        }
+
+        $content = $this->normalizeTaskContent($taskData);
+
+        $homeworkTask = HomeworkTask::create(array_merge($content, [
+            'homework_id' => $homework->id,
+            'image_path'  => $imagePath,
+            'order'       => $taskData['order'] ?? null,
+            'max_score'   => $overrideScore ?? 1,
+        ]));
+
+        if (!empty($taskData['save_to_bank'])) {
+            $this->copyIntoBank($homeworkTask, $content, $imagePath, $overrideScore, $courseId);
+        }
+    }
+
+    /**
+     * «Также сохранить в банк заданий» — то же содержание, отдельной записью
+     * в Task, категорию берём с курса домашки (в этой форме своего выбора
+     * категории нет — задать/поменять её можно потом со страницы банка).
+     * Если у курса нет категории — не блокируем сохранение домашки, просто
+     * не кладём задание в банк.
+     */
+    private function copyIntoBank(HomeworkTask $homeworkTask, array $content, ?string $imagePath, ?int $overrideScore, int $courseId): void
+    {
+        $categoryId = Course::find($courseId)?->category_id;
+        if (!$categoryId) {
+            return;
+        }
+
+        $bankTask = Task::create(array_merge($content, [
+            'category_id' => $categoryId,
+            'image_path'  => $imagePath,
+            'max_score'   => $overrideScore ?? 1,
+        ]));
+
+        $homeworkTask->task_id = $bankTask->id;
+        $homeworkTask->save();
     }
 }

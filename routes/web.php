@@ -106,11 +106,16 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
     Route::group(['namespace' => 'Homework', 'prefix' => 'homeworks'], function() {
         Route::get('/', 'IndexController')->name('admin.homeworks.index');
         Route::get('create', 'CreateController')->name('admin.homeworks.create');
+        // Массовая загрузка через JSON-файл — до /{homework}, тот же повод,
+        // что и у create выше.
+        Route::get('import', 'ImportController@create')->name('admin.homeworks.import');
+        Route::post('import', 'ImportController@store')->name('admin.homeworks.import.store');
         Route::get('{homework}/edit', 'EditController')->name('admin.homeworks.edit');
         Route::get('/{homework}', 'ShowController')->name('admin.homeworks.show');
         Route::post('/', 'StoreController')->name('admin.homeworks.store');
         Route::put('/{homework}', 'UpdateController')->name('admin.homeworks.update');
         Route::delete('/{homework}', 'DestroyController')->name('admin.homeworks.destroy');
+        Route::post('/{homework}/duplicate', 'DuplicateController')->name('admin.homeworks.duplicate');
     });
 
     Route::get('/api/courses/{course}/sessions', [\App\Http\Controllers\Admin\Session\ApiController::class, 'sessionsByCourse']);
@@ -360,6 +365,19 @@ Route::middleware(['auth'])
             ->name('submissions.finish.submit');
     });
 
+// Самостоятельное прорешивание банка заданий в личном кабинете — один вопрос
+// за раз, не через Submission (см. app/Models/TaskAttempt).
+use App\Http\Controllers\Student\TaskPracticeController;
+
+Route::middleware(['auth'])
+    ->prefix('student/tasks')
+    ->name('student.tasks.')
+    ->group(function () {
+        Route::get('/', [TaskPracticeController::class, 'index'])->name('index');
+        Route::get('/{task}', [TaskPracticeController::class, 'show'])->name('show');
+        Route::post('/{task}/check', [TaskPracticeController::class, 'check'])->name('check');
+    });
+
 // Проверка домашних ментором
 Route::middleware(['auth', 'mentor'])
     ->prefix('mentor')
@@ -414,6 +432,8 @@ Route::prefix('mentor/review')
 
 
 use App\Http\Controllers\Admin\TaskController;
+use App\Http\Controllers\Admin\TaskImportController;
+use App\Http\Controllers\Admin\TaskPreviewController;
 
 // --- Банк заданий (только админ) ---
 Route::prefix('admin/tasks')->middleware(['auth'])->group(function () {
@@ -422,13 +442,22 @@ Route::prefix('admin/tasks')->middleware(['auth'])->group(function () {
     Route::get('/create',    [TaskController::class, 'create'])->name('admin.tasks.create');
     Route::post('/',         [TaskController::class, 'store'])->name('admin.tasks.store');
 
+    // Live-превью «как видит студент» прямо в форме — до сохранения, без модели.
+    Route::post('/preview',  TaskPreviewController::class)->name('admin.tasks.preview');
+
+    // Массовая загрузка через JSON-файл — литеральные пути ДО /{task},
+    // иначе роутер примет "import"/"preview" за значение {task}.
+    Route::get('/import',    [TaskImportController::class, 'create'])->name('admin.tasks.import');
+    Route::post('/import',   [TaskImportController::class, 'store'])->name('admin.tasks.import.store');
+
     Route::get('/{task}',    [TaskController::class, 'show'])->name('admin.tasks.show');
     Route::get('/{task}/edit', [TaskController::class, 'edit'])->name('admin.tasks.edit');
     Route::put('/{task}',    [TaskController::class, 'update'])->name('admin.tasks.update');
+    Route::post('/{task}/duplicate', [TaskController::class, 'duplicate'])->name('admin.tasks.duplicate');
 
-    // Публикация / Архивация
-    Route::post('/{task}/publish', [TaskController::class, 'publish'])->name('admin.tasks.publish');
-    Route::post('/{task}/archive', [TaskController::class, 'archive'])->name('admin.tasks.archive');
+    // Критерии проверки — намеренно отдельная страница от содержания задания.
+    Route::get('/{task}/criteria', [TaskController::class, 'editCriteria'])->name('admin.tasks.criteria.edit');
+    Route::put('/{task}/criteria', [TaskController::class, 'updateCriteria'])->name('admin.tasks.criteria.update');
 });
 
 use App\Http\Controllers\Admin\CourseTaskController;

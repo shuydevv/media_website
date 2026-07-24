@@ -363,6 +363,42 @@ li::marker {
 
 .pin-hidden-input { position:absolute; left:-99999px; width:1px; height:1px; opacity:0; }
 
+/* Квадратики "Правильный ответ" в форме создания задания
+   (resources/views/components/task-content-fields.blade.php) — та же
+   разметка, что использует pin-field-script.blade.php (общий с
+   question-region.blade.php виджет), но нужен внешний вид ровно как у
+   квадратиков "Ваш ответ"/"Правильный ответ" на student/submissions/
+   show.blade.php (w-9 h-9 sm:w-10 sm:h-10 border-2 rounded-lg), а не как
+   у "бланка ЕГЭ" студенческого ввода. Переопределяем только внутри
+   .task-answer-boxes — сам pin-field-script.blade.php ничего не знает про
+   этот контекст и создаёт новые квадратики (при вводе/росте) с одним и тем
+   же голым классом .pin-box, так что стилизовать нужно через CSS, а не
+   через JS, иначе донабранные квадратики не будут выглядеть так же, как
+   отрисованные сервером при открытии.
+   Тут же .task-answer-boxes лежит внутри x-ui.card в самой правой колонке. */
+.task-answer-boxes .pin-boxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    width: auto;
+}
+.task-answer-boxes .pin-box {
+    aspect-ratio: unset;
+    width: 2.25rem;
+    height: 2.25rem;
+    min-width: 0;
+    border: 2px solid #d4d4d8;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    font-family: inherit;
+}
+.task-answer-boxes .pin-box.filled { border-color: #2563eb; }
+.task-answer-boxes .pin-box.active { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25); }
+@media (min-width: 640px) {
+    .task-answer-boxes .pin-box { width: 2.5rem; height: 2.5rem; font-size: 1.125rem; }
+}
+
 /* Модалка результата проверки — анимация теперь через GSAP (см. question-region.blade.php),
    тут только гарантируем, что до инициализации скрипта модалка не мелькает видимой. */
 #check-modal { visibility: hidden; }

@@ -166,15 +166,15 @@
       $maxScore    = (int)($t->max_score ?? 3);
       $studentAns  = (string)($answers[$tid] ?? '');
 
-      // --- Критерии: всегда из таблицы tasks ---
+      // Критерии: общие для (категория, номер) задания, см. TaskCriteria
       $taskIdForDb = $t->task_id ?? $t->id ?? null;
       $taskRow     = null;
       if ($taskIdForDb !== null && is_numeric($taskIdForDb)) {
-          $taskRow = \App\Models\Task::select(['id','criteria','comment'])->find($taskIdForDb);
+          $taskRow = \App\Models\Task::select(['id','category_id','number','criteria_override'])->find($taskIdForDb);
       }
 
       // сырой текст критериев из БД (может быть plain-text или JSON)
-      $criteriaText = (string) optional($taskRow)->criteria;
+      $criteriaText = (string) optional($taskRow)->resolved_criteria;
 
       // пробуем как JSON (мог быть сохранён как структура)
       $decoded = json_decode($criteriaText, true);

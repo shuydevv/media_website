@@ -16,9 +16,17 @@ class CourseTaskController extends Controller
 
         $tasks = $course->category
             ->tasks()               // ВАЖНО: нужна связь tasks() в Category
-            ->select('id', 'number')
+            ->select('id', 'number', 'type', 'question_text')
             ->orderBy('number')
-            ->get();
+            ->get()
+            // Короткий превью вопроса — чтобы в поиске конструктора домашки
+            // было видно не только номер, а что это вообще за задание.
+            ->map(fn ($t) => [
+                'id'      => $t->id,
+                'number'  => $t->number,
+                'type'    => $t->type,
+                'preview' => $t->question_text ? \Illuminate\Support\Str::limit(strip_tags($t->question_text), 60) : null,
+            ]);
 
         return response()->json($tasks, 200);
     }

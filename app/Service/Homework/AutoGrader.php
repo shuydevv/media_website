@@ -4,15 +4,20 @@ namespace App\Service\Homework;
 
 use App\Models\Homework;
 use App\Models\HomeworkTask;
+use App\Models\Task;
 
 class AutoGrader
 {
     /**
-     * Проверка одного задания (для пошагового прохождения домашки).
+     * Проверка одного задания — используется и в пошаговом прохождении
+     * домашки (HomeworkTask), и в самостоятельном прорешивании банка
+     * заданий (Task напрямую, см. Student\TaskPracticeController) — оба
+     * читают одинаковые поля (type/answer/max_score/order_matters), логика
+     * проверки для них одна и та же.
      * Не пишет ничего в БД — просто считает результат по той же логике,
      * что используется в gradeWithTasks().
      */
-    public function scoreOne(HomeworkTask $task, ?string $answer): array
+    public function scoreOne(HomeworkTask|Task $task, ?string $answer): array
     {
         $max = (int) ($task->max_score ?? 1);
         $correct = $task->answer ?? null;

@@ -58,9 +58,10 @@ class ReviewAiController extends Controller
             if ($libTaskId > 0) {
                 if ($lib = Task::query()->find($libTaskId)) {
                     // заполним comment и заодно подстрахуем criteria/exemplar, если они пустые
-                    $commentHint = (string)($lib->comment ?? '');
+                    $libCriteria = $lib->resolvedCriteriaRecord();
+                    $commentHint = (string)($libCriteria->comment ?? '');
                     if ($criteria === '') {
-                        $criteria = (string)($lib->criteria ?? '');
+                        $criteria = (string)($lib->resolved_criteria ?? '');
                     }
                     // если хочешь, можно тянуть и шаблон как exemplar:
                     // if ($exemplar === '' && !empty($lib->ai_rationale_template)) {

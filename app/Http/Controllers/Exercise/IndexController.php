@@ -4,35 +4,31 @@ namespace App\Http\Controllers\Exercise;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
-use App\Models\Exercise;
-use App\Models\Post;
+use App\Models\Task;
 use Illuminate\Http\Request;
 
+/**
+ * Публичная (SEO) страница банка заданий — та же сущность, что и в личном
+ * кабинете/домашках (App\Models\Task), просто отфильтрована по is_public и
+ * рендерится без формы/авторизации: обычная страница + статичный "Показать
+ * ответ" (см. exercise/show.blade.php), а не интерактивная проверка.
+ */
 class IndexController extends Controller
 {
-    private const CATEGORY_TITLES_BY_SLUG = [
-        'history' => 'История',
-        'social_science' => 'Обществознание',
-    ];
+    public function __invoke(Request $request)
+    {
+        $q = Task::query()->where('is_public', true)->whereNotNull('type')->with('category');
 
-    public function __invoke() {
-        $slug = request()->query('post_category');
-        $categoryTitle = self::CATEGORY_TITLES_BY_SLUG[$slug] ?? null;
-
-        if ($categoryTitle !== null) {
-            // exercises не имеют собственной колонки category_id — категория
-            // определяется через цепочку topic -> section -> category
-            // (см. Exercise::getCategoryAttribute()), поэтому фильтруем через
-            // whereHas по этой цепочке, а не прямым where по несуществующей колонке.
-            $category = Category::where('title', $categoryTitle)->first();
-            $posts = $category
-                ? Exercise::whereHas('topic.section', fn ($q) => $q->where('category_id', $category->id))
-                    ->paginate(4)->withQueryString()
-                : Exercise::whereRaw('1 = 0')->paginate(4)->withQueryString();
-        } else {
-            $posts = Exercise::paginate(4)->withQueryString();
+        if ($categoryId = $request->query('category_id')) {
+            $q->where('category_id', (int) $categoryId);
         }
 
-        return view('exercise.index', compact('posts'));
+        $tasks = $q->orderByDesc('id')->paginate(20)->withQueryString();
+        $categories = Category::orderBy('title')->get(['id', 'title']);
+
+        return view('exercise.index', [
+            'tasks' => $tasks,
+            'categories' => $categories,
+        ]);
     }
 }

@@ -47,6 +47,9 @@
             @endforelse
         </tbody>
     </table>
-    <a class="bg-blue-600 rounded text-white px-4 py-3 mt-8 inline-block" href="{{route('admin.homeworks.create')}}">Создать домашку</a>
+    <div class="mt-8 flex items-center gap-3">
+        <a class="bg-blue-600 rounded text-white px-4 py-3 inline-block" href="{{route('admin.homeworks.create')}}">Создать домашку</a>
+        <a class="border rounded px-4 py-3 inline-block hover:bg-gray-50" href="{{route('admin.homeworks.import')}}">Импорт</a>
+    </div>
 </div>
 @endsection

@@ -62,7 +62,7 @@
         {{-- Дедлайн --}}
         <div class="mb-4">
             <label class="block text-sm font-medium">Дедлайн</label>
-            <input type="datetime-local" name="due_at" 
+            <input type="datetime-local" name="due_at"
                 class="w-full border rounded px-3 py-2"
                 value="{{ old('due_at', isset($homework->due_at) ? $homework->due_at->format('Y-m-d\TH:i') : '') }}">
         </div>
@@ -72,128 +72,54 @@
             <div class="task-item border rounded p-4 bg-gray-50">
                 <h2 class="text-lg font-semibold mb-4">Задание</h2>
 
-                {{-- Тип задания --}}
+                {{-- Источник задания: своё содержание (как раньше) или уже
+                     существующее в банке — переиспользуется, автоматически
+                     доступно в личном кабинете и (если помечено) публично. --}}
                 <div class="mb-4">
-                    <label class="block text-sm font-medium">Тип задания</label>
-                    <select name="tasks[0][type]" class="task-type w-full border rounded px-3 py-2" required>
-                        <option value="">Выберите тип</option>
-                        <option value="test">Тест с вариантами</option>
-                        <option value="text_with_questions">Текст с вопросами</option>
-                        <option value="matching">Соотнесение</option>
-                        <option value="image_auto">Картинка (автопроверка)</option>
-                        <option value="image_manual">Картинка (ручная проверка)</option>
-                        <option value="written">Развёрнутый ответ</option>
-                        <option value="table">Таблица</option>
-                    </select>
+                    <label class="inline-flex items-center gap-2 mr-6 text-sm font-medium">
+                        <input type="radio" name="tasks[0][source]" value="own" class="task-source-toggle" checked>
+                        Только для этой домашки
+                    </label>
+                    <label class="inline-flex items-center gap-2 text-sm font-medium">
+                        <input type="radio" name="tasks[0][source]" value="bank" class="task-source-toggle">
+                        Из банка заданий
+                    </label>
                 </div>
 
-                {{-- Дополнительный текст (для text_with_questions) --}}
-                <div class="mb-4 task-passage hidden">
-                    <label class="block text-sm font-medium">Текст задания (художественный / публицистический)</label>
-                    <textarea name="tasks[0][passage_text]" class="w-full border rounded px-3 py-2" rows="4"></textarea>
+                <div class="task-own-fields">
+                    <x-task-content-fields name="tasks[0]" :task="null" />
+
+                    <label class="inline-flex items-center gap-2 mt-4 mb-4 text-sm">
+                        <input type="checkbox" name="tasks[0][save_to_bank]" value="1">
+                        Также сохранить в банк заданий (станет доступно в личном кабинете и в других домашках)
+                    </label>
                 </div>
 
-                {{-- Вопрос --}}
-                <div class="mb-4">
-                    <label class="block text-sm font-medium">Вопрос / текст</label>
-                    <textarea name="tasks[0][question_text]" class="w-full border rounded px-3 py-2"></textarea>
-                </div>
-
-                {{-- Ответ --}}
-                <div class="mb-4">
-                    <label class="block text-sm font-medium">Правильный ответ</label>
-                    <textarea name="tasks[0][answer]" class="w-full border rounded px-3 py-2" required></textarea>
-                </div>
-
-                {{-- Подсказка --}}
-                <div class="mb-4">
-                    <label class="block text-sm font-medium">Подсказка (необязательно, покажется студенту по кнопке)</label>
-                    <textarea name="tasks[0][hint]" class="w-full border rounded px-3 py-2"></textarea>
-                </div>
-
-                {{-- Варианты (test) --}}
-                <div class="mb-4 task-options hidden">
-                    <label class="block text-sm font-medium">Варианты ответа (Каждый вариант ответа с новой строки)</label>
-                    <textarea name="tasks[0][options][]" class="w-full border rounded px-3 py-2" rows="6"></textarea>
-                </div>
-
-                {{-- Соотнесение --}}
-                <div class="mb-4 task-matches hidden">
-                    <label class="block text-sm font-medium">Заголовок левой колонки</label>
-                    <input type="text" name="tasks[0][left_title]" class="w-full border rounded px-3 py-2 mb-2">
-
-                    <label class="block text-sm font-medium">Левая колонка</label>
-                    <textarea name="tasks[0][matches][left][]" class="w-full border rounded px-3 py-2" rows="3"></textarea>
-
-                    <label class="block text-sm font-medium mt-2">Заголовок правой колонки</label>
-                    <input type="text" name="tasks[0][right_title]" class="w-full border rounded px-3 py-2 mb-2">
-
-                    <label class="block text-sm font-medium">Правая колонка</label>
-                    <textarea name="tasks[0][matches][right][]" class="w-full border rounded px-3 py-2" rows="3"></textarea>
-                </div>
-
-                {{-- Таблица --}}
-                <div class="mb-4 task-table hidden">
-                <label class="block text-sm font-medium">Содержимое таблицы (JSON)</label>
-                <textarea name="tasks[0][table_content]" class="w-full border rounded px-3 py-2 font-mono text-xs" rows="10">
-{
-    "cols": ["Географический объект", "Событие, явление, процесс", "Время, когда произошло событие"],
-    "rows": [
-        ["ячейка_01", "ячейка_02", "ячейка_03"],
-        ["ячейка_04", "ячейка_05", "ячейка_06"],
-        ["ячейка_07", "ячейка_08", "ячейка_09"],
-        ["ячейка_10", "ячейка_11", "ячейка_12"]
-    ]
-}</textarea>
-                <input type="hidden" name="tasks[0][order_matters]" value="1">
-                </div>
-
-                {{-- Изображение --}}
-                <div class="mb-4 task-image hidden">
-                    <label class="block text-sm font-medium">Изображение</label>
-                    <input type="file" name="tasks[0][image]" class="w-full text-sm mt-1">
-                </div>
-
-                {{-- image_auto — опции и порядок важен --}}
-                <div class="mb-4 task-image-auto-extra hidden">
-                    <label class="block text-sm font-medium">Варианты ответа (по одному в строке, необязательно)</label>
-                    <textarea name="tasks[0][image_auto_options][]" class="w-full border rounded px-3 py-2" rows="4"></textarea>
-
-                    <div class="mt-2">
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" name="tasks[0][image_auto_strict]" value="1" class="mr-2">
-                            Порядок цифр/ответов важен
-                        </label>
-                    </div>
-                </div>
-
-                {{-- Порядок и номер --}}
-                <div class="flex gap-4">
-                    {{-- Номер в экзамене (Task) --}}
-                    <div>
-                    <label class="block text-sm font-medium mb-1">Номер в экзамене</label>
-                    <select name="tasks[{{ $i }}][task_id]"
+                <div class="task-bank-fields hidden mb-4">
+                    <label class="block text-sm font-medium mb-1">Задание из банка</label>
+                    <select name="tasks[0][task_id]"
                             class="task-id-select w-full border rounded px-3 py-2"
-                            data-current="{{ old('tasks.'.$i.'.task_id') }}">
+                            data-current="{{ old('tasks.0.task_id') }}">
                         <option value="">— выберите задание —</option>
                         {{-- options подтянет JS через /admin/courses/{course}/tasks --}}
                     </select>
+                    <div class="mt-1 text-sm">
+                        <a href="{{ route('admin.tasks.create') }}" target="_blank" class="text-blue-600 hover:underline">Создать новое в банке →</a>
+                        <button type="button" class="task-bank-refresh ml-3 text-gray-600 hover:underline">Обновить список</button>
                     </div>
+                </div>
+
+                {{-- Порядок и баллы — общие для обоих режимов --}}
+                <div class="flex gap-4">
                     <div class="flex-1">
                         <label class="block text-sm font-medium">Порядок</label>
                         <input type="number" name="tasks[0][order]" class="w-full border rounded px-3 py-2">
                     </div>
                     <div class="flex-1">
-                        <label class="block text-sm font-medium">Баллы</label>
-                        <input type="number" name="tasks[0][max_score]" class="w-full border rounded px-3 py-2" min="1" step="1" value="1">
+                        <label class="block text-sm font-medium">Баллы <span class="text-gray-400 font-normal">(для задания из банка — необязательно, переопределяет баллы по умолчанию)</span></label>
+                        <input type="number" name="tasks[0][max_score]" class="w-full border rounded px-3 py-2" min="1" step="1">
                     </div>
                 </div>
-
-                {{-- Текст (пассаж) для "Текст с вопросами" и "Развёрнутый ответ" --}}
-                {{-- <div class="mb-4 task-passage hidden">
-                    <label class="block text-sm font-medium">Текст (источник)</label>
-                    <textarea name="tasks[0][passage_text]" class="w-full border rounded px-3 py-2" rows="5">{{old('tasks.0.passage_text')}}</textarea>
-                </div> --}}
 
                 <div class="mt-4 text-right">
                     <button type="button" class="delete-task text-red-600 text-sm hover:underline">Удалить задание</button>
@@ -211,34 +137,41 @@
     </form>
 </div>
 
+@include('admin.tasks.partials.task-editor-script')
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     let taskIndex = 1;
 
-    function toggleFields(container, type) {
-        container.querySelectorAll('.task-options, .task-matches, .task-image, .task-table, .task-passage, .task-image-auto-extra')
-                 .forEach(el => el.classList.add('hidden'));
-
-        if (type === 'test') container.querySelector('.task-options')?.classList.remove('hidden');
-        if (type === 'text_with_questions') container.querySelector('.task-passage')?.classList.remove('hidden');
-        if (type === 'matching') container.querySelector('.task-matches')?.classList.remove('hidden');
-        if (type === 'table') {
-            container.querySelector('.task-table')?.classList.remove('hidden');
-            container.querySelector('.task-options')?.classList.remove('hidden'); // ← показываем варианты ответа
+    // Своё содержание / из банка — переключатель на каждой карточке задания.
+    // Показ/скрытие полей ПО ТИПУ задания (options/matches/table/...)
+    // обслуживает общий task-editor-script.blade.php, не этот файл.
+    function toggleSource(container, source) {
+        const own = container.querySelector('.task-own-fields');
+        const bank = container.querySelector('.task-bank-fields');
+        if (source === 'bank') {
+            own?.classList.add('hidden');
+            bank?.classList.remove('hidden');
+        } else {
+            own?.classList.remove('hidden');
+            bank?.classList.add('hidden');
         }
-
-        if (type === 'text_with_questions' || type === 'written') container.querySelector('.task-passage')?.classList.remove('hidden');
-
-        if (type === 'image_auto') {
-            container.querySelector('.task-image')?.classList.remove('hidden');
-            container.querySelector('.task-image-auto-extra')?.classList.remove('hidden');
-        }
-        if (type === 'image_manual') container.querySelector('.task-image')?.classList.remove('hidden');
     }
 
+    document.querySelectorAll('.task-item').forEach(item => {
+        const checked = item.querySelector('.task-source-toggle:checked');
+        if (checked) toggleSource(item, checked.value);
+    });
+
     document.addEventListener('change', e => {
-        if (e.target.classList.contains('task-type')) {
-            toggleFields(e.target.closest('.task-item'), e.target.value);
+        if (e.target.classList.contains('task-source-toggle')) {
+            toggleSource(e.target.closest('.task-item'), e.target.value);
+        }
+    });
+
+    document.addEventListener('click', e => {
+        if (e.target.classList.contains('task-bank-refresh')) {
+            window.refreshTaskSelectsForCurrentCourse && window.refreshTaskSelectsForCurrentCourse();
         }
     });
 
@@ -249,13 +182,15 @@ document.addEventListener('DOMContentLoaded', () => {
         newTask.querySelectorAll('input, textarea, select').forEach(el => {
             if (el.name) el.name = el.name.replace(/\[\d+]/, `[${taskIndex}]`);
             if (el.type === 'checkbox') el.checked = false;
+            else if (el.type === 'radio') el.checked = (el.value === 'own');
             else el.value = '';
         });
 
-        newTask.querySelectorAll('.task-options, .task-matches, .task-image, .task-table, .task-passage, .task-image-auto-extra')
-               .forEach(el => el.classList.add('hidden'));
+        toggleSource(newTask, 'own');
 
         tasksContainer.appendChild(newTask);
+        window.initTaskContentFields && window.initTaskContentFields(newTask.querySelector('.task-content-fields'));
+
         // заполняем ОПЦИИ ТОЛЬКО для нового селекта, не перезаполняя все
   const firstSel = document.querySelector('select.task-id-select');
   const newSel = newTask.querySelector('select.task-id-select');
@@ -340,7 +275,8 @@ function fillTaskSelects(taskList) {
     taskList.forEach(t => {
       const opt = document.createElement('option');
       opt.value = String(t.id);
-      opt.textContent = `№ ${t.number ?? '—'} (ID ${t.id})`;
+      const label = [`№ ${t.number ?? '—'}`, t.type, t.preview].filter(Boolean).join(' — ');
+      opt.textContent = `${label} (ID ${t.id})`;
       if (prev && String(prev) === String(t.id)) opt.selected = true;
       frag.appendChild(opt);
     });

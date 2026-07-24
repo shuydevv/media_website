@@ -125,11 +125,15 @@
     @empty
         <div class="text-gray-500">Заданий нет</div>
     @endforelse
-    <div class="mt-6">
+    <div class="mt-6 flex items-center gap-3">
     <a href="{{ route('admin.homeworks.edit', $homework) }}"
        class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
         Редактировать
     </a>
+    <form method="post" action="{{ route('admin.homeworks.duplicate', $homework) }}">
+        @csrf
+        <button type="submit" class="px-4 py-2 rounded border hover:bg-gray-50">Дублировать</button>
+    </form>
 </div>
 
 </div>

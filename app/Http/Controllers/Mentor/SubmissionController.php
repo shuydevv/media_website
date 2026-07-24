@@ -117,9 +117,11 @@ foreach ($tasksRaw as $t) {
 }
 $taskIds = array_values(array_unique($taskIds));
 
-// Разовый запрос к БД по всем id
+// Разовый запрос к БД по всем id. Критерии больше не колонки на Task —
+// подтягиваются через resolved_criteria/resolvedCriteriaRecord() (общие
+// на пару категория+номер, см. TaskCriteria).
 $tasksFromDb = \App\Models\Task::query()
-    ->select(['id', 'criteria', 'comment'])
+    ->select(['id', 'category_id', 'number', 'criteria_override'])
     ->whereIn('id', $taskIds)
     ->get()
     ->keyBy('id');
@@ -175,7 +177,7 @@ foreach ($tasksRaw as $i => $t) {
     if ($criteria === '') {
         $numericId = $obj->id ?? $obj->task_id ?? null;
         if ($numericId !== null && is_numeric($numericId) && $tasksFromDb->has((int) $numericId)) {
-            $criteria = (string) ($tasksFromDb[(int)$numericId]->criteria ?? '');
+            $criteria = (string) ($tasksFromDb[(int)$numericId]->resolved_criteria ?? '');
         }
     }
 
@@ -195,7 +197,7 @@ foreach ($tasksRaw as $i => $t) {
     if ($comment === '') {
         $numericId = $obj->id ?? $obj->task_id ?? null;
         if ($numericId !== null && is_numeric($numericId) && $tasksFromDb->has((int) $numericId)) {
-            $comment = (string) ($tasksFromDb[(int)$numericId]->comment ?? '');
+            $comment = (string) ($tasksFromDb[(int)$numericId]->resolvedCriteriaRecord()?->comment ?? '');
         }
     }
     $commentByTaskId[(string)$tid] = trim($comment);

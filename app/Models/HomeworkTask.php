@@ -55,6 +55,53 @@ class HomeworkTask extends Model
      */
     public const MANUAL_TYPES = ['written', 'image_written', 'image_manual'];
 
+    /**
+     * Поля содержания, которые при заполненном task_id читаются из связанного
+     * банковского Task, а не из собственных колонок этой строки. Задание в
+     * домашке бывает двух видов — «одноразовое» (task_id пуст, содержание в
+     * своих колонках, как раньше) и «из банка» (task_id заполнен,
+     * переиспользуемо) — оба видят один и тот же код прохождения/проверки
+     * (AutoGrader, task-prompt.blade.php, question-region.blade.php и т.д.),
+     * потому что для них разница между режимами не видна за пределами этого
+     * метода.
+     */
+    private const BANK_PROXY_ATTRIBUTES = [
+        'type', 'question_text', 'passage_text', 'options', 'matches',
+        'table_content', 'image_path', 'answer', 'hint', 'max_score',
+        'order_matters', 'image_auto_options', 'left_title', 'right_title',
+    ];
+
+    public function getAttribute($key)
+    {
+        // Не $this->task_id — это снова уйдёт в __get()/getAttribute() и
+        // рекурсивно вызовет этот же метод. task_id — обычная колонка без
+        // приведения типов и мутаторов, поэтому безопасно взять её прямо из
+        // сырых атрибутов.
+        $taskId = $this->attributes['task_id'] ?? null;
+
+        if ($taskId && in_array($key, self::BANK_PROXY_ATTRIBUTES, true)) {
+            // max_score — единственное поле с обратным приоритетом: явное
+            // переопределение баллов в ЭТОЙ домашке (своя колонка не пуста)
+            // важнее значения по умолчанию из банка.
+            if ($key === 'max_score') {
+                $local = parent::getAttribute('max_score');
+                if ($local !== null) {
+                    return $local;
+                }
+            }
+
+            $task = $this->task;
+            if ($task) {
+                $value = $task->getAttribute($key);
+                if ($value !== null) {
+                    return $value;
+                }
+            }
+        }
+
+        return parent::getAttribute($key);
+    }
+
     public function isAutoGradable(): bool
     {
         return !in_array($this->type, self::MANUAL_TYPES, true);

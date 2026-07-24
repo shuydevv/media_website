@@ -1,300 +1,60 @@
+{{-- resources/views/exercise/show.blade.php
+     Публичная SEO-страница задания из банка (App\Models\Task, is_public=1) —
+     та же запись, что видна в личном кабинете (student/tasks/practice.blade.php)
+     и может быть частью домашки, просто без формы/авторизации: статичное
+     "Показать ответ" вместо интерактивной проверки. --}}
 @extends('layouts.main')
-@section('title')
-{{-- {{$post->title}} --}}
-@endsection
-@section('description')
-{{-- {{$post->description}} --}}
-@endsection
+
+@php
+  $categoryTitle = $task->category?->title;
+@endphp
+
+@section('title'){{ $task->question_text ? \Illuminate\Support\Str::limit(strip_tags($task->question_text), 60) : 'Задание' }} — Школа Полтавского@endsection
+@section('description'){{ $task->question_text ? \Illuminate\Support\Str::limit(strip_tags($task->question_text), 150) : '' }}@endsection
+
 @section('content')
-    <body>
-        <style>
-            a:not([class]) {
-                color: rgb(180 83 9);
-                border-bottom: 1px dashed rgb(180 83 9);  
-                padding-bottom: 2px;  
-            }
-            p:not([class]) {
-                color: rgb(63 63 70);
-                margin-top: 1rem;
-                line-height: 1.625;
-                
-            }
-            @media (min-width: 768px) { 
-                p:not([class]) {
-                    font-size: 1.25rem; /* 20px */
-                    line-height: 1.75rem; /* 28px */
-                    margin-top: 1.5rem;
-            }
-                a:not([class]) {
-                /* color: black; */
-                }
+<div class="container mx-auto max-w-screen-md px-3 md:mt-16 mt-10 md:mb-16 mb-10">
+  <div class="text-sm text-zinc-500 mb-3">
+    {{ $categoryTitle ?? 'Банк заданий' }} @if($task->number) · № {{ $task->number }} @endif
+  </div>
 
-            }
-        </style>
+  <div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6">
+    @include('student.submissions.partials.task-prompt', ['task' => $task])
 
-        <x-block>
-            <div>
-                {{-- Тестовое задание --}}
-                @if ($exercise->content_options)
-                <x-h3 title="{{$exercise->title}}"/>
+    <div id="exercise-answer-box" class="overflow-hidden" style="height:0;">
+      <div class="p-4 rounded-xl bg-blue-50 border border-blue-100">
+        <div class="text-sm text-blue-900 font-medium mb-1">Ответ</div>
+        <div class="text-sm text-blue-900 whitespace-pre-wrap">{{ $task->answer ?: '—' }}</div>
+        @if($task->comment)
+          <div class="text-sm text-blue-900 mt-3 whitespace-pre-wrap">{{ $task->comment }}</div>
+        @endif
+      </div>
+      <div class="h-4" aria-hidden="true"></div>
+    </div>
+    <button type="button" id="exercise-answer-toggle" class="mt-4 inline-flex items-center px-5 py-3 bg-blue-600 text-white rounded-lg tracking-wide hover:bg-blue-700">
+      <img class="inline-block mr-2" src="{{ asset('img/show.svg') }}" alt=""> Посмотреть ответ
+    </button>
+  </div>
+</div>
 
-                    {!! Blade::render($exercise->content_options) !!} 
-                    {{-- // Использовать тэг <x-text text="" /> --}}
+<x-block>
+  <x-ad_course :subject="in_array($categoryTitle, ['История','Обществознание'], true) ? $categoryTitle : null" />
+</x-block>
 
-                    <div class="accordion-div">
-                        <div style="background-color: white; max-height: 0; overflow: hidden; transition: max-height 2s ease-out;" class="panel hidden bg-white border md:mt-10 mt-8 rounded py-3 px-4">
-                            <p class="mb-4 md:text-lg text-base">Ответ:
-                                @if ($exercise->answer !== null && $exercise->answer !== "0")
-                                    {{$exercise->answer}}
-                                @endif
-                            </p>
-                            <p class="md:text-lg text-base">
-                                {!! Blade::render($exercise->comment) !!} 
+<x-material></x-material>
+<x-footer />
 
-                                {{-- Шаблон:
-                                1 — Неверно. <br>
-                                2 — Неверно. <br>
-                                3 — Неверно. <br>
-                                4 — Неверно. <br>
-                                5 — Неверно. <br>
-                                6 — Неверно. <br> --}}
-                            </p>
-                        </div>
-                        <button class="accordion attention-tag md:mt-10 mt-8 py-4 px-6 bg-blue-600 text-white rounded tracking-wide"><img class="inline-block relative mr-2 bottom-[1px]" src="{{asset('img/show.svg')}}" alt="arrow"> Посмотреть ответ</button>
-                        </div>
-                    </div>
-                @endif
-
-                {{-- Задание с картинкой --}}
-                @if ($exercise->main_image !== null)
-                <x-h3 title="{{$exercise->title}}"/>
-                    <div class="md:w-1/3 w-full mx-auto md:mt-8 mt-6 md:mb-10 mb-8">
-                        <img class="border rounded object-cover rounded h-full mx-auto" src="{{ asset('storage/' . $exercise->main_image)}}" alt="main_img" srcset="">
-                    </div>
-
-                    {!! Blade::render($exercise->text_spoiler) !!} 
-                    {{-- // Использовать тэг <x-text text="" /> --}}
-
-                    <div class="accordion-div">
-                        <div style="background-color: white; max-height: 0; overflow: hidden; transition: max-height 2s ease-out;" class="panel hidden bg-white border md:mt-10 mt-8 rounded py-3 px-4">
-                            <p class="mb-4 md:text-lg text-base">Ответ:
-                                @if ($exercise->answer !== null && $exercise->answer !== "0")
-                                    {{$exercise->answer}}
-                                @endif
-                            </p>
-                            <p class="md:text-lg text-base">
-                                {!! Blade::render($exercise->comment) !!} 
-
-                                {{-- Шаблон:
-                                1 — Неверно. <br>
-                                2 — Неверно. <br>
-                                3 — Неверно. <br>
-                                4 — Неверно. <br>
-                                5 — Неверно. <br>
-                                6 — Неверно. <br> --}}
-                            </p>
-                        </div>
-                        <button class="accordion attention-tag md:mt-10 mt-8 py-4 px-6 bg-blue-600 text-white rounded tracking-wide"><img class="inline-block relative mr-2 bottom-[1px]" src="{{asset('img/show.svg')}}" alt="arrow"> Посмотреть ответ</button>
-                        </div>
-                    </div>
-                @endif
-                
-                {{-- Задание второй части --}}
-                @if ($exercise->text_spoiler)
-                @php
-                    $title_array = explode("@", $exercise->title);
-                    $answer_array = explode("@", $exercise->text_spoiler);
-                    unset($title_array[0]);
-                    unset($answer_array[0]);
-                @endphp
-                
-                @for ($i = 1; $i <= count($title_array); $i++)
-                <x-h3 title="{{$title_array[$i]}}" />
-                {!! Blade::render($answer_array[$i]) !!} 
-                {{-- <x-text text="{{$answer_array[$i]}}" /> --}}
-                @endfor
-                {{-- <x-h3 title="{{$exercise->title}}" /> --}}
-
-                @endif
-                {{-- <x-h3 title="На графике изображено изменение ситуации на рынке мороженого в стране Z. Спрос переместился из положения D в положение D1 при неизменном спросе S. (На графике P — цена товара; Q — количество товара.)" /> --}}
-
-
-                {{-- Задание с картинкой
-                <x-h3 title="На графике изображено изменение ситуации на рынке мороженого в стране Z. Спрос переместился из положения D в положение D1 при неизменном спросе S. (На графике P — цена товара; Q — количество товара.)" />
-                <div class="md:w-1/3 w-full mx-auto md:mt-8 mt-6 md:mb-10 mb-8">
-                    <img class="border rounded object-cover rounded h-full mx-auto" src="{{ asset('storage/' . $exercise->main_image)}}" alt="main_img" srcset="">
-                </div>
-                <x-text text="1. Как изменилась равновесная цена?" />
-                <x-text text="2. Что могло вызвать изменение спроса? Укажите любое одно обстоятельство (фактор) и объясните его влияние на спрос." />
-                <x-text text="3. Как изменятся предложение и равновесная цена на данном рынке, если при прочих равных условиях обанкротится крупнейшая фирма-производитель мороженого?" /> --}}
-
-
-                {{-- <x-h3 title="В стране Z проводится реформа образования. Какие факты свидетельствуют о том, что реформа направлена на гуманизацию образования? Запишите цифры, под которыми они указаны." /> --}}
-
-                {{-- Задания второй части (особенно 25) - Заголовок - Ответ - Заголовок - Ответ. Должно выводиться как blade
-                <x-h3 title="Обоснуйте необходимость правового регулирования трудовых отношений " />
-                <x-text text="В ходе предпринимательской деятельности человек реализует товары и услуги, извлекает прибыль и получает деньги на реализацию своих потребностей, а общество получает возможность приобрести товары и услуги. Чем выше конкуренция среди предпринимателей, тем большего качества эти товары и услуги. Если в обществе не будет предпринимателей, товары придется производить либо государству, либо граждане сами будут обеспечивать себя товарами. " />
-                <x-h3 title="Каковы основные обязанности работника? Назовите любые три и проиллюстрируйте примером каждую из них" />
-                <x-text text="1) Соблюдать трудовую дисциплину. " />
-                <x-text text="2) Текст" />
-                <x-text text="3) Текст" /> --}}
-
-
-                {{-- <div class="flex md:flex-row flex-col md:mt-12 mt-12 md:gap-24 gap-12">
-                    <ul class="md:text-xl text-base text-zinc-800 flex flex-col gap-2">ПРИЗНАКИ
-                        <li class="mt-2">1) Увеличение количества учебных предметов</li>
-                        <li>2) Сокращение времени изучения естественных наук</li>
-                        <li>3) Особое внимание нравственному воспитанию учеников</li>
-                        <li>4) Компьютеризация образовательного процесса</li>
-                        <li>5) Ориентация на интересы и склонности ученика</li>
-                        <li>6) Применение технологий, сберегающих здоровье</li>
-                    </ul>
-                    <ul class="md:text-xl text-base text-zinc-800 flex flex-col gap-2">ОБЛАСТИ ДУХОВНОЙ КУЛЬТУРЫ
-                        <li class="mt-2">1) Наука</li>
-                        <li>2) Религия</li>
-                    </ul>
-                </div> --}}
-
-
-                {{-- Варианты ответов
-                <ul class="md:text-xl text-base text-zinc-800 flex flex-col gap-2">
-                    <li>1) Увеличение количества учебных предметов</li>
-                    <li>2) Сокращение времени изучения естественных наук</li>
-                    <li>3) Особое внимание нравственному воспитанию учеников</li>
-                    <li>4) Компьютеризация образовательного процесса</li>
-                    <li>5) Ориентация на интересы и склонности ученика</li>
-                    <li>6) Применение технологий, сберегающих здоровье</li>
-                </ul> --}}
-
-                {{-- Текст
-                <div style="border-color: rgb(217 119 6);" class="border-l-2 md:pl-8 pl-4 container mx-auto max-w-screen-md px-2 md:mt-10 mt-8">
-                    <p class="text-zinc-900 md:text-lg text-sm">«Царь исполнился усердием, сам и по собственному разумению начал вооружаться против врага и собирать многочисленные и храбрые войска. Он уже не хотел наслаждаться покоем, жить, затворясь в прекрасных хоромах, как в обыкновении у теперешних царей на западе (прожигать целые ночи, сидя за картами и другими бесовскими измышлениями), но сам поднимался не раз, не щадя своего здоровья, на враждебного и злейшего своего противника казанского царя. И хоть не взял он в одну суровую зиму этого столичного города, то есть крепости Казани, и отступил без всякого успеха, вовсе не впали в уныние душа его и храбрая его воинственность. И, оценив положение города, через год или два распорядился он построить немедля на реке Свияге большую превосходную крепость, за четверть мили от Волги и миль за пять от великого города Казани, - вот как близко уже подошёл!»</p>
-                </div>
-                <ul class="md:text-xl md:mt-12 mt-10 text-base text-zinc-800 flex flex-col gap-2">Используя отрывок и знания по истории, выберите в приведённом списке верные суждения. Запишите цифры, под которыми они указаны.
-                    <li class="mt-3">1) Увеличение количества учебных предметов</li>
-                    <li>2) Сокращение времени изучения естественных наук</li>
-                    <li>3) Особое внимание нравственному воспитанию учеников</li>
-                    <li>4) Компьютеризация образовательного процесса</li>
-                    <li>5) Ориентация на интересы и склонности ученика</li>
-                    <li>6) Применение технологий, сберегающих здоровье</li>
-                </ul> --}}
-
-
-
-
-            </div>
-
-            
-
-            {{-- {!! Blade::render($post->content, $new_images) !!} --}}
-
-            {{-- <div class="mt-8 w-full">
-                <details class="list-none cursor-pointer text-center mb-4 pb-4">
-                    <summary class="list-none mb-2 "><span class="open:bg-zinc-100 mb-2 px-8 py-4 border-2 border-black text-black font-semimedium tracking-wider rounded-lg mb-4">Посмотреть ответы</span>
-                    </summary>
-                    <div class="rounded-xl mt-10 bg-zinc-100 w-100 p-2 mt-8 text-sm leading-6 text-zinc-900">
-                      <ul class="p-2 tracking-wide "> <span class="font-bold">Правильный ответ:</span> 123
-                        <div class="mt-2 text-start">
-                            <li>1. Верно. </li>
-                            <li>2. Верно. </li>
-                            <li>3. Верно. </li>
-                        </div>
-
-                      </ul>
-                    </div>
-                </details>
-            </div> --}}
-
-            {{-- <x-img img="0" description="fdf" /> --}}
-                {{-- <x-h2 title="Как это началось?" />
-                <x-text text="С другой стороны новая модель организационной деятельности влечет за собой процесс внедрения и модернизации модели развития. Идейные соображения высшего порядка, а также реализация намеченных плановых заданий требуют от нас анализа дальнейших направлений развития. Товарищи! начало повседневной работы по формированию позиции влечет за собой процесс внедрения и модернизации системы обучения кадров, соответствует насущным потребностям. С другой стороны рамки и место обучения кадров позволяет выполнять важные задания по разработке форм развития." />
-                <x-person title="Малюта Скуратов" description="Главный опричник" img="/img/portrait.jpg"/>
-                <x-text text="С другой стороны новая модель организационной деятельности влечет за собой процесс внедрения и модернизации модели развития. Идейные соображения высшего порядка, а также реализация намеченных плановых заданий требуют от нас анализа дальнейших направлений развития. Товарищи! начало повседневной работы по формированию позиции влечет за собой процесс внедрения и модернизации системы обучения кадров, соответствует насущным потребностям. С другой стороны рамки и место обучения кадров позволяет выполнять важные задания по разработке форм развития." />
-                <x-text text="С другой стороны новая модель организационной деятельности влечет за собой процесс внедрения и модернизации модели развития. Идейные соображения высшего порядка, а также реализация намеченных плановых заданий требуют от нас анализа дальнейших направлений развития. Товарищи! начало повседневной работы по формированию позиции влечет за собой процесс внедрения и модернизации системы обучения кадров, соответствует насущным потребностям. С другой стороны рамки и место обучения кадров позволяет выполнять важные задания по разработке форм развития." />
-                <x-img img="/img/portrait.jpg" description="Между кабинетами двух президентов была установлена прямая телефонная связь" />
-                <x-text text="С другой стороны новая модель организационной деятельности влечет за собой процесс внедрения и модернизации модели развития. Идейные соображения высшего порядка, а также реализация намеченных плановых заданий требуют от нас анализа дальнейших направлений развития. Товарищи! начало повседневной работы по формированию позиции влечет за собой процесс внедрения и модернизации системы обучения кадров, соответствует насущным потребностям. С другой стороны рамки и место обучения кадров позволяет выполнять важные задания по разработке форм развития." />
-                
-                <x-h2 title="Как это продолжилось?" />
-                <x-text text="Владимир Ильич был не дурак и поэтому всё предусмотрел. С другой стороны новая модель организационной деятельности влечет за собой" />
-                <x-ul text='"Апрельские тезисы Ленина":'>
-                    <x-li class="mt-6 text-white" text="Пункт 1"></x-li>
-                    <x-li text="Пункт 1"></x-li>
-                    <x-li text="Пункт 1"></x-li>
-                </x-ul>
-                <x-text text="С другой стороны новая модель организационной деятельности влечет за собой процесс внедрения и модернизации модели развития. Идейные соображения высшего порядка, а также реализация намеченных плановых заданий требуют от нас анализа дальнейших направлений развития. Товарищи! начало повседневной работы по формированию позиции влечет за собой процесс внедрения и модернизации системы обучения кадров, соответствует насущным потребностям. С другой стороны рамки и место обучения кадров позволяет выполнять важные задания по разработке форм развития." />
-                
-                <x-quote_text text="С другой стороны новая модель организационной деятельности влечет за собой процесс внедрения и модернизации модели развития. Идейные соображения высшего порядка, а также реализация намеченных плановых заданий требуют от нас анализа дальнейших направлений развития. Товарищи! начало повседневной работы по формированию позиции влечет за собой процесс внедрения и модернизации системы обучения кадров, соответствует насущным потребностям. С другой стороны рамки и место обучения кадров позволяет выполнять важные задания по разработке форм развития" source="Повесть временых лет" />
-                <x-text text="С другой стороны новая модель организационной деятельности влечет за собой процесс внедрения и модернизации модели развития. Идейные соображения высшего порядка, а также реализация намеченных плановых заданий требуют от нас анализа дальнейших направлений развития. Товарищи! начало повседневной работы по формированию позиции влечет за собой процесс внедрения и модернизации системы обучения кадров, соответствует насущным потребностям. С другой стороны рамки и место обучения кадров позволяет выполнять важные задания по разработке форм развития." />
-                
-                <x-date date="19 февраля 1961 г." fact="В России отменили Крепостное право" />
-                <x-h2 title="Как это закончилось?" />
-                <x-text text="С другой стороны новая модель организационной деятельности влечет за собой процесс внедрения и модернизации модели развития. Идейные соображения высшего порядка, а также реализация намеченных плановых заданий требуют от нас анализа дальнейших направлений развития. Товарищи! начало повседневной работы по формированию позиции влечет за собой процесс внедрения и модернизации системы обучения кадров, соответствует насущным потребностям. С другой стороны рамки и место обучения кадров позволяет выполнять важные задания по разработке форм развития." />
-                
-
-                <x-quote text="Князья вернулись в Москву «опальными». Это страшное слово во всем его тогдашнем громадном значении не совсем и не всем понятно в настоящее время." name="Малюта Скуратов" description="Главный опричник Ивана Грозного" img="/img/portrait.jpg"/>
-                <x-text text="С другой стороны новая модель организационной деятельности влечет за собой процесс внедрения и модернизации модели развития. Идейные соображения высшего порядка, а также реализация намеченных плановых заданий требуют от нас анализа дальнейших направлений развития. Товарищи! начало повседневной работы по формированию позиции влечет за собой процесс внедрения и модернизации системы обучения кадров, соответствует насущным потребностям. С другой стороны рамки и место обучения кадров позволяет выполнять важные задания по разработке форм развития." />
-                 --}}
-        </x-block>
-        @php
-        
-        $exercise_section = $exercise->topic->section_id; // даёт id раздела, которому посвящено задание
-        // dd($exercise_section);
-        $category_id = null;
-        
-        // for ($i = 0; count($categories) - 1; $i++ ) {
-        foreach ($sections as $section) {
-            if ($exercise_section == $section->id) {
-                $category_id = $section->category_id;
-                // dd($category_id);
-            } 
-        }
-        // foreach ($categories as $category) {
-        //     if ($category->id == ) 
-        // }
-        @endphp
-        <x-ad_course subject="{{$category_id}}" />
-
-        {{-- <x-more_cards_div title="Другие статьи по теме:">
-            @foreach ($posts as $post)
-            <a class="noclass" href="{{route('post.show', $post->id)}}"><x-more_card title="{{$post->title}}" title2="{{$post->title2}}" description="Подзаголовок" :tags="$post->tags" img="{{'storage/' . $post->main_image}}" /></a>
-            @endforeach
-            
-            <x-slot:pagination>
-                <div class="flex justify-center md:mt-8 mt-1">
-                    <button class="md:px-8 md:py-4 px-6 py-3 border-2 border-black bg-white text-black font-semimedium tracking-wider rounded-lg">Все статьи <img class="inline-block ml-1" src="{{ asset('img/arrow_black-button.svg') }}" alt="" srcset=""></button>
-                </div>
-            </x-slot:pagination> --}}
-            {{-- <x-more_card title="Отмена крепостного права. Как это было" description="Подзаголовок" :tags="$title" img="/img/ivan.webp"/>
-            <x-more_card title="Заголовок" description="Подзаголовок" :tags="$title" img="/img/ivan.webp"/>
-            <x-more_card title="Заголовок" description="Подзаголовок" :tags="$title" img="/img/ivan.webp"/> --}}
-        {{-- </x-more_cards_div> --}}
-
-
-        <x-material></x-material>
-        <x-footer />
-        
-        <script src="{{ asset("js/accordion.js") }}"></script>
-        <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-        <script>
-            var swiper = new Swiper(".swiperCards", {
-                slidesPerView: 1.35,
-                spaceBetween: 16,
-                freeMode: true,
-                pagination: {
-                    el: ".swiper-pagination",
-                    clickable: true,
-                },
-                breakpoints: {
-                    799: {
-                        slidesPerView: 3,
-                        spaceBetween: 24,
-                    }
-                },
-            });
-        </script>
-        
-    </body>
-
-</html>
-
+<script>
+(function () {
+  const btn = document.getElementById('exercise-answer-toggle');
+  const box = document.getElementById('exercise-answer-box');
+  if (!btn || !box) return;
+  let open = false;
+  btn.addEventListener('click', () => {
+    open = !open;
+    box.style.height = open ? box.scrollHeight + 'px' : '0';
+    btn.style.display = open ? 'none' : '';
+  });
+})();
+</script>
 @endsection
