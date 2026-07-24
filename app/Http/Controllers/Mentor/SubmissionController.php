@@ -21,15 +21,39 @@ class SubmissionController extends Controller
         ->orderByDesc('lock_expires_at')
         ->get();
 
-        // Очередь доступных к проверке (не заняты и не завершены)
+        // Очередь доступных к проверке: не занято чужим активным локом, и
+        // статус pending — либо expired (сдано после дедлайна), но только
+        // если по ней ещё остались непроверенные письменные задания, иначе
+        // сюда попадали бы и полностью авто-проверенные просроченные работы,
+        // которым ручная проверка вообще не нужна (finishSubmit() всегда
+        // переводит в expired при просрочке, независимо от того, есть ли
+        // там что проверять руками).
+        //
+        // whereNull/orWhere раньше не были сгруппированы в один where(fn) —
+        // из-за этого "AND status" в SQL приклеивался только к последней
+        // ветке OR, и в очередь утекало вообще всё подряд: и уже проверенные
+        // работы (у них locked_by тоже null — его сбрасывает
+        // finalizeSubmission()), и даже не отправленные студентом
+        // in_progress-попытки.
         $queue = Submission::query()
-        ->with(['user','homework'])
-        ->whereNull('locked_by')
-              ->orWhereNull('lock_expires_at')
-              ->orWhere('lock_expires_at', '<=', now())
-        ->where('status', 'pending')
-        ->orderBy('created_at')
-        ->get();
+            ->with(['user', 'homework.tasks'])
+            ->where(function ($q) {
+                $q->whereNull('locked_by')
+                  ->orWhere('lock_expires_at', '<=', now());
+            })
+            ->whereIn('status', ['pending', 'expired'])
+            ->orderBy('created_at')
+            ->get()
+            ->reject(fn (Submission $s) => $s->status === 'expired' && $s->allManualTasksClosedForMentor())
+            // Если студент начал вторую попытку до того, как куратор
+            // проверил первую, обе какое-то время висят как pending —
+            // куратору должна быть видна только последняя из них (именно по
+            // ней и нужно выставлять итог), а не обе сразу.
+            ->sortBy('id')
+            ->groupBy(fn (Submission $s) => $s->user_id . ':' . $s->homework_id)
+            ->map->last()
+            ->sortBy('created_at')
+            ->values();
 
         // ⚠️ Работы с пропущенными заданиями (для админа)
         $skipped = Submission::with(['user','homework'])
@@ -192,5 +216,20 @@ foreach ($tasksRaw as $i => $t) {
         $submission->update($data);
 
         return back()->with('success', 'Оценка сохранена.');
+    }
+
+    /**
+     * Удалить попытку сдачи домашки целиком — только админ. Нет отдельных
+     * дочерних таблиц (ответы/результаты/AI-черновики лежат прямо в JSON-
+     * колонках самого submission), так что обычный delete() ничего не
+     * оставляет висеть — ни блокировок, ни сирот.
+     */
+    public function destroy(Request $request, Submission $submission)
+    {
+        abort_unless($request->user()->isAdmin(), 403, 'Удалять попытки может только администратор.');
+
+        $submission->delete();
+
+        return redirect()->route('mentor.submissions.index')->with('success', 'Попытка удалена.');
     }
 }

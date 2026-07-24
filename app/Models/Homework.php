@@ -51,4 +51,26 @@ class Homework extends Model
             && $session->start_date_time !== null
             && now()->lt($session->start_date_time);
     }
+
+    /**
+     * Число разрешённых попыток сдачи — 2 по умолчанию (столбец
+     * attempts_allowed и заведён с default(2), см. миграцию add_score_and_
+     * attempts), 0/null трактуем так же, а не как "безлимит": такого режима
+     * в продукте нет. Единственный источник истины — раньше
+     * SubmissionController::create() и submissions/show.blade.php считали
+     * это по-разному (один разрешал безлимит, другой давал ровно 2), из-за
+     * чего "Перерешать работу" могла быть недоступна, хотя бэкенд ещё
+     * разрешил бы попытку.
+     */
+    public static function normalizeAttemptsAllowed($raw): int
+    {
+        $value = (int) ($raw ?? 0);
+
+        return $value > 0 ? $value : 2;
+    }
+
+    public function attemptsAllowed(): int
+    {
+        return self::normalizeAttemptsAllowed($this->attempts_allowed);
+    }
 }

@@ -20,7 +20,14 @@ public function rules(): array
         'course_id'   => ['required','integer','exists:courses,id'],
         'lesson_id'   => ['required','integer','exists:lessons,id'],
 
-        'tasks'                   => ['sometimes','array'],
+        // min:1 — не только UX-подсказка: контроллер синхронизирует задания
+        // через whereNotIn('id', $taskIds)->delete(), а пустой массив там
+        // компилируется в SQL "1 = 1" (совпадает с любой строкой) — то есть
+        // пустой tasks удалил бы ВСЕ задания домашки разом. В форме это уже
+        // не нажать (там есть свой JS-guard на "нельзя удалить последнее
+        // задание"), но это клиентская подстраховка, а не гарантия —
+        // валидация должна отказывать в этом и на сервере.
+        'tasks'                   => ['sometimes','array','min:1'],
         'tasks.*.id'              => ['sometimes','integer'],
         'tasks.*.type'            => ['required_with:tasks','string'],
         'tasks.*.question_text'   => ['nullable','string'],

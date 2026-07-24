@@ -368,6 +368,9 @@ Route::middleware(['auth', 'mentor'])
         Route::get('/submissions', [MentorSubmissionController::class, 'index'])->name('submissions.index');
         Route::get('/submissions/{submission}', [MentorSubmissionController::class, 'show'])->name('submissions.show');
         Route::post('/submissions/{submission}', [MentorSubmissionController::class, 'update'])->name('submissions.update');
+        // Удаление попытки — только админ (проверка внутри контроллера, 'mentor'
+        // middleware пускает и кураторов тоже, им это действие не должно быть доступно).
+        Route::delete('/submissions/{submission}', [MentorSubmissionController::class, 'destroy'])->name('submissions.destroy');
     });
 
 Route::middleware(['auth'])->group(function () {

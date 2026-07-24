@@ -38,10 +38,10 @@ class SubmissionController extends Controller
             return $this->redirectToNextQuestion($inProgress);
         }
 
-        // attempts_allowed: null/0 => безлимит. Незавершённые попытки в счёт не идут.
-        $rawMax      = $homework->attempts_allowed;
-        $isUnlimited = empty($rawMax) || (int) $rawMax === 0;
-        $attemptsMax = $isUnlimited ? null : (int) $rawMax;
+        // Незавершённые попытки в счёт не идут. Дефолт и единственный
+        // источник истины для "сколько попыток разрешено" — Homework::
+        // attemptsAllowed() (используется и здесь, и на странице результатов).
+        $attemptsMax = $homework->attemptsAllowed();
 
         $attemptsUsed = Submission::where('user_id', $user->id)
             ->where('homework_id', $homework->id)
@@ -62,7 +62,7 @@ class SubmissionController extends Controller
             }
         }
 
-        if (!$isUnlimited && $attemptsMax !== null && $attemptsUsed >= $attemptsMax) {
+        if ($attemptsUsed >= $attemptsMax) {
             $last = Submission::where('user_id', $user->id)
                 ->where('homework_id', $homework->id)
                 ->where('status', '!=', 'in_progress')
@@ -80,13 +80,35 @@ class SubmissionController extends Controller
             return back()->withErrors(['homework' => 'В этой домашней работе пока нет заданий.']);
         }
 
-        $submission = Submission::create([
-            'homework_id' => $homework->id,
-            'user_id'     => $user->id,
-            'attempt_no'  => $attemptsUsed + 1,
-            'answers'     => [],
-            'status'      => 'in_progress',
-        ]);
+        try {
+            $submission = Submission::create([
+                'homework_id' => $homework->id,
+                'user_id'     => $user->id,
+                'attempt_no'  => $attemptsUsed + 1,
+                'answers'     => [],
+                'status'      => 'in_progress',
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Гонка: параллельный запрос (двойной клик, две вкладки) успел
+            // создать in_progress-попытку первым — уникальный индекс
+            // submissions_one_in_progress_unique (см. миграцию) не даёт
+            // вставить вторую. Не 500, а просто уходим к уже созданной попытке.
+            if ((string) $e->getCode() !== '23000') {
+                throw $e;
+            }
+
+            $inProgress = Submission::where('homework_id', $homework->id)
+                ->where('user_id', $user->id)
+                ->where('status', 'in_progress')
+                ->latest('id')
+                ->first();
+
+            if ($inProgress) {
+                return $this->redirectToNextQuestion($inProgress);
+            }
+
+            throw $e;
+        }
 
         return redirect()->route('student.submissions.question', [$submission, 1]);
     }
@@ -294,11 +316,16 @@ class SubmissionController extends Controller
         $hwRow = DB::table('homeworks')->where('id', $submission->homework_id)->first();
         $tasks = HomeworkTask::where('homework_id', $submission->homework_id)->get();
 
-        // Сконструируем лёгкий объект в том же формате, который ждёт шаблон
+        // Сконструируем лёгкий объект в том же формате, который ждёт шаблон.
+        // attempts_allowed нормализуем тем же правилом, что и в create()
+        // (Homework::normalizeAttemptsAllowed) — раньше шаблон сам считал
+        // дефолт по-другому (?? 2, не ловит явный 0), из-за чего "Перерешать
+        // работу" могла быть недоступна, хотя лимит ещё не исчерпан.
         $homework = (object) [
             'id'    => $submission->homework_id,
             'title' => $hwRow->title ?? 'Домашняя работа',
             'tasks' => $tasks,
+            'attempts_allowed' => Homework::normalizeAttemptsAllowed($hwRow->attempts_allowed ?? null),
         ];
 
         // история попыток пользователя по этой работе

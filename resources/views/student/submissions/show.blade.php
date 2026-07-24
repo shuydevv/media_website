@@ -128,7 +128,10 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
   </div>
 
 @php
-  $attempts_allowed = (int)($homework->attempts_allowed ?? 2);
+  // Уже нормализовано контроллером (Homework::normalizeAttemptsAllowed) —
+  // единственный источник истины на 2 попытки по умолчанию, тот же, что и
+  // в SubmissionController::create().
+  $attempts_allowed = (int) $homework->attempts_allowed;
   $attemptNo   = (int)($submission->attempt_no ?? 1);
   $attemptsLeft = max(0, $attempts_allowed - $attemptNo);
 @endphp
@@ -612,8 +615,10 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
         </span>
       </div>
 
-      {{-- Текст/медиа задания (если есть) --}}
-      @if($questionText || $passageText || $mediaUrl)
+      {{-- Текст/медиа задания (если есть). Картиночные типы всегда попадают
+           сюда, даже без текста и без реальной картинки — тогда ниже
+           покажется заглушка вместо картинки, а не пустой блок. --}}
+      @if($questionText || $passageText || $mediaUrl || in_array($type, ['image_auto','image_manual']))
         <div class="mb-6 space-y-3">
           @if($passageText)
             <div class="mb-6 p-3 rounded-lg bg-gray-50 border text-base whitespace-pre-wrap">{{ $norm($passageText) }}</div>
@@ -621,9 +626,22 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
           @if($questionText)
             <div class=" text-base text-zinc-800 whitespace-pre-wrap">{{ $norm($questionText) }}</div>
           @endif
-          @if($mediaUrl)
+          {{-- Тот же принцип, что и в самом визарде (task-prompt.blade.php):
+               если типу положена картинка, но её не загрузили — заглушка
+               вместо пустоты. --}}
+          @if(in_array($type, ['image_auto','image_manual']))
             <div>
-              <img src="{{ $mediaUrl }}" alt="" class="w-full max-h-[320px] object-contain rounded-lg border">
+              @if($mediaUrl)
+                <img src="{{ $mediaUrl }}" alt="" class="w-full max-h-[320px] object-contain rounded-lg border">
+              @else
+                <div class="w-full h-40 rounded-lg border border-gray-200 bg-gray-100 flex items-center justify-center text-gray-300">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-10">
+                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <path d="M21 15l-5-5L5 21"></path>
+                  </svg>
+                </div>
+              @endif
             </div>
           @endif
         </div>

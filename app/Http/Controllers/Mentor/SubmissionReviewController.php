@@ -27,6 +27,20 @@ class SubmissionReviewController extends Controller
         );
     }
 
+    /**
+     * Маршрут mentor.review.inbox ссылался на этот метод, которого не
+     * существовало вовсе (BadMethodCallException при любом заходе) — сам
+     * маршрут нигде в интерфейсе не используется как ссылка, но был живой
+     * миной на случай прямого перехода/закладки. Рабочая версия очереди —
+     * mentor.submissions.index, туда и отправляем.
+     */
+    public function inbox(Request $request)
+    {
+        $this->assertMentorOrAdmin($request);
+
+        return redirect()->route('mentor.submissions.index');
+    }
+
     /** Просмотр страницы проверки */
     public function show(Request $request, Submission $submission)
     {
@@ -49,6 +63,10 @@ class SubmissionReviewController extends Controller
     {
         Log::info('HIT saveTask', ['route' => Route::currentRouteName(), 'taskId' => $taskId]);
         $this->assertMentorOrAdmin($request);
+        // Роли "ментор/админ" мало — без этого любой куратор мог писать
+        // оценки в чужую активно залоченную работу, пока её проверяет
+        // другой куратор (see SubmissionPolicy::update — учитывает locked_by).
+        $this->authorize('update', $submission);
 
         $data = $request->validate([
             'score'   => ['nullable','integer','min:0'],
@@ -102,6 +120,7 @@ class SubmissionReviewController extends Controller
     {
         Log::info('HIT skipTask', ['route' => Route::currentRouteName(), 'taskId' => $taskId]);
         $this->assertMentorOrAdmin($request);
+        $this->authorize('update', $submission);
 
         $taskKey = (string)$taskId;
         $per = $submission->per_task_results ?? [];
@@ -130,19 +149,12 @@ class SubmissionReviewController extends Controller
     {
          Log::info('HIT unskipTask', ['route' => Route::currentRouteName(), 'taskId' => $taskId]);
         $this->assertMentorOrAdmin($request);
+        $this->authorize('update', $submission);
 
         $taskKey = (string)$taskId;
         $per = $submission->per_task_results ?? [];
         if (isset($per[$taskKey]['skipped'])) {
             unset($per[$taskKey]['skipped']);
-        }
-
-        // если работа исторически в статусе 'skipped' — вернём, если пропусков больше нет
-        if ($submission->status === 'skipped') {
-            $stillSkipped = collect($per)->contains(fn($r) => is_array($r) && !empty($r['skipped']));
-            if (!$stillSkipped) {
-                $submission->status = 'submitted';
-            }
         }
 
         $submission->per_task_results = $per;
@@ -161,6 +173,7 @@ class SubmissionReviewController extends Controller
     public function finish(Request $request, Submission $submission)
     {
         $this->assertMentorOrAdmin($request);
+        $this->authorize('update', $submission);
         $this->finalizeSubmission($request, $submission);
 
             return redirect()->route('mentor.submissions.index')
@@ -171,6 +184,7 @@ class SubmissionReviewController extends Controller
     public function finishAndNext(Request $request, Submission $submission)
     {
         $this->assertMentorOrAdmin($request);
+        $this->authorize('update', $submission);
         $this->finalizeSubmission($request, $submission);
 
         // Очередь — та же логика, что и в MentorSubmissionController::index():
@@ -187,8 +201,14 @@ class SubmissionReviewController extends Controller
             ->first();
 
         if ($next) {
+            // 'mentor.review.show' рендерит несуществующий view (реальная
+            // страница проверки лежит по 'mentor.submissions.show' — см.
+            // Mentor\SubmissionController::show(), она же и берёт лок на
+            // работу). Раньше редирект сюда гарантированно падал 500 у
+            // любого куратора, кто нажимал «Завершить и следующая», когда в
+            // очереди ещё что-то оставалось — то есть в основном сценарии.
             return redirect()
-                ->route('mentor.review.show', $next)
+                ->route('mentor.submissions.show', $next)
                 ->with('success', 'Проверка завершена. Открыта следующая работа.');
         }
 

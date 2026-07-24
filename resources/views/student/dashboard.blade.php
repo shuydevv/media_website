@@ -22,12 +22,15 @@
         }
         @media (min-width: 768px) {
             #dashboard-cards-grid {
-                /* Карточка 2 (события) шире, чем раньше (1fr → 1.3fr), чтобы
-                   заголовки того же text-base, что и в расписании, не
-                   обрезались лишний раз — место забрано у карточки 3
-                   (пока пустая), а не у маскота, чей размер завязан на
-                   квадратное изображение рыбы. */
-                grid-template-columns: 1.7fr 1.3fr 0.7fr;
+                /* Явное соотношение 3:2 (маскот:события), не подобранное на
+                   глаз число. Сам квадрат с рыбой при этом НЕ растёт (см.
+                   #greeting-mascot ниже — фиксированная ширина, а не w-1/2
+                   от карточки) — лишняя ширина карточки уходит в блок
+                   уровня/прогресса/кнопки рядом с рыбой, а не в саму
+                   картинку, иначе aspect-square тянул бы высоту карточки
+                   вслед за шириной.
+                */
+                grid-template-columns: 3fr 2fr;
             }
         }
 
@@ -46,17 +49,21 @@
             position: relative;
             overflow: hidden;
         }
+        /* Кнопка "Покормить" — variant="outline" (белый фон), поэтому белая
+           рябь на ней была не волной, а невнятной вспышкой без контраста.
+           Тёмная рябь малой непрозрачности — тот же классический паттерн
+           material-ripple, читается на белом фоне как настоящая волна. */
         .fish-feed-ripple {
             position: absolute;
             border-radius: 9999px;
-            background: rgba(255, 255, 255, .55);
+            background: rgba(39, 39, 42, .12);
             transform: scale(0);
             pointer-events: none;
-            animation: fish-ripple-wave .6s ease-out forwards;
+            animation: fish-ripple-wave .5s ease-out forwards;
         }
         @keyframes fish-ripple-wave {
             to {
-                transform: scale(2.6);
+                transform: scale(2.2);
                 opacity: 0;
             }
         }
@@ -114,7 +121,12 @@
              расположен так же, как раньше в отдельной карточке 3 (см.
              partials/fish-card.blade.php: тот же flex-1/flex-col/mt-auto). --}}
         <x-ui.card class="dashboard-card dashboard-mascot-row flex md:gap-6 gap-3">
-            <div id="greeting-mascot" class="w-1/2 aspect-square shrink-0 rounded-xl bg-gray-100 flex items-center justify-center {{ $fishBalance > 0 ? 'cursor-pointer' : '' }}" style="background-image: url('{{ $fishBackgroundImage }}'); background-size: cover; background-position: center;" title="Покормить">
+            {{-- Фиксированная ширина (не w-1/2 от карточки) — иначе
+                 aspect-square растягивал бы квадрат вслед за шириной
+                 карточки, когда та расширяется (см. комментарий у
+                 #dashboard-cards-grid выше): расширяться должна карточка,
+                 а не сам маскот. --}}
+            <div id="greeting-mascot" class="w-56 max-w-full aspect-square shrink-0 rounded-xl bg-gray-100 flex items-center justify-center {{ $fishBalance > 0 ? 'cursor-pointer' : '' }}" style="background-image: url('{{ $fishBackgroundImage }}'); background-size: cover; background-position: center;" title="Покормить">
                 <img id="fish-mascot-img"
                      src="{{ $fishMascotImage }}"
                      data-default-src="{{ $fishMascotImage }}"
@@ -167,9 +179,6 @@
                 </div>
             </div>
         </x-ui.card>
-
-        {{-- Карточка 3: пока пустая --}}
-        <x-ui.card class="dashboard-card min-w-0"></x-ui.card>
     </div>
 
     <script>
@@ -372,10 +381,13 @@
                     onComplete: function () { ghost.remove(); },
                 }, '<');
             }
+            // Пульсация после появления — едва заметное "дыхание", а не
+            // долгая тряска: раньше было ±8% размера на 3 повтора (почти
+            // секунда мельтешения), теперь один короткий импульс ±2.5%.
             tl.call(applyNewImageSources)
               .to(flash, { opacity: 0, duration: .3 })
               .to(img, { scale: 1, autoAlpha: 1, duration: .6, ease: 'elastic.out(1, .5)' }, '<')
-              .to(img, { scale: 1.08, duration: .16, ease: 'sine.inOut', yoyo: true, repeat: 3 }, '-=0.15');
+              .to(img, { scale: 1.025, duration: .12, ease: 'sine.inOut', yoyo: true, repeat: 1 }, '-=0.1');
 
             // Расходящиеся кольца.
             for (var i = 0; i < 3; i++) {

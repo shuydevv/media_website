@@ -94,7 +94,7 @@
     </div>
 
     {{-- таймер лока в шапке --}}
-    <div class="shrink-0">
+    <div class="shrink-0 flex flex-col items-end gap-2">
       <div class="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm">
         <div class="text-gray-600">Лок до:</div>
         <div class="font-semibold">
@@ -108,6 +108,16 @@
           </div>
         @endif
       </div>
+
+      {{-- Удаление попытки целиком — только админ, не куратор. --}}
+      @if($isAdmin)
+        <form action="{{ route('mentor.submissions.destroy', $submission) }}" method="POST"
+              onsubmit="return confirm('Удалить эту попытку сдачи безвозвратно? Ответы, оценки и комментарии куратора будут потеряны.');">
+          @csrf
+          @method('DELETE')
+          <button type="submit" class="text-sm text-red-600 hover:underline">Удалить попытку</button>
+        </form>
+      @endif
     </div>
   </div>
 

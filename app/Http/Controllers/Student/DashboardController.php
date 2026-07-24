@@ -226,8 +226,16 @@ foreach ($sessionsWithoutLesson as $session) {
             $dKey = $due->toDateString();
             if (!isset($daysMap[$dKey])) continue;
 
+            // "Выполнена" — только если попытка реально отправлена (checked/
+            // pending/expired), а не просто начата: $subs->isNotEmpty() раньше
+            // засчитывал и брошенный in_progress без единого ответа — карточка
+            // красилась в зелёный и подписывалась "Выполнена" для домашки,
+            // которую фактически даже не открывали до конца. Отдельного
+            // статуса "начато, но не отправлено" не вводим — такая домашка
+            // просто выглядит как обычная непройденная (или просроченная,
+            // если дедлайн уже прошёл).
             $subs = $userSubmissions->get($hw->id) ?? collect();
-            $isCompleted = $subs->isNotEmpty();
+            $isCompleted = $subs->contains(fn (Submission $s) => $s->status !== 'in_progress');
             $isOverdue   = !$isCompleted && $due->isPast();
 
             $subjectCourseTitle = optional($hw->lesson?->courseSession?->course)->title ?? 'Курс';

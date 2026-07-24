@@ -105,32 +105,47 @@
         @endif
 
         <div class="w-full md:w-1/2 flex flex-col mt-0 md:mt-1 min-w-0">
-          <div class="text-sm md:text-base tracking-wide opacity-60 text-blue-800">
-            <img class="inline-block relative bottom-0.5 mr-1 w-4 h-4 md:w-5 md:h-5"
-                 src="{{ asset('img/Date_range.svg') }}"
-                 alt="Date">
-            @if($s->display_date)
-              {{ \Illuminate\Support\Carbon::parse($s->display_date)->translatedFormat('j F') }}
-              @if($s->display_time) в {{ \Illuminate\Support\Str::substr($s->display_time, 0, 5) }} @endif
-            @else
-              Дата не указана
+          {{-- Дата и таймер — в один ряд через flex-wrap: сами встают рядом,
+               если места хватает, и переносятся на вторую строку, если нет
+               (например, на узком мобильном) — без ручных брейкпоинтов. --}}
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <div class="text-sm md:text-base tracking-wide opacity-60 text-blue-800">
+              <img class="inline-block relative bottom-0.5 mr-1 w-4 h-4 md:w-5 md:h-5"
+                   src="{{ asset('img/Date_range.svg') }}"
+                   alt="Date">
+              @if($s->display_date)
+                {{ \Illuminate\Support\Carbon::parse($s->display_date)->translatedFormat('j F') }}
+                @if($s->display_time) в {{ \Illuminate\Support\Str::substr($s->display_time, 0, 5) }} @endif
+              @else
+                Дата не указана
+              @endif
+            </div>
+
+            {{-- Живой отсчёт: время старта передаём в ISO8601 со смещением
+                 (toIso8601String даёт "+03:00", т.к. $s->_start уже в
+                 config('app.timezone') = Europe/Moscow) — так JS парсит его
+                 однозначно на любом устройстве, независимо от часового пояса
+                 браузера пользователя. Подложка — та же скруглённая пилюля,
+                 что и статус-чипы в расписании/событиях дашборда (bg + rounded-
+                 full), а не голый текст — так таймер читается как отдельный
+                 акцентный элемент, а не ещё одна строка подписи. Иконка —
+                 соседний с текстом узел, не внутри #next-session-countdown:
+                 JS ниже перезаписывает его через textContent каждую секунду,
+                 и если бы иконка была внутри, она бы стиралась при первом же
+                 тике. --}}
+            @if($s->_start)
+              <div class="inline-flex items-center gap-1.5 bg-white/70 rounded-full pl-2.5 pr-3 py-1 text-sm md:text-base font-medium text-blue-900">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2.5"></path></svg>
+                <span id="next-session-countdown" data-start="{{ $s->_start->toIso8601String() }}"></span>
+              </div>
             @endif
           </div>
-
-          {{-- Живой отсчёт: время старта передаём в ISO8601 со смещением
-               (toIso8601String даёт "+03:00", т.к. $s->_start уже в
-               config('app.timezone') = Europe/Moscow) — так JS парсит его
-               однозначно на любом устройстве, независимо от часового пояса
-               браузера пользователя. --}}
-          @if($s->_start)
-            <div id="next-session-countdown" class="mt-1 text-sm md:text-base font-medium text-blue-900" data-start="{{ $s->_start->toIso8601String() }}"></div>
-          @endif
 
           {{-- truncate + min-w-0 — иначе длинное название урока без
                пробелов может распереть колонку шире контейнера (та же
                причина, что уже задокументирована в dashboard.blade.php
                для карточки ближайших событий). --}}
-          <div class="mt-4 md:mt-5 md:mb-2 mb-1 min-w-0">
+          <div class="mt-3 md:mt-4 md:mb-2 mb-1 min-w-0">
             @if($lesson && $lessonHref)
               <a href="{{ $lessonHref }}"
                  class="block truncate text-3xl md:text-4xl tracking-wide font-medium text-blue-900">

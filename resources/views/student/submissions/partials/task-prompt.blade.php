@@ -129,10 +129,23 @@
   </div>
 @endif
 
-{{-- Картинка --}}
-@if(in_array($type, ['image_auto','image_manual']) && $mediaUrl)
+{{-- Картинка: типу положена картинка, но её могли не загрузить (например,
+     ещё не заведена или это тестовые данные) — тогда вместо пустого места
+     показываем ту же заглушку, что и для урока/курса без обложки (см.
+     student/courses/show.blade.php). --}}
+@if(in_array($type, ['image_auto','image_manual']))
   <div class="mb-5 sm:mb-6">
-    <img src="{{ $mediaUrl }}" alt="" class="w-full max-h-[360px] sm:max-h-[380px] object-contain rounded-xl border">
+    @if($mediaUrl)
+      <img src="{{ $mediaUrl }}" alt="" class="w-full max-h-[360px] sm:max-h-[380px] object-contain rounded-xl border">
+    @else
+      <div class="w-full h-48 sm:h-56 rounded-xl border border-gray-200 bg-gray-100 flex items-center justify-center text-gray-300">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12">
+          <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+          <path d="M21 15l-5-5L5 21"></path>
+        </svg>
+      </div>
+    @endif
   </div>
 @endif
 

@@ -59,7 +59,7 @@
             </form>
         @else
             <div class="lab-btn lab-btn-disabled flex-1">
-                Обещанный платёж уже использован в этом цикле
+                Обещанный платёж уже использован
             </div>
         @endif
     </div>
