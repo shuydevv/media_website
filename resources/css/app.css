@@ -127,6 +127,27 @@ h1, h2 {
     /* font-weight: 700 !important; */
 }
 
+/* Личный кабинет ученика (layouts/main.blade.php: <body class="student-portal">
+   ставится при routeIs('student.*')) — без засечек нигде и без чёрного
+   браузера по умолчанию. h1/h2 глобально уходят в 'serif' (правило выше,
+   наследие маркетингового сайта) — здесь отменяем это одним местом вместо
+   точечных .profile-heading/.sans на каждой странице. text-* Tailwind-утилиты
+   на конкретных элементах по-прежнему выигрывают — color здесь наследуется
+   только туда, где своего цвета не задано. См. /admin/design-system —
+   раздел "Новая система шрифтов".
+
+   :not(.font-oktyabrina) — иначе логотип "Школа Полтавского" в шапке (тоже
+   <h2>, см. layouts/main.blade.php) теряет фирменный шрифт: селектор с
+   классом+тегом (.student-portal h2) специфичнее одного класса
+   (.font-oktyabrina), поэтому побеждал бы и здесь, несмотря на порядок. */
+.student-portal {
+    color: #27272a; /* zinc-800 */
+}
+.student-portal h1:not(.font-oktyabrina),
+.student-portal h2:not(.font-oktyabrina) {
+    font-family: 'sans';
+}
+
 .image-bg:before {
 	content: '';
 	display: block;

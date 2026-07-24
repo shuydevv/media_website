@@ -51,7 +51,7 @@
 
 {{-- Вопрос / текст --}}
 @if($questionText)
-  <div class="text-sm md:text-base text-gray-800 whitespace-pre-wrap mb-5 sm:mb-6">{{ $questionText }}</div>
+  <div class="text-sm md:text-base text-zinc-800 whitespace-pre-wrap mb-5 sm:mb-6">{{ $questionText }}</div>
 @endif
 
 {{-- Пассаж для развёрнутого ответа --}}
@@ -95,7 +95,7 @@
         <thead class="bg-gray-50">
           <tr>
             @foreach($cols as $c)
-              <th class="border border-gray-200 px-3 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700">{{ $c }}</th>
+              <th class="border border-gray-200 px-3 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-zinc-700">{{ $c }}</th>
             @endforeach
           </tr>
         </thead>
@@ -112,17 +112,17 @@
               <td class="px-3 py-2 sm:py-3 align-top border border-gray-200">
                 @if($isBlank)
                   <div class="inline-flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-[10px] sm:text-xs font-semibold">{{ $badge }}</span>
-                    <span class="text-gray-500 text-xs sm:text-sm">— заполнить</span>
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-[10px] sm:text-xs font-medium">{{ $badge }}</span>
+                    <span class="text-zinc-500 text-xs sm:text-sm">— заполнить</span>
                   </div>
                 @else
-                  <div class="text-sm sm:text-[15px] text-gray-800 whitespace-pre-wrap">{{ (string)$cell }}</div>
+                  <div class="text-sm sm:text-[15px] text-zinc-800 whitespace-pre-wrap">{{ (string)$cell }}</div>
                 @endif
               </td>
             @endforeach
           </tr>
         @empty
-          <tr><td class="px-3 py-3 text-xs sm:text-sm text-gray-500">Таблица не задана</td></tr>
+          <tr><td class="px-3 py-3 text-xs sm:text-sm text-zinc-500">Таблица не задана</td></tr>
         @endforelse
       </tbody>
     </table>
@@ -138,7 +138,7 @@
 
 {{-- Варианты --}}
 @if(!empty($options))
-  <div class="mb-5 sm:mb-6 text-gray-900 text-sm sm:text-base flex flex-col flex-wrap gap-2 sm:gap-3 items-start">
+  <div class="mb-5 sm:mb-6 text-zinc-900 text-sm sm:text-base flex flex-col flex-wrap gap-2 sm:gap-3 items-start">
     @foreach($options as $opt)
       <div class="px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg border border-gray-200 bg-gray-50">{{ $opt }}</div>
     @endforeach
@@ -164,26 +164,26 @@
   @endphp
   <div class="grid md:grid-cols-2 gap-4 sm:gap-6 mb-5 sm:mb-6">
     <div class="rounded-xl border bg-white">
-      <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-gray-700">{{ $task->left_title ?? 'Левая колонка' }}</div>
+      <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-zinc-700">{{ $task->left_title ?? 'Левая колонка' }}</div>
       <div class="divide-y">
         @forelse($left as $iL => $val)
           <div class="px-3 py-2 sm:py-3 text-sm sm:text-base">
-            <span class="text-gray-500 mr-2">{{ $letters[$iL] ?? ($iL+1) }}.</span> {{ $val }}
+            <span class="text-zinc-500 mr-2">{{ $letters[$iL] ?? ($iL+1) }}.</span> {{ $val }}
           </div>
         @empty
-          <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm text-gray-500">Нет элементов</div>
+          <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm text-zinc-500">Нет элементов</div>
         @endforelse
       </div>
     </div>
     <div class="rounded-xl border bg-white">
-      <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-gray-700">{{ $task->right_title ?? 'Правая колонка' }}</div>
+      <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-zinc-700">{{ $task->right_title ?? 'Правая колонка' }}</div>
       <div class="divide-y">
         @forelse($right as $iR => $val)
           <div class="px-3 py-2 sm:py-3 text-sm sm:text-base">
-            <span class="text-gray-500 mr-2">{{ $iR+1 }}.</span> {{ $val }}
+            <span class="text-zinc-500 mr-2">{{ $iR+1 }}.</span> {{ $val }}
           </div>
         @empty
-          <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm text-gray-500">Нет элементов</div>
+          <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm text-zinc-500">Нет элементов</div>
         @endforelse
       </div>
     </div>

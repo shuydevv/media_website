@@ -15,7 +15,7 @@
   };
 
   $pillClasses = [
-    'unanswered' => 'bg-gray-100 text-gray-500 border-gray-200',
+    'unanswered' => 'bg-zinc-100 text-zinc-500 border-zinc-200',
     'saved'      => 'bg-blue-50 text-blue-700 border-blue-200',
     'ok'         => 'bg-emerald-50 text-emerald-700 border-emerald-300',
     'partial'    => 'bg-amber-50 text-amber-700 border-amber-300',
@@ -42,14 +42,14 @@
 <div class="max-w-3xl mx-auto px-3 sm:px-4 py-5 sm:py-6">
 
   <div class="flex items-center justify-between gap-3 mb-4">
-    <h1 class="text-lg sm:text-xl font-medium"><span class="sans">{{ $homework->title ?? 'Домашнее задание' }}</span></h1>
+    <h1 class="sans-medium text-lg sm:text-xl text-zinc-900">{{ $homework->title ?? 'Домашнее задание' }}</h1>
     <a href="{{ route('student.submissions.finish', $submission) }}"
        hx-get="{{ route('student.submissions.finish', $submission) }}"
        hx-target="#wizard-app"
        hx-swap="innerHTML"
        hx-push-url="true"
        hx-confirm="Перейти к отправке работы? Прогресс сохранится, неотвеченные вопросы можно будет решить позже."
-       class="relative inline-flex items-center px-3 py-1.5 rounded-lg border border-gray-300 text-xs sm:text-sm text-gray-600 hover:bg-gray-50 whitespace-nowrap">
+       class="relative inline-flex items-center px-3 py-1.5 rounded-lg border border-zinc-300 text-xs sm:text-sm text-zinc-600 hover:bg-zinc-50 whitespace-nowrap">
       <span class="btn-label">Перейти к отправке</span>
       <span class="btn-spinner">
         <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -95,10 +95,10 @@
   <div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6">
     <div class="flex items-center justify-between gap-3 mb-4 sm:mb-5">
       <div class="flex items-center gap-3">
-        <span class="inline-block px-2 py-0.5 text-xs rounded-full bg-gray-100 border border-gray-200 text-gray-700">
+        <span class="inline-block px-2 py-0.5 text-xs rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700">
           №{{ $task->task->number ?? '—' }} в ЕГЭ
         </span>
-        <span class="text-base sm:text-lg font-semibold text-gray-900">Вопрос {{ $position }} из {{ $total }}</span>
+        <span class="sans-medium text-lg text-zinc-900">Вопрос {{ $position }} из {{ $total }}</span>
       </div>
 
       @if($hintText)
@@ -133,7 +133,7 @@
           'ok'      => 'bg-emerald-50 border-emerald-200 text-emerald-800',
           'partial' => 'bg-amber-50 border-amber-200 text-amber-800',
           'fail'    => 'bg-rose-50 border-rose-200 text-rose-800',
-        ][$savedResult['status']] ?? 'bg-gray-50 border-gray-200 text-gray-700';
+        ][$savedResult['status']] ?? 'bg-zinc-50 border-zinc-200 text-zinc-700';
       @endphp
       <div class="mb-4 p-3 rounded-xl border text-sm inline-block {{ $sBanner }}">
         Сохранённый ответ: {{ $savedResult['score'] }} / {{ $savedResult['max'] }} баллов.
@@ -151,9 +151,9 @@
             hx-target="#wizard-app"
             hx-swap="innerHTML">
         @csrf
-        <label class="block text-xs sm:text-sm text-gray-700 mb-2">Ваш ответ</label>
+        <label class="block text-xs sm:text-sm text-zinc-700 mb-2">Ваш ответ</label>
         <textarea name="answer" rows="5" class="w-full border rounded-xl px-3 py-2 sm:py-3 text-sm sm:text-base">{{ old('answer', $prefill) }}</textarea>
-        <div class="text-[11px] sm:text-xs text-gray-500 mt-2 mb-4">Ответ проверит ваш наставник</div>
+        <div class="text-[11px] sm:text-xs text-zinc-500 mt-2 mb-4">Ответ проверит ваш наставник</div>
         <button type="submit" class="relative mt-8 inline-flex items-center justify-center px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base">
           <span class="btn-label">Далее</span>
           <span class="btn-spinner">
@@ -194,12 +194,12 @@
             hx-target="#wizard-app"
             hx-swap="innerHTML">
         @csrf
-        <label class="block text-xs sm:text-sm text-gray-700">
+        <label class="block text-xs sm:text-sm text-zinc-700">
           Ваш ответ
           @if(in_array($type, ['test','text_with_questions','matching','table']))
-            <span class="text-gray-400">(строка цифр)</span>
+            <span class="text-zinc-400">(строка цифр)</span>
           @else
-            <span class="text-gray-400">(цифры или буквы)</span>
+            <span class="text-zinc-400">(цифры или буквы)</span>
           @endif
         </label>
 
@@ -228,7 +228,7 @@
           </div>
         </div>
 
-        <div class="text-[11px] sm:text-xs text-gray-500 mt-2 sm:mt-3">
+        <div class="text-[11px] sm:text-xs text-zinc-500 mt-2 sm:mt-3">
           @if($type==='text_with_questions')
             Порядок не важен (например, 135 = 531).
           @elseif($type==='test')

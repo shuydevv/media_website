@@ -8,7 +8,7 @@
 <div class="max-w-4xl mx-auto px-4 py-6">
 
     <div class="flex items-center justify-between gap-4 mb-6">
-        <h1 class="text-2xl font-semibold">Уведомления</h1>
+        <h1 class="sans-medium text-2xl md:text-3xl text-zinc-900">Уведомления</h1>
         @if($notifications->contains(fn($n) => $n->read_at === null))
             <form method="POST" action="{{ route('student.notifications.markAllRead') }}">
                 @csrf
@@ -18,9 +18,9 @@
     </div>
 
     @if($notifications->isEmpty())
-        <div class="p-6 rounded-2xl border bg-white text-gray-600 text-center">
+        <x-ui.card class="text-zinc-600 text-center">
             Уведомлений пока нет
-        </div>
+        </x-ui.card>
     @else
         <div class="flex flex-col gap-3">
             @php
@@ -47,24 +47,24 @@
 
                 <form method="POST" action="{{ route('student.notifications.markRead', $notification->id) }}">
                     @csrf
-                    <button type="submit" class="w-full text-left flex items-start justify-between gap-4 rounded-2xl border bg-white p-4 hover:border-amber-300 hover:shadow-sm transition {{ $isUnread ? 'border-amber-200 bg-amber-50/40' : '' }}">
+                    <x-ui.card-link :highlighted="$isUnread">
                         <div class="min-w-0">
                             <div class="flex items-center gap-2 flex-wrap mb-1">
                                 <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium {{ $badge['class'] }}">{{ $badge['label'] }}</span>
                                 @if($isUnread)
                                     <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                                 @endif
-                                <span class="text-xs text-gray-400">{{ $notification->created_at->diffForHumans() }}</span>
+                                <span class="text-xs text-zinc-400">{{ $notification->created_at->diffForHumans() }}</span>
                             </div>
-                            <div class="font-medium text-gray-900">{{ $data['title'] ?? 'Уведомление' }}</div>
+                            <div class="font-medium text-zinc-900">{{ $data['title'] ?? 'Уведомление' }}</div>
                             @if(!empty($data['body']))
-                                <div class="text-sm text-gray-500 mt-0.5">{{ $data['body'] }}</div>
+                                <div class="text-sm text-zinc-500 mt-0.5">{{ $data['body'] }}</div>
                             @endif
                         </div>
                         @if($actionUrl)
                             <span class="shrink-0 text-sm font-medium text-amber-700 whitespace-nowrap">Открыть →</span>
                         @endif
-                    </button>
+                    </x-ui.card-link>
                 </form>
             @endforeach
         </div>

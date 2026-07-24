@@ -36,11 +36,11 @@
      homeworks/index и т.д.): плоский px-4, без sm:/lg: прогрессии. --}}
 <div class="max-w-6xl mx-auto px-4 py-6">
   <div class="mb-6">
-    <h1 class="md:text-3xl text-2xl md:mb-3 mb-2 font-sans font-medium text-gray-900">{{ $course->title }}</h1>
+    <h1 class="sans-medium text-2xl md:text-3xl mb-2 md:mb-3 text-zinc-900">{{ $course->title }}</h1>
 
     {{-- Сроки курса: надёжный вывод, даже если поля не кастятся к Carbon --}}
     @if(!empty($course->start_date) || !empty($course->end_date))
-      <div class="mt-1 text-base text-gray-600">
+      <div class="mt-1 text-base text-zinc-600">
         @php
           $fmt = function($v) {
             try { return $v ? \Illuminate\Support\Carbon::parse($v)->format('d.m.Y') : null; } catch (\Throwable $e) { return $v; }
@@ -51,7 +51,7 @@
     @endif
 
     @if(optional($course->category)->name)
-      <div class="mt-1 text-sm text-gray-600">Категория: {{ $course->category->name }}</div>
+      <div class="mt-1 text-sm text-zinc-600">Категория: {{ $course->category->name }}</div>
     @endif
 
     {{-- @if(!empty($course->description))
@@ -64,7 +64,7 @@
   
 
   @if(!$nextSession)
-    <div class="text-sm text-gray-600">Ближайшее занятие не запланировано.</div>
+    <div class="text-sm text-zinc-600">Ближайшее занятие не запланировано.</div>
   @else
     @php
       $s = $nextSession;
@@ -77,7 +77,7 @@
           ? route('student.lessons.show', $lesson)
           : null;
     @endphp
-    <div class="rounded-2xl bg-blue-50 border border-blue-200 shadow-sm p-5 md:p-6">
+    <x-ui.card tone="blue">
       <div class="flex flex-col md:flex-row md:items-stretch md:gap-7 gap-4">
         {{-- Картинка урока: заглушка, если у урока нет image_url --}}
         @if($lesson)
@@ -97,7 +97,7 @@
                 </div>
               @endif
 
-              <h2 class="absolute top-3 left-3 bg-white/60 px-3 py-1 rounded-2xl text-xs md:text-base font-sans font-semibold text-blue-900 mb-3"><img class="inline-block md:mr-2 mr-1 md:w-auto w-4" src=" {{asset('/img/Return.svg')}} " alt="">Следующее занятие</h2>
+              <h2 class="absolute top-3 left-3 bg-white/60 px-3 py-1 rounded-2xl text-xs md:text-base font-medium text-blue-900 mb-3"><img class="inline-block md:mr-2 mr-1 md:w-auto w-4" src=" {{asset('/img/Return.svg')}} " alt="">Следующее занятие</h2>
 
               @include('student.partials.lesson-image-badges', ['lesson' => $lesson, 'homeworkColor' => $s->_homeworkColor])
             </div>
@@ -141,7 +141,7 @@
                 {{ $lesson->title }}
               </div>
             @else
-              <div class="text-base md:text-lg font-semibold text-blue-900">Тема урока пока неизвестна</div>
+              <div class="text-base md:text-lg font-medium text-blue-900">Тема урока пока неизвестна</div>
             @endif
           </div>
 
@@ -163,15 +163,14 @@
 
           @if($lessonHref)
             <div class="mt-8 md:mt-10">
-              <a href="{{ $lessonHref }}"
-                class="md:inline-block block text-center px-6 md:px-8 py-4 md:py-4 md:text-base text-base tracking-wide font-medium rounded-xl bg-zinc-800 border text-white hover:bg-zinc-900 transition">
+              <x-ui.button href="{{ $lessonHref }}" class="w-full md:w-auto">
                 Перейти к уроку
-              </a>
+              </x-ui.button>
             </div>
           @endif
         </div>
       </div>
-    </div>
+    </x-ui.card>
   @endif
 </div>
 
@@ -182,7 +181,7 @@
   {{-- <h2 class="text-3xl font-semibold font-sans text-gray-900 mb-3">Прошедшие занятия</h2> --}}
 
   @if(($pastByMonth ?? collect())->isEmpty())
-    <div class="text-sm text-gray-600">
+    <div class="text-sm text-zinc-600">
       Прошедших занятий пока нет.
       {{-- @if(($pastHiddenCount ?? 0) > 0)
         <div class="mt-1">
@@ -208,7 +207,7 @@
               @php
                 $lesson = $s->lesson; // гарантированно есть
               @endphp
-              <div class="rounded-2xl bg-gray-50 border border-gray-200 shadow-sm p-5 md:p-6">
+              <x-ui.card tone="gray">
                 <div class="gap-4">
                   {{-- Картинка урока: заглушка, если у урока нет image_url --}}
                   <div class="relative aspect-[16/10]">
@@ -228,13 +227,13 @@
                   </div>
 
                   {{-- Заголовок и ссылка на страницу урока --}}
-                  <h3 class="text-xl sans font-medium mt-3 md:mb-2 mb-1 text-gray-900">
+                  <h3 class="sans-medium text-lg mt-3 md:mb-2 mb-1 text-zinc-900">
                     {{ $lesson->title }}
                   </h3>
 
                   <div class="flex-1">
                     {{-- Дата занятия: "2 сентября в 15:30" (без секунд, как договорились) --}}
-                    <div class="text-base text-gray-600">
+                    <div class="text-base text-zinc-600">
                       {{-- Дата занятия: --}}
                       <img class="inline-block opacity-50 relative bottom-0.5 mr-1 w-4 h-4 md:w-5 md:h-5" 
                       src="{{ asset('img/Date_range.svg') }}" 
@@ -249,10 +248,9 @@
 
 
                     @if(Route::has('student.lessons.show'))
-                      <a href="{{ route('student.lessons.show', $lesson) }}"
-                        class="block mt-6 ml-auto text-center mr-auto w-full px-3 py-4 md:text-base text-base tracking-wide font-medium rounded-xl bg-zinc-800 border text-white hover:bg-zinc-900 transition">
+                      <x-ui.button href="{{ route('student.lessons.show', $lesson) }}" block class="mt-6">
                         Перейти к уроку
-                      </a>
+                      </x-ui.button>
                     @endif
 
                     {{-- @if($lesson->description)
@@ -260,8 +258,8 @@
                     @endif --}}
                   </div>
                 </div>
-              </div>
-              
+              </x-ui.card>
+
             @endforeach
             
           </div>

@@ -48,6 +48,8 @@
         <a href="#tables">Таблицы</a>
         <a href="#misc">Аватары/тосты/прогресс</a>
         <a href="#leftover">Незавершённая миграция</a>
+        <a href="#new-typography" class="text-emerald-400">Новая система шрифтов</a>
+        <a href="#apple-palette" class="text-emerald-400">Цветовая палитра</a>
     </div>
 
     <div class="max-w-6xl mx-auto px-6 py-10">
@@ -68,27 +70,27 @@
             <div class="flex flex-wrap items-start gap-4 mb-8">
                 <div>
                     <button class="px-3 py-2 rounded-lg bg-zinc-900 text-white text-sm hover:bg-zinc-800">Кнопка</button>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]">billing/show.blade.php:59<br>px-3 py-2 rounded-lg</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/billing/show.blade.php:59" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">billing/show.blade.php:59</a><br>px-3 py-2 rounded-lg</p>
                 </div>
                 <div>
                     <button class="px-6 py-4 rounded-xl bg-zinc-800 border text-white hover:bg-zinc-900">Перейти к уроку</button>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]">courses/show.blade.php:167<br>px-6 md:px-8 py-4 rounded-xl border</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/courses/show.blade.php:167" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">courses/show.blade.php:167</a><br>px-6 md:px-8 py-4 rounded-xl border</p>
                 </div>
                 <div>
                     <button class="w-full px-3 py-4 rounded-xl bg-zinc-800 border text-white hover:bg-zinc-900">Перейти к уроку</button>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]">courses/show.blade.php:253, dashboard.blade.php:697<br>w-full px-3 py-4 rounded-xl border</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/courses/show.blade.php:253" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">courses/show.blade.php:253</a>, <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/dashboard.blade.php:697" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">dashboard.blade.php:697</a><br>w-full px-3 py-4 rounded-xl border</p>
                 </div>
                 <div>
                     <button class="px-6 py-4 rounded-xl border-2 bg-zinc-800 border-zinc-800 text-white hover:bg-zinc-900">Скачать конспект</button>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]">lessons/show.blade.php:61,93,100<br>border-2 (не border) + border-zinc-800</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/lessons/show.blade.php:61" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">lessons/show.blade.php:61,93,100</a><br>border-2 (не border) + border-zinc-800</p>
                 </div>
                 <div>
                     <button class="rounded-lg px-4 py-3 bg-zinc-900 text-white font-medium hover:bg-zinc-800">Сохранить</button>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]">profile/show.blade.php:267,445,481<br>rounded-lg px-4 py-3 font-medium</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/profile/show.blade.php:267" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">profile/show.blade.php:267,445,481</a><br>rounded-lg px-4 py-3 font-medium</p>
                 </div>
                 <div>
                     <button class="rounded-lg px-3 py-2 text-sm font-medium bg-zinc-900 hover:bg-zinc-800 text-white">Покормить</button>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]">fish-card.blade.php:45<br>rounded-lg px-3 py-2 text-sm</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/partials/fish-card.blade.php:45" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">fish-card.blade.php:45</a><br>rounded-lg px-3 py-2 text-sm</p>
                 </div>
             </div>
 
@@ -96,19 +98,19 @@
             <div class="flex flex-wrap items-start gap-4 mb-8">
                 <div>
                     <button class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Перерешать работу</button>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]">submissions/show.blade.php:160<br>px-4 py-2 rounded-lg</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/show.blade.php:160" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">submissions/show.blade.php:160</a><br>px-4 py-2 rounded-lg</p>
                 </div>
                 <div>
                     <button class="px-5 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700">Завершить</button>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]">finish-region.blade.php:78<br>px-5 py-3 rounded-xl</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/partials/finish-region.blade.php:78" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">finish-region.blade.php:78</a><br>px-5 py-3 rounded-xl</p>
                 </div>
                 <div>
                     <button class="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700">Далее</button>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]">question-region.blade.php:157,243<br>px-4 py-2 rounded-xl</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/partials/question-region.blade.php:157" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">question-region.blade.php:157,243</a><br>px-4 py-2 rounded-xl</p>
                 </div>
                 <div>
                     <button class="w-full px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700">Далее</button>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]">question-region.blade.php:302<br>w-full px-4 py-2 rounded-xl</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/partials/question-region.blade.php:302" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">question-region.blade.php:302</a><br>w-full px-4 py-2 rounded-xl</p>
                 </div>
             </div>
 
@@ -116,7 +118,7 @@
             <div class="flex flex-wrap items-start gap-4 mb-8">
                 <div>
                     <button class="w-full px-3 py-4 rounded-xl bg-rose-600 border text-white hover:bg-rose-700">Оплатить сейчас</button>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]">dashboard.blade.php:692<br>единственное место с rose как основным действием</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/dashboard.blade.php:692" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">dashboard.blade.php:692</a><br>единственное место с rose как основным действием</p>
                 </div>
             </div>
 
@@ -124,19 +126,19 @@
             <div class="flex flex-wrap items-start gap-4 mb-8">
                 <div>
                     <button class="rounded-lg px-3 py-1.5 border">Фильтр</button>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]">billing/show.blade.php:72<br>rounded-lg px-3 py-1.5</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/billing/show.blade.php:72" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">billing/show.blade.php:72</a><br>rounded-lg px-3 py-1.5</p>
                 </div>
                 <div>
                     <button class="rounded-xl border-gray-300 border px-4 py-2">Назад</button>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]">question-region.blade.php:293<br>rounded-xl px-4 py-2</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/partials/question-region.blade.php:293" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">question-region.blade.php:293</a><br>rounded-xl px-4 py-2</p>
                 </div>
                 <div>
                     <button class="rounded-lg border-gray-300 border px-3 py-1.5">Отмена</button>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]">question-region.blade.php:52<br>rounded-lg px-3 py-1.5</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/partials/question-region.blade.php:52" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">question-region.blade.php:52</a><br>rounded-lg px-3 py-1.5</p>
                 </div>
                 <div>
                     <button class="rounded-full border px-3 py-1.5">Все</button>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]">homeworks/index.blade.php:30-32<br>rounded-full — единственное место с этим radius</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/homeworks/index.blade.php:30" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">homeworks/index.blade.php:30-32</a><br>rounded-full — единственное место с этим radius</p>
                 </div>
             </div>
 
@@ -144,11 +146,11 @@
             <div class="flex flex-wrap items-start gap-4">
                 <div>
                     <button disabled class="bg-gray-200 text-gray-500 cursor-not-allowed px-4 py-2 rounded-lg">Недоступно</button>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]">submissions/show.blade.php:165, finish-region.blade.php:89</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/show.blade.php:165" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">submissions/show.blade.php:165</a>, <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/partials/finish-region.blade.php:89" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">finish-region.blade.php:89</a></p>
                 </div>
                 <div>
                     <button disabled class="bg-gray-100 text-gray-400 cursor-not-allowed rounded-lg px-3 py-2 text-sm">Покормить</button>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]">fish-card.blade.php:45 (условный класс)<br>другой оттенок серого, чем сосед слева</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-[220px]"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/partials/fish-card.blade.php:45" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">fish-card.blade.php:45</a> (условный класс)<br>другой оттенок серого, чем сосед слева</p>
                 </div>
             </div>
         </section>
@@ -164,98 +166,98 @@
                         <div class="font-medium">Заголовок</div>
                         <div class="text-sm text-gray-600">bg-white border rounded-2xl p-5</div>
                     </div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">billing/show:31,84; dashboard:111,127,167 — без тени</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/billing/show.blade.php:31" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">billing/show:31,84</a>; <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/dashboard.blade.php:111" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">dashboard:111,127,167</a> — без тени</p>
                 </div>
                 <div>
                     <div class="rounded-2xl bg-blue-50 border border-blue-200 shadow-sm p-5">
                         <div class="font-medium">Заголовок</div>
                         <div class="text-sm text-gray-600">bg-blue-50 border-blue-200 shadow-sm</div>
                     </div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">courses/show.blade.php:80</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/courses/show.blade.php:80" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">courses/show.blade.php:80</a></p>
                 </div>
                 <div>
                     <div class="rounded-2xl bg-gray-50 border border-gray-200 shadow-sm p-5">
                         <div class="font-medium">Заголовок</div>
                         <div class="text-sm text-gray-600">bg-gray-50 border-gray-200 shadow-sm</div>
                     </div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">courses/show.blade.php:211</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/courses/show.blade.php:211" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">courses/show.blade.php:211</a></p>
                 </div>
                 <div>
                     <div class="rounded-2xl border bg-white p-3">
                         <div class="font-medium">Заголовок</div>
                         <div class="text-sm text-gray-600">border bg-white p-3/p-4, без тени</div>
                     </div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">dashboard.blade.php:673 — меньше паддинг, чем у соседей</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/dashboard.blade.php:673" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">dashboard.blade.php:673</a> — меньше паддинг, чем у соседей</p>
                 </div>
                 <div>
                     <div class="bg-white border rounded-2xl p-6 shadow-sm">
                         <div class="font-medium">Заголовок</div>
                         <div class="text-sm text-gray-600">.profile-card — p-6 shadow-sm</div>
                     </div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">profile/show.blade.php:238,323,453</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/profile/show.blade.php:238" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">profile/show.blade.php:238,323,453</a></p>
                 </div>
                 <div>
                     <div class="rounded-2xl border bg-white p-4 hover:shadow-sm transition">
                         <div class="font-medium">Заголовок</div>
                         <div class="text-sm text-gray-600">тень только на hover</div>
                     </div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">homeworks/index:90, notifications/index:50</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/homeworks/index.blade.php:90" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">homeworks/index:90</a>, <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/notifications/index.blade.php:50" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">notifications/index:50</a></p>
                 </div>
                 <div>
                     <div class="rounded-2xl border border-gray-200 bg-white p-4 py-6">
                         <div class="font-medium">Заголовок</div>
                         <div class="text-sm text-gray-600">border-gray-200 явно, p-4 py-6</div>
                     </div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">submissions/show.blade.php:139,149</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/show.blade.php:139" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">submissions/show.blade.php:139,149</a></p>
                 </div>
                 <div>
                     <div class="rounded-2xl shadow bg-white p-5">
                         <div class="font-medium">Заголовок</div>
                         <div class="text-sm text-gray-600">shadow (не shadow-sm), без border вообще</div>
                     </div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">submissions/show.blade.php:177</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/show.blade.php:177" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">submissions/show.blade.php:177</a></p>
                 </div>
                 <div>
                     <div class="rounded-2xl border border-gray-200 bg-white p-5">
                         <div class="font-medium">Заголовок</div>
                         <div class="text-sm text-gray-600">border, без тени</div>
                     </div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">submissions/show.blade.php:306 — соседствует с карточкой выше, та же роль</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/show.blade.php:306" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">submissions/show.blade.php:306</a> — соседствует с карточкой выше, та же роль</p>
                 </div>
                 <div>
                     <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6">
                         <div class="font-medium">Заголовок</div>
                         <div class="text-sm text-gray-600">flex-1 bg-blue-50 p-4 sm:p-6</div>
                     </div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">lessons/show.blade.php:48,73</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/lessons/show.blade.php:48" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">lessons/show.blade.php:48,73</a></p>
                 </div>
                 <div>
                     <div class="p-6 rounded-xl border bg-white text-gray-600">
                         Пустое состояние
                         <div class="text-sm">rounded-xl, не rounded-2xl</div>
                     </div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">billing/show:24, dashboard:658</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/billing/show.blade.php:24" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">billing/show:24</a>, <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/dashboard.blade.php:658" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">dashboard:658</a></p>
                 </div>
                 <div>
                     <div class="bg-white rounded-xl border px-4 pt-6 pb-4">
                         <div class="font-medium">Заголовок</div>
                         <div class="text-sm text-gray-600">rounded-xl обёртка свайпера</div>
                     </div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">dashboard.blade.php:496</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/dashboard.blade.php:496" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">dashboard.blade.php:496</a></p>
                 </div>
                 <div>
                     <div class="rounded-xl border border-gray-200 bg-white p-4">
                         Пустое состояние
                         <div class="text-sm text-gray-600">rounded-xl, другой радиус</div>
                     </div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">submissions/show.blade.php:893</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/show.blade.php:893" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">submissions/show.blade.php:893</a></p>
                 </div>
                 <div>
                     <div class="p-6 rounded-2xl border bg-white text-gray-600 text-center">
                         Пустое состояние
                         <div class="text-sm">rounded-2xl + text-center</div>
                     </div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">homeworks/index:36, notifications/index:21</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/homeworks/index.blade.php:36" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">homeworks/index:36</a>, <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/notifications/index.blade.php:21" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">notifications/index:21</a></p>
                 </div>
             </div>
         </section>
@@ -272,7 +274,7 @@
                 </div>
                 <div class="text-center">
                     <div class="text-zinc-800 text-lg font-medium">Aa текст</div>
-                    <div class="ds-swatch-label text-xs text-gray-500 mt-1">text-zinc-*<br>4 использования: dashboard:498,655, lessons/show:65</div>
+                    <div class="ds-swatch-label text-xs text-gray-500 mt-1">text-zinc-*<br>4 использования: <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/dashboard.blade.php:498" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">dashboard:498,655</a>, <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/lessons/show.blade.php:65" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">lessons/show:65</a></div>
                 </div>
                 <div class="text-center">
                     <div class="text-slate-600 text-lg font-medium">Aa текст</div>
@@ -306,7 +308,7 @@
                         <circle cx="8.5" cy="8.5" r="1.5"></circle>
                         <path d="M21 15l-5-5L5 21"></path>
                     </svg>
-                    <div class="ds-swatch-label text-xs text-gray-500 mt-1">stroke-width 1.6<br>courses/show:92,219</div>
+                    <div class="ds-swatch-label text-xs text-gray-500 mt-1">stroke-width 1.6<br><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/courses/show.blade.php:92" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">courses/show:92,219</a></div>
                 </div>
                 <div class="text-center">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 mx-auto">
@@ -314,13 +316,13 @@
                         <path d="M9 3v2a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V3"></path>
                         <path d="M9 12l2 2 4-4"></path>
                     </svg>
-                    <div class="ds-swatch-label text-xs text-gray-500 mt-1">stroke-width 1.8<br>bottom-nav, lesson-image-badges, profile</div>
+                    <div class="ds-swatch-label text-xs text-gray-500 mt-1">stroke-width 1.8<br><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/partials/student-bottom-nav.blade.php" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">bottom-nav</a>, <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/partials/lesson-image-badges.blade.php" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">lesson-image-badges</a>, profile</div>
                 </div>
                 <div class="text-center">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 mx-auto">
                         <path d="M15 18l-6-6 6-6"></path>
                     </svg>
-                    <div class="ds-swatch-label text-xs text-gray-500 mt-1">stroke-width 2<br>student-back-button</div>
+                    <div class="ds-swatch-label text-xs text-gray-500 mt-1">stroke-width 2<br><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/partials/student-back-button.blade.php" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">student-back-button</a></div>
                 </div>
                 <div class="text-center">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 mx-auto text-rose-500">
@@ -344,11 +346,11 @@
                 </div>
                 <div class="text-center">
                     <img src="{{ asset('img/hand-holding-notes.webp') }}" alt="" class="w-14 h-14 mx-auto">
-                    <div class="ds-swatch-label text-xs text-gray-500 mt-1">webp-иллюстрация<br>lessons/show:51,76</div>
+                    <div class="ds-swatch-label text-xs text-gray-500 mt-1">webp-иллюстрация<br><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/lessons/show.blade.php:51" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">lessons/show:51,76</a></div>
                 </div>
                 <div class="text-center">
                     <div class="text-3xl">🎉 🔒</div>
-                    <div class="ds-swatch-label text-xs text-gray-500 mt-1">голый эмодзи<br>homeworks/index:37, profile-fish-background-item:23</div>
+                    <div class="ds-swatch-label text-xs text-gray-500 mt-1">голый эмодзи<br><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/homeworks/index.blade.php:37" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">homeworks/index:37</a>, <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/partials/profile-fish-background-item.blade.php:23" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">profile-fish-background-item:23</a></div>
                 </div>
             </div>
         </section>
@@ -362,11 +364,11 @@
             <div class="space-y-4 mb-10">
                 <div>
                     <div class="text-2xl font-semibold">Заголовок страницы</div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-1">billing/show:9, homeworks/index:27, notifications/index:11 — serif по умолчанию, без переопределения шрифта</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-1"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/billing/show.blade.php:9" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">billing/show:9</a>, <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/homeworks/index.blade.php:27" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">homeworks/index:27</a>, <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/notifications/index.blade.php:11" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">notifications/index:11</a> — serif по умолчанию, без переопределения шрифта</p>
                 </div>
                 <div>
                     <div class="text-2xl font-semibold" style="font-family: sans-serif;">Заголовок страницы</div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-1">profile/show:5 — .profile-heading, шрифт переопределён отдельным &lt;style&gt;</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-1"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/profile/show.blade.php:5" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">profile/show:5</a> — .profile-heading, шрифт переопределён отдельным &lt;style&gt;</p>
                 </div>
                 <div>
                     <div class="text-2xl md:text-3xl font-sans font-medium text-gray-900">Заголовок страницы</div>
@@ -374,19 +376,19 @@
                 </div>
                 <div>
                     <div class="text-2xl md:text-4xl font-medium font-sans">Заголовок страницы</div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-1">lessons/show:7 — другой md-размер, чем у courses/show</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-1"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/lessons/show.blade.php:7" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">lessons/show:7</a> — другой md-размер, чем у courses/show</p>
                 </div>
                 <div>
                     <div class="text-2xl font-semibold">Заголовок страницы</div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-1">submissions/show:119 — снова serif, без переопределения</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-1"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/show.blade.php:119" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">submissions/show:119</a> — снова serif, без переопределения</p>
                 </div>
                 <div>
                     <div class="text-xl sm:text-2xl font-medium" style="font-family: sans-serif;">Заголовок страницы</div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-1">finish-region.blade.php:29 — третий механизм принудительного sans: класс .sans на &lt;span&gt;</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-1"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/partials/finish-region.blade.php:29" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">finish-region.blade.php:29</a> — третий механизм принудительного sans: класс .sans на &lt;span&gt;</p>
                 </div>
                 <div>
                     <div class="text-lg sm:text-xl font-medium" style="font-family: sans-serif;">Заголовок страницы</div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-1">question-region.blade.php:45 — тот же .sans-механизм, меньший размер</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-1"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/partials/question-region.blade.php:45" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">question-region.blade.php:45</a> — тот же .sans-механизм, меньший размер</p>
                 </div>
             </div>
 
@@ -394,27 +396,28 @@
             <div class="space-y-4">
                 <div>
                     <div class="text-base md:text-xl tracking-wide font-normal font-sans text-zinc-800">Раздел дашборда</div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-1">dashboard:498,655 — font-normal, text-zinc-800</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-1"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/dashboard.blade.php:498" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">dashboard:498,655</a> — font-normal, text-zinc-800</p>
                 </div>
                 <div>
                     <div class="text-xs md:text-base font-sans font-semibold text-blue-900">Следующее занятие</div>
                     <p class="ds-swatch-label text-xs text-gray-500 mt-1">courses/show — бейдж-заголовок поверх картинки, свой масштаб</p>
                 </div>
-                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                    <div class="text-xl font-medium text-gray-900">Название урока</div>
-                    <p class="ds-swatch-label text-xs text-amber-800 mt-1">
-                        ⚠ courses/show.blade.php:231 — класс <code>sans</code> (без префикса <code>font-</code>) — опечатка,
-                        такого Tailwind-класса не существует, заголовок молча съезжает на serif по умолчанию.
-                        Это баг, а не просто расхождение стиля.
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <div class="text-xl font-medium text-gray-900 sans">Название урока</div>
+                    <p class="ds-swatch-label text-xs text-blue-800 mt-1">
+                        <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/courses/show.blade.php:231" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">courses/show.blade.php:231</a> — класс <code>sans</code> здесь НЕ опечатка (так казалось на первый взгляд):
+                        это отдельный кастомный класс из app.css, реально подключающий Golos Text — просто он
+                        выглядит один-в-один как обрезанная Tailwind-утилита <code>font-sans</code>, а на деле
+                        это два разных механизма с разным результатом. Разбор — в разделе «Новая система шрифтов» внизу.
                     </p>
                 </div>
                 <div>
                     <div class="text-lg font-semibold">Заголовок блока</div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-1">submissions/show:179,308,541</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-1"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/show.blade.php:179" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">submissions/show:179,308,541</a></p>
                 </div>
                 <div>
                     <div class="font-medium text-lg text-gray-900">Заголовок блока</div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-1">billing/show:32,85, profile/show:239,275,324,454 — обычный &lt;div&gt;, не тег заголовка</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-1"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/billing/show.blade.php:32" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">billing/show:32,85</a>, <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/profile/show.blade.php:239" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">profile/show:239,275,324,454</a> — обычный &lt;div&gt;, не тег заголовка</p>
                 </div>
             </div>
         </section>
@@ -427,31 +430,31 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <p class="text-sm text-gray-600">Ближайшее занятие не запланировано.</p>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-1">courses/show:67 — голый текст, без обёртки</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-1"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/courses/show.blade.php:67" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">courses/show:67</a> — голый текст, без обёртки</p>
                 </div>
                 <div>
                     <div class="p-6 rounded-xl border bg-white text-gray-600">Активных курсов нет.</div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-1">billing/show:24-26 — карточка rounded-xl</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-1"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/billing/show.blade.php:24" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">billing/show:24-26</a> — карточка rounded-xl</p>
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">Платежей пока нет.</p>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-1">billing/show:88 — gray-500, не gray-600 как сосед выше</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-1"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/billing/show.blade.php:88" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">billing/show:88</a> — gray-500, не gray-600 как сосед выше</p>
                 </div>
                 <div>
                     <div class="rounded-xl border border-dashed border-gray-200 px-3 py-3 text-gray-500 text-sm">Уроков пока не запланировано</div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-1">student-dashboard-event-card:41-43 — пунктирная рамка, свой вариант</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-1"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/partials/student-dashboard-event-card.blade.php:41" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">student-dashboard-event-card:41-43</a> — пунктирная рамка, свой вариант</p>
                 </div>
                 <div>
                     <div class="p-6 rounded-2xl border bg-white text-gray-600 text-center">Домашек в очереди нет 🎉</div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-1">homeworks/index:36-38 — rounded-2xl, text-center, + эмодзи</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-1"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/homeworks/index.blade.php:36" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">homeworks/index:36-38</a> — rounded-2xl, text-center, + эмодзи</p>
                 </div>
                 <div>
                     <div class="p-6 rounded-2xl border bg-white text-gray-600 text-center">Уведомлений пока нет</div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-1">notifications/index:21-23 — совпадает с соседом слева</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-1"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/notifications/index.blade.php:21" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">notifications/index:21-23</a> — совпадает с соседом слева</p>
                 </div>
                 <div>
                     <div class="rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-600">Заданий нет.</div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-1">submissions/show:893-895 — rounded-xl, другой радиус, чем у остальных на той же странице</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-1"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/show.blade.php:893" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">submissions/show:893-895</a> — rounded-xl, другой радиус, чем у остальных на той же странице</p>
                 </div>
             </div>
         </section>
@@ -472,14 +475,14 @@
                 <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">На проверке</span>
                 <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">Проверено</span>
             </div>
-            <p class="ds-swatch-label text-xs text-gray-500 mb-8">homeworks/index.blade.php:46-52, notifications/index.blade.php:27-37 — одна и та же карта цветов, но каждый файл определяет её заново своим PHP-массивом</p>
+            <p class="ds-swatch-label text-xs text-gray-500 mb-8"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/homeworks/index.blade.php:46" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">homeworks/index.blade.php:46-52</a>, <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/notifications/index.blade.php:27" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">notifications/index.blade.php:27-37</a> — одна и та же карта цветов, но каждый файл определяет её заново своим PHP-массивом</p>
 
             <h3 class="text-lg font-medium text-gray-700 mb-3">2. Инлайн-статус в расписании — не похож ни на один другой</h3>
             <div class="flex flex-wrap gap-2 mb-2">
                 <span class="inline-block px-1.5 pt-[1px] pb-[3px] text-xs border border-red-300 rounded text-red-700">Срок истёк</span>
                 <span class="inline-block px-1.5 pt-[1px] pb-[3px] rounded bg-emerald-500/20 text-emerald-700">Выполнена</span>
             </div>
-            <p class="ds-swatch-label text-xs text-gray-500 mb-8">dashboard.blade.php:578-582 — контурный для «просрочено», заливка для «выполнено»: два разных приёма внутри одного и того же файла для одной и той же роли</p>
+            <p class="ds-swatch-label text-xs text-gray-500 mb-8"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/dashboard.blade.php:578" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">dashboard.blade.php:578-582</a> — контурный для «просрочено», заливка для «выполнено»: два разных приёма внутри одного и того же файла для одной и той же роли</p>
 
             <h3 class="text-lg font-medium text-gray-700 mb-3">3. Круглые бейджи-иконки на картинке урока — единственный не-текстовый вариант</h3>
             <div class="flex gap-2 mb-2">
@@ -490,7 +493,7 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H18a1 1 0 0 1 1 1v17a1 1 0 0 1-1 1H6.5A2.5 2.5 0 0 1 4 18.5v-14Z"></path><path d="M8 7h8M8 11h8M8 15h5"></path></svg>
                 </span>
             </div>
-            <p class="ds-swatch-label text-xs text-gray-500 mb-8">student/partials/lesson-image-badges.blade.php — цвет несёт смысл через сам значок, а не через текст/фон, как везде остальные</p>
+            <p class="ds-swatch-label text-xs text-gray-500 mb-8"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/partials/lesson-image-badges.blade.php" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">student/partials/lesson-image-badges.blade.php</a> — цвет несёт смысл через сам значок, а не через текст/фон, как везде остальные</p>
 
             <h3 class="text-lg font-medium text-gray-700 mb-3">4. Billing — статус вообще без бейджа, только цвет текста</h3>
             <div class="flex flex-wrap gap-4 mb-2">
@@ -498,7 +501,7 @@
                 <span class="text-xs text-rose-600">Не удалось</span>
                 <span class="text-xs text-gray-400">В обработке</span>
             </div>
-            <p class="ds-swatch-label text-xs text-gray-500">billing/show.blade.php:108-118 — единственное место, где статус вообще не оформлен как элемент, просто цвет слова</p>
+            <p class="ds-swatch-label text-xs text-gray-500"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/billing/show.blade.php:108" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">billing/show.blade.php:108-118</a> — единственное место, где статус вообще не оформлен как элемент, просто цвет слова</p>
         </section>
 
         {{-- ================= КАРТОЧКИ-СОБЫТИЯ (пример из запроса) ================= --}}
@@ -512,7 +515,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <h3 class="text-sm font-medium text-gray-700 mb-2">partials/student-dashboard-event-card.blade.php</h3>
+                    <h3 class="text-sm font-medium text-gray-700 mb-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/partials/student-dashboard-event-card.blade.php" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">partials/student-dashboard-event-card.blade.php</a></h3>
                     <div class="h-full min-w-0 flex flex-col justify-center gap-1 rounded-xl border bg-blue-100 border-blue-200 px-3 py-3 max-w-xs">
                         <div class="flex items-center justify-between gap-2 min-w-0 text-xs text-blue-700">
                             <span class="font-medium truncate">Урок</span>
@@ -555,15 +558,15 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                     <input type="text" placeholder="Имя рыбки" class="mt-1 w-full border rounded-lg px-3 py-2 input-focus">
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">«Официальный» input-focus (app.css:265-277) — profile/show.blade.php, 7 использований, синяя обводка на фокусе</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">«Официальный» input-focus (<a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/css/app.css:265" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">app.css:265-277</a>) — profile/show.blade.php, 7 использований, синяя обводка на фокусе</p>
                 </div>
                 <div>
                     <input type="text" placeholder="Введите код" class="border rounded px-2 py-1.5 text-sm">
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">billing/show.blade.php:70 — голый border, без input-focus, без фокус-кольца</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/billing/show.blade.php:70" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">billing/show.blade.php:70</a> — голый border, без input-focus, без фокус-кольца</p>
                 </div>
                 <div>
                     <textarea rows="3" placeholder="Ваш ответ" class="w-full border rounded-xl px-3 py-2 text-sm"></textarea>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">question-region.blade.php:155 — свой rounded-xl, тоже без input-focus</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/partials/question-region.blade.php:155" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">question-region.blade.php:155</a> — свой rounded-xl, тоже без input-focus</p>
                 </div>
                 <div>
                     <div class="flex gap-2">
@@ -571,17 +574,17 @@
                         <div class="w-10 h-12 rounded-lg border-2 flex items-center justify-center text-lg font-medium" style="border-color:#e5e7eb;">2</div>
                         <div class="w-10 h-12 rounded-lg border-2 flex items-center justify-center text-lg font-medium" style="border-color:#e5e7eb;">3</div>
                     </div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">«PIN-box» (app.css:249-260) — настоящий &lt;input&gt; спрятан за экраном, видимые квадраты — div-ы</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">«PIN-box» (<a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/css/app.css:249" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">app.css:249-260</a>) — настоящий &lt;input&gt; спрятан за экраном, видимые квадраты — div-ы</p>
                 </div>
                 <div>
                     <label class="inline-flex items-center gap-2 text-sm text-gray-700">
                         <input type="checkbox" class="checkbox-custom" checked> Уведомлять по email
                     </label>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">checkbox-custom (app.css:281-314) — appearance:none + рисованная галочка</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">checkbox-custom (<a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/css/app.css:281" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">app.css:281-314</a>) — appearance:none + рисованная галочка</p>
                 </div>
                 <div>
                     <label class="inline-flex items-center gap-2 text-sm text-gray-700"><input type="radio" name="ds-radio-demo"> Раз в месяц</label>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">billing/show.blade.php:52,56 — совсем без стилей, чистый браузерный радио-баттон</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/billing/show.blade.php:52" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">billing/show.blade.php:52,56</a> — совсем без стилей, чистый браузерный радио-баттон</p>
                 </div>
             </div>
             <p class="text-sm text-gray-600 mt-6">
@@ -594,7 +597,7 @@
                 <div class="text-green-600 text-sm">Профиль обновлён</div>
                 <p class="ds-swatch-label text-xs text-gray-500 -mt-2">dashboard/billing/profile — голый цветной текст, без фона/рамки</p>
                 <div class="rounded-xl border border-red-200 bg-red-50 text-red-800 px-3 py-2 text-sm">Ответ обязателен для заполнения</div>
-                <p class="ds-swatch-label text-xs text-gray-500 -mt-2">question-region.blade.php:86, finish-region.blade.php:39 — оформленный алерт-бокс</p>
+                <p class="ds-swatch-label text-xs text-gray-500 -mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/partials/question-region.blade.php:86" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">question-region.blade.php:86</a>, <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/partials/finish-region.blade.php:39" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">finish-region.blade.php:39</a> — оформленный алерт-бокс</p>
             </div>
         </section>
 
@@ -608,7 +611,7 @@
                     <button class="px-4 py-2 rounded-lg text-sm font-medium bg-white text-gray-900 shadow-sm">Персонаж</button>
                     <button class="px-4 py-2 rounded-lg text-sm font-medium text-gray-500">Аккаунт</button>
                 </div>
-                <p class="ds-swatch-label text-xs text-gray-500 mt-2">profile/show.blade.php:231-234 — «сегментный контрол», активная вкладка белая на серой дорожке, состояние в localStorage</p>
+                <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/profile/show.blade.php:231" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">profile/show.blade.php:231-234</a> — «сегментный контрол», активная вкладка белая на серой дорожке, состояние в localStorage</p>
             </div>
             <div>
                 <div class="flex flex-wrap gap-2">
@@ -616,7 +619,7 @@
                     <button class="px-3 py-1.5 rounded-full text-sm border">На проверке</button>
                     <button class="px-3 py-1.5 rounded-full text-sm border">Сделано</button>
                 </div>
-                <p class="ds-swatch-label text-xs text-gray-500 mt-2">homeworks/index.blade.php:29-32 — отдельные обведённые пилюли, активная — сплошная чёрная; без localStorage, по умолчанию «todo»</p>
+                <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/homeworks/index.blade.php:29" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">homeworks/index.blade.php:29-32</a> — отдельные обведённые пилюли, активная — сплошная чёрная; без localStorage, по умолчанию «todo»</p>
             </div>
         </section>
 
@@ -629,7 +632,7 @@
                 <div class="rounded-xl border border-gray-200 p-4 bg-white">
                     <div class="font-medium mb-2">Модалка результата ответа</div>
                     <div class="text-gray-600 space-y-1 ds-swatch-label text-xs">
-                        <div>question-region.blade.php:277-314</div>
+                        <div><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/partials/question-region.blade.php:277" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">question-region.blade.php:277-314</a></div>
                         <div>bg-black/40, rounded-2xl (Tailwind)</div>
                         <div>закрытие: только кнопкой</div>
                         <div>анимация: GSAP-таймлайн</div>
@@ -638,7 +641,7 @@
                 <div class="rounded-xl border border-gray-200 p-4 bg-white">
                     <div class="font-medium mb-2">Модалка покупки фона</div>
                     <div class="text-gray-600 space-y-1 ds-swatch-label text-xs">
-                        <div>profile/show.blade.php:308-317</div>
+                        <div><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/profile/show.blade.php:308" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">profile/show.blade.php:308-317</a></div>
                         <div>rgba(17,24,39,.5), border-radius:16px (свой CSS)</div>
                         <div>закрытие: клик снаружи + Escape</div>
                         <div>анимация: нет</div>
@@ -647,7 +650,7 @@
                 <div class="rounded-xl border border-gray-200 p-4 bg-white">
                     <div class="font-medium mb-2">Панель уведомлений (дропдаун)</div>
                     <div class="text-gray-600 space-y-1 ds-swatch-label text-xs">
-                        <div>partials/student-notification-bell.blade.php</div>
+                        <div><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/partials/student-notification-bell.blade.php" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">partials/student-notification-bell.blade.php</a></div>
                         <div>position:absolute, свой CSS</div>
                         <div>закрытие: клик снаружи + Escape</div>
                         <div>единственный настоящий dropdown (не full-screen)</div>
@@ -682,7 +685,7 @@
                 </table>
             </div>
             <p class="ds-swatch-label text-xs text-gray-500 mt-2">
-                task-prompt.blade.php:92-121 (заполнение, font-semibold, border-gray-100 на обёртке) vs submissions/show.blade.php:661-694
+                <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/partials/task-prompt.blade.php:92" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">task-prompt.blade.php:92-121</a> (заполнение, font-semibold, border-gray-100 на обёртке) vs <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/show.blade.php:661" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">submissions/show.blade.php:661-694</a>
                 (просмотр результата, font-medium, border-gray-200 на обёртке) — тот же макет таблицы держится в двух местах отдельно
             </p>
         </section>
@@ -697,25 +700,25 @@
                     <span class="w-16 h-16 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center text-gray-400 mx-auto">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path></svg>
                     </span>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">profile/show:328-337<br>реальный аватар ученика</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/profile/show.blade.php:328" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">profile/show:328-337</a><br>реальный аватар ученика</p>
                 </div>
                 <div class="text-center">
                     <span class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto">
                         <img src="{{ asset('img/like.svg') }}" alt="" class="w-9 h-9">
                     </span>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">submissions/show:115<br>маскот-результат</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/show.blade.php:115" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">submissions/show:115</a><br>маскот-результат</p>
                 </div>
                 <div class="text-center">
                     <span class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto">
                         <img src="{{ asset('img/cool.svg') }}" alt="" class="w-9 h-9">
                     </span>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">layouts/main.blade.php:186<br>маскот в тосте</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/layouts/main.blade.php:186" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">layouts/main.blade.php:186</a><br>маскот в тосте</p>
                 </div>
                 <div class="text-center">
                     <span class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto">
                         <img src="{{ asset('img/person.svg') }}" alt="" class="w-9 h-9">
                     </span>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">question-region.blade.php:280-283<br>маскот в модалке результата</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/partials/question-region.blade.php:280" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">question-region.blade.php:280-283</a><br>маскот в модалке результата</p>
                 </div>
             </div>
             <p class="text-sm text-gray-600 mb-8">Одна и та же форма (круг, серый фон, картинка по центру) собирается заново в четырёх файлах — ни разу не переиспользуя друг друга.</p>
@@ -726,7 +729,7 @@
                     <div class="h-2 rounded-full bg-gray-100 overflow-hidden">
                         <div class="h-full rounded-full bg-blue-500" style="width: 62%"></div>
                     </div>
-                    <p class="ds-swatch-label text-xs text-gray-500 mt-2">fish-card.blade.php:31-33 — линейный DOM/CSS бар</p>
+                    <p class="ds-swatch-label text-xs text-gray-500 mt-2"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/partials/fish-card.blade.php:31" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">fish-card.blade.php:31-33</a> — линейный DOM/CSS бар</p>
                 </div>
                 <div class="text-center">
                     <div class="w-24 h-24 rounded-full flex items-center justify-center" style="background: conic-gradient(#7c3aed 0% 74%, #ede9fe 74% 100%);">
@@ -739,8 +742,8 @@
 
             <h3 class="text-lg font-medium text-gray-700 mb-3">Пагинация — единственное место, дефолтная Laravel-тема</h3>
             <p class="text-sm text-gray-600">
-                notifications/index.blade.php:73 вызывает <code class="ds-swatch-label">@{{ $notifications->links() }}</code>
-                без указания вида — рендерится опубликованный <code class="ds-swatch-label">vendor/pagination/tailwind.blade.php</code>,
+                <a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/notifications/index.blade.php:73" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">notifications/index.blade.php:73</a> вызывает <code class="ds-swatch-label">@{{ $notifications->links() }}</code>
+                без указания вида — рендерится опубликованный <code class="ds-swatch-label"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/vendor/pagination/tailwind.blade.php" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">vendor/pagination/tailwind.blade.php</a></code>,
                 нетронутый шаблон из коробки Laravel (rounded-md, ring, тёмная тема) — визуально не связан с остальным сайтом.
                 Больше пагинации в student-вьюхах нет.
             </p>
@@ -765,32 +768,261 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         <tr>
-                            <td class="py-2 pr-4 ds-swatch-label">courses/show.blade.php:81,84,107,157</td>
+                            <td class="py-2 pr-4 ds-swatch-label"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/courses/show.blade.php:81" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">courses/show.blade.php:81,84,107,157</a></td>
                             <td class="py-2 pr-4 ds-swatch-label">flex-col md:flex-row, w-full md:w-1/2, md:block hidden</td>
                             <td class="py-2">направление и ширина колонок hero-карточки</td>
                         </tr>
                         <tr>
-                            <td class="py-2 pr-4 ds-swatch-label">lessons/show.blade.php:26,28,36,41,46,48,73</td>
+                            <td class="py-2 pr-4 ds-swatch-label"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/lessons/show.blade.php:26" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">lessons/show.blade.php:26,28,36,41,46,48,73</a></td>
                             <td class="py-2 pr-4 ds-swatch-label">md:grid-cols-7, md:col-span-5/2, min-h-[400px] md:min-h-full, flex-col md:/sm:flex-row</td>
                             <td class="py-2">раскладка видео/чата и карточек конспекта/домашки</td>
                         </tr>
                         <tr>
-                            <td class="py-2 pr-4 ds-swatch-label">dashboard.blade.php:663</td>
+                            <td class="py-2 pr-4 ds-swatch-label"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/dashboard.blade.php:663" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">dashboard.blade.php:663</a></td>
                             <td class="py-2 pr-4 ds-swatch-label">grid sm:grid-cols-2 lg:grid-cols-2</td>
                             <td class="py-2">сетка карточек курсов (lg дублирует sm — мёртвый брейкпоинт)</td>
                         </tr>
                         <tr>
-                            <td class="py-2 pr-4 ds-swatch-label">submissions/show.blade.php:137,175,183,185,194,312,314,323,828,861</td>
+                            <td class="py-2 pr-4 ds-swatch-label"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/show.blade.php:137" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">submissions/show.blade.php:137,175,183,185,194,312,314,323,828,861</a></td>
                             <td class="py-2 pr-4 ds-swatch-label">md:grid-cols-2, flex-col md:flex-row, max-w-[240px], top-[58px]</td>
                             <td class="py-2">раскладка карточек баллов и позиционирование текста над графиком</td>
                         </tr>
                         <tr>
-                            <td class="py-2 pr-4 ds-swatch-label">submissions/partials/task-prompt.blade.php:135,165</td>
+                            <td class="py-2 pr-4 ds-swatch-label"><a href="vscode://file/C:/Users/anona/OneDrive/Рабочий%20стол/poltavskiy-media/main-app/resources/views/student/submissions/partials/task-prompt.blade.php:135" class="underline decoration-dotted decoration-gray-300 hover:text-blue-600 hover:decoration-blue-400">submissions/partials/task-prompt.blade.php:135,165</a></td>
                             <td class="py-2 pr-4 ds-swatch-label">md:grid-cols-2, max-h-[360px] sm:max-h-[380px]</td>
                             <td class="py-2">раскладка вопроса на сопоставление, высота картинки</td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </section>
+
+        {{-- ================= НОВАЯ СИСТЕМА ШРИФТОВ ================= --}}
+        <section id="new-typography" class="mb-16 scroll-mt-16 border-t-2 border-emerald-200 pt-10">
+            <div class="inline-block text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full mb-2">Целевая система, не текущее состояние</div>
+            <h2 class="text-2xl font-semibold mb-1">Новая система шрифтов</h2>
+            <p class="text-gray-600 mb-3 max-w-3xl">
+                Один функциональный шрифт на весь кабинет ученика — <strong>Golos Text</strong>
+                (уже самостоятельно захостен в проекте, <code class="ds-swatch-label">resources/fonts/golos-text_*.woff2</code>).
+                Это тот же шрифт, что уже стоит по умолчанию на
+                <code class="ds-swatch-label">body</code> в app.css — проблема не в том, что его нет,
+                а в том, что часть заголовков от него уводит, и не всегда одним и тем же способом.
+                В файлах доступно 3 начертания (400/500/600), но в шкале ниже сознательно используются
+                только 400 и 500 — 600 (demibold) нигде не задействован, иерархию заголовков несёт размер,
+                а не жирность.
+            </p>
+
+            <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4 max-w-3xl text-sm text-emerald-900">
+                <strong>Уже исправлено:</strong> в app.css было глобальное правило
+                <code class="ds-swatch-label">h1, h2 { font-family: 'serif' }</code> — наследие
+                маркетингового сайта, который заголовки статей действительно оформляет засечковым.
+                Студенческие страницы, где это не нужно, раньше перебивали его по-разному (где-то
+                <code class="ds-swatch-label">.profile-heading</code>, где-то ничем — и тогда серия шла в serif).
+                Теперь у <code class="ds-swatch-label">&lt;body&gt;</code> в кабинете ученика есть маркер
+                <code class="ds-swatch-label">.student-portal</code> (ставится в layouts/main.blade.php по
+                <code class="ds-swatch-label">routeIs('student.*')</code>), и одно общее правило в app.css:
+                <code class="ds-swatch-label">.student-portal h1, .student-portal h2 { font-family: 'sans' }</code> —
+                засечковых заголовков в кабинете больше не будет нигде, без ручной правки каждой страницы.
+                Тем же маркером задан и цвет текста по умолчанию — <code class="ds-swatch-label">color: #27272a</code>
+                (zinc-900), вместо чёрного браузера там, где явный цвет не указан.
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-8 max-w-3xl text-sm text-amber-900">
+                <strong>Отдельный, ещё не тронутый баг:</strong> Tailwind-утилита
+                <code class="ds-swatch-label">font-sans</code> нигде не переопределена в tailwind.config.js,
+                поэтому указывает на системный шрифт браузера, а не на Golos Text — в разметке выглядит
+                как «то же самое», что кастомный класс <code class="ds-swatch-label">.sans</code>, а
+                рендерится другим шрифтом. Сейчас это не мешает («нет serif» решено выше независимо от
+                этого бага), но сам баг остаётся и может выстрелить в новых местах — почин
+                <code class="ds-swatch-label">fontFamily.sans</code> в конфиге отдельным шагом.
+            </div>
+
+            <h3 class="text-lg font-medium text-gray-700 mb-4">Шкала — 6 ролей, все Golos Text</h3>
+            <p class="text-sm text-gray-500 mb-4 max-w-3xl">
+                Каждый образец ниже — реальный элемент с реальными классами (не имитация размера через
+                посторонний CSS), включая адаптивные варианты: сузьте окно, чтобы увидеть переход на
+                md-размер там, где он есть.
+            </p>
+            <div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden mb-10">
+                <div class="p-5">
+                    <div class="sans-medium text-2xl md:text-3xl text-zinc-900 mb-2">Заголовок страницы</div>
+                    <code class="ds-swatch-label text-xs text-gray-500 block mb-1">class="sans-medium text-2xl md:text-3xl text-zinc-900"</code>
+                    <div class="ds-swatch-label text-xs text-gray-500">
+                        <span class="text-gray-900 font-medium">H1 — заголовок страницы</span> ·
+                        один раз на странице (courses/show, billing, homeworks, notifications, profile, lessons/show, «Результаты» на submissions/show)
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="sans-medium text-xl md:text-2xl text-zinc-900 mb-2">Заголовок раздела</div>
+                    <code class="ds-swatch-label text-xs text-gray-500 block mb-1">class="sans-medium text-xl md:text-2xl text-zinc-900"</code>
+                    <div class="ds-swatch-label text-xs text-gray-500">
+                        <span class="text-gray-900 font-medium">H2 — заголовок раздела</span> ·
+                        подзаголовки внутри страницы (dashboard «Ближайшие события»/«Мои курсы», submissions/show «Первая часть»/«Вторая часть»)
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="sans-medium text-lg text-zinc-900 mb-2">Заголовок карточки</div>
+                    <code class="ds-swatch-label text-xs text-gray-500 block mb-1">class="sans-medium text-lg text-zinc-900"</code>
+                    <div class="ds-swatch-label text-xs text-gray-500">
+                        <span class="text-gray-900 font-medium">H3 — заголовок карточки/блока</span> ·
+                        заголовки внутри карточек (название урока, «Персонаж»/«Личные данные»/«Уведомления» на профиле, курс в billing)
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="sans text-base text-zinc-700 mb-2">Основной текст — описания уроков, тексты домашек, обычные абзацы.</div>
+                    <code class="ds-swatch-label text-xs text-gray-500 block mb-1">class="sans text-base text-zinc-700"</code>
+                    <div class="ds-swatch-label text-xs text-gray-500">
+                        <span class="text-gray-900 font-medium">Body — основной текст</span> ·
+                        чуть мягче заголовков, но по той же zinc-палитре
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="sans text-sm text-zinc-500 mb-2">Вторичный текст — даты, подписи, счётчики</div>
+                    <code class="ds-swatch-label text-xs text-gray-500 block mb-1">class="sans text-sm text-zinc-500"</code>
+                    <div class="ds-swatch-label text-xs text-gray-500">
+                        <span class="text-gray-900 font-medium">Small — вторичный текст</span> ·
+                        метаданные, даты, пояснения под заголовками
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="sans-medium text-xs uppercase tracking-wide text-zinc-400 mb-2">Уровень 3 · Акула</div>
+                    <code class="ds-swatch-label text-xs text-gray-500 block mb-1">class="sans-medium text-xs uppercase tracking-wide text-zinc-400"</code>
+                    <div class="ds-swatch-label text-xs text-gray-500">
+                        <span class="text-gray-900 font-medium">Caption / eyebrow</span> ·
+                        маленькие служебные подписи (как в fish-card)
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="text-lg font-medium text-gray-700 mb-4">Вне периметра — свои роли, не трогаем</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl">
+                <div class="border border-gray-200 rounded-2xl p-5">
+                    <div class="font-oktyabrina leading-none md:text-[26px] text-xl tracking-wide text-zinc-800 mb-2">Школа Полтавского</div>
+                    <code class="ds-swatch-label text-xs text-gray-500 block mb-1">class="font-oktyabrina leading-none md:text-[26px] text-xl tracking-wide"</code>
+                    <div class="ds-swatch-label text-xs text-gray-500">Oktyabrina — только логотип в шапке (layouts/main.blade.php:75), больше нигде</div>
+                </div>
+                <div class="border border-gray-200 rounded-2xl p-5">
+                    <div class="serif text-2xl mb-2">Заголовок статьи</div>
+                    <div class="ds-swatch-label text-xs text-gray-500">Serif (PTF55F) — только маркетинговые/статейные страницы (main/*, course/*, article/*). В кабинете ученика не используется вовсе</div>
+                </div>
+            </div>
+        </section>
+
+        {{-- ================= ЦВЕТОВАЯ ПАЛИТРА (Apple) ================= --}}
+        <section id="apple-palette" class="mb-16 scroll-mt-16 border-t-2 border-emerald-200 pt-10">
+            <div class="inline-block text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full mb-2">Целевая палитра, ещё нигде не применена</div>
+            <h2 class="text-2xl font-semibold mb-1">Цветовая палитра — на основе Apple</h2>
+            <p class="text-gray-600 mb-3 max-w-3xl">
+                6 шкал по 10 оттенков (50–900), посчитаны в HSL от настоящих системных цветов
+                Apple (iOS/macOS HIG, light mode) — hue и saturation сохранены, меняется только
+                lightness. 500 — исходный hex Apple без пересчёта. Зарегистрированы в
+                <code class="ds-swatch-label">tailwind.config.js</code> как
+                <code class="ds-swatch-label">apple-blue</code>, <code class="ds-swatch-label">apple-green</code>,
+                <code class="ds-swatch-label">apple-red</code>, <code class="ds-swatch-label">apple-orange</code>,
+                <code class="ds-swatch-label">apple-purple</code>, <code class="ds-swatch-label">apple-indigo</code> —
+                новые имена классов, ни один существующий <code class="ds-swatch-label">bg-blue-600</code> и
+                подобные нигде не переопределены и не задеты.
+            </p>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-8 max-w-3xl text-sm text-amber-900">
+                Палитра описывает сам цвет, не роль — где именно он используется, решаем отдельно
+                (таблица ниже). Ничего в реальных страницах пока не переключено на эти классы —
+                это следующий шаг, отдельным подтверждённым проходом, как было с шрифтами.
+            </div>
+
+            @php
+                $appleRamps = [
+                    'apple-blue'   => ['50'=>'#F0F7FF','100'=>'#DBECFF','200'=>'#B3D7FF','300'=>'#7ABAFF','400'=>'#429DFF','500'=>'#007AFF','600'=>'#006BE0','700'=>'#0058B8','800'=>'#003D80','900'=>'#00254D'],
+                    'apple-green'  => ['50'=>'#F3FCF5','100'=>'#E3F8E8','200'=>'#C2EFCE','300'=>'#96E4A9','400'=>'#69D885','500'=>'#34C759','600'=>'#2AB24D','700'=>'#21933D','800'=>'#1A652D','900'=>'#103D1B'],
+                    'apple-red'    => ['50'=>'#FFF1F0','100'=>'#FFDDDB','200'=>'#FFB7B3','300'=>'#FF817A','400'=>'#FF4C42','500'=>'#FF3B30','600'=>'#FF1E11','700'=>'#E80C00','800'=>'#800700','900'=>'#4D0400'],
+                    'apple-orange' => ['50'=>'#FFF9F0','100'=>'#FFF0DB','200'=>'#FFDFB3','300'=>'#FFC87A','400'=>'#FFB142','500'=>'#FF9500','600'=>'#E08300','700'=>'#B86B00','800'=>'#804B00','900'=>'#4D2D00'],
+                    'apple-purple' => ['50'=>'#F9F2FD','100'=>'#F1E1F9','200'=>'#E1BFF3','300'=>'#CC90EA','400'=>'#B661E1','500'=>'#AF52DE','600'=>'#A435DD','700'=>'#901FC9','800'=>'#4E146B','900'=>'#2F0C40'],
+                    'apple-indigo' => ['50'=>'#F3F3FC','100'=>'#E3E2F8','200'=>'#C2C1F0','300'=>'#9694E5','400'=>'#6967DA','500'=>'#5856D6','600'=>'#3C3AD4','700'=>'#2927BE','800'=>'#1A1967','900'=>'#100F3E'],
+                ];
+                $appleBaseHex = ['apple-blue'=>'#007AFF','apple-green'=>'#34C759','apple-red'=>'#FF3B30','apple-orange'=>'#FF9500','apple-purple'=>'#AF52DE','apple-indigo'=>'#5856D6'];
+            @endphp
+
+            <div class="space-y-5 mb-10">
+                @foreach($appleRamps as $name => $shades)
+                    <div>
+                        <div class="ds-swatch-label text-xs text-gray-500 mb-1.5">{{ $name }} <span class="text-gray-400">(база {{ $appleBaseHex[$name] }})</span></div>
+                        <div class="flex rounded-xl overflow-hidden border border-gray-200">
+                            @foreach($shades as $stop => $hex)
+                                <div class="flex-1 h-14 flex items-end justify-center pb-1" style="background-color: {{ $hex }};">
+                                    <span class="text-[10px] font-medium {{ (int)$stop >= 500 ? 'text-white/90' : 'text-black/50' }}">{{ $stop }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <h3 class="text-lg font-medium text-gray-700 mb-4">Предлагаемые роли</h3>
+            <div class="overflow-x-auto mb-4">
+                <table class="w-full text-sm border-collapse max-w-3xl">
+                    <thead>
+                        <tr class="text-left border-b border-gray-200 text-gray-500">
+                            <th class="py-2 pr-4">Роль</th>
+                            <th class="py-2 pr-4">Цвет</th>
+                            <th class="py-2">Заменит сейчас используемое</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <tr>
+                            <td class="py-2 pr-4">Акцент / основное интерактивное (ссылки, синие кнопки визарда)</td>
+                            <td class="py-2 pr-4"><span class="inline-flex items-center gap-2"><span class="w-3 h-3 rounded-full inline-block" style="background:#007AFF"></span>apple-blue</span></td>
+                            <td class="py-2 ds-swatch-label text-xs text-gray-500">bg-blue-600 (x-ui.button variant="accent", question-region/finish-region)</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 pr-4">Успех / положительный статус</td>
+                            <td class="py-2 pr-4"><span class="inline-flex items-center gap-2"><span class="w-3 h-3 rounded-full inline-block" style="background:#34C759"></span>apple-green</span></td>
+                            <td class="py-2 ds-swatch-label text-xs text-gray-500">bg-emerald-50/text-emerald-700 (бейджи «Проверено», «Успешно», «Выполнена»)</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 pr-4">Опасность / просрочено / ошибка</td>
+                            <td class="py-2 pr-4"><span class="inline-flex items-center gap-2"><span class="w-3 h-3 rounded-full inline-block" style="background:#FF3B30"></span>apple-red</span></td>
+                            <td class="py-2 ds-swatch-label text-xs text-gray-500">bg-rose-*/text-rose-*, variant="danger" в x-ui.button</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 pr-4">Предупреждение / на проверке</td>
+                            <td class="py-2 pr-4"><span class="inline-flex items-center gap-2"><span class="w-3 h-3 rounded-full inline-block" style="background:#FF9500"></span>apple-orange</span></td>
+                            <td class="py-2 ds-swatch-label text-xs text-gray-500">bg-amber-50/text-amber-700 (бейджи «На проверке», предупреждения)</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 pr-4">Второй акцент (гейджи результатов)</td>
+                            <td class="py-2 pr-4"><span class="inline-flex items-center gap-2"><span class="w-3 h-3 rounded-full inline-block" style="background:#AF52DE"></span>apple-purple</span></td>
+                            <td class="py-2 ds-swatch-label text-xs text-gray-500">фиолетовый в pill-gauge на submissions/show (автопроверка)</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 pr-4">Третий акцент (выделение «сегодня»)</td>
+                            <td class="py-2 pr-4"><span class="inline-flex items-center gap-2"><span class="w-3 h-3 rounded-full inline-block" style="background:#5856D6"></span>apple-indigo</span></td>
+                            <td class="py-2 ds-swatch-label text-xs text-gray-500">text-indigo-600 в расписании на дашборде</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-sm text-gray-500 max-w-3xl mb-8">
+                Нейтральную шкалу (текст/фон/рамки) не трогаем — zinc уже установлен как база во
+                всей системе (см. «Новая система шрифтов» выше) и по духу близок к серым Apple.
+            </p>
+
+            <h3 class="text-lg font-medium text-gray-700 mb-3">Приглушённые исключения (не часть общего рампа)</h3>
+            <p class="text-sm text-gray-500 mb-4 max-w-3xl">
+                У apple-red saturation константна (100%) на всех стандартных ступенях — обводка/текст
+                «просрочено» на этом фоне читались слишком ярко/неоново. Для этой конкретной роли
+                добавлены две ступени со сниженной saturation — <code class="ds-swatch-label">450</code>
+                (обводка) и <code class="ds-swatch-label">650</code> (текст), не по общей формуле рампа.
+                Больше нигде не нужны — остальные роли используют обычные ступени.
+            </p>
+            <div class="flex gap-4">
+                <div class="text-center">
+                    <div class="w-20 h-14 rounded-lg border border-gray-200" style="background:#D74A42"></div>
+                    <div class="ds-swatch-label text-xs text-gray-500 mt-1">apple-red-450<br>#D74A42</div>
+                </div>
+                <div class="text-center">
+                    <div class="w-20 h-14 rounded-lg border border-gray-200" style="background:#A02922"></div>
+                    <div class="ds-swatch-label text-xs text-gray-500 mt-1">apple-red-650<br>#A02922</div>
+                </div>
             </div>
         </section>
 

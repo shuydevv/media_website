@@ -36,4 +36,4 @@
         </form>
     </div>
 @endif
-<div class="text-sm font-medium text-gray-900 text-center truncate mt-3">{{ $label }}</div>
+<div class="text-sm font-medium text-zinc-900 text-center truncate mt-3">{{ $label }}</div>

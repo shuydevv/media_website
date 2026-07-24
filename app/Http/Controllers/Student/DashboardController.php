@@ -175,9 +175,10 @@ foreach ($lessons as $lesson) {
         try { $time = Carbon::parse($session->start_at)->format('H:i'); } catch (\Throwable $e) { $time = null; }
     }
 
-    // Тип и цвет
+    // Тип и цвет — ключи семантические (theory/practice/...), сама
+    // Apple-палитра под ними — в dashboard.blade.php ($bgMap/$borderMap/$textMap).
     $type  = $lesson->lesson_type === 'practice' ? 'Практика' : 'Теория';
-    $color = $lesson->lesson_type === 'practice' ? 'purple'   : 'blue';
+    $color = $lesson->lesson_type === 'practice' ? 'practice' : 'theory';
 
     // Название курса без " , …"
     $courseTitle = optional($session?->course)->title ?? 'Курс';
@@ -207,7 +208,7 @@ foreach ($sessionsWithoutLesson as $session) {
         'subject' => $subject,
         'title'   => 'Тема пока неизвестна',
         'time'    => $session->start_time ? mb_substr($session->start_time, 0, 5) : '—:—',
-        'color'   => 'blue',
+        'color'   => 'theory',
         'status'  => null,
         // Ни lesson, ни homework — Blade отрисует обычный текст без ссылки
         // (переходить пока некуда). 'session' нужен только для сортировки
@@ -232,7 +233,16 @@ foreach ($sessionsWithoutLesson as $session) {
             $subjectCourseTitle = optional($hw->lesson?->courseSession?->course)->title ?? 'Курс';
             $subjectClean       = preg_replace('/,.*$/u', '', $subjectCourseTitle);
 
-            $color = $isOverdue ? 'red' : ($hw->type === 'mock' ? 'orange' : 'yellow');
+            // Просрочено/выполнено — это перекрашивает всю карточку целиком
+            // (приоритет над цветом типа домашка/пробник), а не просто
+            // тускнеет/помечается значком поверх исходного цвета.
+            if ($isOverdue) {
+                $color = 'overdue';
+            } elseif ($isCompleted) {
+                $color = 'completed';
+            } else {
+                $color = $hw->type === 'mock' ? 'mock' : 'homework';
+            }
 
             $daysMap[$dKey]['items'][] = [
                 'type'     => $hw->type === 'mock' ? 'Пробник' : 'Домашка',
@@ -245,63 +255,64 @@ foreach ($sessionsWithoutLesson as $session) {
             ];
         }
 
-        // Сортируем карточки каждого дня по времени (уроки — по старту сессии, домашки — по дедлайну)
-foreach ($daysMap as $dateKey => &$dayRow) {
-    $dayRow['items'] = collect($dayRow['items'] ?? [])->sortBy(function ($it) {
-        // Домашка: сортируем по due_at
-        if (!empty($it['homework']) && $it['homework'] instanceof \App\Models\Homework) {
-            $due = $it['homework']->due_at ? \Illuminate\Support\Carbon::parse($it['homework']->due_at) : null;
-            return $due ? $due->timestamp : PHP_INT_MAX - 1000;
-        }
+        // Точное время пункта расписания (для сортировки внутри дня и для
+        // отбора «ближайших событий» ниже) — домашка по due_at, урок по
+        // старту сессии. Один источник истины вместо двух отдельных копий
+        // этой логики.
+        $itemTimestamp = function ($it) {
+            if (!empty($it['homework']) && $it['homework'] instanceof \App\Models\Homework) {
+                $due = $it['homework']->due_at ? \Illuminate\Support\Carbon::parse($it['homework']->due_at) : null;
+                return $due ? $due->timestamp : null;
+            }
 
-        // Урок: сортируем по времени начала course_session
-        if (!empty($it['lesson']) && $it['lesson'] instanceof \App\Models\Lesson) {
-            $lesson  = $it['lesson'];
-            $session = $lesson->courseSession ?? null;
-            $dt = null;
+            if (!empty($it['lesson']) && $it['lesson'] instanceof \App\Models\Lesson) {
+                $lesson  = $it['lesson'];
+                $session = $lesson->courseSession ?? null;
+                $dt = null;
 
-            if ($session) {
-                // полное datetime
-                if (!empty($session->start_at)) {
-                    try { $dt = \Illuminate\Support\Carbon::parse($session->start_at); } catch (\Throwable $e) {}
+                if ($session) {
+                    if (!empty($session->start_at)) {
+                        try { $dt = \Illuminate\Support\Carbon::parse($session->start_at); } catch (\Throwable $e) {}
+                    }
+                    if (!$dt) {
+                        $dateStr = $session->start_date ?? $session->date ?? null;
+                        $timeStr = $session->start_time ?? $session->time ?? null;
+                        if ($dateStr && $timeStr) {
+                            try { $dt = \Illuminate\Support\Carbon::parse($dateStr.' '.$timeStr); } catch (\Throwable $e) {}
+                        } elseif ($dateStr) {
+                            try { $dt = \Illuminate\Support\Carbon::parse($dateStr.' 00:00'); } catch (\Throwable $e) {}
+                        }
+                    }
                 }
-                // дата + время раздельно
+
                 if (!$dt) {
-                    $dateStr = $session->start_date ?? $session->date ?? null;
-                    $timeStr = $session->start_time ?? $session->time ?? null;
+                    $dateStr = $lesson->display_date ?? null;
+                    $timeStr = $lesson->display_time ?? null;
                     if ($dateStr && $timeStr) {
                         try { $dt = \Illuminate\Support\Carbon::parse($dateStr.' '.$timeStr); } catch (\Throwable $e) {}
                     } elseif ($dateStr) {
                         try { $dt = \Illuminate\Support\Carbon::parse($dateStr.' 00:00'); } catch (\Throwable $e) {}
                     }
                 }
+
+                return $dt ? $dt->timestamp : null;
             }
 
-            // Fallback: display_date/display_time (если где-то ещё используются)
-            if (!$dt) {
-                $dateStr = $lesson->display_date ?? null;
-                $timeStr = $lesson->display_time ?? null;
-                if ($dateStr && $timeStr) {
-                    try { $dt = \Illuminate\Support\Carbon::parse($dateStr.' '.$timeStr); } catch (\Throwable $e) {}
-                } elseif ($dateStr) {
-                    try { $dt = \Illuminate\Support\Carbon::parse($dateStr.' 00:00'); } catch (\Throwable $e) {}
-                }
+            if (!empty($it['session']) && $it['session'] instanceof \App\Models\CourseSession) {
+                try {
+                    return \Illuminate\Support\Carbon::parse($it['session']->date . ' ' . ($it['session']->start_time ?? '00:00'))->timestamp;
+                } catch (\Throwable $e) {}
             }
 
-            return $dt ? $dt->timestamp : PHP_INT_MAX;
-        }
+            return null;
+        };
 
-        // Сессия без урока: сортируем по её собственному времени начала
-        if (!empty($it['session']) && $it['session'] instanceof \App\Models\CourseSession) {
-            try {
-                return \Illuminate\Support\Carbon::parse($it['session']->date . ' ' . ($it['session']->start_time ?? '00:00'))->timestamp;
-            } catch (\Throwable $e) {}
+        // Сортируем карточки каждого дня по времени (уроки — по старту сессии, домашки — по дедлайну)
+        foreach ($daysMap as $dateKey => &$dayRow) {
+            $dayRow['items'] = collect($dayRow['items'] ?? [])
+                ->sortBy(fn ($it) => $itemTimestamp($it) ?? PHP_INT_MAX)
+                ->values()->all();
         }
-
-        // На всякий случай — в конец
-        return PHP_INT_MAX;
-    })->values()->all();
-}
 
         $days = array_values($daysMap);
 
@@ -309,7 +320,11 @@ foreach ($daysMap as $dateKey => &$dayRow) {
         // Карточка «Ближайшие события»: отдельно ближайший ещё не прошедший
         // урок и отдельно ближайшая ещё не сданная домашка (каждый — первый
         // подходящий пункт начиная с сегодняшнего дня; $days уже отсортирован
-        // по времени внутри дня выше).
+        // по времени внутри дня выше). Сюда не должны попадать ни просроченные
+        // домашки, ни уже прошедшие сегодня уроки — только то, что правда
+        // ещё впереди: 'completed'/'overdue' статус исключаем явно, и
+        // дополнительно сверяем реальное время пункта с now() — день "сегодня"
+        // сам по себе не гарантирует, что конкретный час ещё не прошёл.
         // ────────────────────────────────────────────────────────────────────
         $nextLesson = null;
         $nextHomework = null;
@@ -318,9 +333,14 @@ foreach ($daysMap as $dateKey => &$dayRow) {
             if (!empty($d['is_today'])) { $todayIndex = $i; break; }
         }
         if ($todayIndex !== null) {
+            $nowTs = now()->timestamp;
             for ($i = $todayIndex; $i < count($days); $i++) {
                 foreach ($days[$i]['items'] as $it) {
-                    if (($it['status'] ?? null) === 'completed') {
+                    if (in_array($it['status'] ?? null, ['completed', 'overdue'], true)) {
+                        continue;
+                    }
+                    $ts = $itemTimestamp($it);
+                    if ($ts !== null && $ts <= $nowTs) {
                         continue;
                     }
                     if ($nextLesson === null && (!empty($it['lesson']) || !empty($it['session']))) {

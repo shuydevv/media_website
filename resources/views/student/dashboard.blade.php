@@ -22,7 +22,12 @@
         }
         @media (min-width: 768px) {
             #dashboard-cards-grid {
-                grid-template-columns: 1.7fr 1fr 1fr;
+                /* Карточка 2 (события) шире, чем раньше (1fr → 1.3fr), чтобы
+                   заголовки того же text-base, что и в расписании, не
+                   обрезались лишний раз — место забрано у карточки 3
+                   (пока пустая), а не у маскота, чей размер завязан на
+                   квадратное изображение рыбы. */
+                grid-template-columns: 1.7fr 1.3fr 0.7fr;
             }
         }
 
@@ -108,8 +113,8 @@
         {{-- Карточка 1: маскот-рыба (пошире остальных) — интерфейс кормления
              расположен так же, как раньше в отдельной карточке 3 (см.
              partials/fish-card.blade.php: тот же flex-1/flex-col/mt-auto). --}}
-        <div class="dashboard-card dashboard-mascot-row bg-white border rounded-2xl p-5 flex md:gap-8 gap-4">
-            <div id="greeting-mascot" class="w-1/2 aspect-square shrink-0 rounded-xl bg-gray-100 flex items-center justify-center" style="background-image: url('{{ $fishBackgroundImage }}'); background-size: cover; background-position: center;">
+        <x-ui.card class="dashboard-card dashboard-mascot-row flex md:gap-6 gap-3">
+            <div id="greeting-mascot" class="w-1/2 aspect-square shrink-0 rounded-xl bg-gray-100 flex items-center justify-center {{ $fishBalance > 0 ? 'cursor-pointer' : '' }}" style="background-image: url('{{ $fishBackgroundImage }}'); background-size: cover; background-position: center;" title="Покормить">
                 <img id="fish-mascot-img"
                      src="{{ $fishMascotImage }}"
                      data-default-src="{{ $fishMascotImage }}"
@@ -117,15 +122,15 @@
                      alt="" class="w-full h-full object-contain">
             </div>
             @include('student.partials.fish-card')
-        </div>
+        </x-ui.card>
 
         {{-- Карточка 2: ближайшие события — урок и домашка в одном общем
              дизайне (см. partials/student-dashboard-event-card.blade.php).
              min-w-0 на каждом уровне — иначе длинный заголовок без пробелов
              может распереть колонку грида шире контейнера (truncate внутри
              partial-а тут бессилен, если родитель по цепочке не даёт сжаться). --}}
-        <div class="dashboard-card bg-white border rounded-2xl p-5 flex flex-col min-w-0">
-            <div class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Ближайшие события</div>
+        <x-ui.card class="dashboard-card flex flex-col min-w-0">
+            <div class="sans-medium text-xs uppercase tracking-wide text-zinc-400 mb-2">Ближайшие события</div>
             <div class="flex-1 flex flex-col gap-3 min-w-0">
                 @php
                     $nlLesson = $nextLesson['lesson'] ?? null;
@@ -161,10 +166,10 @@
                     ])
                 </div>
             </div>
-        </div>
+        </x-ui.card>
 
         {{-- Карточка 3: пока пустая --}}
-        <div class="dashboard-card bg-white border rounded-2xl p-5 min-w-0"></div>
+        <x-ui.card class="dashboard-card min-w-0"></x-ui.card>
     </div>
 
     <script>
@@ -198,6 +203,21 @@
         // каждое кормление — обработчик навешан делегированием на document,
         // а не на саму кнопку, иначе он бы слетал после первого же клика.
         document.addEventListener('click', function (evt) {
+            // Клик по самому маскоту — тот же результат, что и клик по
+            // кнопке «Покормить»: находим АКТУАЛЬНУЮ кнопку (она
+            // пересоздаётся при каждом htmx-свапе #fish-card) и эмулируем
+            // клик по ней вместо того, чтобы дублировать hx-post и
+            // disabled-логику ещё и на маскоте — так источник истины
+            // остаётся один. Синтетический клик снова дойдёт до этого же
+            // обработчика (target уже будет кнопкой), без рекурсии.
+            if (evt.target.closest('#greeting-mascot')) {
+                var mascotBtn = document.querySelector('.fish-feed-btn');
+                if (mascotBtn && !mascotBtn.disabled) {
+                    mascotBtn.click();
+                }
+                return;
+            }
+
             var btn = evt.target.closest('.fish-feed-btn');
             if (!btn || btn.disabled) return;
 
@@ -493,12 +513,16 @@
 </div> --}}
 
     <div class="w-full md:mb-16 mb-12">
-    <div class="max-w-6xl mx-auto bg-white rounded-xl border md:px-3 px-3 md:px-4 pt-4 pb-2 md:pt-6 md:pb-4">
+    <x-ui.card class="max-w-6xl mx-auto">
         <div class="flex justify-between items-end mb-4 border-b border-gray-200 pb-2 px-1">
-            <h2 class="text-base md:text-xl tracking-wide font-normal font-sans text-zinc-800"><img class="inline-block relative bottom-1 mr-1" src="{{ asset('img/Date_range.svg') }}" alt=""> Расписание уроков</h2>
-            <div class="flex gap-3">
-                <button id="swiper-prev" class="text-2xl text-gray-500 hover:text-gray-700 disabled:text-gray-300" disabled>&larr;</button>
-                <button id="swiper-next" class="text-2xl text-gray-500 hover:text-gray-700">&rarr;</button>
+            <h2 class="sans-medium text-xl md:text-2xl tracking-wide text-zinc-900"><img class="inline-block relative bottom-1 mr-1" src="{{ asset('img/Date_range.svg') }}" alt=""> Расписание уроков</h2>
+            <div class="flex gap-2">
+                <button id="swiper-prev" class="w-9 h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white" disabled aria-label="Предыдущие дни">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M15 18l-6-6 6-6"></path></svg>
+                </button>
+                <button id="swiper-next" class="w-9 h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white" aria-label="Следующие дни">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M9 18l6-6-6-6"></path></svg>
+                </button>
             </div>
         </div>
 
@@ -509,61 +533,75 @@
                 @foreach ($days as $day)
   <div class="swiper-slide" data-highlight="{{ !empty($day['highlight']) ? 1 : 0 }}">
     <div class="flex flex-col gap-4 w-full pr-2">
-      <div class="text-center font-medium text-sm text-gray-700">
+      <div class="text-center font-medium text-sm text-zinc-700">
         <div class="block sm:hidden capitalize">
-            
-          <span class="uppercase {{ $day['highlight'] ? 'text-indigo-600 font-semibold ' : ' text-gray-700' }}">
+
+          <span class="uppercase {{ $day['highlight'] ? 'text-apple-indigo-600 font-medium ' : ' text-zinc-700' }}">
             {{ $day['day'] }}
           </span>
-          <span class="text-gray-400 "> · {{ $day['date'] }}</span>
+          <span class="text-zinc-400 "> · {{ $day['date'] }}</span>
         </div>
         <div class="hidden sm:block">
-          <div class="uppercase font-medium {{ $day['highlight'] ? 'text-indigo-600 font-semibold' : 'text-gray-700' }}">{{ $day['day'] }}</div>
-          <div class="capitalize font-normal text-xs text-gray-400">{{ $day['date'] }}</div>
+          <div class="uppercase font-medium {{ $day['highlight'] ? 'text-apple-indigo-600' : 'text-zinc-700' }}">{{ $day['day'] }}</div>
+          <div class="capitalize font-normal text-xs text-zinc-400">{{ $day['date'] }}</div>
         </div>
       </div>
 
       @if (empty($day['items']))
-        <div class="border border-dashed border-gray-300 rounded-xl px-3 py-4 text-left text-gray-600 space-y-2">
-          <div class="flex items-center text-xs">
-            <span class="icon mr-2">🌿</span>
-            <span class="tracking-wide text-gray-500">Выходной</span>
+        <div class="border border-dashed border-gray-300 rounded-2xl px-3 py-4 text-left text-zinc-600 space-y-2">
+          <div class="flex items-center gap-2 text-xs">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-zinc-400 shrink-0"><circle cx="12" cy="12" r="4"></circle><path d="M12 3v2M12 19v2M5 5l1.4 1.4M17.6 17.6L19 19M3 12h2M19 12h2M5 19l1.4-1.4M17.6 6.4L19 5"></path></svg>
+            <span class="tracking-wide text-zinc-500">Выходной</span>
           </div>
-          <div class="text-base text-gray-500">Сегодня нет занятий и домашек. Можно отдохнуть</div>
+          <div class="text-base text-zinc-500">Сегодня нет занятий и домашек. Можно отдохнуть</div>
         </div>
       @else
         @foreach ($day['items'] as $item)
           @php
             $status  = $item['status'] ?? null; // 'completed' | 'overdue' | null
-            $dim = $status === 'completed' ? 'opacity-60' : '';
 
-            // Статические классы Tailwind (чтобы их не выпилил purge)
-            $color     = $item['color'] ?? 'blue';
+            // Статические классы Tailwind (чтобы их не выпилил purge).
+            // Ключи — семантические роли, не названия цветов: у "просрочено"
+            // и "выполнено" приоритет над цветом типа (задаётся в
+            // DashboardController) и перекрашивает карточку целиком, а не
+            // просто гасит её прозрачностью поверх исходного цвета типа.
+            $color     = $item['color'] ?? 'theory';
             $bgMap     = [
-            'blue'   => 'bg-blue-100',
-            'purple' => 'bg-purple-100',
-            'orange' => 'bg-orange-100',
-            'yellow' => 'bg-yellow-100',
-            'red'    => 'bg-red-100',
+            'theory'    => 'bg-apple-blue-50',
+            'practice'  => 'bg-apple-purple-50',
+            'homework'  => 'bg-apple-orange-100',
+            'mock'      => 'bg-apple-indigo-50',
+            'overdue'   => 'bg-apple-red-50',
+            'completed' => 'bg-apple-green-100',
             ];
+            // У "выполнено"/"просрочено" рамка заметно темнее, чем у цветов
+            // типа (-200) — это статус, а не просто категория, и он должен
+            // читаться как обводка, а не как чуть более тёмный край.
+            // apple-orange-300 у домашки — чуть контрастнее стандартной -200.
+            // apple-red-450/650 у просрочено — приглушённые (saturation
+            // ниже, не просто светлее/темнее) варианты специально под этот
+            // статус: обычные -400/-700 слишком "неоновые" для красной рамки
+            // и текста на видном месте (см. tailwind.config.js).
             $borderMap = [
-            'blue'   => 'border-blue-200',
-            'purple' => 'border-purple-200',
-            'orange' => 'border-orange-200',
-            'yellow' => 'border-yellow-200',
-            'red'    => 'border-red-200',
+            'theory'    => 'border-apple-blue-200',
+            'practice'  => 'border-apple-purple-200',
+            'homework'  => 'border-apple-orange-300',
+            'mock'      => 'border-apple-indigo-200',
+            'overdue'   => 'border-apple-red-450',
+            'completed' => 'border-apple-green-400',
             ];
             $textMap   = [
-            'blue'   => 'text-blue-700',
-            'purple' => 'text-purple-700',
-            'orange' => 'text-orange-700',
-            'yellow' => 'text-yellow-700',
-            'red'    => 'text-red-700',
+            'theory'    => 'text-apple-blue-700',
+            'practice'  => 'text-apple-purple-700',
+            'homework'  => 'text-apple-orange-700',
+            'mock'      => 'text-apple-indigo-700',
+            'overdue'   => 'text-apple-red-650',
+            'completed' => 'text-apple-green-700',
             ];
 
-            $bg     = $bgMap[$color]     ?? $bgMap['blue'];
-            $border = $borderMap[$color] ?? $borderMap['blue'];
-            $text   = $textMap[$color]   ?? $textMap['blue'];
+            $bg     = $bgMap[$color]     ?? $bgMap['theory'];
+            $border = $borderMap[$color] ?? $borderMap['theory'];
+            $text   = $textMap[$color]   ?? $textMap['theory'];
 
             // ссылки (если контроллер положил объекты)
             $lesson   = $item['lesson']   ?? null;
@@ -571,20 +609,20 @@
             $title    = $item['title'] ?? '—';
           @endphp
 
-          <div class="{{ $bg }} border {{ $border }} rounded-xl px-3 py-3 text-left space-y-2">
+          <div class="{{ $bg }} border {{ $border }} rounded-2xl px-3 py-3 text-left space-y-2">
              <div class="flex items-center text-xs {{ $text }}">
-               <span class="icon mr-1 {{ $dim }}">🔔</span>
-               <span class="{{ $dim }}">{{ $item['type'] }}</span>
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 mr-1 shrink-0"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 01-3.46 0"></path></svg>
+               <span>{{ $item['type'] }}</span>
                @if($status === 'overdue')
-                 <span class="ml-2 inline-block px-1.5 pt-[1px] pb-[3px] text-xs border border-red-300 rounded text-red-700 {{ $dim }}">Срок истёк</span>
+                 <span class="ml-2 inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-white text-apple-red-650">Просрочена</span>
                @elseif($status === 'completed')
-                 <span class="ml-2 inline-block px-1.5 pt-[1px] pb-[3px] rounded bg-emerald-500/20 text-emerald-700">Выполнена</span>
+                 <span class="ml-2 inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-white text-apple-green-700">Выполнена</span>
                @endif
-               <span class="ml-auto text-gray-400 {{ $dim }}">{{ $item['time'] }}</span>
+               <span class="ml-auto text-zinc-400">{{ $item['time'] }}</span>
              </div>
 
             {{-- Заголовок: если это урок — линк на урок; если домашка — линк на форму/результат --}}
-            <div class="font-medium text-base text-gray-800 leading-snug {{ $dim }}">
+            <div class="font-medium text-base text-zinc-800 leading-snug">
               @if($lesson && Route::has('student.lessons.show'))
                 <a href="{{ route('student.lessons.show', $lesson) }}" class="hover:underline">{{ $title }}</a>
               @elseif($homework && Route::has('student.submissions.create'))
@@ -594,8 +632,8 @@
               @endif
             </div>
 
-            <div class="{{ $dim }}">
-              <span class="inline-block bg-white text-gray-700 text-xs px-2 pt-0.5 pb-1 rounded-md">
+            <div>
+              <span class="inline-block bg-white text-zinc-700 text-xs px-2 pt-0.5 pb-1 rounded-full">
                 {{ $item['subject'] ?? 'Курс' }}
               </span>
             </div>
@@ -607,7 +645,7 @@
 @endforeach
             </div>
         </div>
-    </div>
+    </x-ui.card>
 </div>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
@@ -640,8 +678,8 @@
     function updateButtons() {
         prevBtn.disabled = swiper.isBeginning;
         nextBtn.disabled = swiper.isEnd;
-        prevBtn.classList.toggle('text-gray-300', swiper.isBeginning);
-        nextBtn.classList.toggle('text-gray-300', swiper.isEnd);
+        prevBtn.classList.toggle('text-zinc-300', swiper.isBeginning);
+        nextBtn.classList.toggle('text-zinc-300', swiper.isEnd);
     }
 
     swiper.on('slideChange', updateButtons);
@@ -652,13 +690,13 @@
     updateButtons();
 </script>
 
-    <h2 class="text-base md:text-xl font-normal font-sans tracking-wide md:mb-4 mb-3 mt-4 text-zinc-800">Мои курсы</h2>
+    <h2 class="sans-medium text-xl md:text-2xl tracking-wide md:mb-4 mb-3 mt-4 text-zinc-900">Мои курсы</h2>
 
     @if($courses->isEmpty())
-        <div class="p-6 rounded-xl border bg-white text-gray-600">
+        <x-ui.card class="text-zinc-600">
             Пока нет активных курсов. Если у вас есть промокод — активируйте его на странице
             <a href="{{ route('promo.redeem.form') }}" class="text-blue-600 underline">Активация промокода</a>.
-        </div>
+        </x-ui.card>
     @else
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
             @foreach($courses as $course)
@@ -670,7 +708,7 @@
     $isBlocked    = in_array($course->id, $blockedCourseIds ?? [], true);
                 @endphp
 
-                <div class="rounded-2xl border bg-white md:p-4 p-3 flex flex-col min-w-0">
+                <x-ui.card class="flex flex-col min-w-0">
                     {{-- обложка, если есть --}}
                     @if(!empty($course->main_image))
                         <img src="{{ asset('storage/'.$course->main_image) }}" alt="{{ $course->title }}"
@@ -678,25 +716,23 @@
                     @endif
 
                     <div class="flex items-start justify-between gap-2 mb-1 min-w-0">
-                        <h3 class="font-medium text-xl truncate min-w-0">{{ $course->title }}</h3>
+                        <h3 class="sans-medium text-lg text-zinc-900 truncate min-w-0">{{ $course->title }}</h3>
                         @if($isBlocked)
                             <span class="shrink-0 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700">
                                 Доступ приостановлен
                             </span>
                         @endif
                     </div>
-                    <p class="text-base text-gray-600 line-clamp-2 md:mb-8 mb-6">{{ $course->description }}</p>
+                    <p class="text-base text-zinc-600 line-clamp-2 md:mb-8 mb-6">{{ $course->description }}</p>
                     <div class="mt-auto flex gap-2">
                         @if($isBlocked && Route::has('billing.overdue'))
-                            <a href="{{ route('billing.overdue', $course) }}"
-                            class="block ml-auto text-center mr-auto w-full px-3 py-4 text-base tracking-wide font-medium rounded-xl bg-rose-600 border text-white hover:bg-rose-700 transition">
-                            Оплатить, чтобы продолжить
-                            </a>
+                            <x-ui.button href="{{ route('billing.overdue', $course) }}" variant="danger" block>
+                                Оплатить, чтобы продолжить
+                            </x-ui.button>
                         @elseif(Route::has('student.courses.show'))
-                            <a href="{{ route('student.courses.show', $course) }}"
-                            class="block ml-auto text-center mr-auto w-full px-3 py-4 text-base tracking-wide font-medium rounded-xl bg-zinc-800 border text-white hover:bg-zinc-900 transition">
-                            Перейти к курсу
-                            </a>
+                            <x-ui.button href="{{ route('student.courses.show', $course) }}" block>
+                                Перейти к курсу
+                            </x-ui.button>
                         @endif
 
                         @if(isset($expiresSoon) && $expiresSoon && Route::has('checkout.course.show'))
@@ -706,7 +742,7 @@
                             </a>
                         @endif
                     </div>
-                </div>
+                </x-ui.card>
             @endforeach
         </div>
     @endif

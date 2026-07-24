@@ -24,7 +24,7 @@
 @section('content')
 <div class="max-w-4xl mx-auto px-4 py-6">
 
-    <h1 class="text-2xl font-semibold mb-6">Домашки</h1>
+    <h1 class="sans-medium text-2xl md:text-3xl mb-6 text-zinc-900">Домашки</h1>
 
     <div class="flex flex-wrap gap-2 mb-6" id="hw-filters">
         <button type="button" data-filter="todo" class="hw-filter-btn px-3 py-1.5 rounded-full text-sm border">Нужно сделать</button>
@@ -33,9 +33,9 @@
     </div>
 
     @if($rows->isEmpty())
-        <div class="p-6 rounded-2xl border bg-white text-gray-600 text-center">
+        <x-ui.card class="text-zinc-600 text-center">
             Домашек в очереди нет 🎉
-        </div>
+        </x-ui.card>
     @else
         <div class="flex flex-col gap-3" id="hw-list">
             @foreach($rows as $row)
@@ -85,16 +85,16 @@
                         : (Route::has('student.submissions.create') ? route('student.submissions.create', $hw) : '#');
                 @endphp
 
-                <a href="{{ $actionUrl }}"
+                <x-ui.card-link href="{{ $actionUrl }}"
                    data-group="{{ $filterGroup }}"
-                   class="hw-card flex items-center justify-between gap-4 rounded-2xl border bg-white p-4 hover:border-amber-300 hover:shadow-sm transition">
+                   class="hw-card">
                     <div class="min-w-0">
                         <div class="flex items-center gap-2 flex-wrap mb-1">
                             <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium {{ $badge['class'] }}">{{ $badge['label'] }}</span>
-                            <span class="text-xs text-gray-400">{{ $row['course_title'] }}</span>
+                            <span class="text-xs text-zinc-400">{{ $row['course_title'] }}</span>
                         </div>
-                        <div class="font-medium text-gray-900 truncate">{{ $hw->title }}</div>
-                        <div class="text-sm text-gray-500 mt-0.5">
+                        <div class="font-medium text-zinc-900 truncate">{{ $hw->title }}</div>
+                        <div class="text-sm text-zinc-500 mt-0.5">
                             @if($dueText)
                                 Срок: {{ $dueText }}
                             @else
@@ -106,7 +106,7 @@
                         </div>
                     </div>
                     <span class="shrink-0 text-sm font-medium text-amber-700 whitespace-nowrap">{{ $actionLabel }} →</span>
-                </a>
+                </x-ui.card-link>
             @endforeach
         </div>
     @endif

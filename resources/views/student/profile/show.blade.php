@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto px-4 py-6">
-    <h1 class="profile-heading text-2xl font-semibold mb-6">Профиль</h1>
+    <h1 class="sans-medium text-2xl md:text-3xl mb-6 text-zinc-900">Профиль</h1>
 
     @if (session('success'))
         <div class="mb-4 text-green-600 text-sm">{{ session('success') }}</div>
@@ -22,13 +22,9 @@
          после сохранения формы. По умолчанию (ничего не запомнено) —
          вкладка «Персонаж». --}}
     <style>
-        /* h1/h2 сайта по умолчанию идут засечковым 'serif' (см. app.css) —
-           здесь явно перебиваем на тот же шрифт, что и остальной текст
-           страницы, классом с более высокой специфичностью, чем голый
-           селектор тега. */
-        .profile-heading {
-            font-family: 'sans';
-        }
+        /* h1/h2 в кабинете ученика уже не уходят в serif — см.
+           .student-portal h1, .student-portal h2 в app.css. Точечный
+           .profile-heading здесь больше не нужен. */
 
         /* Переключатель вкладок — сегментированный контрол (серый трек +
            белая "таблетка" активного пункта), а не пара кнопок: раньше
@@ -46,18 +42,18 @@
             border-radius: 9px;
             font-size: 14px;
             font-weight: 500;
-            color: #6b7280;
+            color: #71717a; /* zinc-500 */
             background: transparent;
             border: none;
             cursor: pointer;
             transition: color .15s ease, background-color .15s ease, box-shadow .15s ease;
         }
         .profile-tab-btn:hover {
-            color: #111827;
+            color: #18181b; /* zinc-900 */
         }
         .profile-tab-btn.profile-tab-btn-active {
             background: #fff;
-            color: #111827;
+            color: #18181b; /* zinc-900 */
             box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
         }
         .profile-tab-panel[hidden] {
@@ -189,13 +185,13 @@
         }
         .fish-bg-modal-title {
             font-size: 16px;
-            font-weight: 600;
-            color: #111827;
+            font-weight: 500;
+            color: #18181b; /* zinc-900 */
             margin-bottom: 8px;
         }
         .fish-bg-modal-text {
             font-size: 14px;
-            color: #4b5563;
+            color: #52525b; /* zinc-600 */
             margin-bottom: 20px;
         }
         .fish-bg-modal-actions {
@@ -213,11 +209,11 @@
             transition: background-color .15s ease;
         }
         .fish-bg-modal-cancel {
-            background: #f3f4f6;
-            color: #374151;
+            background: #f4f4f5; /* zinc-100 */
+            color: #3f3f46; /* zinc-700 */
         }
         .fish-bg-modal-cancel:hover {
-            background: #e5e7eb;
+            background: #e4e4e7; /* zinc-200 */
         }
         .fish-bg-modal-confirm {
             background: #18181b;
@@ -235,8 +231,8 @@
 
     {{-- Вкладка «Персонаж» --}}
     <div id="profile-tab-character" class="profile-tab-panel" hidden>
-        <div class="profile-card bg-white border rounded-2xl p-6 shadow-sm">
-            <div class="font-medium text-lg text-gray-900 mb-4">Персонаж</div>
+        <x-ui.card class="profile-card">
+            <div class="sans-medium text-lg text-zinc-900 mb-4">Персонаж</div>
 
             {{-- Имя — отдельная форма с явным сохранением, как остальные
                  текстовые поля на этой странице. Выбор/покупка фона ниже —
@@ -247,7 +243,7 @@
             <form method="POST" action="{{ route('student.profile.character.update') }}" class="mb-8">
                 @csrf
                 <label class="block max-w-sm">
-                    <span class="text-sm text-gray-700">Имя персонажа</span>
+                    <span class="text-sm text-zinc-700">Имя персонажа</span>
                     {{-- value — сырое $user->fish_name (null, пока не задано
                          своё имя), НЕ $fishName (тот с фолбэком на текущий
                          уровень для отображения). Раньше в value подставлялся
@@ -264,16 +260,16 @@
                     @enderror
                 </label>
                 <div class="pt-5">
-                    <button type="submit" class="rounded-lg px-4 py-3 bg-zinc-900 text-white font-medium hover:bg-zinc-800 transition">
+                    <x-ui.button type="submit" size="sm">
                         Сохранить
-                    </button>
+                    </x-ui.button>
                 </div>
             </form>
 
             <div>
                 <div class="flex items-center justify-between mb-4">
-                    <span class="font-medium text-lg text-gray-900">Фон</span>
-                    <span class="text-sm text-gray-500">Корм: <span class="text-base font-semibold text-gray-900">{{ $fishBalance }}</span></span>
+                    <span class="sans-medium text-lg text-zinc-900">Фон</span>
+                    <span class="text-sm text-zinc-500">Корм: <span class="text-base font-medium text-zinc-900">{{ $fishBalance }}</span></span>
                 </div>
                 {{-- Десктоп: сетка 3 в ряд. --}}
                 <div class="fish-bg-grid-desktop grid grid-cols-3 gap-5 w-full">
@@ -300,7 +296,7 @@
                     <span class="mt-1 block text-xs text-red-600">{{ $message }}</span>
                 @enderror
             </div>
-        </div>
+        </x-ui.card>
     </div>
 
     {{-- Подтверждение покупки фона — защита от мисклика: клик по "Купить" не
@@ -320,8 +316,8 @@
     <div id="profile-tab-account" class="profile-tab-panel" hidden>
         <div class="flex flex-col gap-4">
             {{-- Личные данные --}}
-            <div class="profile-card bg-white border rounded-2xl p-6 shadow-sm">
-                <div class="font-medium text-lg text-gray-900 mb-4">Личные данные</div>
+            <x-ui.card class="profile-card">
+                <div class="sans-medium text-lg text-zinc-900 mb-4">Личные данные</div>
 
                 {{-- Аватар --}}
                 <div class="flex items-center gap-4 mb-4 pb-4 border-b border-gray-200">
@@ -353,7 +349,7 @@
                             <form method="POST" action="{{ route('student.profile.avatar.remove') }}">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-xs text-gray-500 hover:text-red-600 transition block mx-auto">
+                                <button type="submit" class="text-xs text-zinc-500 hover:text-red-600 transition block mx-auto">
                                     Удалить фото
                                 </button>
                             </form>
@@ -365,9 +361,9 @@
                      менять его здесь нельзя: это отдельный процесс с повторным
                      подтверждением, вне текущего объёма. --}}
                 <div class="max-w-sm mb-4 pb-4 border-b border-gray-200">
-                    <span class="text-sm text-gray-700">Email</span>
+                    <span class="text-sm text-zinc-700">Email</span>
                     <div class="mt-1 flex items-center gap-2 flex-wrap">
-                        <span class="text-sm text-gray-900">{{ $user->email }}</span>
+                        <span class="text-sm text-zinc-900">{{ $user->email }}</span>
                         @if ($user->hasVerifiedEmail())
                             <span class="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
                                 Подтверждён
@@ -384,7 +380,7 @@
                     @csrf
 
                     <label class="block">
-                        <span class="text-sm text-gray-700">Имя</span>
+                        <span class="text-sm text-zinc-700">Имя</span>
                         <input type="text" name="first_name" placeholder="Иван"
                                value="{{ old('first_name', $user->first_name) }}"
                                class="mt-1 w-full border rounded-lg px-3 py-2 input-focus" required>
@@ -394,7 +390,7 @@
                     </label>
 
                     <label class="block">
-                        <span class="text-sm text-gray-700">Фамилия</span>
+                        <span class="text-sm text-zinc-700">Фамилия</span>
                         <input type="text" name="last_name" placeholder="Иванов"
                                value="{{ old('last_name', $user->last_name) }}"
                                class="mt-1 w-full border rounded-lg px-3 py-2 input-focus">
@@ -404,7 +400,7 @@
                     </label>
 
                     <label class="block">
-                        <span class="text-sm text-gray-700">Логин в телеграм</span>
+                        <span class="text-sm text-zinc-700">Логин в телеграм</span>
                         <input type="text" name="name" placeholder="@username"
                                value="{{ old('name', $user->name) }}"
                                class="mt-1 w-full border rounded-lg px-3 py-2 input-focus" required>
@@ -414,10 +410,10 @@
                     </label>
 
                     <div class="pt-2 border-t border-gray-200">
-                        <p class="text-sm text-gray-500 mt-4 mb-3">Оставьте поля пароля пустыми, если не хотите его менять.</p>
+                        <p class="text-sm text-zinc-500 mt-4 mb-3">Оставьте поля пароля пустыми, если не хотите его менять.</p>
 
                         <label class="block mb-4">
-                            <span class="text-sm text-gray-700">Текущий пароль</span>
+                            <span class="text-sm text-zinc-700">Текущий пароль</span>
                             <input type="password" name="current_password" placeholder="Введите текущий пароль"
                                    class="mt-1 w-full border rounded-lg px-3 py-2 input-focus" autocomplete="current-password">
                             @error('current_password')
@@ -426,7 +422,7 @@
                         </label>
 
                         <label class="block mb-4">
-                            <span class="text-sm text-gray-700">Новый пароль</span>
+                            <span class="text-sm text-zinc-700">Новый пароль</span>
                             <input type="password" name="password" placeholder="Не менее 8 символов"
                                    class="mt-1 w-full border rounded-lg px-3 py-2 input-focus" autocomplete="new-password">
                             @error('password')
@@ -435,24 +431,24 @@
                         </label>
 
                         <label class="block">
-                            <span class="text-sm text-gray-700">Подтверждение нового пароля</span>
+                            <span class="text-sm text-zinc-700">Подтверждение нового пароля</span>
                             <input type="password" name="password_confirmation" placeholder="Повторите новый пароль"
                                    class="mt-1 w-full border rounded-lg px-3 py-2 input-focus" autocomplete="new-password">
                         </label>
                     </div>
 
                     <div class="pt-2">
-                        <button type="submit" class="rounded-lg px-4 py-3 bg-zinc-900 text-white font-medium hover:bg-zinc-800 transition">
+                        <x-ui.button type="submit" size="sm">
                             Сохранить
-                        </button>
+                        </x-ui.button>
                     </div>
                 </form>
-            </div>
+            </x-ui.card>
 
             {{-- Уведомления --}}
-            <div class="profile-card bg-white border rounded-2xl p-6 shadow-sm">
-                <div class="font-medium text-lg text-gray-900 mb-1">Уведомления</div>
-                <p class="text-sm text-gray-500 mb-4">Какие уведомления присылать на почту и показывать в кабинете.</p>
+            <x-ui.card class="profile-card">
+                <div class="sans-medium text-lg text-zinc-900 mb-1">Уведомления</div>
+                <p class="text-sm text-zinc-500 mb-4">Какие уведомления присылать на почту и показывать в кабинете.</p>
 
                 <form method="POST" action="{{ route('student.profile.notifications.update') }}">
                     @csrf
@@ -460,14 +456,14 @@
                     <div class="flex flex-col gap-5">
                         @foreach ($notificationTypes as $group => $types)
                             <div>
-                                <div class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">{{ $group }}</div>
+                                <div class="sans-medium text-xs uppercase tracking-wide text-zinc-400 mb-2">{{ $group }}</div>
                                 <div class="flex flex-col gap-3">
                                     @foreach ($types as $type)
                                         <div class="flex items-center gap-2">
                                             <input class="checkbox-custom" type="checkbox" name="enabled[]"
                                                    id="notif-{{ $type['slug'] }}" value="{{ $type['slug'] }}"
                                                    {{ $type['enabled'] ? 'checked' : '' }}>
-                                            <label class="text-sm text-gray-700 cursor-pointer" for="notif-{{ $type['slug'] }}">
+                                            <label class="text-sm text-zinc-700 cursor-pointer" for="notif-{{ $type['slug'] }}">
                                                 {{ $type['label'] }}
                                             </label>
                                         </div>
@@ -478,12 +474,12 @@
                     </div>
 
                     <div class="pt-6">
-                        <button type="submit" class="rounded-lg px-4 py-3 bg-zinc-900 text-white font-medium hover:bg-zinc-800 transition">
+                        <x-ui.button type="submit" size="sm">
                             Сохранить
-                        </button>
+                        </x-ui.button>
                     </div>
                 </form>
-            </div>
+            </x-ui.card>
         </div>
     </div>
 </div>

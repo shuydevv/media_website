@@ -116,12 +116,12 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
         <img src="{{ $resultMascotSrc }}" alt="" class="w-9 h-9 sm:w-12 sm:h-12">
       </div>
       <div>
-        <h1 class="text-2xl font-semibold">
+        <h1 class="sans-medium text-2xl md:text-3xl text-zinc-900">
           Результаты: {{ $homework->title ?? 'Домашнее задание' }}
         </h1>
-        <div class="text-gray-500 mt-1">
+        <div class="text-zinc-500 mt-1">
           Попытка № {{ $submission->attempt_no ?? 1 }} ·
-          Статус: <span class="font-medium text-gray-700">{{ $studentStatusLabel }}</span>
+          Статус: <span class="font-medium text-zinc-700">{{ $studentStatusLabel }}</span>
         </div>
       </div>
     </div>
@@ -136,18 +136,18 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
 <div class="mb-6">
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     {{-- Левая половина: итог --}}
-    <div class="rounded-2xl border border-gray-200 bg-white p-4 py-6">
+    <x-ui.card>
       <div class="flex items-center justify-between flex-wrap gap-3">
-        <div class="text-gray-700">Итог по работе:</div>
-        <div class="text-lg font-semibold">
+        <div class="text-zinc-700">Итог по работе:</div>
+        <div class="text-lg font-medium text-zinc-900">
           {{ $totalScore }} / {{ $totalMax }} баллов
         </div>
       </div>
-    </div>
+    </x-ui.card>
 
     {{-- Правая половина: действие --}}
-    <div class="rounded-2xl border border-gray-200 bg-white p-4 flex items-center justify-between gap-3">
-      <div class="text-sm text-gray-600">
+    <x-ui.card class="flex items-center justify-between gap-3">
+      <div class="text-sm text-zinc-600">
         @if($attemptsLeft > 0)
           У тебя есть еще одна попытка
         @else
@@ -156,27 +156,24 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
       </div>
 
       @if($attemptsLeft > 0)
-        <a href="{{ route('student.submissions.create', $homework) }}?retry=1"
-          class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
+        <x-ui.button href="{{ route('student.submissions.create', $homework) }}?retry=1" variant="accent">
           Перерешать работу
-        </a>
+        </x-ui.button>
       @else
-        <button type="button"
-                class="px-4 py-2 rounded-lg bg-gray-200 text-gray-500 cursor-not-allowed"
-                disabled>
+        <x-ui.button type="button" disabled>
           Перерешать работу
-        </button>
+        </x-ui.button>
       @endif
-    </div>
+    </x-ui.card>
   </div>
 </div>
 
   {{-- Две колонки --}}
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     {{-- Левая: автопроверка --}}
-    <div class="rounded-2xl shadow bg-white p-5">
+    <x-ui.card>
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold">Первая часть (автопроверка)</h2>
+        <h2 class="sans-medium text-lg text-zinc-900">Первая часть (автопроверка)</h2>
       </div>
 
       {{-- Диаграмма + счёт (в одну строку на ПК, в столбик на мобиле) --}}
@@ -192,8 +189,8 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
             data-to="#C084FC"
           ></canvas>
           <div class="absolute left-0 right-0 top-[58px] text-center pointer-events-none">
-            <div class="text-2xl font-semibold">{{ $autoPct }}%</div>
-            <div class="text-xs text-gray-500">выполнено</div>
+            <div class="text-2xl font-medium text-zinc-900">{{ $autoPct }}%</div>
+            <div class="text-xs text-zinc-500">выполнено</div>
           </div>
         </div>
 
@@ -224,10 +221,10 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
               @endif
             @endif
             </span>
-            <div class="mt-1 md:mt-2 text-2xl md:text-2xl font-extrabold leading-none text-violet-600">
+            <div class="mt-1 md:mt-2 text-2xl md:text-2xl font-medium leading-none text-violet-600">
               {{ $autoScore }} / {{ $autoMax }}
             </div>
-            <div class="text-sm text-gray-500 md:mb-1 mb-0">баллов</div>
+            <div class="text-sm text-zinc-500 md:mb-1 mb-0">баллов</div>
           </div>
 
           {{-- Чипсы-статусы --}}
@@ -251,7 +248,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
 
       {{-- Список авто-заданий --}}
       <div class="mt-5">
-        <div class="text-sm font-medium text-gray-600 mb-4">Баллы за задания:</div>
+        <div class="text-sm font-medium text-zinc-600 mb-4">Баллы за задания:</div>
         <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-3">
           @forelse($autoTasks as $i => $t)
             @php
@@ -265,7 +262,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
             @endphp
 
             <div style="background-color: #{{ $status === 'ok' ? 'DEF5EE' : ($status === 'partial' ? 'FDF4DF' : 'FFE4E0') }}" class="flex flex-col items-center justify-between rounded-xl aspect-square p-2">
-              <div class="text-xs font-medium text-gray-500">
+              <div class="text-xs font-medium text-zinc-500">
                 № {{ $t->order ?? ($i+1) }}
               </div>
 
@@ -290,22 +287,22 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
                   </div>
                 @endif
 
-                <span class="text-lg font-bold {{ $status === 'ok' ? 'text-green-600' : ($status === 'partial' ? 'text-yellow-600' : 'text-red-600') }}">
+                <span class="text-lg font-medium {{ $status === 'ok' ? 'text-green-600' : ($status === 'partial' ? 'text-yellow-600' : 'text-red-600') }}">
                   {{ $score }} / {{ $max }}
                 </span>
               </div>
             </div>
           @empty
-            <div class="text-sm text-gray-500">Автопроверяемых заданий нет.</div>
+            <div class="text-sm text-zinc-500">Автопроверяемых заданий нет.</div>
           @endforelse
         </div>
       </div>
-    </div>
+    </x-ui.card>
 
     {{-- Правая: ручная проверка --}}
-    <div class="rounded-2xl border border-gray-200 bg-white p-5">
+    <x-ui.card>
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold">Вторая часть (проверка куратором)</h2>
+        <h2 class="sans-medium text-lg text-zinc-900">Вторая часть (проверка куратором)</h2>
       </div>
 
       {{-- В одну строку на ПК, в столбик на мобиле --}}
@@ -321,8 +318,8 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
             data-to="#34D399"
           ></canvas>
           <div class="absolute left-0 right-0 top-[58px] text-center pointer-events-none">
-            <div class="text-2xl font-semibold">{{ $manualPct }}%</div>
-            <div class="text-xs text-gray-500">выполнено</div>
+            <div class="text-2xl font-medium text-zinc-900">{{ $manualPct }}%</div>
+            <div class="text-xs text-zinc-500">выполнено</div>
           </div>
         </div>
 
@@ -372,10 +369,10 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
                 @endif
               @endif
             </span>
-            <div class="mt-1 md:mt-2 text-2xl md:text-2xl font-extrabold leading-none text-emerald-600">
+            <div class="mt-1 md:mt-2 text-2xl md:text-2xl font-medium leading-none text-emerald-600">
               {{ $manualScore }} / {{ $manualMax }}
             </div>
-            <div class="text-sm text-gray-500 md:mb-1 mb-0">баллов</div>
+            <div class="text-sm text-zinc-500 md:mb-1 mb-0">баллов</div>
           </div>
 
           {{-- Чипсы-статусы (без отдельного «админ») --}}
@@ -400,7 +397,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
     </svg> Неверно: {{ $manualTotals['fail'] }}
   </span>
 
-  <span style="background-color:#E5E7EB" class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-gray-700">
+  <span style="background-color:#e4e4e7" class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-zinc-700">
     <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
       <path d="M12 8v4l3 3M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -412,7 +409,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
 
       {{-- Список ручных заданий — цветные квадраты; непроверенные и пропущенные = серые --}}
       <div class="mt-5">
-        <div class="text-sm font-medium text-gray-600 mb-4">Баллы за задания:</div>
+        <div class="text-sm font-medium text-zinc-600 mb-4">Баллы за задания:</div>
         <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-3">
           @forelse($manualTasks as $i => $t)
             @php
@@ -428,11 +425,11 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
 
               // Плитка: по требованию — «пропущено» и «не начато» = одинаково серые
               $tile = [
-                'color'      => 'E5E7EB', // серый фон ожидания
+                'color'      => 'E4E4E7', // zinc-200, фон ожидания
                 'icon'       => 'wait',
                 'label'      => '',
                 'scoreText'  => '?',
-                'scoreClass' => 'text-gray-700',
+                'scoreClass' => 'text-zinc-700',
               ];
 
               if ($isChecked) {
@@ -472,7 +469,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
 
             <div style="background-color: #{{ $tile['color'] }}" class="flex flex-col items-center justify-between rounded-xl aspect-square p-2">
               {{-- Номер задания --}}
-              <div class="text-xs font-medium text-gray-500">
+              <div class="text-xs font-medium text-zinc-500">
                 № {{ $t->order ?? ($i+1) }}
               </div>
 
@@ -497,23 +494,23 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
                     </svg>
                   </div>
                 @else {{-- wait (универсальный для «не начато» и «пропущено») --}}
-                  <div class="border-2 border-gray-400 rounded-full p-1 mt-2">
-                    <svg class="w-3 h-3 text-gray-600" viewBox="0 0 24 24" fill="none">
+                  <div class="border-2 border-zinc-400 rounded-full p-1 mt-2">
+                    <svg class="w-3 h-3 text-zinc-600" viewBox="0 0 24 24" fill="none">
                       <path d="M12 8v4l3 3M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                   </div>
                 @endif
 
                 @if($tile['scoreText'])
-                  <span class="text-lg font-bold {{ $tile['scoreClass'] }}">{{ $tile['scoreText'] }}</span>
-                  <span class="text-[11px] text-gray-600">{{ $tile['label'] }}</span>
+                  <span class="text-lg font-medium {{ $tile['scoreClass'] }}">{{ $tile['scoreText'] }}</span>
+                  <span class="text-[11px] text-zinc-600">{{ $tile['label'] }}</span>
                 @else
-                  <span class="text-[12px] font-medium text-gray-700">{{ $tile['label'] }}</span>
+                  <span class="text-[12px] font-medium text-zinc-700">{{ $tile['label'] }}</span>
                 @endif
               </div>
             </div>
           @empty
-            <div class="text-sm text-gray-500">Заданий для ручной проверки нет.</div>
+            <div class="text-sm text-zinc-500">Заданий для ручной проверки нет.</div>
           @endforelse
         </div>
       </div>
@@ -532,13 +529,13 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
         </div>
       </div>
       @endif
-    </div>
+    </x-ui.card>
   </div>
 
 
   {{-- ===== Детализация по каждому заданию (под карточками результатов) ===== --}}
 <div class="mt-8">
-  <h3 class="text-lg font-semibold mb-4">Подробно по заданиям</h3>
+  <h3 class="sans-medium text-lg text-zinc-900 mb-4">Подробно по заданиям</h3>
 
   @forelse($tasksCol as $i => $t)
     @php
@@ -568,12 +565,12 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
 
       // Статус бейджа
       $badge = [
-        'bg'   => 'bg-gray-100',
-        'text' => 'text-gray-700',
+        'bg'   => 'bg-zinc-100',
+        'text' => 'text-zinc-700',
         'name' => 'Ожидает проверки',
       ];
       if ($skipped || !$hasScore) {
-        $badge = ['bg'=>'bg-gray-100','text'=>'text-gray-700','name'=>'Ожидает проверки'];
+        $badge = ['bg'=>'bg-zinc-100','text'=>'text-zinc-700','name'=>'Ожидает проверки'];
       } else {
         if ($score >= $max) {
           $badge = ['bg'=>'bg-emerald-50','text'=>'text-emerald-700','name'=>"Верно: {$score} / {$max}"];
@@ -600,13 +597,13 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
       };
     @endphp
 
-    <div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 mb-4">
+    <x-ui.card class="mb-4">
       <div class="flex items-start justify-between gap-3">
         <div class="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-5">
-          <span class="inline-block px-2 py-0.5 text-xs rounded-full bg-gray-100 border border-gray-200 text-gray-700">
+          <span class="inline-block px-2 py-0.5 text-xs rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700">
             №{{ $titleNo }} в ЕГЭ
           </span>
-          <span class="text-base sm:text-lg font-semibold text-gray-900">
+          <span class="sans-medium text-lg text-zinc-900">
             Задание №{{ $titleNo }}
           </span>
         </div>
@@ -622,7 +619,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
             <div class="mb-6 p-3 rounded-lg bg-gray-50 border text-base whitespace-pre-wrap">{{ $norm($passageText) }}</div>
           @endif
           @if($questionText)
-            <div class=" text-base text-gray-800 whitespace-pre-wrap">{{ $norm($questionText) }}</div>
+            <div class=" text-base text-zinc-800 whitespace-pre-wrap">{{ $norm($questionText) }}</div>
           @endif
           @if($mediaUrl)
             <div>
@@ -664,7 +661,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
         <thead class="bg-gray-50">
           <tr>
             @foreach($cols2 as $c)
-              <th class="border border-gray-200 px-3 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-700">{{ $c }}</th>
+              <th class="border border-gray-200 px-3 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-zinc-700">{{ $c }}</th>
             @endforeach
           </tr>
         </thead>
@@ -678,7 +675,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
                 $isBlank = array_key_exists($k, $blankMap2);
               @endphp
               <td class="px-3 py-2 sm:py-3 align-top border border-gray-200">
-                <div class="text-sm sm:text-[15px] text-gray-800 whitespace-pre-wrap">
+                <div class="text-sm sm:text-[15px] text-zinc-800 whitespace-pre-wrap">
                   {{ (string)$cell }}
                 </div>
               </td>
@@ -686,7 +683,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
           </tr>
         @empty
           <tr>
-            <td class="px-3 py-3 text-xs sm:text-sm text-gray-500">Таблица не задана</td>
+            <td class="px-3 py-3 text-xs sm:text-sm text-zinc-500">Таблица не задана</td>
           </tr>
         @endforelse
       </tbody>
@@ -716,7 +713,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
 @endphp
 
 @if(!empty($options))
-  <div class="mt-3 sm:mt-4 text-gray-900 text-sm sm:text-base flex flex-col flex-wrap gap-2 sm:gap-3 items-start">
+  <div class="mt-3 sm:mt-4 text-zinc-900 text-sm sm:text-base flex flex-col flex-wrap gap-2 sm:gap-3 items-start">
     @foreach($options as $opt)
       <div class="px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg border border-gray-200 bg-gray-50">{{ $opt }}</div>
     @endforeach
@@ -748,27 +745,27 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
 
   <div class="grid md:grid-cols-2 gap-4 sm:gap-6 mt-3 sm:mt-4 mb-4">
     <div class="rounded-xl border bg-white">
-      <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-gray-700">{{ $cur->left_title ?? 'Левая колонка' }}</div>
+      <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-zinc-700">{{ $cur->left_title ?? 'Левая колонка' }}</div>
       <div class="divide-y">
         @forelse($left as $iL => $val)
           <div class="px-3 py-2 sm:py-3 text-sm sm:text-base">
-            <span class="text-gray-500 mr-2">{{ $letters[$iL] ?? ($iL+1) }}.</span> {{ $val }}
+            <span class="text-zinc-500 mr-2">{{ $letters[$iL] ?? ($iL+1) }}.</span> {{ $val }}
           </div>
         @empty
-          <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm text-gray-500">Нет элементов</div>
+          <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm text-zinc-500">Нет элементов</div>
         @endforelse
       </div>
     </div>
 
     <div class="rounded-xl border bg-white">
-      <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-gray-700">{{ $cur->right_title ?? 'Правая колонка' }}</div>
+      <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-zinc-700">{{ $cur->right_title ?? 'Правая колонка' }}</div>
       <div class="divide-y">
         @forelse($right as $iR => $val)
           <div class="px-3 py-2 sm:py-3 text-sm sm:text-base">
-            <span class="text-gray-500 mr-2">{{ $iR+1 }}.</span> {{ $val }}
+            <span class="text-zinc-500 mr-2">{{ $iR+1 }}.</span> {{ $val }}
           </div>
         @empty
-          <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm text-gray-500">Нет элементов</div>
+          <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm text-zinc-500">Нет элементов</div>
         @endforelse
       </div>
     </div>
@@ -809,7 +806,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
     'ok'      => 'border-green-500',
     'partial' => 'border-yellow-500',
     'fail'    => 'border-red-500',
-    'pending' => 'border-gray-300',
+    'pending' => 'border-zinc-300',
   ][$status];
 
   // Разбиваем строки ответов на символы для «квадратиков» (только авто)
@@ -828,10 +825,10 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
   <div class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
     {{-- Ваш ответ (цветная обводка по статусу) --}}
     <div class="rounded-xl mt-2">
-      <div class="text-xs text-gray-500 mb-2">Ваш ответ</div>
+      <div class="text-xs text-zinc-500 mb-2">Ваш ответ</div>
       <div class="flex flex-wrap gap-2">
         @for($i=0; $i<$boxesLen; $i++)
-          <div class="w-9 h-9 sm:w-10 sm:h-10 border-2 {{ $borderClass }} rounded-lg flex items-center justify-center text-base sm:text-lg font-semibold select-none">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 border-2 {{ $borderClass }} rounded-lg flex items-center justify-center text-base sm:text-lg font-medium select-none">
             {{ $up($stuChars[$i] ?? '') }}
           </div>
         @endfor
@@ -840,10 +837,10 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
 
     {{-- Правильный ответ (всегда серая обводка) --}}
     <div class="rounded-xl mt-2">
-      <div class="text-xs text-gray-500 mb-2">Правильный ответ</div>
+      <div class="text-xs text-zinc-500 mb-2">Правильный ответ</div>
       <div class="flex flex-wrap gap-2">
         @for($i=0; $i<$boxesLen; $i++)
-          <div class="w-9 h-9 sm:w-10 sm:h-10 border-2 border-gray-300 rounded-lg flex items-center justify-center text-base sm:text-lg font-semibold bg-white select-none">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 border-2 border-zinc-300 rounded-lg flex items-center justify-center text-base sm:text-lg font-medium bg-white select-none">
             {{ $up($corrChars[$i] ?? '') }}
           </div>
         @endfor
@@ -872,13 +869,13 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
     @endif
     @if($hasScore && !$skipped)
     <div class="rounded-xl border border-gray-200 p-3 px-4">
-      <div class="text-xs text-gray-500 mb-2">Пояснение куратора</div>
+      <div class="text-xs text-zinc-500 mb-2">Пояснение куратора</div>
       <div class="text-sm whitespace-pre-wrap break-words">{{ $norm($mentorNote) }}</div>
     </div>
     @endif
     @if($hasScore && !$skipped)
     <div class="rounded-xl border border-gray-200 p-3">
-      <div class="text-xs text-gray-500 mb-1">Обоснование баллов</div>
+      <div class="text-xs text-zinc-500 mb-1">Обоснование баллов</div>
       <div class="text-sm whitespace-pre-wrap break-words">{{ trim($norm($mentorReason)) !== '' ? $norm($mentorReason) : '—' }}</div>
     </div>
     @endif
@@ -888,18 +885,18 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
 
 
       </div>
-    </div>
+    </x-ui.card>
   @empty
-    <div class="rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-600">
+    <x-ui.card class="text-sm text-zinc-600">
       Заданий нет.
-    </div>
+    </x-ui.card>
   @endforelse
 </div>
 
 
   {{-- Низ страницы --}}
   <div class="mt-6 flex items-center justify-end flex-wrap gap-3">
-    <div class="text-sm text-gray-500">
+    <div class="text-sm text-zinc-500">
       Отправлено: {{ optional($submission->created_at)->format('d.m.Y H:i') ?? '—' }}
       @if($submission->updated_at && $submission->updated_at != $submission->created_at)
         · Обновлено: {{ optional($submission->updated_at)->format('d.m.Y H:i') }}

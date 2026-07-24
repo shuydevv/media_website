@@ -137,6 +137,21 @@
             </div>
 
             <div class="sm:col-span-2">
+                <div class="text-zinc-500">Питомец (кличка)</div>
+                <div class="text-zinc-900">
+                    @if($user->fish_name)
+                        {{ $user->fish_name }}
+                    @else
+                        @php
+                            $fishService = app(\App\Service\FishFoodService::class);
+                            $fishDefaultName = $fishService->levelName($fishService->levelFor((int) $user->fish_total_fed));
+                        @endphp
+                        <span class="text-zinc-500">не задано (сейчас показывается «{{ $fishDefaultName }}»)</span>
+                    @endif
+                </div>
+            </div>
+
+            <div class="sm:col-span-2">
                 <div class="text-zinc-500">Пароль (hash, сокращённо)</div>
                 <div class="text-zinc-900 font-mono break-all">
                     @if($user->password)
