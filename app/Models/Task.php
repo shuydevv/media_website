@@ -34,6 +34,7 @@ class Task extends Model
         'right_title',
         'answer',
         'hint',
+        'explanation',
         'is_public',
     ];
 

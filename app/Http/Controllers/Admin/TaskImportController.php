@@ -35,28 +35,20 @@ class TaskImportController extends Controller
         return view('admin.tasks.import');
     }
 
+    /**
+     * Полный образец лежит файлом в репозитории
+     * (resources/import-templates/tasks-example.json) — по одному примеру
+     * каждого из 7 типов заданий, с _content_rules внутри JSON. См. тот же
+     * докблок у Admin\Homework\ImportController::example() — единый файл,
+     * а не PHP-массив, чтобы кнопка "Скачать пример" и реальная схема не
+     * расходились при доработке полей содержания.
+     */
     public function example()
     {
         $this->assertAdmin();
 
-        $example = [
-            [
-                'id' => null,
-                '_comment' => 'id — только для повторного импорта поверх существующего задания; для нового задания просто уберите это поле.',
-                'category' => 'Русский язык',
-                'number' => '15',
-                'type' => 'test',
-                'question_text' => 'Выберите верный вариант написания.',
-                'options' => ['раненый боец', 'раненный боец', 'ранненый боец'],
-                'answer' => '1',
-                'hint' => 'Одна Н — если нет приставки и зависимых слов.',
-                'image_url' => null,
-                'is_public' => true,
-            ],
-        ];
-
-        return response()->streamDownload(
-            fn () => print(json_encode($example, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)),
+        return response()->download(
+            resource_path('import-templates/tasks-example.json'),
             'tasks-example.json',
             ['Content-Type' => 'application/json']
         );

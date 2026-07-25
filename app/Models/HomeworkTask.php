@@ -30,6 +30,7 @@ class HomeworkTask extends Model
     'right_title',
     'max_score',
     'hint',
+    'explanation',
     ];
 
     protected $casts = [
@@ -69,7 +70,7 @@ class HomeworkTask extends Model
         'type', 'question_text', 'passage_text', 'options', 'matches',
         'table_content', 'image_path', 'answer', 'hint', 'max_score',
         'order_matters', 'image_auto_options', 'left_title', 'right_title',
-        'number',
+        'number', 'explanation',
     ];
 
     public function getAttribute($key)

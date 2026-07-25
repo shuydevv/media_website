@@ -50,6 +50,15 @@ document.addEventListener('DOMContentLoaded', () => {
         pinWrap.querySelector('.pin-hidden-input')?.toggleAttribute('disabled', !usePin);
         textWrap.querySelector('textarea')?.toggleAttribute('disabled', usePin);
 
+        // "Объяснение задания" — только у авто-проверяемых типов (усе те же,
+        // что отвечают квадратиками); для written/image_manual этот же смысл
+        // уже несёт "образцовый ответ" в textWrap выше. disabled, а не только
+        // hidden — иначе значение всё равно уйдёт на сервер для типа, где оно
+        // не должно применяться.
+        const explanationWrap = root.querySelector('.task-explanation');
+        explanationWrap?.classList.toggle('hidden', !usePin);
+        explanationWrap?.querySelector('textarea')?.toggleAttribute('disabled', !usePin);
+
         // Для таблицы ответ выводится ТОЛЬКО из значений пропусков в
         // таблице — печатать его тут же второй раз нельзя, иначе два места
         // могут молча разойтись (см. sync() в renderTableBuilder).

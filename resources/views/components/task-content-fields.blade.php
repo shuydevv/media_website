@@ -291,6 +291,20 @@
             </div>
 
             @error($ename('answer'))<div class="text-red-600 text-sm mt-1">{{ $message }}</div>@enderror
+
+            {{-- Объяснение — только для авто-проверяемых типов (test/
+                 text_with_questions/matching/image_auto/table): краткий разбор
+                 по каждому пункту ответа — почему верно/неверно, а для
+                 соотнесения — почему пара именно такая. Для written/
+                 image_manual этот же смысл уже несёт answer как "образцовый
+                 ответ" (см. блок выше), поэтому здесь для них не показывается.
+                 Ученик видит это не во время решения, а в разборе результатов
+                 (student/submissions/show.blade.php), после ответа. --}}
+            <div class="task-explanation hidden mt-4">
+                <label class="block text-xs text-zinc-500 mb-1">Объяснение задания (покажется ученику в разборе результатов — почему каждый пункт ответа верный или неверный)</label>
+                <textarea name="{{ $fname('explanation') }}" data-field="explanation" rows="3"
+                          class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Например: 1 — верно, потому что…; 2 — неверно, потому что…">{{ $old('explanation') }}</textarea>
+            </div>
         </div>
     </x-ui.card>
 

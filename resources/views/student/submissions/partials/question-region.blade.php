@@ -154,7 +154,7 @@
         <label class="block text-xs sm:text-sm text-zinc-700 mb-2">Ваш ответ</label>
         <textarea name="answer" rows="5" class="w-full border rounded-xl px-3 py-2 sm:py-3 text-sm sm:text-base">{{ old('answer', $prefill) }}</textarea>
         <div class="text-[11px] sm:text-xs text-zinc-500 mt-2 mb-4">Ответ проверит ваш наставник</div>
-        <button type="submit" class="relative mt-8 inline-flex items-center justify-center px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base">
+        <x-ui.button type="submit" variant="accent" class="relative mt-8 text-sm sm:text-base">
           <span class="btn-label">Далее</span>
           <span class="btn-spinner">
             <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -162,7 +162,7 @@
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
             </svg>
           </span>
-        </button>
+        </x-ui.button>
       </form>
     @elseif(!$isLockedCorrect)
       @php
@@ -240,7 +240,7 @@
           @endif
         </div>
 
-        <button type="submit" class="relative mt-8 inline-flex items-center justify-center px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base">
+        <x-ui.button type="submit" variant="accent" class="relative mt-8 text-sm sm:text-base">
           <span class="btn-label">Проверить ответ</span>
           <span class="btn-spinner">
             <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -248,7 +248,7 @@
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
             </svg>
           </span>
-        </button>
+        </x-ui.button>
       </form>
     @endif
   </div>

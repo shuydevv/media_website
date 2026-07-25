@@ -55,6 +55,7 @@ class TaskContentRules
             $key('order_matters')      => ['nullable', 'boolean'],
             $key('answer')             => $answerRule,
             $key('hint')               => ['nullable', 'string'],
+            $key('explanation')        => ['nullable', 'string'],
         ];
 
         // Баллы — только в домашке (переопределение поверх баллов из
@@ -76,6 +77,7 @@ class TaskContentRules
             $key('type')               => 'Тип задания',
             $key('question_text')      => 'Вопрос / текст',
             $key('answer')             => 'Правильный ответ',
+            $key('explanation')        => 'Объяснение задания',
             $key('passage_text')       => 'Текст задания (пассаж)',
             $key('left_title')         => 'Заголовок левой колонки',
             $key('right_title')        => 'Заголовок правой колонки',

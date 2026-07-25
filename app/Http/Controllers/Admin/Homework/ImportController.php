@@ -50,33 +50,22 @@ class ImportController extends Controller
         return view('admin.homeworks.import', compact('courses'));
     }
 
+    /**
+     * Полный образец — не собирается на лету, а лежит файлом в репозитории
+     * (resources/import-templates/homework-example.json): по одному примеру
+     * каждого из 7 типов заданий + ссылка на банк, с подробными
+     * _instructions/content_quality_rules внутри JSON. Раньше этот массив
+     * жил прямо в PHP-коде, но был игрушечным (1 тип, без документации) —
+     * разошёлся с тем, что реально нужно для генерации контента через
+     * нейросеть, и админ получал по кнопке "Скачать пример" не то, что
+     * ожидал. Единый файл — источник правды и для кнопки скачивания, и
+     * для ручной сверки при доработке схемы (при добавлении нового поля
+     * содержания правь этот файл, а не PHP-массив).
+     */
     public function example()
     {
-        $example = [
-            'id' => null,
-            '_comment' => 'id — только для повторного импорта поверх существующей домашки (полностью заменяет её tasks); для новой домашки просто уберите это поле. Курс и урок в этом файле НЕ указываются — выбираются на самой странице импорта, рядом с выбором файла.',
-            'title' => 'Пробное ДЗ по теме "Причастия"',
-            'description' => 'Короткая проверка перед пробником',
-            'type' => 'homework',
-            'due_at' => now()->addWeek()->format('Y-m-d H:i'),
-            'tasks' => [
-                ['task_id' => 1, 'order' => 1, 'max_score' => 2],
-                [
-                    'order' => 2,
-                    'max_score' => 1,
-                    'type' => 'test',
-                    'question_text' => 'Выберите верный вариант написания.',
-                    'options' => ["раненый боец", "раненный боец", "ранненый боец"],
-                    'answer' => '1',
-                    'hint' => 'Одна Н — если нет приставки и зависимых слов.',
-                    'image_url' => null,
-                    'save_to_bank' => false,
-                ],
-            ],
-        ];
-
-        return response()->streamDownload(
-            fn () => print(json_encode($example, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)),
+        return response()->download(
+            resource_path('import-templates/homework-example.json'),
             'homework-example.json',
             ['Content-Type' => 'application/json']
         );

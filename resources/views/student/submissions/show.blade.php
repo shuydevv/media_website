@@ -865,12 +865,19 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
       </div>
     </div>
 
-    {{-- Пояснение куратора (если есть) --}}
-    {{-- <div class="rounded-xl p-3">
-      <div class="text-xs text-gray-500 mb-1">Пояснение куратора</div>
-      <div class="text-sm whitespace-pre-wrap break-words">{{ $norm($mentorNote) }}</div>
-    </div> --}}
   </div>
+
+  {{-- Объяснение задания — заполняется админом в конструкторе (поле
+       "Объяснение задания", только у авто-проверяемых типов), разбирает
+       каждый пункт ответа: почему верно/неверно, для соотнесения — почему
+       пара именно такая. Показываем только если заполнено — пустой блок
+       с одним "—" ничего ученику не даёт. --}}
+  @if(!empty($t->explanation))
+    <div class="mt-4 rounded-xl bg-zinc-50 border border-zinc-200 p-3 px-4">
+      <div class="text-xs text-zinc-500 mb-2">Объяснение</div>
+      <div class="text-sm whitespace-pre-wrap break-words">{{ $norm($t->explanation) }}</div>
+    </div>
+  @endif
 @else
   {{-- РУЧНАЯ ПРОВЕРКА: оставляем карточки по ширине (без «квадратиков») --}}
   <div class="mt-4 grid grid-cols-1 md:grid-cols-1 gap-4">

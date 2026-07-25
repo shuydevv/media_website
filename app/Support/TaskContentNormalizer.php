@@ -107,6 +107,7 @@ class TaskContentNormalizer
             'right_title'        => ($data['right_title'] ?? null) ?: null,
             'answer'             => ($data['answer'] ?? null) ?: null,
             'hint'               => ($data['hint'] ?? null) ?: null,
+            'explanation'        => ($data['explanation'] ?? null) ?: null,
         ];
     }
 }
