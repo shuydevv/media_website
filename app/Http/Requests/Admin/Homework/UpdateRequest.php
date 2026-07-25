@@ -38,7 +38,11 @@ class UpdateRequest extends FormRequest
             'tasks.*.task_id'         => ['required_if:tasks.*.source,bank','nullable','integer','exists:tasks,id'],
             'tasks.*.save_to_bank'    => ['nullable','boolean'],
             'tasks.*.order'           => ['nullable','integer'],
-            'tasks.*.task_number'     => ['nullable','string'],
+            // Номер в ЕГЭ — только для source=own (см. StoreRequest, тот же
+            // комментарий). Раньше здесь валидировалось tasks.*.task_number —
+            // это имя нигде не читалось ни контроллером, ни формой (форма
+            // всегда слала просто "number"), значение тихо терялось.
+            'tasks.*.number'          => ['nullable','string','max:255'],
 
             // Без mimes-ограничения, в отличие от общего правила — так было
             // изначально в этом запросе, поведение не меняем.

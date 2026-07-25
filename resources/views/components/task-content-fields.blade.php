@@ -81,6 +81,11 @@
     $tableContentText = $oldText('table_content', $tableContentRaw ? json_encode($tableContentRaw, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : '');
     $orderMattersDefault = $task ? (bool) data_get($task, 'order_matters') : true;
     $taskNumber = $old('number', data_get($task, 'number'));
+    // Уникальный id на каждый экземпляр компонента — в конструкторе домашки
+    // на странице одновременно несколько карточек, у каждой свой datalist
+    // ("task-numbers-list" одним и тем же id на все карточки был бы
+    // невалидным HTML, и list= у второй карточки указывал бы непонятно куда).
+    $numberListId = 'task-numbers-list-' . ($name === '' ? 'bank' : preg_replace('/[^a-zA-Z0-9]+/', '-', $name));
 
     // Прогрессивное раскрытие: тип не показываем, пока не выбрана категория
     // (только в банке — 'category_id' лежит в bank-fields.blade.php, том же
@@ -118,24 +123,29 @@
 
 <div class="task-content-fields" data-category-gated="{{ $name === '' ? '1' : '0' }}" {{ $attributes }}>
     <div class="task-type-wrap {{ $categoryChosen ? '' : 'hidden' }}">
-        @if($name === '')
-            {{-- Номер в ЕГЭ — та же подложка, что в карточке результата у
-                 студента, только с инпутом (bank-fields.blade.php больше не
-                 дублирует это отдельным полем формы). Показывается вместе с
-                 типом сразу после выбора категории — не зависит от типа. --}}
-            <div class="mb-2">
-                <span class="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 text-xs rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700">
-                    №<input type="text" name="number" value="{{ $taskNumber }}"
-                             class="w-10 border-0 bg-transparent p-0 text-xs text-zinc-700 focus:outline-none focus:ring-0"
-                             placeholder="?" list="task-numbers-list"> в ЕГЭ
-                </span>
-                <datalist id="task-numbers-list">
-                    @foreach(($numberOptions ?? []) as $n)
-                        <option value="{{ $n }}"></option>
-                    @endforeach
-                </datalist>
-            </div>
-        @endif
+        {{-- Номер в ЕГЭ — та же подложка, что в карточке результата у
+             студента, только с инпутом. Нужен и в банке, и в конструкторе
+             домашки: критерии/баллы общие на пару (категория, номер) —
+             без номера "своё" задание в домашке не может ни показать
+             подсказку про существующие критерии, ни (если отметить
+             "сохранить в банк") попасть в банк с правильным номером.
+             Категория в домашке не выбирается явно — берётся с курса
+             (см. data-category на <option> курса и checkNumberCriteria()
+             в task-editor-script.blade.php). Показывается вместе с типом
+             сразу после выбора категории — не зависит от типа. --}}
+        <div class="mb-2">
+            <span class="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 text-xs rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700">
+                №<input type="text" name="{{ $fname('number') }}" value="{{ $taskNumber }}"
+                         class="task-number-input w-10 border-0 bg-transparent p-0 text-xs text-zinc-700 focus:outline-none focus:ring-0"
+                         placeholder="?" list="{{ $numberListId }}"> в ЕГЭ
+            </span>
+            <datalist id="{{ $numberListId }}">
+                @foreach(($numberOptions ?? []) as $n)
+                    <option value="{{ $n }}"></option>
+                @endforeach
+            </datalist>
+            <span class="task-number-hint ml-2 text-xs"></span>
+        </div>
         <label class="block text-xs text-zinc-500 mb-1">Тип задания</label>
         <select name="{{ $fname('type') }}" data-field="type" class="task-type w-full border rounded-lg px-3 py-2 text-sm">
             <option value="">Выберите тип</option>
@@ -200,7 +210,7 @@
             <textarea name="{{ $fname('table_content') }}" data-field="table_content" rows="8" class="task-table-json hidden w-full border rounded-lg px-3 py-2 font-mono text-xs mt-2">{{ $tableContentText ?: '{
     "cols": ["Колонка 1", "Колонка 2"],
     "rows": [["ячейка_1", "ячейка_2"]],
-    "blanks": [{"r": 0, "c": 1, "key": "1", "value": ""}]
+    "blanks": [{"r": 0, "c": 1, "key": "А", "value": ""}]
 }' }}</textarea>
             <p class="task-table-json-hint hidden text-xs text-amber-600 mt-1">Не удалось распознать JSON как таблицу — конструктор недоступен, редактируйте текст вручную.</p>
         </div>
@@ -253,7 +263,7 @@
         <div class="mt-5">
             <div class="task-answer-pin hidden rounded-xl mt-2">
                 <div class="text-xs text-zinc-500 mb-2">Правильный ответ</div>
-                <input type="text" name="{{ $answerFieldName }}" data-field="answer" class="pin-hidden-input" autocomplete="off" value="{{ $answerValue }}">
+                <input type="text" name="{{ $answerFieldName }}" data-field="answer" class="pin-hidden-input" autocomplete="off" value="{{ $answerValue }}" @if($currentType === 'table') readonly @endif>
                 <div class="pin-field task-answer-boxes" tabindex="0" data-for="{{ $answerFieldName }}" data-allowed="{{ $answerPinAllowed }}">
                     <div class="pin-boxes flex flex-wrap gap-2">
                         @for ($i = 0; $i < $answerPinCount; $i++)
@@ -261,6 +271,11 @@
                         @endfor
                     </div>
                 </div>
+                {{-- Для таблицы это ЕДИНСТВЕННЫЙ источник правды — значение
+                     пропуска в таблице выше. Поле неактивно для ручного
+                     ввода здесь: если бы можно было редактировать оба
+                     места, они бы могли молча разойтись. --}}
+                <p class="task-answer-derived-note hidden text-xs text-zinc-500 mt-2">Выводится само из значений пропусков в таблице выше — впишите ответ там, не здесь.</p>
             </div>
 
             {{-- written/image_manual: образцовый ответ — та же зелёная

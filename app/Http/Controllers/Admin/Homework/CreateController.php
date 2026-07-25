@@ -29,6 +29,8 @@ class CreateController extends Controller
             $tasks = Task::where('category_id', $categoryId)->orderBy('number')->get(['id','number']);
         }
 
-        return view('admin.homeworks.create', compact('lessons', 'courses', 'tasks'));
+        $numberOptions = Task::distinctNumbers();
+
+        return view('admin.homeworks.create', compact('lessons', 'courses', 'tasks', 'numberOptions'));
     }
 }

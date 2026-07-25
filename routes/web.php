@@ -110,6 +110,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
         // что и у create выше.
         Route::get('import', 'ImportController@create')->name('admin.homeworks.import');
         Route::post('import', 'ImportController@store')->name('admin.homeworks.import.store');
+        Route::get('import/example', 'ImportController@example')->name('admin.homeworks.import.example');
         Route::get('{homework}/edit', 'EditController')->name('admin.homeworks.edit');
         Route::get('/{homework}', 'ShowController')->name('admin.homeworks.show');
         Route::post('/', 'StoreController')->name('admin.homeworks.store');
@@ -436,7 +437,12 @@ use App\Http\Controllers\Admin\TaskImportController;
 use App\Http\Controllers\Admin\TaskPreviewController;
 
 // --- Банк заданий (только админ) ---
-Route::prefix('admin/tasks')->middleware(['auth'])->group(function () {
+// 'admin' — тот же гейт, что и у остальных admin.*-групп; раньше тут стоял
+// только 'auth', а роль проверял вручную assertAdmin() в каждом методе
+// TaskController/TaskImportController — рабочий, но хрупкий подход: один
+// забытый вызов в новом методе тихо открыл бы бан заданий любому
+// залогиненному пользователю.
+Route::prefix('admin/tasks')->middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/',          [TaskController::class, 'index'])->name('admin.tasks.index');
     Route::get('/create',    [TaskController::class, 'create'])->name('admin.tasks.create');
@@ -449,6 +455,16 @@ Route::prefix('admin/tasks')->middleware(['auth'])->group(function () {
     // иначе роутер примет "import"/"preview" за значение {task}.
     Route::get('/import',    [TaskImportController::class, 'create'])->name('admin.tasks.import');
     Route::post('/import',   [TaskImportController::class, 'store'])->name('admin.tasks.import.store');
+    Route::get('/import/example', [TaskImportController::class, 'example'])->name('admin.tasks.import.example');
+
+    // Живая проверка "есть ли уже критерии/баллы у этого номера" — форма
+    // спрашивает при вводе номера, не блокируя сохранение.
+    Route::get('/criteria-check', [TaskController::class, 'criteriaCheck'])->name('admin.tasks.criteria-check');
+
+    // Предпросмотр задания по ID для поля "Задание из банка" в конструкторе
+    // домашки (см. TaskController::lookup) — литеральный префикс "/lookup/"
+    // ДО /{task}, иначе роутер принял бы это за show(task="lookup").
+    Route::get('/lookup/{task}', [TaskController::class, 'lookup'])->name('admin.tasks.lookup');
 
     Route::get('/{task}',    [TaskController::class, 'show'])->name('admin.tasks.show');
     Route::get('/{task}/edit', [TaskController::class, 'edit'])->name('admin.tasks.edit');
@@ -458,13 +474,6 @@ Route::prefix('admin/tasks')->middleware(['auth'])->group(function () {
     // Критерии проверки — намеренно отдельная страница от содержания задания.
     Route::get('/{task}/criteria', [TaskController::class, 'editCriteria'])->name('admin.tasks.criteria.edit');
     Route::put('/{task}/criteria', [TaskController::class, 'updateCriteria'])->name('admin.tasks.criteria.update');
-});
-
-use App\Http\Controllers\Admin\CourseTaskController;
-
-Route::middleware(['auth'])->prefix('admin')->group(function () {
-    Route::get('/courses/{course}/tasks', [CourseTaskController::class, 'index'])
-        ->name('admin.courses.tasks');
 });
 
 

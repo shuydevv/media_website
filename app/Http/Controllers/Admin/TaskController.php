@@ -115,12 +115,55 @@ class TaskController extends Controller
     /** Уже использованные номера в банке — подсказки в datalist поля "№ в ЕГЭ". */
     private function distinctNumbers(): array
     {
-        return Task::query()
-            ->whereNotNull('number')
-            ->distinct()
-            ->orderByRaw('CAST(number AS UNSIGNED), number')
-            ->pluck('number')
-            ->all();
+        return Task::distinctNumbers();
+    }
+
+    /**
+     * Живой предпросмотр задания по ID для поля "Задание из банка" в
+     * конструкторе домашки — раньше это был <select> со ВСЕМИ заданиями
+     * категории курса разом (нежизнеспособно, если в банке сотни заданий),
+     * теперь админ вводит ID напрямую, а это отдаёт короткую карточку —
+     * визуально проверить, что ID тот самый, до сохранения формы.
+     */
+    public function lookup(Task $task)
+    {
+        $this->assertAdmin();
+        $task->load('category:id,title');
+
+        return response()->json([
+            'id'             => $task->id,
+            'number'         => $task->number,
+            'type'           => $task->type,
+            'preview'        => $task->question_text ? \Illuminate\Support\Str::limit(strip_tags($task->question_text), 80) : null,
+            'category_id'    => $task->category_id,
+            'category_title' => $task->category?->title,
+        ]);
+    }
+
+    /**
+     * Живая подсказка при вводе номера: есть ли уже критерии/баллы для
+     * этой пары (категория, номер). Не блокирует сохранение — номер может
+     * быть совершенно новым, это нормально, просто admin должен понимать,
+     * что критерии/баллы пока не заданы и подставится значение по
+     * умолчанию (1 балл, без критериев), пока он их не заполнит.
+     */
+    public function criteriaCheck(Request $request)
+    {
+        $this->assertAdmin();
+
+        $categoryId = (int) $request->get('category_id');
+        $number = trim((string) $request->get('number'));
+
+        if (!$categoryId || $number === '') {
+            return response()->json(['exists' => null]);
+        }
+
+        $criteria = TaskCriteria::where('category_id', $categoryId)->where('number', $number)->first();
+
+        return response()->json([
+            'exists'    => $criteria !== null,
+            'max_score' => $criteria->max_score ?? null,
+        ]);
     }
 
     public function update(Request $request, Task $task)

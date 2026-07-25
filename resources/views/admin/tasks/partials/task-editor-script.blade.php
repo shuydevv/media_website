@@ -15,6 +15,17 @@
 @include('components.pin-field-script')
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    // Метки пропусков в таблице — буквами (А, Б, В…), не цифрами: цифры
+    // заняты под сами квадратики "Правильный ответ", буквы визуально не
+    // путаются с ними. Ё и Й пропущены — как в обычной буквенной нумерации.
+    const BLANK_LETTERS = 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ'.split('');
+    function blankLetter(index) {
+        if (index < BLANK_LETTERS.length) return BLANK_LETTERS[index];
+        const outer = BLANK_LETTERS[Math.floor(index / BLANK_LETTERS.length) - 1] || 'А';
+        const inner = BLANK_LETTERS[index % BLANK_LETTERS.length];
+        return outer + inner;
+    }
+
     const VISIBILITY_CLASSES = [
         'task-options', 'task-matches', 'task-image', 'task-table',
         'task-passage', 'task-image-auto-extra',
@@ -38,6 +49,15 @@ document.addEventListener('DOMContentLoaded', () => {
         textWrap.classList.toggle('hidden', usePin);
         pinWrap.querySelector('.pin-hidden-input')?.toggleAttribute('disabled', !usePin);
         textWrap.querySelector('textarea')?.toggleAttribute('disabled', usePin);
+
+        // Для таблицы ответ выводится ТОЛЬКО из значений пропусков в
+        // таблице — печатать его тут же второй раз нельзя, иначе два места
+        // могут молча разойтись (см. sync() в renderTableBuilder).
+        const isDerived = (type === 'table');
+        pinWrap.querySelector('.pin-hidden-input')?.toggleAttribute('readonly', isDerived);
+        pinWrap.querySelector('.task-answer-boxes')?.classList.toggle('opacity-60', isDerived);
+        pinWrap.querySelector('.task-answer-boxes')?.classList.toggle('pointer-events-none', isDerived);
+        pinWrap.querySelector('.task-answer-derived-note')?.classList.toggle('hidden', !isDerived);
     }
 
     // "Порядок важен" — при проверке всегда true для matching/table
@@ -60,6 +80,92 @@ document.addEventListener('DOMContentLoaded', () => {
         const hasCategory = !!(categorySelect && categorySelect.value);
         wrap.classList.toggle('hidden', !hasCategory);
         if (!hasCategory) root.querySelector('.task-body')?.classList.add('hidden');
+    }
+
+    // Живая подсказка "есть ли уже критерии/баллы у этого номера" — не
+    // блокирует сохранение (номер может быть совершенно новым, это
+    // нормально), просто предупреждает, что подставится значение по
+    // умолчанию (1 балл, без критериев), пока их не заполнят отдельно.
+    let criteriaCheckDebounce = null;
+    // Категория — либо явный селектор (банк), либо категория выбранного
+    // курса домашки (в конструкторе домашки своего селектора категории нет
+    // вовсе, category_id всегда берётся с курса, см. StoreController/
+    // UpdateController::copyIntoBank и <option data-category="..."> у
+    // #course_id в create/edit.blade.php).
+    function currentCategoryId() {
+        const categorySelect = document.querySelector('.task-category-select');
+        if (categorySelect) return categorySelect.value || '';
+        const courseSelect = document.getElementById('course_id');
+        return courseSelect?.selectedOptions?.[0]?.dataset.category || '';
+    }
+    async function checkNumberCriteria(root) {
+        const hint = root.querySelector('.task-number-hint');
+        const numberInput = root.querySelector('.task-number-input');
+        if (!hint || !numberInput) return;
+
+        const categoryId = currentCategoryId();
+        const number = numberInput.value.trim();
+        if (!categoryId || !number) { hint.textContent = ''; return; }
+
+        try {
+            const url = '{{ route('admin.tasks.criteria-check') }}' + `?category_id=${encodeURIComponent(categoryId)}&number=${encodeURIComponent(number)}`;
+            const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!res.ok) { hint.textContent = ''; return; }
+            const data = await res.json();
+            if (data.exists === true) {
+                hint.textContent = `есть критерии/баллы (${data.max_score ?? 1})`;
+                hint.className = 'task-number-hint ml-2 text-xs text-emerald-600';
+            } else if (data.exists === false) {
+                hint.textContent = 'новый номер — критериев и баллов ещё нет, подставится 1 балл по умолчанию';
+                hint.className = 'task-number-hint ml-2 text-xs text-amber-600';
+            } else {
+                hint.textContent = '';
+            }
+        } catch (e) {
+            hint.textContent = '';
+        }
+    }
+    function scheduleCriteriaCheck(root) {
+        clearTimeout(criteriaCheckDebounce);
+        criteriaCheckDebounce = setTimeout(() => checkNumberCriteria(root), 400);
+    }
+
+    // Живой предпросмотр задания по ID для поля "Задание из банка" в
+    // конструкторе домашки — раньше это был <select> со всеми заданиями
+    // категории курса разом (нежизнеспособно при сотнях заданий в банке),
+    // теперь просто вводится ID, а сюда — короткая карточка для проверки,
+    // что это тот самый номер/тип/вопрос, до сохранения формы.
+    let taskIdLookupDebounce = null;
+    async function lookupTaskId(taskItemRoot) {
+        const input = taskItemRoot.querySelector('.task-id-input');
+        const preview = taskItemRoot.querySelector('.task-id-preview');
+        if (!input || !preview) return;
+
+        const id = input.value.trim();
+        if (!id) { preview.textContent = ''; preview.className = 'task-id-preview text-xs mt-1'; return; }
+
+        try {
+            const url = '{{ url('/admin/tasks/lookup') }}/' + encodeURIComponent(id);
+            const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!res.ok) {
+                preview.textContent = 'Задание с таким ID не найдено.';
+                preview.className = 'task-id-preview text-xs mt-1 text-red-600';
+                return;
+            }
+            const data = await res.json();
+            const courseCategoryId = document.getElementById('course_id')?.selectedOptions?.[0]?.dataset.category || '';
+            const mismatch = !!(courseCategoryId && data.category_id && String(courseCategoryId) !== String(data.category_id));
+            const label = [`№ ${data.number ?? '—'}`, data.type, data.preview].filter(Boolean).join(' — ');
+            preview.textContent = `${label} · категория: ${data.category_title ?? '—'}`
+                + (mismatch ? ' — другая категория, не как у курса этой домашки!' : '');
+            preview.className = 'task-id-preview text-xs mt-1 ' + (mismatch ? 'text-amber-600' : 'text-emerald-600');
+        } catch (e) {
+            preview.textContent = '';
+        }
+    }
+    function scheduleTaskIdLookup(taskItemRoot) {
+        clearTimeout(taskIdLookupDebounce);
+        taskIdLookupDebounce = setTimeout(() => lookupTaskId(taskItemRoot), 400);
     }
 
     // Смена типа — все поля содержания очищаются, чтобы от предыдущего типа
@@ -95,18 +201,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Дорастить число квадратиков ответа, не трогая уже введённые символы.
     function resizeAnswerPin(root, minCount) {
-        const pinField = root.querySelector('.task-answer-pin .pin-field');
-        if (!pinField) return;
-        const name = pinField.getAttribute('data-for');
-        window.growPinField?.[name]?.(minCount);
+        root.querySelector('.task-answer-pin .pin-field')?._growPinField?.(minCount);
     }
 
     // Задать значение квадратиков целиком (вывод из отметок/пар/значений).
     function setAnswerPin(root, value) {
-        const pinField = root.querySelector('.task-answer-pin .pin-field');
-        if (!pinField) return;
-        const name = pinField.getAttribute('data-for');
-        window.setPinFieldValue?.[name]?.(value);
+        root.querySelector('.task-answer-pin .pin-field')?._setPinFieldValue?.(value);
     }
 
     function currentType(root) {
@@ -311,7 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     mark.className = 'block mt-1 text-[10px] text-gray-400 hover:text-amber-600';
                     mark.textContent = 'сделать пропуском';
                     mark.addEventListener('click', () => {
-                        state.blanks.push({ r, c, key: String(state.blanks.length + 1), value: '' });
+                        state.blanks.push({ r, c, key: blankLetter(state.blanks.length), value: '' });
                         sync();
                         renderTableBuilder(root);
                     });
@@ -408,21 +508,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function initRoot(root) {
         const type = currentType(root);
+        // Идемпотентно (см. pin-field-script.blade.php) — для карточек,
+        // уже настроенных при загрузке страницы, это no-op; для только что
+        // склонированной карточки (см. "Добавить задание") — единственное
+        // место, где её .pin-field вообще получает обработчики: без этого
+        // клон был бы либо мёртвым виджетом, либо (что хуже) писал бы в
+        // ответ оригинальной карточки, у которой то же имя поля до клонирования.
+        const pinField = root.querySelector('.task-answer-pin .pin-field');
+        if (pinField) window.setupPinField?.(pinField);
         toggleTaskFields(root, type);
         toggleTypeWrap(root);
         autosizeAll(root);
         renderAllLinesPreviews(root);
-        renderTableBuilder(root);
+        // Только для типа "Таблица" — sync() внутри renderTableBuilder()
+        // перезаписывает "Правильный ответ" значениями пропусков таблицы;
+        // для остальных типов там нет реального table_content, а textarea
+        // всегда содержит JSON-заглушку с одним пустым пропуском, и
+        // безусловный вызов затирал бы уже сохранённый ответ (например,
+        // "Тест с вариантами"/"Текст с вопросами") пустой строкой при
+        // каждой загрузке страницы редактирования.
+        if (type === 'table') renderTableBuilder(root);
         wireImageUpload(root);
+        if (root.querySelector('.task-number-input')) scheduleCriteriaCheck(root);
     }
 
     document.querySelectorAll('.task-content-fields').forEach(initRoot);
+
+    // .task-id-input живёт рядом с .task-content-fields (в .task-item), не
+    // внутри неё — предпросмотр уже заполненных при загрузке страницы
+    // (редактирование домашки с заданиями из банка) даём сразу, не дожидаясь
+    // первого ввода.
+    document.querySelectorAll('.task-item').forEach(item => {
+        if (item.querySelector('.task-id-input')?.value.trim()) lookupTaskId(item);
+    });
 
     // Категория — одна на страницу (см. toggleTypeWrap), но тип раскрывать
     // нужно во всех .task-content-fields на странице разом (на всякий
     // случай — в банке карточка одна, но обработчик остаётся общим).
     document.querySelector('.task-category-select')?.addEventListener('change', () => {
-        document.querySelectorAll('.task-content-fields').forEach(toggleTypeWrap);
+        document.querySelectorAll('.task-content-fields').forEach(root => {
+            toggleTypeWrap(root);
+            if (root.querySelector('.task-number-input')) scheduleCriteriaCheck(root);
+        });
+    });
+
+    // Конструктор домашки: своего селектора категории нет — категория
+    // определяется курсом, так что смену курса тоже нужно перепроверять
+    // (и подсказку про критерии, и предупреждение о несовпадении категории
+    // у уже введённого ID задания из банка).
+    document.getElementById('course_id')?.addEventListener('change', () => {
+        document.querySelectorAll('.task-content-fields').forEach(root => {
+            if (root.querySelector('.task-number-input')) scheduleCriteriaCheck(root);
+        });
+        document.querySelectorAll('.task-item').forEach(item => {
+            if (item.querySelector('.task-id-input')?.value.trim()) lookupTaskId(item);
+        });
     });
 
     // Делегированные обработчики — работают и для карточек, добавленных
@@ -454,6 +594,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const root = e.target.closest('.task-content-fields');
             const count = e.target.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean).length;
             if (root && count > 0) resizeAnswerPin(root, count);
+        }
+        if (e.target.classList.contains('task-number-input')) {
+            scheduleCriteriaCheck(e.target.closest('.task-content-fields'));
+        }
+        if (e.target.classList.contains('task-id-input')) {
+            const item = e.target.closest('.task-item');
+            if (item) scheduleTaskIdLookup(item);
         }
     });
 
@@ -552,5 +699,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Для карточек, добавленных динамически (см. #add-task в конструкторе
     // домашки) — инициализировать видимость сразу после появления в DOM.
     window.initTaskContentFields = (root) => initRoot(root);
+    // Точка входа для восстановления черновика домашки (см. localStorage-
+    // скрипт в admin/homeworks/create.blade.php) — после того как черновик
+    // проставляет table_content textarea напрямую, конструктор таблицы
+    // нужно перерисовать из этого значения явно, initRoot() тут не подходит
+    // (заново вызвал бы toggleTaskFields/renderAllLinesPreviews и т.д.).
+    window.renderTableBuilder = renderTableBuilder;
 });
 </script>

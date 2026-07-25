@@ -96,7 +96,7 @@
     <div class="flex items-center justify-between gap-3 mb-4 sm:mb-5">
       <div class="flex items-center gap-3">
         <span class="inline-block px-2 py-0.5 text-xs rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700">
-          №{{ $task->task->number ?? '—' }} в ЕГЭ
+          №{{ $task->number ?? '—' }} в ЕГЭ
         </span>
         <span class="sans-medium text-lg text-zinc-900">Вопрос {{ $position }} из {{ $total }}</span>
       </div>

@@ -79,6 +79,7 @@ class UpdateController extends Controller
         }
 
         $content = $this->normalizeTaskContent($taskData);
+        $number = ($taskData['number'] ?? null) ?: null;
 
         $imagePath = $homeworkTask->getRawOriginal('image_path');
         if (!empty($taskData['image']) && $taskData['image'] instanceof \Illuminate\Http\UploadedFile) {
@@ -90,28 +91,31 @@ class UpdateController extends Controller
             'image_path'  => $imagePath,
             'order'       => $taskData['order'] ?? null,
             'max_score'   => $overrideScore ?? 1,
+            'task_number' => $number,
             // Переключили с банка обратно на своё — отвязываем.
             'task_id'     => null,
         ]))->save();
 
         if (!empty($taskData['save_to_bank'])) {
-            $this->copyIntoBank($homeworkTask, $content, $imagePath, $overrideScore, $courseId);
+            $this->copyIntoBank($homeworkTask, $content, $imagePath, $courseId, $number);
         }
 
         return $homeworkTask->id;
     }
 
-    private function copyIntoBank(HomeworkTask $homeworkTask, array $content, ?string $imagePath, ?int $overrideScore, int $courseId): void
+    private function copyIntoBank(HomeworkTask $homeworkTask, array $content, ?string $imagePath, int $courseId, ?string $number = null): void
     {
         $categoryId = Course::find($courseId)?->category_id;
         if (!$categoryId) {
             return;
         }
 
+        // Баллы в Task не копируются — они общие для номера (см.
+        // TaskCriteria::max_score), не своя колонка на Task.
         $bankTask = Task::create(array_merge($content, [
             'category_id' => $categoryId,
             'image_path'  => $imagePath,
-            'max_score'   => $overrideScore ?? 1,
+            'number'      => $number,
         ]));
 
         $homeworkTask->task_id = $bankTask->id;

@@ -8,15 +8,18 @@ use App\Models\Task;
 use App\Models\User;
 use App\Support\TaskContentNormalizer;
 use App\Support\TaskContentRules;
+use App\Support\TaskImageImporter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 /**
  * Массовая загрузка заданий в банк через JSON-файл — один объект или
- * массив объектов с теми же полями, что форма банка. Изображения через
- * импорт не переносятся (только текстовое содержание — картинка
- * добавляется вручную после импорта). Частичный успех: что провалидировалось,
- * то сохраняется, по остальным строкам — отчёт с причиной.
+ * массив объектов с теми же полями, что форма банка, плюс опциональные
+ * "id" (обновить существующее задание вместо создания нового — идемпотентный
+ * повторный импорт того же файла) и "image_url" (картинка скачивается и
+ * сохраняется так же, как при ручной загрузке файла). Частичный успех: что
+ * провалидировалось, то сохраняется, по остальным строкам — отчёт с причиной.
  */
 class TaskImportController extends Controller
 {
@@ -32,11 +35,40 @@ class TaskImportController extends Controller
         return view('admin.tasks.import');
     }
 
+    public function example()
+    {
+        $this->assertAdmin();
+
+        $example = [
+            [
+                'id' => null,
+                '_comment' => 'id — только для повторного импорта поверх существующего задания; для нового задания просто уберите это поле.',
+                'category' => 'Русский язык',
+                'number' => '15',
+                'type' => 'test',
+                'question_text' => 'Выберите верный вариант написания.',
+                'options' => ['раненый боец', 'раненный боец', 'ранненый боец'],
+                'answer' => '1',
+                'hint' => 'Одна Н — если нет приставки и зависимых слов.',
+                'image_url' => null,
+                'is_public' => true,
+            ],
+        ];
+
+        return response()->streamDownload(
+            fn () => print(json_encode($example, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)),
+            'tasks-example.json',
+            ['Content-Type' => 'application/json']
+        );
+    }
+
     public function store(Request $request)
     {
         $this->assertAdmin();
 
-        $request->validate(['file' => ['required', 'file']], [], ['file' => 'Файл']);
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:json,txt', 'max:4096'],
+        ], [], ['file' => 'Файл']);
 
         $raw = file_get_contents($request->file('file')->getRealPath());
         $decoded = json_decode($raw, true);
@@ -53,9 +85,11 @@ class TaskImportController extends Controller
 
         foreach ($items as $i => $item) {
             if (!is_array($item)) {
-                $results[] = ['index' => $i, 'ok' => false, 'message' => 'Строка не является объектом'];
+                $results[] = ['index' => $i, 'ok' => false, 'label' => '', 'message' => 'Строка не является объектом'];
                 continue;
             }
+
+            $label = $this->resultLabel($item);
 
             $categoryId = $item['category_id'] ?? null;
             if (!$categoryId && !empty($item['category'])) {
@@ -75,24 +109,51 @@ class TaskImportController extends Controller
 
             $validator = Validator::make($flat, $rules, [], TaskContentRules::attributes());
             if ($validator->fails()) {
-                $results[] = ['index' => $i, 'ok' => false, 'message' => implode(' ', $validator->errors()->all())];
+                $results[] = ['index' => $i, 'ok' => false, 'label' => $label, 'message' => implode(' ', $validator->errors()->all())];
                 continue;
             }
 
             $data = $validator->validated();
             $content = TaskContentNormalizer::normalize($data);
 
+            $imageNote = null;
+            if (!empty($item['image_url']) && is_string($item['image_url'])) {
+                $imageError = null;
+                $path = TaskImageImporter::download($item['image_url'], $imageError);
+                if ($path) {
+                    $content['image_path'] = $path;
+                } else {
+                    $imageNote = "картинка не загружена: {$imageError}";
+                }
+            }
+
             // Баллы сюда не входят — они общие для номера (TaskCriteria::
             // max_score), настраиваются на странице критериев после импорта,
             // не за каждое отдельное задание.
-            $task = Task::create(array_merge($content, [
+            $attrs = array_merge($content, [
                 'category_id' => (int) $data['category_id'],
                 'number'      => $data['number'] ?? null,
                 'is_public'   => (bool) ($item['is_public'] ?? false),
-            ]));
+            ]);
+
+            $existingId = $item['id'] ?? null;
+            $existing = $existingId ? Task::find($existingId) : null;
+
+            if ($existing) {
+                $existing->update($attrs);
+                $task = $existing;
+                $note = 'обновлено';
+            } else {
+                $task = Task::create($attrs);
+                $note = 'создано';
+            }
+
+            if ($imageNote) {
+                $note .= " ({$imageNote})";
+            }
 
             $created++;
-            $results[] = ['index' => $i, 'ok' => true, 'task_id' => $task->id];
+            $results[] = ['index' => $i, 'ok' => true, 'label' => $label, 'note' => $note, 'task_id' => $task->id];
         }
 
         return view('admin.tasks.import', [
@@ -100,5 +161,13 @@ class TaskImportController extends Controller
             'created' => $created,
             'total'   => count($items),
         ]);
+    }
+
+    /** Короткая метка для строки отчёта — чтобы не искать задание по номеру строки в файле. */
+    private function resultLabel(array $item): string
+    {
+        $text = $item['question_text'] ?? $item['passage_text'] ?? $item['answer'] ?? null;
+
+        return $text ? Str::limit((string) $text, 50) : '';
     }
 }

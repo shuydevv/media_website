@@ -3,15 +3,20 @@
 @section('content')
 <div class="max-w-3xl mx-auto px-4 py-6">
   <h1 class="text-2xl font-semibold mb-1">Импорт заданий в банк</h1>
-  <p class="text-sm text-gray-500 mb-6">
+  <p class="text-sm text-gray-500 mb-2">
     JSON-файл: один объект задания или массив объектов. Поля — те же, что в форме
     создания: <code>category_id</code> (или <code>category</code> — название категории),
     <code>number</code>, <code>type</code>, <code>question_text</code>, <code>options</code> (массив строк),
     <code>matches</code> (<code>{"left":[...],"right":[...]}</code>), <code>table_content</code> (объект
     <code>{"cols":[...],"rows":[[...]],"blanks":[...]}</code>), <code>image_auto_options</code>,
-    <code>answer</code>, <code>hint</code>, <code>is_public</code>.
-    Изображения через импорт не переносятся — добавьте их вручную после, со страницы задания.
+    <code>answer</code>, <code>hint</code>, <code>is_public</code>, опционально
+    <code>"image_url": "https://..."</code> — картинка будет скачана и сохранена автоматически.
     Баллы за задание в JSON не указываются — они общие для номера, настройте их на странице критериев после импорта.
+  </p>
+  <p class="text-sm text-gray-500 mb-6">
+    Необязательный <code>"id"</code> в объекте задания — если указать id существующего задания банка,
+    оно не задублируется, а обновится. Без <code>id</code> всегда создаётся новое задание.
+    <a href="{{ route('admin.tasks.import.example') }}" class="text-blue-600 hover:underline">Скачать пример файла →</a>
   </p>
 
   @if ($errors->any())
@@ -43,12 +48,12 @@
         @foreach($results as $r)
           @if($r['ok'])
             <div class="text-sm px-3 py-2 rounded-lg bg-green-50 border border-green-200 text-green-800">
-              Строка {{ $r['index'] + 1 }}: сохранено —
+              Строка {{ $r['index'] + 1 }}@if($r['label']) («{{ $r['label'] }}»)@endif: {{ $r['note'] }} —
               <a href="{{ route('admin.tasks.show', $r['task_id']) }}" class="underline">задание #{{ $r['task_id'] }}</a>
             </div>
           @else
             <div class="text-sm px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-800">
-              Строка {{ $r['index'] + 1 }}: {{ $r['message'] }}
+              Строка {{ $r['index'] + 1 }}@if($r['label']) («{{ $r['label'] }}»)@endif: {{ $r['message'] }}
             </div>
           @endif
         @endforeach

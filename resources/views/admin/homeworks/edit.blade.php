@@ -40,7 +40,7 @@
             <label for="course_id" class="block text-sm font-medium">Курс</label>
             <select class="w-full border rounded px-3 py-2" name="course_id" id="course_id" required>
                 @foreach($courses as $course)
-                    <option value="{{ $course->id }}" @selected(old('course_id', $homework->course_id) == $course->id)>{{ $course->title }}</option>
+                    <option value="{{ $course->id }}" data-category="{{ $course->category_id }}" @selected(old('course_id', $homework->course_id) == $course->id)>{{ $course->title }}</option>
                 @endforeach
             </select>
         </div>
@@ -78,17 +78,24 @@
             @forelse($homework->tasks as $t)
             @php $isBankItem = !empty($t->task_id); @endphp
             <div class="task-item border rounded p-4 bg-gray-50">
-                <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <span class="drag-handle cursor-grab select-none text-gray-400 hover:text-gray-600" draggable="true" title="Перетащите, чтобы изменить порядок">⠿⠿</span>
-                    Задание <span class="task-item-number">{{ $i + 1 }}</span>
-                </h2>
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold">Задание <span class="task-item-number">{{ $i + 1 }}</span></h2>
+                    {{-- Порядок — стрелками: реальный порядок задаётся
+                         положением карточки в списке, стрелки просто
+                         переставляют DOM-узлы местами. --}}
+                    <div class="flex items-center gap-1">
+                        <button type="button" class="task-move-up w-7 h-7 flex items-center justify-center rounded border bg-white hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed" title="Переместить вверх">↑</button>
+                        <button type="button" class="task-move-down w-7 h-7 flex items-center justify-center rounded border bg-white hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed" title="Переместить вниз">↓</button>
+                    </div>
+                </div>
 
                 <input type="hidden" name="tasks[{{ $i }}][id]" value="{{ $t->id }}">
+                <input type="hidden" name="tasks[{{ $i }}][order]" class="task-order-input" value="{{ old("tasks.$i.order", $t->order ?? ($i + 1)) }}">
 
                 <div class="mb-4">
                     <label class="inline-flex items-center gap-2 mr-6 text-sm font-medium">
                         <input type="radio" name="tasks[{{ $i }}][source]" value="own" class="task-source-toggle" @checked(!$isBankItem)>
-                        Только для этой домашки
+                        Создать новое
                     </label>
                     <label class="inline-flex items-center gap-2 text-sm font-medium">
                         <input type="radio" name="tasks[{{ $i }}][source]" value="bank" class="task-source-toggle" @checked($isBankItem)>
@@ -97,48 +104,40 @@
                 </div>
 
                 <div class="task-own-fields {{ $isBankItem ? 'hidden' : '' }}">
-                    <x-task-content-fields :name="'tasks['.$i.']'" :task="$t" />
-
-                    <label class="inline-flex items-center gap-2 mt-4 mb-4 text-sm">
-                        <input type="checkbox" name="tasks[{{ $i }}][save_to_bank]" value="1">
-                        Также сохранить в банк заданий (станет доступно в личном кабинете и в других домашках)
-                    </label>
+                    <x-task-content-fields :name="'tasks['.$i.']'" :task="$t" :number-options="$numberOptions" />
                 </div>
 
+                {{-- ID вместо выпадающего списка — в банке могут быть сотни
+                     заданий, тянуть и рендерить их все в <select> не годится. --}}
                 <div class="task-bank-fields {{ $isBankItem ? '' : 'hidden' }} mb-4">
-                    <label class="block text-sm font-medium mb-1">Задание из банка</label>
-                    <select name="tasks[{{ $i }}][task_id]"
-                            class="task-id-select w-full border rounded px-3 py-2"
-                            data-current="{{ old('tasks.'.$i.'.task_id', $t->task_id) }}">
-                        <option value="">— выберите задание —</option>
-                        {{-- options подтянет JS через /admin/courses/{course}/tasks --}}
-                    </select>
+                    <label class="block text-sm font-medium mb-1">Задание из банка — ID</label>
+                    <input type="number" name="tasks[{{ $i }}][task_id]" class="task-id-input w-full border rounded px-3 py-2"
+                           min="1" step="1" placeholder="Например, 42"
+                           value="{{ old('tasks.'.$i.'.task_id', $t->task_id) }}">
+                    <div class="task-id-preview text-xs mt-1"></div>
                     <div class="mt-1 text-sm">
                         <a href="{{ route('admin.tasks.create') }}" target="_blank" class="text-blue-600 hover:underline">Создать новое в банке →</a>
-                        <button type="button" class="task-bank-refresh ml-3 text-gray-600 hover:underline">Обновить список</button>
+                        <a href="{{ route('admin.tasks.index') }}" target="_blank" class="text-blue-600 hover:underline ml-3">Найти ID в банке →</a>
                     </div>
                 </div>
 
-                {{-- Порядок и баллы — общие для обоих режимов. Баллы: пусто =
-                     взять из банка (для "своих" заданий пусто = 1, см.
-                     UpdateController) — поэтому предзаполняем СЫРЫМ
-                     значением колонки, а не эффективным (через прокси),
-                     иначе при каждом сохранении текущее значение банка
-                     тихо "замораживалось" бы как персональное переопределение. --}}
-                <div class="flex gap-4">
-                    <div class="flex-1">
-                        <label class="block text-sm font-medium">Порядок</label>
-                        <input type="number" name="tasks[{{ $i }}][order]" class="w-full border rounded px-3 py-2"
-                               value="{{ old("tasks.$i.order", $t->order) }}">
-                    </div>
-                    <div class="flex-1">
-                        <label class="block text-sm font-medium">Баллы @if($isBankItem)<span class="text-gray-400 font-normal">(сейчас: {{ $t->max_score }}, из банка)</span>@endif</label>
-                        <input type="number" name="tasks[{{ $i }}][max_score]" class="w-full border rounded px-3 py-2"
-                            min="1" step="1" value="{{ old("tasks.$i.max_score", $t->getRawOriginal('max_score')) }}">
-                    </div>
+                {{-- Баллы — по умолчанию из критериев (общие на весь номер
+                     в ЕГЭ); это поле — редкое точечное переопределение
+                     только для этой домашки. Предзаполняем СЫРЫМ значением
+                     колонки, а не эффективным (через прокси), иначе при
+                     каждом сохранении текущее значение по умолчанию тихо
+                     "замораживалось" бы как персональное переопределение. --}}
+                <div>
+                    <label class="block text-sm font-medium">Баллы @if($isBankItem)<span class="text-gray-400 font-normal">(сейчас: {{ $t->max_score }}, по умолчанию из критериев)</span>@endif</label>
+                    <input type="number" name="tasks[{{ $i }}][max_score]" class="w-full border rounded px-3 py-2"
+                        min="1" step="1" value="{{ old("tasks.$i.max_score", $t->getRawOriginal('max_score')) }}">
                 </div>
 
-                <div class="mt-4 text-right">
+                <div class="mt-4 flex items-center justify-between flex-wrap gap-2">
+                    <label class="task-save-to-bank-wrap inline-flex items-center gap-2 text-sm {{ $isBankItem ? 'hidden' : '' }}">
+                        <input type="checkbox" name="tasks[{{ $i }}][save_to_bank]" value="1">
+                        Также сохранить в банк заданий
+                    </label>
                     <button type="button" class="delete-task text-red-600 text-sm hover:underline">Удалить задание</button>
                 </div>
             </div>
@@ -174,24 +173,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function toggleSource(container, source) {
         const own = container.querySelector('.task-own-fields');
         const bank = container.querySelector('.task-bank-fields');
+        const saveToBank = container.querySelector('.task-save-to-bank-wrap');
         if (source === 'bank') {
             own?.classList.add('hidden');
             bank?.classList.remove('hidden');
+            saveToBank?.classList.add('hidden');
         } else {
             own?.classList.remove('hidden');
             bank?.classList.add('hidden');
+            saveToBank?.classList.remove('hidden');
         }
     }
 
     document.addEventListener('change', e => {
         if (e.target.classList.contains('task-source-toggle')) {
             toggleSource(e.target.closest('.task-item'), e.target.value);
-        }
-    });
-
-    document.addEventListener('click', e => {
-        if (e.target.classList.contains('task-bank-refresh')) {
-            window.refreshTaskSelectsForCurrentCourse && window.refreshTaskSelectsForCurrentCourse();
         }
     });
 
@@ -210,6 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (el.type === 'radio') el.checked = (el.value === 'own');
             else el.value = '';
         });
+        tpl.querySelector('.task-id-preview').textContent = '';
 
         toggleSource(tpl, 'own');
 
@@ -219,59 +216,36 @@ document.addEventListener('DOMContentLoaded', () => {
         renumberTaskOrders();
     });
 
-    // --- Drag-n-drop сортировка заданий (только эта страница — здесь уже
-    // есть карточки .task-item и числовое поле order). Нативный HTML5
-    // drag-and-drop, без сторонних библиотек. Перетаскивание начинается
-    // только с ручки .drag-handle — иначе клики/выделение текста в полях
-    // формы конфликтовали бы с началом перетаскивания всей карточки. ---
-    const tasksContainerForDrag = document.getElementById('tasks-container');
-    let draggedItem = null;
-
+    // --- Порядок заданий — стрелками, не перетаскиванием и не ручным
+    // вводом числа. tasks[N][order] всегда пересчитывается по итоговому
+    // положению карточки в #tasks-container. ---
     function renumberTaskOrders() {
-        document.querySelectorAll('#tasks-container .task-item').forEach((item, idx) => {
-            const orderInput = item.querySelector('input[name*="[order]"]');
+        const items = [...document.querySelectorAll('#tasks-container .task-item')];
+        items.forEach((item, idx) => {
+            const orderInput = item.querySelector('.task-order-input');
             if (orderInput) orderInput.value = idx + 1;
             const numberLabel = item.querySelector('.task-item-number');
             if (numberLabel) numberLabel.textContent = idx + 1;
+            item.querySelector('.task-move-up').disabled = (idx === 0);
+            item.querySelector('.task-move-down').disabled = (idx === items.length - 1);
         });
     }
+    renumberTaskOrders();
 
-    function elementAfterDragPosition(container, y) {
-        const items = [...container.querySelectorAll('.task-item:not(.dragging)')];
-        return items.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) {
-                return { offset, element: child };
+    document.addEventListener('click', e => {
+        if (e.target.classList.contains('task-move-up') || e.target.classList.contains('task-move-down')) {
+            const item = e.target.closest('.task-item');
+            const sibling = e.target.classList.contains('task-move-up')
+                ? item.previousElementSibling
+                : item.nextElementSibling;
+            if (!sibling) return;
+            if (e.target.classList.contains('task-move-up')) {
+                item.parentNode.insertBefore(item, sibling);
+            } else {
+                item.parentNode.insertBefore(sibling, item);
             }
-            return closest;
-        }, { offset: -Infinity }).element;
-    }
-
-    tasksContainerForDrag.addEventListener('dragstart', (e) => {
-        const handle = e.target.closest('.drag-handle');
-        if (!handle) { e.preventDefault(); return; }
-        draggedItem = handle.closest('.task-item');
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', '');
-        draggedItem.classList.add('dragging', 'opacity-50');
-    });
-
-    tasksContainerForDrag.addEventListener('dragover', (e) => {
-        if (!draggedItem) return;
-        e.preventDefault();
-        const after = elementAfterDragPosition(tasksContainerForDrag, e.clientY);
-        if (after == null) {
-            tasksContainerForDrag.appendChild(draggedItem);
-        } else {
-            tasksContainerForDrag.insertBefore(draggedItem, after);
+            renumberTaskOrders();
         }
-    });
-
-    tasksContainerForDrag.addEventListener('dragend', () => {
-        draggedItem?.classList.remove('dragging', 'opacity-50');
-        draggedItem = null;
-        renumberTaskOrders();
     });
 
     document.addEventListener('click', e => {
@@ -285,52 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
             renumberTaskOrders();
         }
     });
-});
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const courseSelect = document.getElementById('course_id');
-
-  async function fetchTasks(courseId) {
-    if (!courseId) return [];
-    try {
-      const res = await fetch(`/admin/courses/${courseId}/tasks`, { headers: { 'X-Requested-With': 'XMLHttpRequest' }});
-      if (!res.ok) return [];
-      return await res.json();
-    } catch(e) {
-      console.error(e);
-      return [];
-    }
-  }
-
-  function fillTaskSelects(taskList) {
-    document.querySelectorAll('select.task-id-select').forEach(sel => {
-      const current = sel.getAttribute('data-current') || '';
-      sel.innerHTML = '<option value="">— выбрать задание —</option>';
-      taskList.forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t.id;
-        const label = [`№ ${t.number ?? '—'}`, t.type, t.preview].filter(Boolean).join(' — ');
-        opt.textContent = `${label} (ID ${t.id})`;
-        if (current && String(current) === String(t.id)) opt.selected = true;
-        sel.appendChild(opt);
-      });
-    });
-  }
-
-  async function refreshTasks() {
-    const list = await fetchTasks(courseSelect?.value);
-    fillTaskSelects(list);
-  }
-
-  // Делаем функцию глобальной — используется кнопкой "Обновить список" и
-  // при добавлении новой карточки задания.
-  window.refreshTaskSelectsForCurrentCourse = refreshTasks;
-
-  // Первая загрузка и при смене курса
-  refreshTasks();
-  courseSelect?.addEventListener('change', refreshTasks);
 });
 </script>
 

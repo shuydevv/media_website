@@ -31,6 +31,11 @@ class StoreRequest extends FormRequest
             'tasks.*.image_path' => ['nullable', 'string'],
             'tasks.*.order' => ['nullable', 'integer'],
             'tasks.*.image_auto_strict' => ['nullable', 'boolean'],
+            // Номер в ЕГЭ — только для source=own, чтобы критерии/баллы
+            // (общие на пару категория+номер, см. TaskCriteria) можно было
+            // подхватить и для "своего" задания в домашке, и при "Также
+            // сохранить в банк" — см. Store/UpdateController::copyIntoBank.
+            'tasks.*.number' => ['nullable', 'string', 'max:255'],
 
             'due_at'    => ['nullable','date'],
         ]);

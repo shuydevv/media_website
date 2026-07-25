@@ -69,6 +69,7 @@ class HomeworkTask extends Model
         'type', 'question_text', 'passage_text', 'options', 'matches',
         'table_content', 'image_path', 'answer', 'hint', 'max_score',
         'order_matters', 'image_auto_options', 'left_title', 'right_title',
+        'number',
     ];
 
     public function getAttribute($key)
@@ -105,6 +106,18 @@ class HomeworkTask extends Model
     public function isAutoGradable(): bool
     {
         return !in_array($this->type, self::MANUAL_TYPES, true);
+    }
+
+    /**
+     * "number" (как у Task) читает ту же колонку, что и раньше валидировалась
+     * под именем task_number, но нигде не сохранялась и не читалась — форма
+     * задания в домашке (components/task-content-fields.blade.php) читает
+     * это поле как data_get($task,'number') одинаково для Task и HomeworkTask,
+     * переименовывать саму колонку в БД не требуется.
+     */
+    public function getNumberAttribute()
+    {
+        return $this->attributes['task_number'] ?? null;
     }
 
     public function homework()

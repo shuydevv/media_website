@@ -63,6 +63,18 @@ class Task extends Model
         return $this->hasMany(\App\Models\HomeworkTask::class);
     }
 
+    /** Уже использованные номера в банке — подсказки в datalist поля "№ в ЕГЭ",
+     *  общие для формы банка и конструктора домашки. */
+    public static function distinctNumbers(): array
+    {
+        return self::query()
+            ->whereNotNull('number')
+            ->distinct()
+            ->orderByRaw('CAST(number AS UNSIGNED), number')
+            ->pluck('number')
+            ->all();
+    }
+
     // Общий для всех заданий с этим (category_id, number) набор критериев.
     public function resolvedCriteriaRecord(): ?TaskCriteria
     {

@@ -60,29 +60,78 @@
     }
 
     /* Десктопная "таблетка" — включается JS-ом через .is-desktop,
-       а не через @media, раз медиазапросы у тебя не срабатывали. */
+       а не через @media, раз медиазапросы у тебя не срабатывали.
+
+       Стеклянный эффект в духе macOS/iPadOS (Dock, Control Center):
+       - backdrop-filter с saturate — не просто блюр, а именно "фростед
+         глас" (сатурация подсвечивает то, что под панелью, как у Apple);
+       - полупрозрачный градиент сверху вниз вместо плоской заливки —
+         на плоском rgba() стекло выглядит мутным листом бумаги, а не
+         стеклом;
+       - inset-тень сверху ("::before") — тонкий блик по верхнему краю,
+         имитирующий отражение света на кромке стекла;
+       - лёгкая внешняя тень — панель едва заметно приподнята над
+         контентом, без "парения";
+       - контур — как на iOS-таббаре (Today/Games/Apps/Arcade): яркая
+         светлая обводка (сама "грань стекла", ловит свет) + тонкое
+         свечение вокруг неё (мягкий белый ореол) + чуть заметное тёмное
+         кольцо ровно по границе — оно нужно только чтобы светлая
+         обводка не терялась на светлом фоне, само по себе почти не
+         видно. */
     #student-bottom-nav.is-desktop {
         left: 50%;
         right: auto;
-        bottom: 16px;
+        bottom: 20px;
         transform: translateX(-50%);
         display: inline-block;
-        padding: 0 20px;
-        border: 1px solid #e5e7eb;
-        border-radius: 16px;
-        background: rgba(255, 255, 255, .7);
-        -webkit-backdrop-filter: blur(24px);
-        backdrop-filter: blur(24px);
-        box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
+        padding: 6px 10px;
+        border: 1.5px solid rgba(255, 255, 255, .85);
+        border-radius: 24px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, .78), rgba(255, 255, 255, .55));
+        -webkit-backdrop-filter: blur(28px) saturate(180%);
+        backdrop-filter: blur(28px) saturate(180%);
+        box-shadow:
+            0 0 0 1px rgba(0, 0, 0, .05),
+            0 4px 16px rgba(0, 0, 0, .08),
+            0 0 20px rgba(255, 255, 255, .45),
+            inset 0 1px 1px rgba(255, 255, 255, .9),
+            inset 0 0 0 1px rgba(255, 255, 255, .3);
+        isolation: isolate;
+    }
+    /* Тонкий световой блик по верхней кромке — тот самый "стеклянный"
+       акцент, который отличает материал Apple от обычного blur(). */
+    #student-bottom-nav.is-desktop::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: linear-gradient(180deg, rgba(255, 255, 255, .5), rgba(255, 255, 255, 0) 40%);
+        pointer-events: none;
+        z-index: -1;
     }
     #student-bottom-nav.is-desktop #student-bottom-nav-inner {
-        display: block;
+        display: flex;
+        align-items: stretch;
+        gap: 2px;
     }
     #student-bottom-nav.is-desktop #student-bottom-nav-inner a {
-        display: inline-block;
-        width: 92px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 88px;
         text-align: center;
-        padding: 18px 0;
+        padding: 12px 0;
+        border-radius: 18px;
+        transition: color .15s ease, background-color .2s ease, transform .15s ease;
+    }
+    #student-bottom-nav.is-desktop #student-bottom-nav-inner a:hover {
+        color: #b45309;
+        background: rgba(255, 255, 255, .55);
+        transform: translateY(-2px);
+    }
+    #student-bottom-nav.is-desktop #student-bottom-nav-inner a:active {
+        transform: translateY(0) scale(.96);
     }
     #student-bottom-nav.is-desktop #student-bottom-nav-inner a svg {
         margin: 0 auto;
@@ -105,19 +154,27 @@
         bottom: 20px;
         z-index: 41;
         padding: 10px 18px;
-        background: #fff;
-        border: 1px solid #e5e7eb;
+        background: linear-gradient(180deg, rgba(255, 255, 255, .78), rgba(255, 255, 255, .55));
+        -webkit-backdrop-filter: blur(28px) saturate(180%);
+        backdrop-filter: blur(28px) saturate(180%);
+        border: 1.5px solid rgba(255, 255, 255, .85);
         border-radius: 9999px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, .08);
+        box-shadow:
+            0 0 0 1px rgba(0, 0, 0, .05),
+            0 4px 16px rgba(0, 0, 0, .08),
+            0 0 20px rgba(255, 255, 255, .45),
+            inset 0 1px 1px rgba(255, 255, 255, .9),
+            inset 0 0 0 1px rgba(255, 255, 255, .3);
         font-size: 13px;
         font-weight: 500;
         color: #374151;
         cursor: pointer;
-        transition: color .15s ease, background-color .15s ease;
+        transition: color .15s ease, background-color .2s ease, transform .15s ease;
     }
     #student-bottom-nav-reveal:hover {
         color: #b45309;
-        background: #f9fafb;
+        background: linear-gradient(180deg, rgba(255, 255, 255, .85), rgba(255, 255, 255, .65));
+        transform: translateY(-2px);
     }
     #student-bottom-nav-reveal.is-visible {
         display: block;

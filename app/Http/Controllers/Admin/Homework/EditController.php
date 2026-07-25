@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Lesson;
 use App\Models\Homework;
+use App\Models\Task;
 
 class EditController extends Controller
 {
@@ -26,7 +27,9 @@ public function __invoke(Homework $homework)
         ->orderBy('lessons.title')
         ->get();
 
-    return view('admin.homeworks.edit', compact('homework', 'courses', 'lessons'));
+    $numberOptions = Task::distinctNumbers();
+
+    return view('admin.homeworks.edit', compact('homework', 'courses', 'lessons', 'numberOptions'));
 }
 
 }
