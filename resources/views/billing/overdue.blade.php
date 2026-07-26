@@ -492,59 +492,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    function playClank() {
-        try {
-            var Ctx = window.AudioContext || window.webkitAudioContext;
-            if (!Ctx) return;
-            var ctx = new Ctx();
-            var now = ctx.currentTime;
-
-            var thud = ctx.createOscillator();
-            var thudGain = ctx.createGain();
-            thud.type = 'square';
-            thud.frequency.setValueAtTime(90, now);
-            thud.frequency.exponentialRampToValueAtTime(40, now + 0.25);
-            thudGain.gain.setValueAtTime(0.0001, now);
-            thudGain.gain.exponentialRampToValueAtTime(0.35, now + 0.02);
-            thudGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
-            thud.connect(thudGain).connect(ctx.destination);
-            thud.start(now);
-            thud.stop(now + 0.36);
-
-            var clang = ctx.createOscillator();
-            var clangGain = ctx.createGain();
-            clang.type = 'triangle';
-            clang.frequency.setValueAtTime(1200, now);
-            clangGain.gain.setValueAtTime(0.0001, now);
-            clangGain.gain.exponentialRampToValueAtTime(0.08, now + 0.01);
-            clangGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
-            clang.connect(clangGain).connect(ctx.destination);
-            clang.start(now);
-            clang.stop(now + 0.16);
-        } catch (e) {}
-    }
-
-    function playClick() {
-        try {
-            var Ctx = window.AudioContext || window.webkitAudioContext;
-            if (!Ctx) return;
-            var ctx = new Ctx();
-            var now = ctx.currentTime;
-
-            var osc = ctx.createOscillator();
-            var gain = ctx.createGain();
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(1800, now);
-            osc.frequency.exponentialRampToValueAtTime(600, now + 0.05);
-            gain.gain.setValueAtTime(0.0001, now);
-            gain.gain.exponentialRampToValueAtTime(0.18, now + 0.005);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
-            osc.connect(gain).connect(ctx.destination);
-            osc.start(now);
-            osc.stop(now + 0.08);
-        } catch (e) {}
-    }
-
     try {
         var left = document.getElementById('lab-door-left');
         var right = document.getElementById('lab-door-right');
@@ -572,7 +519,6 @@ document.addEventListener('DOMContentLoaded', function () {
         tl.to(left,  { xPercent: 2,  duration: 1.05, ease: 'power3.in' }, 0)
           .to(right, { xPercent: -2, duration: 1.05, ease: 'power3.in' }, 0.06)
           .addLabel('impact', 1.11)
-          .call(playClank, null, 'impact')
           .to(overlay, {
               duration: 0.35,
               keyframes: { x: [0, -10, 8, -6, 4, 0] },
@@ -587,7 +533,6 @@ document.addEventListener('DOMContentLoaded', function () {
           // было у power2.out. Щелчок — почти в самом конце этого хвоста,
           // когда он визуально садится в паз.
           .to(wheel, { opacity: 1, rotate: 940, duration: 1.3, ease: 'power4.out' }, 'impact+=0.1')
-          .call(playClick, null, 'impact+=1.25')
           .to(seam, { opacity: 1, duration: 0.25 }, 'impact+=0.2')
           .to(lights, { opacity: 1, duration: 0.15 }, 'impact+=0.2')
           .to(label, { opacity: 1, scale: 1, duration: 0.35, ease: 'back.out(1.7)' }, 'impact+=0.9')

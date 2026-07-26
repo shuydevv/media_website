@@ -18,6 +18,7 @@ class UpdateRequest extends FormRequest
             'title'       => ['required','string','max:255'],
             'description' => ['nullable','string'],
             'type'        => ['required','in:homework,mock'],
+            'mock_number' => ['nullable','integer','min:1'],
             'course_id'   => ['required','integer','exists:courses,id'],
             'lesson_id'   => ['required','integer','exists:lessons,id'],
 

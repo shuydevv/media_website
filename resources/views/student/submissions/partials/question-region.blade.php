@@ -4,13 +4,18 @@
 @php
   $isManual = $task->isAutoGradable() ? false : true;
 
+  // Пробник: результат автопроверки скрыт до отправки всей работы (см.
+  // SubmissionController::check() — там же основной guard). Здесь только
+  // не даём этому просочиться через цвет пилюль/баннер сохранённого ответа.
+  $isMock = ($homework->type ?? null) === 'mock';
+
   $answers = $submission->answers ?? [];
   $perTask = $submission->per_task_results ?? [];
 
   // Статус каждого вопроса для навигационной полоски
-  $statusOf = function ($t) use ($answers, $perTask) {
+  $statusOf = function ($t) use ($answers, $perTask, $isMock) {
     if (!array_key_exists($t->id, $answers)) return 'unanswered';
-    if (!$t->isAutoGradable()) return 'saved';
+    if (!$t->isAutoGradable() || $isMock) return 'saved';
     return $perTask[$t->id]['status'] ?? 'saved';
   };
 
@@ -27,7 +32,9 @@
 
   // Полностью верный ответ никогда не долетает сюда как $checkResult —
   // сервер сам сохраняет и переводит на следующий вопрос (см. контроллер).
-  $isLockedCorrect = $savedResult && ($savedResult['status'] ?? null) === 'ok';
+  // В пробнике ответ можно менять сколько угодно раз до самой отправки,
+  // даже если он уже был верным — поэтому здесь никогда не блокируем.
+  $isLockedCorrect = !$isMock && $savedResult && ($savedResult['status'] ?? null) === 'ok';
 
   // Прогресс прохождения домашки — для полосы над навигацией по вопросам.
   $answeredCount = collect($tasks)->filter(fn ($t) => array_key_exists($t->id, $answers))->count();
@@ -41,23 +48,28 @@
 
 <div class="max-w-3xl mx-auto px-3 sm:px-4 py-5 sm:py-6">
 
-  <div class="flex items-center justify-between gap-3 mb-4">
+  <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
     <h1 class="sans-medium text-lg sm:text-xl text-zinc-900">{{ $homework->title ?? 'Домашнее задание' }}</h1>
-    <a href="{{ route('student.submissions.finish', $submission) }}"
-       hx-get="{{ route('student.submissions.finish', $submission) }}"
-       hx-target="#wizard-app"
-       hx-swap="innerHTML"
-       hx-push-url="true"
-       hx-confirm="Перейти к отправке работы? Прогресс сохранится, неотвеченные вопросы можно будет решить позже."
-       class="relative inline-flex items-center px-3 py-1.5 rounded-lg border border-zinc-300 text-xs sm:text-sm text-zinc-600 hover:bg-zinc-50 whitespace-nowrap">
-      <span class="btn-label">Перейти к отправке</span>
-      <span class="btn-spinner">
-        <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-        </svg>
-      </span>
-    </a>
+    <div class="flex items-center gap-2 sm:gap-3">
+      @if(!empty($expiresAt))
+        @include('components.mock-timer', ['expiresAt' => $expiresAt])
+      @endif
+      <a href="{{ route('student.submissions.finish', $submission) }}"
+         hx-get="{{ route('student.submissions.finish', $submission) }}"
+         hx-target="#wizard-app"
+         hx-swap="innerHTML"
+         hx-push-url="true"
+         hx-confirm="Перейти к отправке работы? Прогресс сохранится, неотвеченные вопросы можно будет решить позже."
+         class="relative inline-flex items-center px-3 py-1.5 rounded-lg border border-zinc-300 text-xs sm:text-sm text-zinc-600 hover:bg-zinc-50 whitespace-nowrap">
+        <span class="btn-label">Перейти к отправке</span>
+        <span class="btn-spinner">
+          <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+        </span>
+      </a>
+    </div>
   </div>
 
   {{-- Прогресс прохождения домашки --}}
@@ -127,7 +139,12 @@
 
     @include('student.submissions.partials.task-prompt', ['task' => $task])
 
-    @if($savedResult)
+    @if($savedResult && $isMock)
+      {{-- Пробник: ответ сохранён, но результат проверки не показываем до отправки работы. --}}
+      <div class="mb-4 p-3 rounded-xl border border-blue-200 bg-blue-50 text-sm text-blue-800 inline-block">
+        Ответ сохранён. Можно изменить его ниже.
+      </div>
+    @elseif($savedResult)
       @php
         $sBanner = [
           'ok'      => 'bg-emerald-50 border-emerald-200 text-emerald-800',
@@ -266,20 +283,19 @@
         'partial' => 'Частично верно.',
         'fail'    => 'Неверно.',
       ][$checkResult['status']] ?? 'Неверно.';
-      // Заглушки маскота по статусу — переиспользуем существующие иконки проекта,
-      // реальный персонаж придёт позже (просто подменить src).
-      $mascotByStatus = [
-        'partial' => asset('img/person.svg'),
-        'fail'    => asset('img/crying.svg'),
+      // Маскот текущего уровня ученика с эмоцией под статус ответа.
+      $mascotStateByStatus = [
+        'partial' => 'partly_correct',
+        'fail'    => 'wrong',
       ];
-      $mascotSrc = $mascotByStatus[$checkResult['status']] ?? asset('img/person.svg');
+      $mascotState = $mascotStateByStatus[$checkResult['status']] ?? 'wrong';
+      $mascotSrc = app(\App\Service\FishFoodService::class)->mascotImageUrl($fishLevel, $mascotState);
     @endphp
     <div id="check-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" data-status="{{ $checkResult['status'] }}">
       <div class="check-modal-panel bg-white rounded-2xl p-5 sm:p-6 max-w-sm w-full shadow-xl">
-        {{-- Заглушка под маскота — позже здесь будет персонаж, реагирующий на ответ --}}
         <div class="check-modal-mascot flex justify-center mb-3">
-          <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center">
-            <img src="{{ $mascotSrc }}" alt="" class="w-10 h-10 opacity-70">
+          <div class="w-36 h-36 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+            <img src="{{ $mascotSrc }}" alt="" class="w-full h-full object-contain">
           </div>
         </div>
 
@@ -322,15 +338,11 @@
       const mascot  = modal.querySelector('.check-modal-mascot');
       const body    = modal.querySelector('.check-modal-body');
       const actions = modal.querySelector('.check-modal-actions');
-      const status  = modal.getAttribute('data-status');
       const gsapOk  = typeof window.gsap !== 'undefined';
 
       // Серия верных ответов подряд прервалась — сбрасываем счётчик (см. layouts/main.blade.php).
       if (typeof window.__resetAnswerStreak === 'function') {
         window.__resetAnswerStreak();
-      }
-      if (typeof window.__playSound === 'function') {
-        window.__playSound('fail');
       }
 
       if (gsapOk) {
@@ -345,11 +357,6 @@
           .to(mascot, { autoAlpha: 1, y: 0, scale: 1, rotate: 0, duration: .55, ease: 'elastic.out(1, .5)' }, '-=0.25')
           .to(body, { autoAlpha: 1, y: 0, duration: .25, ease: 'power2.out' }, '-=0.2')
           .to(actions, { autoAlpha: 1, y: 0, duration: .25, ease: 'power2.out' }, '-=0.1');
-
-        // Лёгкая тряска — только когда совсем мимо. «Частично верно» всё же похвала за часть баллов.
-        if (status === 'fail') {
-          tl.to(panel, { keyframes: { x: [0, -8, 8, -6, 6, -3, 3, 0] }, duration: .45, ease: 'power1.inOut' });
-        }
       } else {
         // GSAP не загрузился — просто показываем модалку без анимации, а не прячем навсегда.
         modal.style.visibility = 'visible';

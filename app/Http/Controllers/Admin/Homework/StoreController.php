@@ -23,6 +23,7 @@ class StoreController extends Controller
             'description' => $validated['description'] ?? null,
             'type'        => $validated['type'],
             'due_at'      => $validated['due_at'] ?? null,
+            'mock_number' => $validated['mock_number'] ?? null,
             'course_id'   => $request->course_id,
             'lesson_id'   => $request->lesson_id,
         ]);

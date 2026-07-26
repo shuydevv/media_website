@@ -127,49 +127,6 @@
                 try { sessionStorage.setItem(streakKey(), '0'); } catch (e) {}
             };
 
-            // Короткие синтезированные звуки (без аудиофайлов и библиотек):
-            // растущий "дзинь" на верный ответ, короткий низкий "бип" на неверный/частично верный.
-            var audioCtx = null;
-            function getAudioCtx() {
-                var Ctx = window.AudioContext || window.webkitAudioContext;
-                if (!Ctx) return null;
-                if (!audioCtx) audioCtx = new Ctx();
-                if (audioCtx.state === 'suspended') audioCtx.resume().catch(function () {});
-                return audioCtx;
-            }
-
-            window.__playSound = function (type) {
-                try {
-                    var ctx = getAudioCtx();
-                    if (!ctx) return;
-
-                    var now = ctx.currentTime;
-                    var osc = ctx.createOscillator();
-                    var gain = ctx.createGain();
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-
-                    if (type === 'ok') {
-                        osc.type = 'sine';
-                        osc.frequency.setValueAtTime(600, now);
-                        osc.frequency.exponentialRampToValueAtTime(900, now + 0.15);
-                        gain.gain.setValueAtTime(0.0001, now);
-                        gain.gain.exponentialRampToValueAtTime(0.15, now + 0.02);
-                        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
-                        osc.start(now);
-                        osc.stop(now + 0.26);
-                    } else {
-                        osc.type = 'square';
-                        osc.frequency.setValueAtTime(180, now);
-                        gain.gain.setValueAtTime(0.0001, now);
-                        gain.gain.exponentialRampToValueAtTime(0.08, now + 0.02);
-                        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
-                        osc.start(now);
-                        osc.stop(now + 0.19);
-                    }
-                } catch (e) {}
-            };
-
             // Уведомление построено так же, как попап с результатом проверки:
             // маскот-кружок сверху, подпись снизу — просто без кнопок и само закрывается.
             function spawnToast(message, opts) {
@@ -178,16 +135,16 @@
                 if (!root) return;
 
                 var el = document.createElement('div');
-                el.className = 'toast-item pointer-events-auto bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.07)] px-5 py-4 w-[220px] flex flex-col items-center gap-2';
+                el.className = 'toast-item pointer-events-auto bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.07)] px-5 py-4 w-[260px] flex flex-col items-center gap-2';
 
                 var mascot = null;
                 if (opts.icon) {
                     mascot = document.createElement('div');
-                    mascot.className = 'w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center';
+                    mascot.className = 'w-36 h-36 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden';
                     var img = document.createElement('img');
                     img.src = opts.icon;
                     img.alt = '';
-                    img.className = 'w-12 h-12';
+                    img.className = 'w-full h-full object-contain';
                     mascot.appendChild(img);
                     el.appendChild(mascot);
                 }
@@ -233,8 +190,8 @@
 
             document.body.addEventListener('toast', function (evt) {
                 var message = (evt.detail && evt.detail.message) || 'Готово';
-                spawnToast(message, { icon: '{{ asset('img/like.svg') }}', badge: 'bg-emerald-50 text-emerald-800' });
-                window.__playSound('ok');
+                var icon = (evt.detail && evt.detail.icon) || '{{ asset('img/like.svg') }}';
+                spawnToast(message, { icon: icon, badge: 'bg-emerald-50 text-emerald-800' });
 
                 // Стрик верных ответов подряд — чисто косметическая штука на клиенте,
                 // на баллы и сохранение ответов никак не влияет.

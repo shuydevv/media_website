@@ -24,6 +24,10 @@ class Submission extends Model
         'total_score',
         'per_task_results',
 
+        // таймер пробника
+        'started_at',
+        'expires_at',
+
         // блокировка ревью
         'locked_by',
         'lock_expires_at',
@@ -38,7 +42,18 @@ class Submission extends Model
         'lock_expires_at'  => 'datetime',
         'ai_drafts'        => 'array',
         'ai_frozen_hash'   => 'array',
+        'started_at'       => 'datetime',
+        'expires_at'       => 'datetime',
     ];
+
+    /**
+     * Таймер пробника истёк — проверяется реактивно (см. SubmissionController::
+     * autoFinishIfExpired()), без фоновых джобов, по той же схеме, что и due_at.
+     */
+    public function isExpired(): bool
+    {
+        return $this->expires_at !== null && now()->isAfter($this->expires_at);
+    }
 
     /*
     |--------------------------------------------------------------------------

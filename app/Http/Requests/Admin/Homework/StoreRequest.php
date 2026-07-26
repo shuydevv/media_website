@@ -18,6 +18,7 @@ class StoreRequest extends FormRequest
             'title'       => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'type'        => ['required', 'string'], // homework или mock
+            'mock_number' => ['nullable', 'integer', 'min:1'],
 
             'tasks' => ['nullable', 'array'],
             'tasks.*.id' => ['nullable', 'integer', 'exists:homework_tasks,id'],

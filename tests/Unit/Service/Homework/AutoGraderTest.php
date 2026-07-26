@@ -105,9 +105,10 @@ class AutoGraderTest extends TestCase
         $grader = new AutoGrader();
         $task = $this->task(['type' => 'text', 'answer' => 'да', 'max_score' => 2]);
 
-        $this->assertSame(2, $grader->scoreOne($task, 'да')['score']);   // 0 ошибок
-        $this->assertSame(1, $grader->scoreOne($task, 'до')['score']);   // 1 ошибка
-        $this->assertSame(0, $grader->scoreOne($task, 'пи')['score']);   // 2 ошибки
+        $this->assertSame(2, $grader->scoreOne($task, 'да')['score']);    // 0 ошибок
+        $this->assertSame(1, $grader->scoreOne($task, 'дая')['score']);   // 1 ошибка (только лишняя буква, ничего не пропущено)
+        $this->assertSame(0, $grader->scoreOne($task, 'до')['score']);    // 2 ошибки (замена буквы — это 1 лишняя + 1 недостающая, а не "1 ошибка")
+        $this->assertSame(0, $grader->scoreOne($task, 'пи')['score']);    // 4 ошибки (2 лишние + 2 недостающие буквы)
     }
 
     /**
@@ -120,10 +121,11 @@ class AutoGraderTest extends TestCase
         $grader = new AutoGrader();
         $task = $this->task(['type' => 'text', 'answer' => 'кит', 'max_score' => 3]);
 
-        $this->assertSame(3, $grader->scoreOne($task, 'кит')['score']);   // 0 ошибок
-        $this->assertSame(2, $grader->scoreOne($task, 'кир')['score']);   // 1 ошибка
-        $this->assertSame(1, $grader->scoreOne($task, 'фыт')['score']);   // 2 ошибки
-        $this->assertSame(0, $grader->scoreOne($task, 'дуб')['score']);   // 3 ошибки
+        $this->assertSame(3, $grader->scoreOne($task, 'кит')['score']);    // 0 ошибок
+        $this->assertSame(2, $grader->scoreOne($task, 'кита')['score']);   // 1 ошибка (только лишняя буква, ничего не пропущено)
+        $this->assertSame(1, $grader->scoreOne($task, 'кир')['score']);    // 2 ошибки (замена буквы — 1 лишняя + 1 недостающая)
+        $this->assertSame(0, $grader->scoreOne($task, 'фыт')['score']);    // 4 ошибки (2 лишние + 2 недостающие буквы)
+        $this->assertSame(0, $grader->scoreOne($task, 'дуб')['score']);    // 6 ошибок (3 лишние + 3 недостающие буквы)
     }
 
     /**
@@ -137,9 +139,9 @@ class AutoGraderTest extends TestCase
         $grader = new AutoGrader();
         $task = $this->task(['type' => 'text', 'answer' => 'книга', 'max_score' => 5]);
 
-        $result = $grader->scoreOne($task, 'кнюгя'); // 2 несовпадающие буквы
+        $result = $grader->scoreOne($task, 'кнюгя'); // 4 ошибки (2 лишние + 2 недостающие буквы)
 
-        $this->assertSame(3, $result['score']);
+        $this->assertSame(1, $result['score']);
         $this->assertSame('partial', $result['status']);
     }
 

@@ -2,15 +2,20 @@
      Содержимое #wizard-app для обзора перед отправкой. Рендерится и как часть
      полной страницы (finish.blade.php), и как htmx-фрагмент (без layout). --}}
 @php
-  $statusOf = function ($t) use ($answers, $perTask) {
+  // Пробник: до отправки всей работы результат автопроверки не показываем
+  // (см. SubmissionController::check() и question-region.blade.php) — иначе
+  // этот экран обзора сам выдал бы, где ответ неверный.
+  $isMock = ($homework->type ?? null) === 'mock';
+
+  $statusOf = function ($t) use ($answers, $perTask, $isMock) {
     if (!array_key_exists($t->id, $answers)) return 'unanswered';
-    if (!$t->isAutoGradable()) return 'saved';
+    if (!$t->isAutoGradable() || $isMock) return 'saved';
     return $perTask[$t->id]['status'] ?? 'saved';
   };
 
   $labels = [
     'unanswered' => 'Не отвечен',
-    'saved'      => 'Сохранён (на проверке куратора)',
+    'saved'      => $isMock ? 'Отвечен' : 'Сохранён (на проверке куратора)',
     'ok'         => 'Верно',
     'partial'    => 'Частично верно',
     'fail'       => 'Неверно',
@@ -26,7 +31,12 @@
 @endphp
 
 <div class="max-w-3xl mx-auto px-3 sm:px-4 py-5 sm:py-6">
-  <h1 class="sans-medium text-xl sm:text-2xl text-zinc-900 mb-2">{{ $homework->title ?? 'Домашнее задание' }}</h1>
+  <div class="flex items-start justify-between gap-3 flex-wrap mb-2">
+    <h1 class="sans-medium text-xl sm:text-2xl text-zinc-900">{{ $homework->title ?? 'Домашнее задание' }}</h1>
+    @if(!empty($expiresAt))
+      @include('components.mock-timer', ['expiresAt' => $expiresAt])
+    @endif
+  </div>
   <p class="text-sm text-zinc-500 mb-6">Проверьте ответы перед отправкой. Пока работа не отправлена, можно вернуться к любому вопросу.</p>
 
   @if (!empty($error))

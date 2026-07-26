@@ -35,6 +35,7 @@ class UpdateController extends Controller
             'description' => $data['description'] ?? null,
             'type'        => $data['type'],
             'due_at'      => $data['due_at'] ?? null,
+            'mock_number' => $data['mock_number'] ?? null,
             'course_id'   => $data['course_id'],
             'lesson_id'   => $data['lesson_id'],
         ]);

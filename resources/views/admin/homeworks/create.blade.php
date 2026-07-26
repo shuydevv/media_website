@@ -72,6 +72,13 @@
             </select>
         </div>
 
+        {{-- Номер пробника — только для type=mock, задаётся вручную --}}
+        <div class="mb-6">
+            <label class="block text-sm font-medium">Номер пробника</label>
+            <input type="number" min="1" name="mock_number" class="w-full border rounded px-3 py-2"
+                value="{{ old('mock_number') }}" placeholder="Например, 5 — только для пробников">
+        </div>
+
         {{-- Дедлайн --}}
         <div class="mb-4">
             <label class="block text-sm font-medium">Дедлайн</label>

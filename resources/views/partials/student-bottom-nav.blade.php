@@ -201,7 +201,7 @@
             </svg>
             <span>Домашки</span>
         </a>
-        <a href="#">
+        <a href="{{ Route::has('student.mocks.index') ? route('student.mocks.index') : '#' }}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="13" r="8"></circle>
                 <path d="M12 9v4l3 2"></path>

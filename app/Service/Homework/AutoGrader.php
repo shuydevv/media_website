@@ -177,7 +177,7 @@ class AutoGrader
         foreach ($keys as $k) {
             $diff += abs(($fa[$k] ?? 0) - ($fc[$k] ?? 0));
         }
-        return (int)ceil($diff / 2);
+        return $diff;
     }
 
     private function scoreByErrors(int $errors, int $max): int

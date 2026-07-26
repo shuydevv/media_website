@@ -274,6 +274,11 @@ Route::middleware(['auth'])->group(function () {
         ->name('student.homeworks.index');
 });
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/student/mocks', [\App\Http\Controllers\Student\MockController::class, 'index'])
+        ->name('student.mocks.index');
+});
+
 // Уведомления — намеренно без billing.current: ученик с приостановленным
 // доступом должен по-прежнему видеть и открыть уведомление о просрочке.
 Route::middleware(['auth'])->prefix('student')->name('student.')->group(function () {

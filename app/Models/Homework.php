@@ -10,7 +10,13 @@ class Homework extends Model
     use HasFactory;
 
     protected $table = 'homeworks';
-    protected $fillable = ['title', 'description', 'type', 'course_id', 'lesson_id', 'attempts_allowed', 'due_at',];
+    protected $fillable = ['title', 'description', 'type', 'course_id', 'lesson_id', 'attempts_allowed', 'due_at', 'mock_number',];
+
+    /**
+     * Длительность пробника всегда фиксированная (3ч30м) — не поле в БД и не
+     * настройка в админке, единственный источник истины для таймера.
+     */
+    public const MOCK_TIME_LIMIT_MINUTES = 210;
 
     protected $casts = [
         'due_at' => 'datetime', // удобно форматировать

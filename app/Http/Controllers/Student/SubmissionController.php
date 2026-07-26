@@ -80,14 +80,24 @@ class SubmissionController extends Controller
             return back()->withErrors(['homework' => 'В этой домашней работе пока нет заданий.']);
         }
 
+        $attrs = [
+            'homework_id' => $homework->id,
+            'user_id'     => $user->id,
+            'attempt_no'  => $attemptsUsed + 1,
+            'answers'     => [],
+            'status'      => 'in_progress',
+        ];
+
+        // Пробник — фиксированный таймер на прохождение (3ч30м, см.
+        // Homework::MOCK_TIME_LIMIT_MINUTES). Проверяется реактивно, см.
+        // autoFinishIfExpired().
+        if ($homework->type === 'mock') {
+            $attrs['started_at'] = now();
+            $attrs['expires_at'] = now()->addMinutes(Homework::MOCK_TIME_LIMIT_MINUTES);
+        }
+
         try {
-            $submission = Submission::create([
-                'homework_id' => $homework->id,
-                'user_id'     => $user->id,
-                'attempt_no'  => $attemptsUsed + 1,
-                'answers'     => [],
-                'status'      => 'in_progress',
-            ]);
+            $submission = Submission::create($attrs);
         } catch (\Illuminate\Database\QueryException $e) {
             // Гонка: параллельный запрос (двойной клик, две вкладки) успел
             // создать in_progress-попытку первым — уникальный индекс
@@ -127,7 +137,7 @@ class SubmissionController extends Controller
 
         return view(
             $this->view($request, 'question'),
-            $this->questionData($submission, $tasks, $task, $position, $total)
+            $this->questionData($request, $submission, $tasks, $task, $position, $total)
         );
     }
 
@@ -155,13 +165,25 @@ class SubmissionController extends Controller
 
         $result = app(AutoGrader::class)->scoreOne($task, $answer);
 
+        // Пробник: результат проверки студент не должен видеть до отправки
+        // всей работы — ни модалки «Верно/Неверно», ни блокировки поля.
+        // Балл всё равно считается и сохраняется в per_task_results (нужен
+        // для finalize() и итоговой страницы результатов), просто не
+        // показывается сейчас. Проверяем на контроллере, а не только на
+        // фронтенде — иначе прямой POST на эту ручку в обход формы вскрыл бы
+        // правильность ответа раньше времени.
+        $homework = Homework::find($submission->homework_id);
+        if (($homework->type ?? null) === 'mock') {
+            return $this->persistAnswerAndAdvance($request, $submission, $task, $answer, $result);
+        }
+
         if ($result['status'] === 'ok') {
             return $this->persistAnswerAndAdvance($request, $submission, $task, $answer, $result);
         }
 
         return view(
             $this->view($request, 'question'),
-            $this->questionData($submission, $tasks, $task, $position, $total, $result, $answer)
+            $this->questionData($request, $submission, $tasks, $task, $position, $total, $result, $answer)
         );
     }
 
@@ -195,12 +217,13 @@ class SubmissionController extends Controller
     {
         $answers = $submission->answers ?? [];
         $perTask = $submission->per_task_results ?? [];
+        $fish = app(FishFoodService::class);
 
         // Корм за верный ответ — только если вопрос ещё не был отвечен:
         // без этой проверки переответ на уже сохранённый верный вопрос
         // (answers просто перезаписывается) начислял бы корм повторно.
         if ($result !== null && $result['status'] === 'ok' && !array_key_exists($task->id, $answers)) {
-            app(FishFoodService::class)->awardCorrectAnswer($request->user());
+            $fish->awardCorrectAnswer($request->user());
         }
 
         $answers[$task->id] = $answer;
@@ -216,7 +239,10 @@ class SubmissionController extends Controller
         $submission->save();
 
         $trigger = ($result !== null && $result['status'] === 'ok')
-            ? ['toast' => ['message' => "Верно! {$result['score']} / {$result['max']} баллов"]]
+            ? ['toast' => [
+                'message' => "Верно! {$result['score']} / {$result['max']} баллов",
+                'icon'    => $fish->mascotImageUrl($fish->levelFor((int) $request->user()->fish_total_fed), 'correct'),
+            ]]
             : null;
 
         return $this->respondNext($request, $submission, $trigger);
@@ -268,6 +294,33 @@ class SubmissionController extends Controller
 
         $homework = Homework::find($submission->homework_id);
 
+        $this->finalize($submission, $homework);
+
+        // Одноразовый флаг для конфетти на странице результата — не должен переживать обновление страницы.
+        session()->flash('just_submitted', true);
+
+        if ($this->isHtmx($request)) {
+            return response('')->header('HX-Redirect', route('student.submissions.show', $submission));
+        }
+
+        return redirect()
+            ->route('student.submissions.show', $submission)
+            ->with('success', 'Ответ отправлен');
+    }
+
+    /**
+     * Считает итог по попытке и переводит статус — общая логика для явной
+     * отправки (finishSubmit()) и для реактивного авто-завершения по таймеру
+     * (autoFinishIfExpired()). Берёт пользователя из $submission->user, а не
+     * из текущего Request — метод должен одинаково работать в обоих случаях
+     * (при авто-завершении текущий запрос может быть от кого угодно/без
+     * пользователя, например следующий заход владельца после истечения времени).
+     */
+    private function finalize(Submission $submission, Homework $homework): void
+    {
+        $tasks = $this->orderedTasks($submission->homework_id);
+        $answers = $submission->answers ?? [];
+
         $grade = app(AutoGrader::class)->gradeWithTasks($tasks, $answers);
 
         $submission->autocheck_score  = (int) ($grade['score'] ?? 0);
@@ -283,22 +336,28 @@ class SubmissionController extends Controller
 
         $submission->save();
 
-        // finishSubmit() гарантированно one-shot на сабмишен: ensureInProgress()
-        // не пускает сюда повторно после того, как статус перестал быть
-        // in_progress (выставляется чуть выше), так что доп. флаг "уже
-        // начислено" не нужен — см. FishFoodService::awardHomeworkCompletion().
-        app(FishFoodService::class)->awardHomeworkCompletion($request->user(), $submission);
+        // Аналогично finishSubmit() — one-shot: ensureInProgress()/
+        // autoFinishIfExpired() не пускают сюда повторно после того, как
+        // статус перестал быть in_progress (выставляется чуть выше).
+        app(FishFoodService::class)->awardHomeworkCompletion($submission->user, $submission);
+    }
 
-        // Одноразовый флаг для конфетти на странице результата — не должен переживать обновление страницы.
-        session()->flash('just_submitted', true);
-
-        if ($this->isHtmx($request)) {
-            return response('')->header('HX-Redirect', route('student.submissions.show', $submission));
+    /**
+     * Реактивная проверка таймера пробника — вызывается из ensureInProgress()
+     * перед каждым обращением к visard'у (question/check/save/finish), по
+     * той же схеме, что и проверка due_at: без фоновых джобов, попытка
+     * закрывается по факту следующего обращения после истечения времени.
+     * Неотвеченные вопросы получают 0 — уже существующая обработка
+     * answer === null в AutoGrader::scoreAuto(), доп. проверки не нужны.
+     */
+    private function autoFinishIfExpired(Submission $submission): void
+    {
+        if ($submission->status !== 'in_progress' || !$submission->isExpired()) {
+            return;
         }
 
-        return redirect()
-            ->route('student.submissions.show', $submission)
-            ->with('success', 'Ответ отправлен');
+        $homework = Homework::find($submission->homework_id);
+        $this->finalize($submission, $homework);
     }
 
     public function show(Request $request, Submission $submission)
@@ -355,6 +414,7 @@ class SubmissionController extends Controller
     }
 
     private function questionData(
+        Request $request,
         Submission $submission,
         $tasks,
         HomeworkTask $task,
@@ -377,6 +437,8 @@ class SubmissionController extends Controller
             'savedResult' => $perTask[$task->id] ?? null,
             'checkResult' => $checkResult,
             'checkAnswer' => $checkAnswer,
+            'fishLevel'   => app(FishFoodService::class)->levelFor((int) $request->user()->fish_total_fed),
+            'expiresAt'   => $submission->expires_at?->toIso8601String(),
         ];
     }
 
@@ -393,6 +455,7 @@ class SubmissionController extends Controller
             'perTask'     => $perTask,
             'allAnswered' => $tasks->every(fn (HomeworkTask $t) => array_key_exists($t->id, $answers)),
             'error'       => $error,
+            'expiresAt'   => $submission->expires_at?->toIso8601String(),
         ];
     }
 
@@ -425,7 +488,7 @@ class SubmissionController extends Controller
             $task = $tasks[$nextPosition - 1];
             $html = view(
                 'student.submissions.partials.question-region',
-                $this->questionData($submission, $tasks, $task, $nextPosition, $total)
+                $this->questionData($request, $submission, $tasks, $task, $nextPosition, $total)
             );
             $url = route('student.submissions.question', [$submission, $nextPosition]);
         } else {
@@ -488,6 +551,8 @@ class SubmissionController extends Controller
 
     private function ensureInProgress(Request $request, Submission $submission)
     {
+        $this->autoFinishIfExpired($submission);
+
         if ($submission->status !== 'in_progress') {
             if ($this->isHtmx($request)) {
                 return response('')->header('HX-Redirect', route('student.submissions.show', $submission));
