@@ -61,6 +61,29 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Момент зачисления на конкретный курс (для "домашка выложена раньше,
+     * чем ученик подключился" — см. Homework::isOverdueFor()). Приоритет:
+     * course_user.enrolled_at → course_user.created_at (может быть пусто у
+     * старых/тестовых записей) → users.created_at как крайний фоллбек.
+     * Мемоизируем по course_id, чтобы не дёргать запрос на каждую домашку
+     * курса при переборе списка.
+     */
+    private array $courseEnrolledAtCache = [];
+
+    public function courseEnrolledAt(int $courseId): ?\Illuminate\Support\Carbon
+    {
+        if (array_key_exists($courseId, $this->courseEnrolledAtCache)) {
+            return $this->courseEnrolledAtCache[$courseId];
+        }
+
+        $pivot = $this->courses()->where('courses.id', $courseId)->first()?->pivot;
+        $value = $pivot?->enrolled_at ?? $pivot?->created_at;
+
+        return $this->courseEnrolledAtCache[$courseId]
+            = ($value ? \Illuminate\Support\Carbon::parse($value) : $this->created_at);
+    }
+
+    /**
      * Проверка: админ.
      */
     public function isAdmin(): bool
@@ -96,8 +119,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'role',
         'phone','phone_verified_at','timezone','locale',
-        'fish_corm_balance', 'fish_total_fed', 'fish_streak_count', 'fish_last_active_date', 'fish_milestones',
+        'fish_corm_balance', 'fish_total_fed', 'fish_last_active_date', 'fish_milestones',
         'fish_name', 'fish_background', 'fish_unlocked_backgrounds',
+        'fish_accessory', 'fish_unlocked_accessories',
     ];
 
     /**
@@ -123,6 +147,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'fish_last_active_date' => 'date',
         'fish_milestones' => 'array',
         'fish_unlocked_backgrounds' => 'array',
+        'fish_unlocked_accessories' => 'array',
     ];
 
     public function sendEmailVerificationNotification()

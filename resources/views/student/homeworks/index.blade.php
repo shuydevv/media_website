@@ -44,7 +44,7 @@
                     $status = $row['status'];
 
                     $badgeMap = [
-                        'not_started'    => ['label' => 'Не начато', 'class' => 'bg-gray-100 text-gray-700'],
+                        'not_started'    => ['label' => 'Не выполнено', 'class' => 'bg-gray-100 text-gray-700'],
                         'in_progress'    => ['label' => 'В процессе', 'class' => 'bg-blue-50 text-blue-700'],
                         'overdue'        => ['label' => 'Просрочено', 'class' => 'bg-rose-50 text-rose-700'],
                         'pending_review' => ['label' => 'На проверке', 'class' => 'bg-amber-50 text-amber-700'],
@@ -61,15 +61,22 @@
                     $dueText = null;
                     if ($hw->due_at) {
                         $days = now()->startOfDay()->diffInDays($hw->due_at->copy()->startOfDay(), false);
-                        if ($days < 0) {
+                        if ($status === 'overdue') {
+                            // Именно $status, а не голое "$days < 0" — дедлайн мог
+                            // пройти ещё ДО зачисления ученика на курс, тогда
+                            // Homework::isOverdueFor() уже не считает её просроченной
+                            // (см. HomeworkController::index()), и подпись не должна
+                            // противоречить бейджу над ней.
                             $dueText = 'просрочено ' . abs($days) . ' ' . ru_plural(abs($days), 'день', 'дня', 'дней') . ' назад';
                         } elseif ($days === 0) {
                             $dueText = 'сегодня';
                         } elseif ($days === 1) {
                             $dueText = 'завтра';
-                        } else {
+                        } elseif ($days > 1) {
                             $dueText = 'через ' . $days . ' ' . ru_plural($days, 'день', 'дня', 'дней');
                         }
+                        // $days < 0 и статус не 'overdue' — дедлайн в прошлом, но не
+                        // по вине ученика (см. комментарий выше), подписи не будет.
                     }
 
                     $actionLabel = match ($status) {

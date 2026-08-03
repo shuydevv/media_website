@@ -79,4 +79,25 @@ class Homework extends Model
     {
         return self::normalizeAttemptsAllowed($this->attempts_allowed);
     }
+
+    /**
+     * Просрочена ли домашка ДЛЯ ЭТОГО ученика. Дедлайн сам по себе ничего не
+     * решает: если он наступил ДО того, как ученик был зачислён на курс
+     * (например, домашка осталась от прошлого потока), это не его вина и не
+     * "провал" — такую домашку не помечаем просроченной, иначе она мгновенно
+     * выглядит проваленной сразу после зачисления. Единственный источник
+     * истины для всех мест, где раньше независимо дублировалось сравнение
+     * due_at с now() (список домашек, дашборд, значок на уроке, финализация
+     * попытки).
+     */
+    public function isOverdueFor(User $user): bool
+    {
+        if ($this->due_at === null || now()->isBefore($this->due_at)) {
+            return false;
+        }
+
+        $enrolledAt = $user->courseEnrolledAt($this->course_id);
+
+        return $enrolledAt === null || $enrolledAt->lte($this->due_at);
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin\Homework;
 
 use App\Support\TaskContentRules;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateRequest extends FormRequest
 {
@@ -20,7 +21,15 @@ class UpdateRequest extends FormRequest
             'type'        => ['required','in:homework,mock'],
             'mock_number' => ['nullable','integer','min:1'],
             'course_id'   => ['required','integer','exists:courses,id'],
-            'lesson_id'   => ['required','integer','exists:lessons,id'],
+            // К одному уроку — не больше одной домашки любого типа (см.
+            // миграцию add_unique_lesson_id_to_homeworks_table). ignore()
+            // своей же строки — иначе пересохранение БЕЗ смены урока всегда
+            // валилось бы на "занято", ведь строка с этим lesson_id уже есть
+            // (это она сама).
+            'lesson_id'   => [
+                'required', 'integer', 'exists:lessons,id',
+                Rule::unique('homeworks', 'lesson_id')->ignore($this->route('homework')),
+            ],
 
             // min:1 — не только UX-подсказка: контроллер синхронизирует задания
             // через whereNotIn('id', $taskIds)->delete(), а пустой массив там
@@ -49,5 +58,12 @@ class UpdateRequest extends FormRequest
             // изначально в этом запросе, поведение не меняем.
             'tasks.*.image'           => ['nullable','image','max:5120'],
         ]);
+    }
+
+    public function messages(): array
+    {
+        return [
+            'lesson_id.unique' => 'К этому уроку уже прикреплена другая домашка — у одного урока может быть только одна.',
+        ];
     }
 }

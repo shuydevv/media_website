@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Course;
+use App\Models\Submission;
 use App\Service\BillingService;
 use Closure;
 use Illuminate\Http\Request;
@@ -58,6 +59,22 @@ class EnsureCourseBillingCurrent
         $homework = $request->route('homework');
         if ($homework) {
             return $homework->course;
+        }
+
+        // Продолжение уже начатой попытки (question/check/save/finish/
+        // finishSubmit) раньше не проверяло биллинг вовсе — билось только на
+        // старте (submissions.create). Студент, у которого доступ пропал
+        // прямо во время визарда, мог пройти его до конца. Параметр может
+        // быть ещё не подставленной строкой (в зависимости от порядка
+        // SubstituteBindings относительно этого middleware) — обрабатываем
+        // оба варианта явно, не полагаясь на implicit binding.
+        $submissionParam = $request->route('submission');
+        if ($submissionParam) {
+            $submission = $submissionParam instanceof Submission
+                ? $submissionParam
+                : Submission::find($submissionParam);
+
+            return $submission?->homework?->course;
         }
 
         return null;

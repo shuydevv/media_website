@@ -527,13 +527,13 @@
     <div class="w-full md:mb-16 mb-12">
     <x-ui.card class="max-w-6xl mx-auto">
         <div class="flex justify-between items-end mb-4 border-b border-gray-200 pb-2 px-1">
-            <h2 class="sans-medium text-xl md:text-2xl tracking-wide text-zinc-900"><img class="inline-block relative bottom-1 mr-1" src="{{ asset('img/Date_range.svg') }}" alt=""> Расписание уроков</h2>
+            <h2 class="sans-medium text-xl md:text-2xl tracking-wide text-zinc-900"><x-icon name="calendar" class="inline-block relative bottom-1 mr-1 w-5 h-5" /> Расписание уроков</h2>
             <div class="flex gap-2">
                 <button id="swiper-prev" class="w-9 h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white" disabled aria-label="Предыдущие дни">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M15 18l-6-6 6-6"></path></svg>
+                    <x-icon name="chevron-left" class="w-4 h-4" />
                 </button>
                 <button id="swiper-next" class="w-9 h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white" aria-label="Следующие дни">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M9 18l6-6-6-6"></path></svg>
+                    <x-icon name="chevron-right" class="w-4 h-4" />
                 </button>
             </div>
         </div>
@@ -562,7 +562,7 @@
       @if (empty($day['items']))
         <div class="border border-dashed border-gray-300 rounded-2xl px-3 py-4 text-left text-zinc-600 space-y-2">
           <div class="flex items-center gap-2 text-xs">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-zinc-400 shrink-0"><circle cx="12" cy="12" r="4"></circle><path d="M12 3v2M12 19v2M5 5l1.4 1.4M17.6 17.6L19 19M3 12h2M19 12h2M5 19l1.4-1.4M17.6 6.4L19 5"></path></svg>
+            <x-icon name="sun" class="w-4 h-4 text-zinc-400 shrink-0" />
             <span class="tracking-wide text-zinc-500">Выходной</span>
           </div>
           <div class="text-base text-zinc-500">Сегодня нет занятий и домашек. Можно отдохнуть</div>
@@ -623,7 +623,7 @@
 
           <div class="{{ $bg }} border {{ $border }} rounded-2xl px-3 py-3 text-left space-y-2">
              <div class="flex items-center text-xs {{ $text }}">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 mr-1 shrink-0"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 01-3.46 0"></path></svg>
+               <x-icon name="bell-01" class="w-3.5 h-3.5 mr-1 shrink-0" />
                <span>{{ $item['type'] }}</span>
                @if($status === 'overdue')
                  <span class="ml-2 inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-white text-apple-red-650">Просрочена</span>
@@ -758,13 +758,6 @@
             @endforeach
         </div>
     @endif
-    <div class="flex justify-between md:mt-12 mt-8 items-center border-t pt-4">
-    <div class="font-oktyabrina md:text-2xl text-xl">Школа Полтавского</div>
-                        <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="text-red-600">Выйти</button>
-                    </form>
-    </div>
 
 </div>
 @endsection

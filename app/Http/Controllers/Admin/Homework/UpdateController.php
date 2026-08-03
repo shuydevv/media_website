@@ -30,15 +30,29 @@ class UpdateController extends Controller
             return back()->withErrors(['lesson_id' => 'Этот урок не относится к выбранному курсу'])->withInput();
         }
 
-        $homework->update([
-            'title'       => $data['title'],
-            'description' => $data['description'] ?? null,
-            'type'        => $data['type'],
-            'due_at'      => $data['due_at'] ?? null,
-            'mock_number' => $data['mock_number'] ?? null,
-            'course_id'   => $data['course_id'],
-            'lesson_id'   => $data['lesson_id'],
-        ]);
+        try {
+            $homework->update([
+                'title'       => $data['title'],
+                'description' => $data['description'] ?? null,
+                'type'        => $data['type'],
+                'due_at'      => $data['due_at'] ?? null,
+                'mock_number' => $data['mock_number'] ?? null,
+                'course_id'   => $data['course_id'],
+                'lesson_id'   => $data['lesson_id'],
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // К одному уроку — не больше одной домашки (unique-индекс на
+            // lesson_id). UpdateRequest уже проверяет это (с ignore() своей
+            // же строки) — сюда попадаем только при гонке двух почти
+            // одновременных запросов.
+            if ((string) $e->getCode() !== '23000') {
+                throw $e;
+            }
+
+            return back()->withErrors([
+                'lesson_id' => 'К этому уроку уже прикреплена другая домашка — у одного урока может быть только одна.',
+            ])->withInput();
+        }
 
         if (isset($data['tasks']) && is_array($data['tasks'])) {
             $taskIds = [];

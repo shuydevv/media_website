@@ -84,7 +84,13 @@ class DashboardController extends Controller
         // Уроки в окне дат по курсам пользователя — фильтруем по датам СЕССИЙ
         $lessons = Lesson::query()
             ->whereHas('courseSession', function ($q) use ($courseIds, $from, $to) {
-                $q->whereIn('course_id', $courseIds)
+                // visible() — иначе отменённое занятие (Admin\Session\
+                // UpdateController может проставить status='cancelled')
+                // корректно прячется на странице курса (CourseController
+                // тоже фильтрует через visible()), но продолжает как ни в
+                // чём не бывало показываться на дашборде.
+                $q->visible()
+                ->whereIn('course_id', $courseIds)
                 ->where(function ($qq) use ($from, $to) {
                     if (Schema::hasColumn('course_sessions', 'start_at')) {
                         $qq->orWhereBetween('start_at', [$from->copy()->startOfDay(), $to->copy()->endOfDay()]);
@@ -104,6 +110,7 @@ class DashboardController extends Controller
         // ещё не создан — раньше такой день выглядел как "Выходной", хотя
         // занятие фактически есть, просто тема пока не заведена.
         $sessionsWithoutLesson = CourseSession::query()
+            ->visible()
             ->whereIn('course_id', $courseIds)
             ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
             ->whereDoesntHave('lesson')
@@ -236,7 +243,7 @@ foreach ($sessionsWithoutLesson as $session) {
             // если дедлайн уже прошёл).
             $subs = $userSubmissions->get($hw->id) ?? collect();
             $isCompleted = $subs->contains(fn (Submission $s) => $s->status !== 'in_progress');
-            $isOverdue   = !$isCompleted && $due->isPast();
+            $isOverdue   = !$isCompleted && $hw->isOverdueFor($user);
 
             $subjectCourseTitle = optional($hw->lesson?->courseSession?->course)->title ?? 'Курс';
             $subjectClean       = preg_replace('/,.*$/u', '', $subjectCourseTitle);

@@ -6,6 +6,7 @@ use App\Models\Task;
 
 use App\Http\Controllers\Controller;
 use App\Models\Submission;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -13,6 +14,21 @@ class ReviewAiController extends Controller
 {
     public function regen(Request $request, Submission $submission, string $taskId)
     {
+        // Единственный метод в mentor/review, который раньше вообще не
+        // проверял права внутри себя — полагался только на route middleware
+        // ['auth','mentor'], в отличие от saveTask/skipTask/unskipTask/finish
+        // в SubmissionReviewController (assertMentorOrAdmin() + authorize('update')).
+        // Без этого куратор B мог генерировать ИИ-черновик по работе, которую
+        // прямо сейчас держит залоченной куратор A (SubmissionPolicy::update
+        // учитывает locked_by, роль admin проходит всегда).
+        $u = $request->user();
+        abort_unless(
+            $u && in_array((int) $u->role, [User::ROLE_MENTOR, User::ROLE_ADMIN], true),
+            403,
+            'Доступ только для куратора или администратора.'
+        );
+        $this->authorize('update', $submission);
+
         try {
             // answers / tasks
             $answers   = $submission->answers ?? [];

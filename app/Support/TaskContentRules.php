@@ -36,7 +36,29 @@ class TaskContentRules
         } else {
             $sourceField = $key('source');
             $typeRule = ["required_if:{$sourceField},own", 'nullable', 'string'];
-            $answerRule = ["required_if:{$sourceField},own", 'nullable', 'string'];
+            // Образцовый ответ обязателен только для自己-авторских
+            // автопроверяемых заданий (нужен для сверки при автопроверке).
+            // У развёрнутых (эссе) типов он необязателен — куратор может
+            // осмысленно оставить его пустым, оценивая работу без образца.
+            // required_if не умеет "type НЕ IN (...)", поэтому проверяем
+            // соседние source/type вручную через имя текущего атрибута
+            // (attribute вида 'tasks.3.answer' при массиве заданий).
+            $answerRule = [
+                function (string $attribute, $value, \Closure $fail) {
+                    $base       = \Illuminate\Support\Str::beforeLast($attribute, '.answer');
+                    $typeAttr   = $base === $attribute ? 'type'   : "{$base}.type";
+                    $sourceAttr = $base === $attribute ? 'source' : "{$base}.source";
+
+                    $type     = request()->input($typeAttr);
+                    $source   = request()->input($sourceAttr);
+                    $isManual = in_array($type, \App\Models\HomeworkTask::MANUAL_TYPES, true);
+
+                    if ($source === 'own' && !$isManual && trim((string) $value) === '') {
+                        $fail('Поле :attribute обязательно для заполнения.');
+                    }
+                },
+                'nullable', 'string',
+            ];
         }
 
         $rules = [

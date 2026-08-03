@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Task;
 use App\Models\TaskAttempt;
+use App\Service\FishFoodService;
 use App\Service\Homework\AutoGrader;
 use Illuminate\Http\Request;
 
@@ -74,6 +75,30 @@ class TaskPracticeController extends Controller
 
         if ($task->isAutoGradable()) {
             $result = app(AutoGrader::class)->scoreOne($task, $answer);
+
+            // Корм = балл, как и везде (см. FishFoodService::syncTaskCorm()),
+            // но тут одно и то же задание можно решать сколько угодно раз
+            // (TaskAttempt — новая строка на каждую попытку, а не одна
+            // перезаписываемая, как per_task_results в домашке), поэтому
+            // платим только за улучшение личного рекорда по этому заданию —
+            // иначе можно было бы бесконечно фармить корм, отвечая на один и
+            // тот же лёгкий вопрос по кругу.
+            $previousBest = (int) (TaskAttempt::where('task_id', $task->id)
+                ->where('user_id', $request->user()->id)
+                ->max('score') ?? 0);
+
+            $newScore = (int) $result['score'];
+
+            // syncTaskCorm() применяет дельту как есть (score - fish_awarded)
+            // без ограничения снизу — раньше это вызывалось всегда, и
+            // худшая, чем прежде, попытка (delta < 0) реально отнимала уже
+            // заработанный корм, хотя комментарий обещал платить только за
+            // улучшение рекорда. Вызываем только когда есть чем награждать.
+            if ($newScore > $previousBest) {
+                $fishRow = ['score' => $newScore, 'fish_awarded' => $previousBest];
+                app(FishFoodService::class)->syncTaskCorm($request->user(), $fishRow);
+            }
+
             TaskAttempt::create([
                 'task_id' => $task->id,
                 'user_id' => $request->user()->id,

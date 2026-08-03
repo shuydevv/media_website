@@ -35,8 +35,8 @@
     <div class="lab-panel-eyebrow">Терминал оплаты · доступ закрыт</div>
     <h1 class="lab-panel-title">Доступ к курсу приостановлен</h1>
     <p class="lab-panel-text">
-        Курс «{{ $course->title }}» — платёж просрочен
-        @if($dueAt) (срок был {{ $dueAt->format('d.m.Y') }}) @endif.
+        Подошел срок оплаты.
+        @if($dueAt) Доступ был выдан до {{ $dueAt->format('d.m.Y') }}@endif.
     </p>
 
     @if ($errors->any())
@@ -46,8 +46,8 @@
     @endif
 
     <div class="flex flex-col sm:flex-row gap-3">
-        <a href="{{ route('checkout.course.show', $course) }}" class="lab-btn lab-btn-primary flex-1">
-            Оплатить сейчас
+        <a href="{{ route('promo.redeem.form') }}" class="lab-btn lab-btn-primary flex-1">
+            Ввести код
         </a>
 
         @if($promiseAvailable)

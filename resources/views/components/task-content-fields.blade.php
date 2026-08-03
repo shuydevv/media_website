@@ -190,11 +190,7 @@
                         <img src="{{ \Illuminate\Support\Facades\Storage::url(data_get($task, 'image_path')) }}" alt="" class="task-image-preview w-full h-full object-contain">
                     @else
                         <div class="task-image-placeholder flex flex-col items-center gap-2">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-10">
-                                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                <path d="M21 15l-5-5L5 21"></path>
-                            </svg>
+                            <x-icon name="image-01" class="w-10 h-10" />
                             <span class="text-xs">Нажмите, чтобы загрузить изображение</span>
                         </div>
                     @endif

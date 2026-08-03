@@ -36,12 +36,17 @@
         </div>
 
         <div class="mt-auto pt-5">
-            <div class="text-sm text-zinc-600 mb-4">Корм: <span class="font-medium text-zinc-900">{{ $fishBalance }}</span></div>
+            <div class="text-sm text-zinc-600 mb-4 flex items-center gap-1">
+                Корм:
+                <img src="{{ asset('img/pizza.svg') }}" alt="" class="w-5 h-5 inline-block">
+                <span class="font-medium text-zinc-900">{{ $fishBalance }}</span>
+            </div>
             <x-ui.button type="button" variant="outline" size="sm" block class="fish-feed-btn"
                     hx-post="{{ route('student.fish.feed') }}"
                     hx-target="#fish-card"
                     hx-swap="outerHTML"
                     :disabled="$fishBalance <= 0">
+                <img src="{{ asset('img/pizza.svg') }}" alt="" class="w-6 h-6 inline-block mr-1.5 align-text-bottom">
                 Покормить
             </x-ui.button>
         </div>

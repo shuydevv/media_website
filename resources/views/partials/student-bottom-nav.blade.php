@@ -2,15 +2,16 @@
      ученика (см. проверку request()->routeIs('student.*') в layouts/main).
      Пока прототип: набор кнопок уточнится позже, здесь просто заглушки.
 
-     ВАЖНО: десктопный вид сделан НЕ через Tailwind sm:-классы — на практике
-     они почему-то не применялись в браузере (проверили: window.innerWidth
-     верно возвращает 1536, обычные классы без sm: работают, но ни один
-     sm:-вариант визуально не срабатывал, hard refresh не помог). Поэтому
-     здесь обычный написанный вручную <style> (гарантированно уже в HTML,
-     не зависит от Tailwind JIT/сборки) + JS, который переключает класс
-     .is-desktop по window.innerWidth.
+     Стилистика (стеклянная "таблетка") теперь одна и та же на мобилке и на
+     ПК — раньше мобилка получала отдельный плоский белый бар на всю
+     ширину. Вёрстка — обычный написанный вручную <style>, не Tailwind
+     sm:-классы: на практике они почему-то не применялись в браузере
+     (проверили: window.innerWidth верно возвращает 1536, обычные классы
+     без sm: работают, но ни один sm:-вариант визуально не срабатывал, hard
+     refresh не помог).
 
-     На странице выполнения домашки (student.submissions.question) на ПК
+     JS по window.innerWidth здесь всё ещё нужен, но только для одной вещи:
+     на странице выполнения домашки (student.submissions.question) на ПК
      меню изначально скрыто — вместо него в правом нижнем углу кнопка
      "Раскрыть меню", по клику меню появляется на обычном месте. На
      мобилке для этой же страницы — без изменений, меню как везде. --}}
@@ -18,49 +19,12 @@
     $isHomeworkSolvingPage = request()->routeIs('student.submissions.question');
 @endphp
 <style>
-    #student-bottom-nav {
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 40;
-        background: #fff;
-        border-top: 1px solid #e5e7eb;
-        padding-bottom: env(safe-area-inset-bottom);
-    }
-    #student-bottom-nav-inner {
-        display: flex;
-    }
-    #student-bottom-nav-inner a {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        padding: 16px 16px;
-        color: #6b7280;
-        text-decoration: none;
-        transition: color .15s ease, background-color .15s ease;
-    }
-    #student-bottom-nav-inner a:hover {
-        color: #b45309;
-        background: #f9fafb;
-    }
-    #student-bottom-nav-inner a svg {
-        width: 20px;
-        height: 20px;
-        flex-shrink: 0;
-    }
-    #student-bottom-nav-inner a span {
-        font-size: 11px;
-        font-weight: 500;
-        letter-spacing: .02em;
-        white-space: nowrap;
-    }
-
-    /* Десктопная "таблетка" — включается JS-ом через .is-desktop,
-       а не через @media, раз медиазапросы у тебя не срабатывали.
+    /* Одна и та же "стеклянная таблетка" на мобилке и на ПК — раньше
+       мобилка получала отдельный плоский белый бар во всю ширину, а
+       Apple-стекло было только в .is-desktop; по просьбе — стилистика
+       единая. max-width/flex-shrink ниже нужны, чтобы 4 пункта меню не
+       вылезали за край на узких телефонах (320-360px), сама таблетка при
+       этом просто сжимается, а не переносится/скроллится.
 
        Стеклянный эффект в духе macOS/iPadOS (Dock, Control Center):
        - backdrop-filter с saturate — не просто блюр, а именно "фростед
@@ -78,12 +42,14 @@
          кольцо ровно по границе — оно нужно только чтобы светлая
          обводка не терялась на светлом фоне, само по себе почти не
          видно. */
-    #student-bottom-nav.is-desktop {
+    #student-bottom-nav {
+        position: fixed;
         left: 50%;
-        right: auto;
-        bottom: 20px;
+        bottom: calc(20px + env(safe-area-inset-bottom));
         transform: translateX(-50%);
+        z-index: 40;
         display: inline-block;
+        max-width: calc(100vw - 24px);
         padding: 6px 10px;
         border: 1.5px solid rgba(255, 255, 255, .85);
         border-radius: 24px;
@@ -98,9 +64,17 @@
             inset 0 0 0 1px rgba(255, 255, 255, .3);
         isolation: isolate;
     }
+    /* Мобилке отступ снизу чуть меньше, чем ПК (20px) — обычный @media, не
+       Tailwind sm:-класс, так что срабатывает нормально (см. историю
+       проблемы с sm: выше). */
+    @media (max-width: 639px) {
+        #student-bottom-nav {
+            bottom: calc(12px + env(safe-area-inset-bottom));
+        }
+    }
     /* Тонкий световой блик по верхней кромке — тот самый "стеклянный"
        акцент, который отличает материал Apple от обычного blur(). */
-    #student-bottom-nav.is-desktop::before {
+    #student-bottom-nav::before {
         content: '';
         position: absolute;
         inset: 0;
@@ -109,41 +83,53 @@
         pointer-events: none;
         z-index: -1;
     }
-    #student-bottom-nav.is-desktop #student-bottom-nav-inner {
+    #student-bottom-nav-inner {
         display: flex;
         align-items: stretch;
         gap: 2px;
     }
-    #student-bottom-nav.is-desktop #student-bottom-nav-inner a {
+    #student-bottom-nav-inner a {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        flex: 1 1 0;
+        min-width: 0;
         width: 88px;
+        max-width: 88px;
         text-align: center;
-        padding: 12px 0;
+        padding: 12px 4px;
         border-radius: 18px;
+        color: #6b7280;
+        text-decoration: none;
         transition: color .15s ease, background-color .2s ease, transform .15s ease;
     }
-    #student-bottom-nav.is-desktop #student-bottom-nav-inner a:hover {
+    #student-bottom-nav-inner a:hover {
         color: #b45309;
         background: rgba(255, 255, 255, .55);
         transform: translateY(-2px);
     }
-    #student-bottom-nav.is-desktop #student-bottom-nav-inner a:active {
+    #student-bottom-nav-inner a:active {
         transform: translateY(0) scale(.96);
     }
-    #student-bottom-nav.is-desktop #student-bottom-nav-inner a svg {
+    #student-bottom-nav-inner a svg {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
         margin: 0 auto;
         display: block;
     }
-    #student-bottom-nav.is-desktop #student-bottom-nav-inner a span {
+    #student-bottom-nav-inner a span {
         display: block;
         margin-top: 4px;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: .02em;
+        white-space: nowrap;
     }
 
     /* Скрытое по умолчанию состояние на странице выполнения домашки (ПК) —
-       переключается тем же JS, что и .is-desktop. */
+       переключается JS через .is-collapsed. */
     #student-bottom-nav.is-collapsed {
         display: none;
     }
@@ -187,33 +173,20 @@
 
 <nav id="student-bottom-nav" @if($isHomeworkSolvingPage) data-collapsible="1" @endif>
     <div id="student-bottom-nav-inner">
-        <a href="#">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5v-13z"></path>
-                <path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5v-13z"></path>
-            </svg>
+        <a href="{{ Route::has('student.dashboard') ? route('student.dashboard') : '#' }}">
+            <x-icon name="book-open-01" />
             <span>Курсы</span>
         </a>
         <a href="{{ Route::has('student.homeworks.index') ? route('student.homeworks.index') : '#' }}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="4" y="3" width="16" height="18" rx="2"></rect>
-                <path d="M8 12l3 3 5-6"></path>
-            </svg>
+            <x-icon name="clipboard-check" />
             <span>Домашки</span>
         </a>
         <a href="{{ Route::has('student.mocks.index') ? route('student.mocks.index') : '#' }}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="13" r="8"></circle>
-                <path d="M12 9v4l3 2"></path>
-                <path d="M9 2h6"></path>
-            </svg>
+            <x-icon name="clock" />
             <span>Пробники</span>
         </a>
         <a href="{{ Route::has('student.profile.show') ? route('student.profile.show') : '#' }}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="8" r="4"></circle>
-                <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path>
-            </svg>
+            <x-icon name="user-01" />
             <span>Профиль</span>
         </a>
     </div>
@@ -231,8 +204,10 @@ document.addEventListener('DOMContentLoaded', function () {
     var revealed = false;
 
     function applyLayout() {
+        // Визуально меню теперь одинаковое на любой ширине — isDesktop
+        // нужен только для того, чтобы решить, скрывать ли его по
+        // умолчанию на странице выполнения домашки (см. ниже).
         var isDesktop = window.innerWidth >= 640;
-        nav.classList.toggle('is-desktop', isDesktop);
 
         // Скрыто по умолчанию только на ПК, только на странице выполнения
         // домашки, и только пока пользователь сам не нажал "Раскрыть меню".
@@ -249,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var gsapOk = typeof window.gsap !== 'undefined';
 
         // У <nav> уже есть свой CSS-transform (translateX(-50%) для
-        // центрирования таблетки, см. .is-desktop). Если дать GSAP крутить
+        // центрирования таблетки, см. #student-bottom-nav). Если дать GSAP крутить
         // y/scale прямо на ней, он перечитает и подменит этот transform —
         // центрирование может съехать. Поэтому autoAlpha (не трогает
         // transform) — на <nav>, а пружинистые y/scale — на вложенном

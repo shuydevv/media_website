@@ -28,10 +28,15 @@ class UpdateController extends Controller
         }
 
         // --- Сравнение старого и нового расписания ---
+        // start_time из БД приходит как "H:i:s" (колонка time), а из формы —
+        // как "H:i" (date_format:H:i в UpdateRequest): без нормализации оба
+        // значения никогда не совпадают, и $scheduleChanged оказывается true
+        // при сохранении любой правки курса, даже не касающейся расписания —
+        // это удаляло все CourseSession/Lesson курса каскадом при каждом save.
         $old = $course->scheduleTemplates->map(fn($s) => [
             'day_of_week' => $s->day_of_week,
-            'start_time' => $s->start_time,
-            'duration_minutes' => $s->duration_minutes,
+            'start_time' => substr($s->start_time, 0, 5),
+            'duration_minutes' => (int) $s->duration_minutes,
         ])->sort()->values();
 
         $new = collect($validated['schedule'])->map(fn($s) => [

@@ -89,15 +89,11 @@
                      class="w-full h-full rounded-xl object-cover border border-blue-200">
               @else
                 <div class="w-full h-full rounded-xl border border-blue-200 bg-blue-100/50 flex items-center justify-center text-blue-300">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12">
-                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                    <path d="M21 15l-5-5L5 21"></path>
-                  </svg>
+                  <x-icon name="image-01" class="w-12 h-12" />
                 </div>
               @endif
 
-              <h2 class="absolute top-3 left-3 bg-white/60 px-3 py-1 rounded-2xl text-xs md:text-base font-medium text-blue-900 mb-3"><img class="inline-block md:mr-2 mr-1 md:w-auto w-4" src=" {{asset('/img/Return.svg')}} " alt="">Следующее занятие</h2>
+              <h2 class="absolute top-3 left-3 bg-white/60 px-3 py-1 rounded-2xl text-xs md:text-base font-medium text-blue-900 mb-3"><x-icon name="arrow-narrow-right" class="inline-block md:mr-2 mr-1 w-4 h-4" />Следующее занятие</h2>
 
               @include('student.partials.lesson-image-badges', ['lesson' => $lesson, 'homeworkColor' => $s->_homeworkColor])
             </div>
@@ -110,9 +106,7 @@
                (например, на узком мобильном) — без ручных брейкпоинтов. --}}
           <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
             <div class="text-sm md:text-base tracking-wide opacity-60 text-blue-800">
-              <img class="inline-block relative bottom-0.5 mr-1 w-4 h-4 md:w-5 md:h-5"
-                   src="{{ asset('img/Date_range.svg') }}"
-                   alt="Date">
+              <x-icon name="calendar" class="inline-block relative bottom-0.5 mr-1 w-4 h-4 md:w-5 md:h-5" />
               @if($s->display_date)
                 {{ \Illuminate\Support\Carbon::parse($s->display_date)->translatedFormat('j F') }}
                 @if($s->display_time) в {{ \Illuminate\Support\Str::substr($s->display_time, 0, 5) }} @endif
@@ -135,7 +129,7 @@
                  тике. --}}
             @if($s->_start)
               <div class="inline-flex items-center gap-1.5 bg-white/70 rounded-full pl-2.5 pr-3 py-1 text-sm md:text-base font-medium text-blue-900">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2.5"></path></svg>
+                <x-icon name="clock" class="w-4 h-4 shrink-0" />
                 <span id="next-session-countdown" data-start="{{ $s->_start->toIso8601String() }}"></span>
               </div>
             @endif
@@ -211,7 +205,7 @@
         <div>
           <div class="flex justify-center">
             <div class="md:text-base tracking-wide text-lg border-2 rounded-2xl border-blue-100 inline-block py-1.5 px-4 font-normal text-blue-800 mt-6 md:mb-6 mb-4">
-              <img class="inline-block relative bottom-1 mr-1" src="{{ asset('img/Date_range.svg') }}" alt="">
+              <x-icon name="calendar" class="inline-block relative bottom-1 mr-1 w-4 h-4" />
               {{ \Illuminate\Support\Str::ucfirst($monthKey) }}:
             </div>
           </div>
@@ -230,11 +224,7 @@
                       <img src="{{ $lesson->image_url }}" alt="{{ $lesson->title }}" class="w-full h-full object-cover rounded-xl object-cover border border-gray-200">
                     @else
                       <div class="w-full h-full rounded-xl border border-gray-200 bg-gray-100 flex items-center justify-center text-gray-300">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-10">
-                          <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-                          <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                          <path d="M21 15l-5-5L5 21"></path>
-                        </svg>
+                        <x-icon name="image-01" class="w-10 h-10" />
                       </div>
                     @endif
 
@@ -250,9 +240,7 @@
                     {{-- Дата занятия: "2 сентября в 15:30" (без секунд, как договорились) --}}
                     <div class="text-base text-zinc-600">
                       {{-- Дата занятия: --}}
-                      <img class="inline-block opacity-50 relative bottom-0.5 mr-1 w-4 h-4 md:w-5 md:h-5" 
-                      src="{{ asset('img/Date_range.svg') }}" 
-                      alt="Date">
+                      <x-icon name="calendar" class="inline-block opacity-50 relative bottom-0.5 mr-1 w-4 h-4 md:w-5 md:h-5" />
                       @if($s->display_date)
                         {{ \Carbon\Carbon::parse($s->display_date)->locale('ru')->isoFormat('D MMMM') }}
                         @if($s->display_time) в {{ \Illuminate\Support\Str::substr($s->display_time, 0, 5) }} @endif

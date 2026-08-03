@@ -27,6 +27,6 @@ class VerifyEmailWithCode extends Notification implements ShouldQueue
             'Подтвердите e-mail',
             'mail.auth.verify_email_code',
             ['code' => $this->code, 'url' => $url]
-        ))->to($notifiable->email);
+        ))->to($notifiable->routeNotificationFor('mail'));
     }
 }

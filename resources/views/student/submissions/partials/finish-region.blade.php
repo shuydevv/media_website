@@ -79,26 +79,25 @@
   </div>
 
   <div class="mt-8">
-    @if($allAnswered)
-      <form method="POST" action="{{ route('student.submissions.finish.submit', $submission) }}"
-            hx-post="{{ route('student.submissions.finish.submit', $submission) }}"
-            hx-target="#wizard-app"
-            hx-swap="innerHTML">
-        @csrf
-        <button type="submit" class="relative inline-flex items-center justify-center px-5 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base">
-          <span class="btn-label">Завершить и отправить работу</span>
-          <span class="btn-spinner">
-            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-            </svg>
-          </span>
-        </button>
-      </form>
-    @else
-      <button type="button" disabled class="px-5 py-3 rounded-xl bg-gray-200 text-gray-500 cursor-not-allowed text-sm sm:text-base">
-        Сначала ответьте на все вопросы
-      </button>
+    @if(!$allAnswered)
+      <p class="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-4 inline-block">
+        Вопросы без ответа будут засчитаны как 0 баллов
+      </p>
     @endif
+    <form method="POST" action="{{ route('student.submissions.finish.submit', $submission) }}"
+          hx-post="{{ route('student.submissions.finish.submit', $submission) }}"
+          hx-target="#wizard-app"
+          hx-swap="innerHTML">
+      @csrf
+      <button type="submit" class="relative inline-flex items-center justify-center px-5 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base">
+        <span class="btn-label">Завершить и отправить работу</span>
+        <span class="btn-spinner">
+          <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+        </span>
+      </button>
+    </form>
   </div>
 </div>

@@ -74,14 +74,60 @@ class MockController extends Controller
                 $status = 'pending_review';
             }
 
-            $primaryMax = (int) $hw->tasks->sum('max_score');
-            $primaryScore = $submission?->total_score;
-            $scaledScore = ($submission !== null && $primaryMax > 0 && $primaryScore !== null)
-                ? (int) round($primaryScore / $primaryMax * 100)
-                : null;
-
             $attemptsUsed = (int) ($attemptsUsedByHomework->get($hw->id) ?? 0);
             $attemptsLeft = max(0, $hw->attemptsAllowed() - $attemptsUsed);
+
+            // Реальные баллы по секциям — та же логика, что и на странице
+            // результата (submissions/show.blade.php: $autoScore/$manualScore/
+            // $autoPct/$manualPct), а не "отвечено/не отвечено": иначе
+            // полностью сданная, но плохо решённая работа показывала бы
+            // 100%, что и есть тот самый "нереальный" процент.
+            $progressSubmission = $inProgress ?? $submission;
+            $perTaskResults = $progressSubmission?->per_task_results ?? [];
+
+            $autoTasks = $hw->tasks->filter(fn ($t) => $t->isAutoGradable());
+            $manualTasks = $hw->tasks->filter(fn ($t) => !$t->isAutoGradable());
+
+            $autoMax = (int) $autoTasks->sum('max_score');
+            $manualMax = (int) $manualTasks->sum('max_score');
+
+            $autoScore = $progressSubmission?->autocheck_score !== null
+                ? (int) $progressSubmission->autocheck_score
+                : (int) $autoTasks->sum(fn ($t) => (int) ($perTaskResults[$t->id]['score'] ?? 0));
+
+            $manualScore = ($progressSubmission?->status === 'checked' && $progressSubmission->manual_score !== null)
+                ? (int) $progressSubmission->manual_score
+                : (int) $manualTasks->sum(function ($t) use ($perTaskResults) {
+                    $row = $perTaskResults[$t->id] ?? [];
+                    $hasScore = array_key_exists('score', $row) && $row['score'] !== null;
+
+                    return (!($row['skipped'] ?? false) && $hasScore) ? (int) $row['score'] : 0;
+                });
+
+            $pct = fn (int $score, int $max) => $max > 0 ? (int) round(min(100, max(0, $score * 100 / $max))) : 0;
+
+            $totalMax = $autoMax + $manualMax;
+            $totalScore = ($progressSubmission?->status === 'checked' && $progressSubmission->total_score !== null)
+                ? (int) $progressSubmission->total_score
+                : $autoScore + $manualScore;
+
+            // Число рядом с "Первая/Вторая часть" — вклад части в общий
+            // стобалльный балл (пример: 34 из 58 первичных = 59; из них 12
+            // за автопроверку и 22 за ручную → 21 и 38, сумма = 59 = центр
+            // диаграммы).
+            $autoScaled = $pct($autoScore, $totalMax);
+            $manualScaled = $pct($manualScore, $totalMax);
+            $scaledScore = $pct($totalScore, $totalMax);
+
+            // А вот ЗАЛИВКА самого кольца — это отдельная величина: % от
+            // СОБСТВЕННОГО максимума части (12/28=43%, 22/30=73%), а не от
+            // общего. Если залить кольцо по autoScaled/manualScaled, то даже
+            // при 100%-но верно решённой части кольцо никогда не дойдёт до
+            // конца (оно упирается в долю части от общего максимума) — это
+            // и есть "график думает, что 21 балл = 21%", хотя 21 — это доля
+            // от ОБЩЕГО балла, а не % выполнения самой части.
+            $autoPct = $pct($autoScore, $autoMax);
+            $manualPct = $pct($manualScore, $manualMax);
 
             return [
                 'homework'     => $hw,
@@ -89,11 +135,13 @@ class MockController extends Controller
                 'mockNumber'   => $hw->mock_number,
                 'status'       => $status,
                 'submission'   => $submission,
-                'primaryScore' => $primaryScore,
-                'primaryMax'   => $primaryMax,
-                'scaledScore'  => $scaledScore,
                 'submittedAt'  => $submission?->updated_at,
                 'attemptsLeft' => $attemptsLeft,
+                'autoScaled'   => $autoScaled,
+                'manualScaled' => $manualScaled,
+                'autoPct'      => $autoPct,
+                'manualPct'    => $manualPct,
+                'scaledScore'  => $scaledScore,
             ];
         });
 

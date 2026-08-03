@@ -1,0 +1,2 @@
+{{-- Untitled UI icons (https://www.untitledui.com/resources/icons), free line style — used under Untitled UI's free license (untitledui.com/license): permitted in this end product, do not redistribute the raw files/library, see resources/views/components/icon.blade.php for usage. Source: plus.svg --}}
+<svg {{ $attributes->merge(['width' => 24, 'height' => 24, 'viewBox' => '0 0 24 24', 'fill' => 'none', 'xmlns' => 'http://www.w3.org/2000/svg']) }}><path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>

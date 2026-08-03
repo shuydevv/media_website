@@ -50,9 +50,9 @@ class HomeworkController extends Controller
             ->groupBy('homework_id')
             ->map(fn ($group) => $group->first());
 
-        $rows = $homeworks->map(function (Homework $hw) use ($latestSubmissionByHomework) {
+        $rows = $homeworks->map(function (Homework $hw) use ($latestSubmissionByHomework, $user) {
             $submission = $latestSubmissionByHomework->get($hw->id);
-            $isPastDue = $hw->due_at !== null && now()->isAfter($hw->due_at);
+            $isPastDue = $hw->isOverdueFor($user);
 
             if (!$submission) {
                 $status = $isPastDue ? 'overdue' : 'not_started';

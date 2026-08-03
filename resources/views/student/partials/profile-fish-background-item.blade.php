@@ -3,11 +3,13 @@
      сетке (fish-bg-grid-desktop), и в мобильной карусели (fish-bg-swiper),
      чтобы разметка карточки не дублировалась в двух местах. Ожидает $slug,
      $label из внешнего @foreach и $fishUnlockedBackgrounds/$fishBackground/
-     $fishBackgroundPrice, расшаренные автоматически (обычный @include без
+     $fishBackgroundPrices (цена по тирам, не одна на все — см.
+     config/fish.php), расшаренные автоматически (обычный @include без
      явного массива данных). --}}
 @php
     $unlocked = in_array($slug, $fishUnlockedBackgrounds, true);
-    $canAfford = ($fishBalance ?? 0) >= $fishBackgroundPrice;
+    $price = $fishBackgroundPrices[$slug] ?? 20;
+    $canAfford = ($fishBalance ?? 0) >= $price;
 @endphp
 @if ($unlocked)
     <form method="POST" action="{{ route('student.profile.background.select') }}">
@@ -20,7 +22,7 @@
 @else
     <div class="fish-bg-thumb-wrap">
         <img src="{{ asset('img/mascot/background/'.$slug.'.jpg') }}" alt="{{ $label }}" class="w-full aspect-square object-cover">
-        <span class="fish-bg-lock-badge">🔒</span>
+        <span class="fish-bg-lock-badge"><x-icon name="lock-01" class="w-4 h-4" /></span>
         <form method="POST" action="{{ route('student.profile.background.purchase') }}" class="fish-bg-buy-form">
             @csrf
             <input type="hidden" name="fish_background" value="{{ $slug }}">
@@ -30,8 +32,9 @@
                  (disabled уже блокирует клик и submit нативно, модалка
                  просто никогда не откроется) и текст меняется на
                  "Стоимость: N", чтобы не звучать как призыв к действию. --}}
-            <button type="submit" class="fish-bg-buy-btn" data-bg-label="{{ $label }}" data-bg-price="{{ $fishBackgroundPrice }}" {{ $canAfford ? '' : 'disabled' }}>
-                {{ $canAfford ? 'Купить за ' . $fishBackgroundPrice : 'Стоимость: ' . $fishBackgroundPrice }}
+            <button type="submit" class="fish-bg-buy-btn" data-bg-label="{{ $label }}" data-bg-price="{{ $price }}" {{ $canAfford ? '' : 'disabled' }}>
+                {{ $canAfford ? 'Купить за ' . $price : 'Стоимость: ' . $price }}
+                <img src="{{ asset('img/pizza.svg') }}" alt="" class="w-4 h-4 inline-block align-text-bottom ml-0.5">
             </button>
         </form>
     </div>

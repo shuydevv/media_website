@@ -10,12 +10,12 @@
   @endif
 
   @if ($lesson->recording_link)
-  <div class="inline-block md:py-4 py-2 md:px-5 px-4 rounded-2xl md:text-xl text-lg md:mb-4 mb-4 bg-blue-50 border border-blue-200 text-blue-900"><img class="inline-block relative bottom-0.5 mr-2" src="{{asset('img/Camera.svg')}}" alt="">Запись трансляции</div>
+  <div class="inline-block md:py-4 py-2 md:px-5 px-4 rounded-2xl md:text-xl text-lg md:mb-4 mb-4 bg-blue-50 border border-blue-200 text-blue-900"><x-icon name="video-recorder" class="inline-block relative bottom-0.5 mr-2 w-5 h-5" />Запись трансляции</div>
   <div class="border-4 border-blue-100 rounded-xl" style="position: relative; padding-top: 56.25%; width: 100%"><iframe src="https://kinescope.io/embed/{{$lesson->recording_link}}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer; clipboard-write; screen-wake-lock;" frameborder="0" allowfullscreen style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;"></iframe></div>
   @endif
 
   @if ($lesson->short_class)
-  <div class="inline-block p-4 px-5 rounded-2xl text-xl md:mb-4 mb-4 mt-12 bg-blue-50 border border-blue-200 text-blue-900"><img class="inline-block relative bottom-0.5 mr-2" src="{{asset('img/Camera.svg')}}" alt="">"Сок" — Выжимка урока</div>
+  <div class="inline-block p-4 px-5 rounded-2xl text-xl md:mb-4 mb-4 mt-12 bg-blue-50 border border-blue-200 text-blue-900"><x-icon name="video-recorder" class="inline-block relative bottom-0.5 mr-2 w-5 h-5" />"Сок" — Выжимка урока</div>
   <div class="border-4 border-blue-100 rounded-xl" style="position: relative; padding-top: 56.25%; width: 100%"><iframe src="https://kinescope.io/embed/{{$lesson->short_class}}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer; clipboard-write; screen-wake-lock;" frameborder="0" allowfullscreen style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;"></iframe></div>
   @endif
 

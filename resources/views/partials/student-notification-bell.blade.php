@@ -174,10 +174,7 @@
     $recentNotifications = auth()->user()->notifications()->latest()->take(5)->get();
 @endphp
 <a href="{{ route('student.notifications.index') }}" id="student-notification-bell" aria-label="Уведомления" onclick="return window.__toggleNotifPanel(event)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
-        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-    </svg>
+    <x-icon name="bell-01" />
     @include('partials.student-notification-badge', ['unreadCount' => $unreadNotificationsCount])
 </a>
 
@@ -207,7 +204,9 @@
                       class="notif-panel-item-delete-form">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="notif-panel-item-delete" aria-label="Удалить уведомление">&times;</button>
+                    <button type="submit" class="notif-panel-item-delete" aria-label="Удалить уведомление">
+                        <x-icon name="x-close" width="14" height="14" />
+                    </button>
                 </form>
             </div>
         @empty

@@ -37,7 +37,7 @@ class StoreController extends Controller
             'category_id' => $validated['category_id'] ?? null,
             'start_date' => $validated['start_date'],
             'end_date' => $validated['end_date'],
-            'main_image' => $validated['main_image'],
+            'main_image' => $validated['main_image'] ?? null,
         ]);
 
         // отдельно добавляем шаблоны расписания

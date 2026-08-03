@@ -11,11 +11,7 @@
      обращении к visard'у) сама завершит попытку и отдаст редирект на
      результаты. Никакой логики начисления баллов на клиенте. --}}
 <div id="mock-timer" class="mock-timer" data-expires-at="{{ $expiresAt }}">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0">
-    <circle cx="12" cy="13" r="8"></circle>
-    <path d="M12 9v4l3 2"></path>
-    <path d="M9 2h6"></path>
-  </svg>
+  <x-icon name="clock" class="w-4 h-4 shrink-0" />
   <span id="mock-timer-text">--:--:--</span>
 </div>
 

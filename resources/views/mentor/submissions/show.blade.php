@@ -463,15 +463,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (scoreHidden) scoreHidden.value = String(Math.floor(v));
 
-      const reasonFilled  = reasonEl  && reasonEl.value.trim()  !== '';
-      const commentFilled = commentEl && commentEl.value.trim() !== '';
-
       let consentOk = true;
       if (consentWrap && !consentWrap.classList.contains('hidden')) {
         consentOk = !!(consentChk && consentChk.checked);
       }
 
-      const canSave = validScore && consentOk && reasonFilled && commentFilled;
+      // Обоснование баллов / комментарий ученику — необязательны (см.
+      // TaskContentRules и SubmissionReviewController::saveTask, оба поля
+      // nullable на сервере): куратор может сохранить оценку, не заполняя
+      // их, если это осмысленно (например, работа оценена без комментария).
+      const canSave = validScore && consentOk;
       saveBtn.disabled = !canSave;
 
       if (!hasDb) {

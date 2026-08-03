@@ -219,26 +219,42 @@ class SubmissionController extends Controller
         $perTask = $submission->per_task_results ?? [];
         $fish = app(FishFoodService::class);
 
-        // Корм за верный ответ — только если вопрос ещё не был отвечен:
-        // без этой проверки переответ на уже сохранённый верный вопрос
-        // (answers просто перезаписывается) начислял бы корм повторно.
-        if ($result !== null && $result['status'] === 'ok' && !array_key_exists($task->id, $answers)) {
-            $fish->awardCorrectAnswer($request->user());
-        }
-
         $answers[$task->id] = $answer;
 
         if ($result !== null) {
+            // Корм за задание = балл за задание (см. FishFoodService::
+            // syncTaskCorm()) — переносим уже начисленное с прошлой попытки
+            // ответить на этот же вопрос, иначе дельта считалась бы от нуля
+            // и корм задваивался бы при переответе.
+            $result['fish_awarded'] = $perTask[$task->id]['fish_awarded'] ?? 0;
             $perTask[$task->id] = $result;
         } else {
             unset($perTask[$task->id]); // ручные проверяет куратор — результата пока нет
         }
 
-        $submission->answers = $answers;
-        $submission->per_task_results = $perTask;
-        $submission->save();
+        // Начисление корма (пишет в users, InnoDB) и сохранение ответа
+        // (submissions, MyISAM) — в одной транзакции: если save() не
+        // пройдёт, откатывается и уже начисленный корм. Без этого при сбое
+        // между двумя операциями fish_awarded оставался бы несохранённым
+        // (per_task_results не записался), и следующая попытка ответить на
+        // тот же вопрос начислила бы корм за него ещё раз поверх уже
+        // списанного в БД баланса.
+        DB::transaction(function () use (&$perTask, $task, $result, $fish, $request, $submission, $answers) {
+            if ($result !== null) {
+                $fish->syncTaskCorm($request->user(), $perTask[$task->id]);
+            }
 
-        $trigger = ($result !== null && $result['status'] === 'ok')
+            $submission->answers = $answers;
+            $submission->per_task_results = $perTask;
+            $submission->save();
+        });
+
+        // Пробник: как и модалка "Верно/Неверно" в check() выше, тост тоже
+        // не должен показываться — иначе результат проверки всё равно
+        // утекал бы студенту раньше срока, просто другим способом.
+        $isMock = ($submission->homework?->type ?? null) === 'mock';
+
+        $trigger = ($result !== null && $result['status'] === 'ok' && !$isMock)
             ? ['toast' => [
                 'message' => "Верно! {$result['score']} / {$result['max']} баллов",
                 'icon'    => $fish->mascotImageUrl($fish->levelFor((int) $request->user()->fish_total_fed), 'correct'),
@@ -276,21 +292,12 @@ class SubmissionController extends Controller
             return $redirect;
         }
 
+        // Неотвеченные вопросы разрешены: студент может отправить работу на
+        // проверку не решив всё до конца — незаполненные задания просто
+        // получат 0 (AutoGrader уже это умеет — см. scoreAuto(null, ...)),
+        // а неотвеченные ручные останутся без per_task_results до куратора,
+        // как и любой другой неотвеченный ручной вопрос.
         $tasks = $this->orderedTasks($submission->homework_id);
-        $answers = $submission->answers ?? [];
-
-        if (!$tasks->every(fn (HomeworkTask $t) => array_key_exists($t->id, $answers))) {
-            if ($this->isHtmx($request)) {
-                return view(
-                    'student.submissions.partials.finish-region',
-                    $this->finishData($submission, $tasks, 'Сначала ответьте на все вопросы.')
-                );
-            }
-
-            return redirect()
-                ->route('student.submissions.finish', $submission)
-                ->withErrors(['submission' => 'Сначала ответьте на все вопросы.']);
-        }
 
         $homework = Homework::find($submission->homework_id);
 
@@ -318,19 +325,81 @@ class SubmissionController extends Controller
      */
     private function finalize(Submission $submission, Homework $homework): void
     {
+        // submissions — таблица MyISAM (см. миграцию add_in_progress_guard):
+        // DB::transaction()/lockForUpdate() тут не дают настоящей
+        // атомарности (MyISAM их не поддерживает), поэтому гонку двух
+        // параллельных вызовов finalize() для одной попытки (двойной клик по
+        // «Завершить», столкновение ручной отправки с реактивным
+        // авто-финишем пробника по таймеру в ensureInProgress()) закрываем
+        // атомарным UPDATE ... WHERE status = 'in_progress': MyISAM
+        // сериализует конкурентные UPDATE табличной блокировкой, так что
+        // только один из двух запросов реально меняет строку и получает
+        // affected=1, проигравший видит 0 и выходит без повторного
+        // начисления корма за домашку.
+        $claimed = Submission::where('id', $submission->id)
+            ->where('status', 'in_progress')
+            ->update(['status' => 'grading']);
+
+        if ($claimed === 0) {
+            $submission->refresh();
+            return;
+        }
+
+        $submission->refresh();
+
         $tasks = $this->orderedTasks($submission->homework_id);
         $answers = $submission->answers ?? [];
 
         $grade = app(AutoGrader::class)->gradeWithTasks($tasks, $answers);
+        $perTask = $grade['per_task'] ?? [];
+        $autoScore = (int) ($grade['score'] ?? 0);
 
-        $submission->autocheck_score  = (int) ($grade['score'] ?? 0);
-        $submission->total_score      = (int) ($grade['score'] ?? 0);
-        $submission->per_task_results = $grade['per_task'] ?? null;
+        // Пустой ответ на ручное задание (или вопрос вовсе оставлен без
+        // ответа — теперь так можно, см. finishSubmit()) сразу закрывается
+        // нулём — куратору тут нечего проверять. Формат тот же, что и у
+        // настоящей проверки куратора (per_task_results[$id]['score']),
+        // поэтому дальше по коду (allManualTasksClosedForMentor/Admin,
+        // страница результата) такое задание выглядит как уже закрытое.
+        $manualScore = 0;
+        $hasPendingManual = false;
 
-        $hasManual = $tasks->contains(fn (HomeworkTask $t) => in_array($t->type, HomeworkTask::MANUAL_TYPES, true));
-        $submission->status = (!$hasManual && !empty($grade['fully_auto'])) ? 'checked' : 'pending';
+        foreach ($tasks as $t) {
+            if ($t->isAutoGradable()) {
+                continue;
+            }
 
-        if (!empty($homework->due_at) && now()->isAfter($homework->due_at)) {
+            $tid = $t->id;
+            $answer = $answers[$tid] ?? null;
+
+            if (trim((string) $answer) === '') {
+                $perTask[$tid]['score'] = 0;
+                unset($perTask[$tid]['skipped']);
+            } else {
+                $hasPendingManual = true;
+                continue;
+            }
+
+            $manualScore += (int) $perTask[$tid]['score'];
+        }
+
+        $submission->autocheck_score  = $autoScore;
+        $submission->per_task_results = $perTask;
+
+        if ($hasPendingManual) {
+            // Есть хотя бы одно непустое ручное задание — это по-прежнему
+            // уходит куратору, total_score до его решения не финальный
+            // (та же логика, что и раньше).
+            $submission->total_score = $autoScore;
+            $submission->status = 'pending';
+        } else {
+            // Ручных заданий либо нет вовсе, либо все пустые и уже закрыты
+            // нулём выше — куратору отправлять нечего, можно сразу "Проверено".
+            $submission->manual_score = $manualScore;
+            $submission->total_score  = $autoScore + $manualScore;
+            $submission->status = 'checked';
+        }
+
+        if ($homework->isOverdueFor($submission->user)) {
             $submission->status = 'expired';
         }
 

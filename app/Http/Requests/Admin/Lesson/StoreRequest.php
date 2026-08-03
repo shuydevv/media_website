@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin\Lesson;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreRequest extends FormRequest
 {
@@ -14,7 +15,11 @@ class StoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'course_session_id' => ['required', 'exists:course_sessions,id'],
+            // unique — без него CourseSession::lesson() (hasOne) молча
+            // прячет второй урок на то же занятие (двойной сабмит формы,
+            // повторный выбор занятия): он существует в БД, но не
+            // показывается ни на странице курса, ни на дашборде.
+            'course_session_id' => ['required', 'exists:course_sessions,id', Rule::unique('lessons', 'course_session_id')],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'meet_link' => ['nullable', 'string'],

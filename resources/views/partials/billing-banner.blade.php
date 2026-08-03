@@ -14,7 +14,7 @@ if (!function_exists('ru_plural')) {
 @foreach($billingOverdue ?? [] as $course)
     <div class="w-full bg-rose-50 text-rose-800">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3 text-sm">
-            <span>Доступ к курсу «{{ $course->title }}» приостановлен — оплата не прошла.</span>
+            <span>Доступ к платформе приостановлен. Оплатите курс, затем введите код доступа</span>
             <a href="{{ route('billing.overdue', $course) }}" class="shrink-0 underline font-medium">Оплатить вручную →</a>
         </div>
     </div>
@@ -29,14 +29,14 @@ if (!function_exists('ru_plural')) {
     @endphp
     <div id="{{ $bannerId }}" class="w-full bg-orange-50 text-orange-800">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3 text-sm">
-            <span>Доступ к курсу «{{ $row['course']->title }}» закроется {{ $whenText }} — оплатите, чтобы не потерять доступ.</span>
+            <span>Доступ к курсу закроется {{ $whenText }} — оплатите, чтобы не потерять доступ.</span>
             <div class="flex items-center gap-4 shrink-0">
-                <a href="{{ route('checkout.course.show', $row['course']) }}" class="underline font-medium">Оплатить сейчас →</a>
+                {{-- <a href="{{ route('checkout.course.show', $row['course']) }}" class="underline font-medium">Оплатить сейчас →</a> --}}
                 <button type="button"
                         onclick="(function(el){ try { localStorage.setItem('{{ $dismissKey }}', '1'); } catch (e) {} el.remove(); })(document.getElementById('{{ $bannerId }}'))"
                         class="text-orange-600 hover:text-orange-900 text-base leading-none"
                         aria-label="Закрыть">
-                    &times;
+                    <x-icon name="x-close" width="16" height="16" />
                 </button>
             </div>
         </div>

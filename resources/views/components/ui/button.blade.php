@@ -41,8 +41,8 @@
     $classes = trim(implode(' ', [
         $colorClasses,
         $sizeClasses,
-        $block ? 'w-full block' : 'inline-block',
-        'text-center font-medium tracking-wide transition',
+        $block ? 'w-full flex' : 'inline-flex',
+        'items-center justify-center text-center font-medium tracking-wide transition',
     ]));
 @endphp
 

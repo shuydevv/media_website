@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\HomeworkTask;
 use App\Models\Submission;
 use App\Models\User;
+use App\Service\FishFoodService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
@@ -229,6 +231,33 @@ class SubmissionReviewController extends Controller
      */
     private function finalizeSubmission(Request $request, Submission $submission): void
     {
+        // submissions — таблица MyISAM (нет lockForUpdate()/транзакций), а
+        // finalizeSubmission() в отличие от студенческого finalize()
+        // легитимно вызывается повторно (админ доскорил задание, пропущенное
+        // ментором, и снова жмёт «Завершить») — простой claim по статусу
+        // тут не годится. Серилизуем именованным серверным локом MySQL: не
+        // зависит от движка таблицы и не мешает повторному вызову, только не
+        // даёт двум запросам на одной попытке выполниться одновременно
+        // (двойной клик по «Завершить», либо ментор и админ жмут «Завершить»
+        // на одной работе одновременно — Policy пускает обоих, лок это не
+        // проверяет для админа).
+        $lockKey = 'submission_finalize_' . $submission->id;
+        $gotLock = (int) (DB::selectOne('SELECT GET_LOCK(?, 5) AS got', [$lockKey])->got ?? 0);
+
+        if (!$gotLock) {
+            return;
+        }
+
+        try {
+            $submission->refresh();
+            $this->finalizeSubmissionLocked($request, $submission);
+        } finally {
+            DB::statement('SELECT RELEASE_LOCK(?)', [$lockKey]);
+        }
+    }
+
+    private function finalizeSubmissionLocked(Request $request, Submission $submission): void
+    {
         $u = $request->user();
         $isAdmin = (int)$u->role === User::ROLE_ADMIN;
 
@@ -247,6 +276,13 @@ class SubmissionReviewController extends Controller
         $submission->autocheck_score = $autoScore;
         $submission->manual_score    = $manualScore;
         $submission->total_score     = $autoScore + $manualScore;
+
+        // Корм за ручные задания начисляется только сейчас, при завершении
+        // проверки — до этого момента оценка куратора ещё не финальна (см.
+        // saveTask(), там можно править балл сколько угодно раз). Идемпотентно
+        // и на повторный finalize (админ донормировал очередь после пропусков
+        // ментора) — см. FishFoodService::syncTaskCorm().
+        $this->awardManualTaskCorm($submission);
 
         // Статус
         // if ($isAdmin) {
@@ -278,6 +314,50 @@ class SubmissionReviewController extends Controller
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * Корм за ручные задания = баллы, выставленные куратором (см. FishFoodService::
+     * syncTaskCorm()) — идёт по тем же строкам per_task_results, что и
+     * recalculateScores(), но независимо от неё: чтобы поддерживать инвариант
+     * «корм = балл» и на пересдачу очереди (skipped-задание админ доскорил
+     * позже, или админ поправил оценку ментора), а не только на самое первое
+     * завершение проверки. Пропущенные (skipped) задания — без оценки, корм
+     * им не положен, пока их явно не доскорят.
+     */
+    private function awardManualTaskCorm(Submission $submission): void
+    {
+        $tasksRaw = $submission->homework->tasks ?? [];
+        if (is_string($tasksRaw)) {
+            $decoded = json_decode($tasksRaw, true);
+            $tasksRaw = is_array($decoded) ? $decoded : [];
+        }
+
+        $manualTasks = collect($tasksRaw)
+            ->map(fn ($t) => (object) $t)
+            ->filter(fn ($t) => in_array($t->type ?? '', HomeworkTask::MANUAL_TYPES, true));
+
+        if ($manualTasks->isEmpty()) {
+            return;
+        }
+
+        $per = $submission->per_task_results ?? [];
+        $fish = app(FishFoodService::class);
+        $user = $submission->user;
+
+        foreach ($manualTasks as $i => $t) {
+            $tid = (string) ($t->id ?? $t->task_id ?? "t_manual_$i");
+            $row = $per[$tid] ?? null;
+
+            if (!is_array($row) || !empty($row['skipped']) || !Arr::exists($row, 'score')) {
+                continue;
+            }
+
+            $fish->syncTaskCorm($user, $row);
+            $per[$tid] = $row;
+        }
+
+        $submission->per_task_results = $per;
     }
 
     /**
@@ -324,7 +404,18 @@ class SubmissionReviewController extends Controller
      */
     private function resolveTaskMaxScore($tasks, string $taskKey): ?int
     {
-        $list = collect(is_array($tasks) ? $tasks : []);
+        // Раньше здесь стояло collect(is_array($tasks) ? $tasks : []) — но
+        // $submission->homework->tasks (см. вызов в saveTask()) это Eloquent-
+        // коллекция HomeworkTask, а не array, is_array() на ней всегда false.
+        // Метод молча получал пустой список и ВСЕГДА возвращал null —
+        // saveTask() из-за этого никогда не клампил присланный курато­ром
+        // балл к max_score задания (наружу это не было видно: итоговый
+        // total_score в recalculateScores() клампится отдельно и правильно,
+        // но per_task_results[$taskKey]['score'] — и, что важнее, корм,
+        // который FishFoodService::syncTaskCorm() начисляет прямо по этому
+        // полю в awardManualTaskCorm() — сохранялся и начислялся без
+        // ограничения). collect() сам умеет и в массив, и в Collection.
+        $list = collect($tasks);
         // Если ключ числовой — проще
         if (ctype_digit($taskKey)) {
             $id = (int)$taskKey;

@@ -60,7 +60,7 @@
     @endif
             <div class="flex items-center justify-between gap-2 min-w-0 text-xs {{ $text }}">
                 <span class="flex items-center gap-1 min-w-0">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 shrink-0"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 01-3.46 0"></path></svg>
+                    <x-icon name="bell-01" class="w-3.5 h-3.5 shrink-0" />
                     <span class="font-medium truncate">{{ $type }}</span>
                 </span>
                 <span class="shrink-0 whitespace-nowrap">{{ $dateLabel }}</span>

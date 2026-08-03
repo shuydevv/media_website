@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin\Homework;
 
 use App\Support\TaskContentRules;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreRequest extends FormRequest
 {
@@ -19,6 +20,11 @@ class StoreRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'type'        => ['required', 'string'], // homework или mock
             'mock_number' => ['nullable', 'integer', 'min:1'],
+            // К одному уроку — не больше одной домашки любого типа (см.
+            // миграцию add_unique_lesson_id_to_homeworks_table). unique без
+            // ignore здесь корректен: это форма СОЗДАНИЯ, своей строки для
+            // исключения ещё не существует.
+            'lesson_id'   => ['nullable', 'integer', 'exists:lessons,id', Rule::unique('homeworks', 'lesson_id')],
 
             'tasks' => ['nullable', 'array'],
             'tasks.*.id' => ['nullable', 'integer', 'exists:homework_tasks,id'],
@@ -53,6 +59,14 @@ class StoreRequest extends FormRequest
             'tasks.*.task_id' => 'Задание из банка',
             'tasks.*.image_path'           => 'Путь к изображению',
             'tasks.*.image_auto_strict'    => 'Порядок важен (для “Картинка (авто)”)',
+            'lesson_id' => 'Урок',
         ]);
+    }
+
+    public function messages(): array
+    {
+        return [
+            'lesson_id.unique' => 'К этому уроку уже прикреплена другая домашка — у одного урока может быть только одна.',
+        ];
     }
 }

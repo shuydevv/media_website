@@ -24,6 +24,9 @@ class ProfileController extends Controller
 
         $fishLevel = $fish->levelFor((int) $user->fish_total_fed);
 
+        $fishBackgrounds = $fish->availableBackgrounds();
+        $fishAccessories = $fish->availableAccessories();
+
         return view('student.profile.show', [
             'user' => $user,
             'notificationTypes' => $notificationTypes,
@@ -31,9 +34,20 @@ class ProfileController extends Controller
             'fishLevelName' => $fish->levelName($fishLevel),
             'fishName' => $user->fish_name ?: $fish->levelName($fishLevel),
             'fishBackground' => $user->fish_background ?: config('fish.default_background'),
-            'fishBackgrounds' => $fish->availableBackgrounds(),
+            'fishBackgrounds' => $fishBackgrounds,
             'fishUnlockedBackgrounds' => $fish->unlockedBackgroundsFor($user),
-            'fishBackgroundPrice' => (int) config('fish.background_price'),
+            'fishBackgroundPrices' => collect(array_keys($fishBackgrounds))
+                ->mapWithKeys(fn (string $slug) => [$slug => $fish->backgroundPrice($slug)])
+                ->all(),
+            'fishAccessory' => $user->fish_accessory ?: 'none',
+            'fishAccessories' => $fishAccessories,
+            'fishUnlockedAccessories' => $fish->unlockedAccessoriesFor($user),
+            'fishAccessoryEmoji' => collect(array_keys($fishAccessories))
+                ->mapWithKeys(fn (string $slug) => [$slug => $fish->accessoryEmoji($slug)])
+                ->all(),
+            'fishAccessoryPrices' => collect(array_keys($fishAccessories))
+                ->mapWithKeys(fn (string $slug) => [$slug => $fish->accessoryPrice($slug)])
+                ->all(),
             'fishBalance' => (int) $user->fish_corm_balance,
         ]);
     }
@@ -127,25 +141,53 @@ class ProfileController extends Controller
         $user = auth()->user();
         $slug = $data['fish_background'];
 
-        if ($fish->isBackgroundUnlocked($user, $slug)) {
-            return back()->with('success', 'Этот фон уже открыт.');
-        }
+        // Списание и разблокировка — атомарно внутри FishFoodService (под
+        // блокировкой строки пользователя), не здесь: см. комментарий у
+        // FishFoodService::purchaseBackground() про гонку параллельных покупок.
+        return match ($fish->purchaseBackground($user, $slug)) {
+            'already_unlocked' => back()->with('success', 'Этот фон уже открыт.'),
+            'insufficient' => back()->withErrors(['fish_background' => 'Недостаточно корма, чтобы открыть этот фон.']),
+            default => back()->with('success', 'Фон открыт и выбран.'),
+        };
+    }
 
-        $price = (int) config('fish.background_price');
-        if ((int) $user->fish_corm_balance < $price) {
-            return back()->withErrors(['fish_background' => 'Недостаточно корма, чтобы открыть этот фон.']);
-        }
+    /**
+     * Выбор среди уже открытых аксессуаров (бесплатный "none" или ранее
+     * купленные) — покупка нового отдельным действием, см. purchaseAccessory().
+     * Та же пара методов, что и у фонов (select/purchase), см. выше.
+     */
+    public function selectAccessory(Request $request, FishFoodService $fish)
+    {
+        $user = auth()->user();
+        $unlocked = $fish->unlockedAccessoriesFor($user);
 
-        $unlocked = $user->fish_unlocked_backgrounds ?? [];
-        $unlocked[] = $slug;
+        $data = $request->validate([
+            'fish_accessory' => ['required', 'string', Rule::in($unlocked)],
+        ]);
 
-        $user->fish_corm_balance = (int) $user->fish_corm_balance - $price;
-        $user->fish_unlocked_backgrounds = array_values(array_unique($unlocked));
-        // Сразу выбираем купленный фон — если покупаешь, явно хочешь его применить.
-        $user->fish_background = $slug;
+        $user->fish_accessory = $data['fish_accessory'];
         $user->save();
 
-        return back()->with('success', 'Фон открыт и выбран.');
+        return back()->with('success', 'Аксессуар выбран.');
+    }
+
+    public function purchaseAccessory(Request $request, FishFoodService $fish)
+    {
+        $data = $request->validate([
+            'fish_accessory' => ['required', 'string', Rule::in(array_keys($fish->availableAccessories()))],
+        ]);
+
+        $user = auth()->user();
+        $slug = $data['fish_accessory'];
+
+        // Списание и разблокировка — атомарно внутри FishFoodService (под
+        // блокировкой строки пользователя), не здесь: см. комментарий у
+        // FishFoodService::purchaseBackground() про гонку параллельных покупок.
+        return match ($fish->purchaseAccessory($user, $slug)) {
+            'already_unlocked' => back()->with('success', 'Этот аксессуар уже открыт.'),
+            'insufficient' => back()->withErrors(['fish_accessory' => 'Недостаточно корма, чтобы открыть этот аксессуар.']),
+            default => back()->with('success', 'Аксессуар открыт и выбран.'),
+        };
     }
 
     public function updateAvatar(Request $request)

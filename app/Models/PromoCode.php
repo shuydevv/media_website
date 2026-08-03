@@ -6,8 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class PromoCode extends Model
 {
+    // used_count намеренно не в $fillable — это внутренний счётчик,
+    // изменяемый только через increment() в BillingService/RedeemController
+    // под lockForUpdate(), а не через формы/mass-assignment.
     protected $fillable = [
-        'code','course_id','duration_days','starts_at','ends_at','max_uses','used_count','is_active',
+        'code','course_id','duration_days','starts_at','ends_at','max_uses','is_active',
         'kind','discount_mode','discount_value_cents','discount_percent','currency',
     ];
 

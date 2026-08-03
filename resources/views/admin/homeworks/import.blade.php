@@ -31,7 +31,7 @@
         </div>
     @endif
 
-    <form method="post" action="{{ route('admin.homeworks.import.store') }}" enctype="multipart/form-data" class="space-y-4">
+    <form id="import-form" method="post" action="{{ route('admin.homeworks.import.store') }}" enctype="multipart/form-data" class="space-y-4">
         @csrf
         <div>
             <label for="import-course-id" class="block text-sm font-medium mb-1">Курс</label>
@@ -59,14 +59,39 @@
             <label class="block text-sm font-medium mb-1">JSON-файл</label>
             <input type="file" name="file" accept=".json,application/json" class="w-full border rounded px-3 py-2" required>
         </div>
+        <div class="flex items-center gap-2">
+            <input type="checkbox" id="confirm-duplicate" name="confirm_duplicate" value="1" class="rounded">
+            <label for="confirm-duplicate" class="text-sm text-gray-600">
+                Всё равно создать дубликат, если домашка с таким названием на этом курсе уже есть
+            </label>
+        </div>
         <div class="flex items-center gap-2 pt-2">
-            <button class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Загрузить</button>
+            <button id="import-submit" class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed">
+                Загрузить
+            </button>
             <a href="{{ route('admin.homeworks.index') }}" class="px-4 py-2 rounded border hover:bg-gray-50">Отмена</a>
         </div>
     </form>
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
+        // Защита от повторной отправки: при импорте с картинками по image_url
+        // запрос может идти долго, а без видимой реакции на клик легко
+        // нажать "Загрузить" ещё раз — и без "id" в файле каждая такая
+        // отправка создаёт отдельную домашку-дубль. Кнопка блокируется сразу
+        // и остаётся такой даже если пользователь всё же дождётся навигации
+        // на страницу с результатом (там форма для нового импорта уже не эта).
+        const importForm = document.getElementById('import-form');
+        const importSubmit = document.getElementById('import-submit');
+        if (importForm && importSubmit) {
+            importForm.addEventListener('submit', () => {
+                if (importForm.dataset.submitted === '1') return;
+                importForm.dataset.submitted = '1';
+                importSubmit.disabled = true;
+                importSubmit.textContent = 'Загрузка…';
+            });
+        }
+
         const courseSelect = document.getElementById('import-course-id');
         const lessonSelect = document.getElementById('import-lesson-id');
         if (!courseSelect || !lessonSelect) return;

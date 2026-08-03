@@ -469,7 +469,7 @@
 
             <h3 class="text-lg font-medium text-gray-700 mb-3">1. Пилюля-статус (homeworks/notifications) — согласованы между собой</h3>
             <div class="flex flex-wrap gap-2 mb-2">
-                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">Не начато</span>
+                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">Не выполнено</span>
                 <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">В процессе</span>
                 <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700">Просрочено</span>
                 <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">На проверке</span>

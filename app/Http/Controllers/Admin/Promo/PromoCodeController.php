@@ -29,7 +29,7 @@ class PromoCodeController extends Controller
         $data = $request->validated();
 
         if (empty($data['code'])) {
-            $data['code'] = Str::upper(Str::random(8));
+            $data['code'] = $this->generateUniqueCode();
         }
 
         // чекбокс is_active может не прийти
@@ -72,6 +72,24 @@ class PromoCodeController extends Controller
         $promo->save();
 
         return back()->with('success', 'Статус промокода обновлён');
+    }
+
+    /**
+     * 8 alnum-символов почти никогда не коллизируют, но при пустом поле
+     * "code" раньше не было retry вовсе — совпадение с существующим кодом
+     * роняло PromoCode::create() необработанным QueryException (500-я
+     * вместо понятной ошибки админу).
+     */
+    private function generateUniqueCode(): string
+    {
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            $code = Str::upper(Str::random(8));
+            if (!PromoCode::where('code', $code)->exists()) {
+                return $code;
+            }
+        }
+
+        throw new \RuntimeException('Не удалось сгенерировать уникальный промокод, попробуйте ещё раз.');
     }
 
     // (опционально)

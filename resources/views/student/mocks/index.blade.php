@@ -21,10 +21,10 @@
                     $status = $row['status'];
 
                     $badgeMap = [
-                        'not_started'    => ['label' => 'Не начат',   'class' => 'bg-white/20 text-white'],
-                        'in_progress'    => ['label' => 'В процессе', 'class' => 'bg-white/25 text-white'],
-                        'pending_review' => ['label' => 'На проверке','class' => 'bg-amber-400/90 text-amber-950'],
-                        'checked'        => ['label' => 'Проверено',  'class' => 'bg-emerald-400/90 text-emerald-950'],
+                        'not_started'    => ['label' => 'Не выполнен',   'class' => 'bg-gray-100 text-gray-700'],
+                        'in_progress'    => ['label' => 'В процессе', 'class' => 'bg-blue-50 text-blue-700'],
+                        'pending_review' => ['label' => 'На проверке','class' => 'bg-amber-50 text-amber-700'],
+                        'checked'        => ['label' => 'Проверено',  'class' => 'bg-emerald-50 text-emerald-700'],
                     ];
                     $badge = $badgeMap[$status];
 
@@ -40,49 +40,53 @@
                         ? route('student.submissions.show', $row['submission'])
                         : (Route::has('student.submissions.create') ? route('student.submissions.create', $hw) : '#');
 
-                    $pct = $row['scaledScore'] ?? 0;
                 @endphp
 
                 <a href="{{ $actionUrl }}" class="mock-card">
-                    <div class="mock-card-head">
-                        <div class="flex items-start justify-between gap-2">
-                            <div>
-                                <div class="text-[11px] uppercase tracking-wider text-white/70 mb-1">Пробник</div>
-                                <div class="text-3xl font-semibold text-white leading-none">№{{ $row['mockNumber'] ?? '—' }}</div>
-                            </div>
-                            <span class="inline-flex px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap {{ $badge['class'] }}">{{ $badge['label'] }}</span>
+                    <div class="flex items-start justify-between gap-2 mb-5">
+                        <div class="min-w-0">
+                            <div class="text-xs text-zinc-400 truncate">{{ $row['courseTitle'] }}</div>
+                            <div class="text-base font-semibold text-zinc-900 mt-0.5">Пробник №{{ $row['mockNumber'] ?? '—' }}</div>
                         </div>
-                        <div class="mt-3 text-sm text-white/85 truncate">{{ $row['courseTitle'] }}</div>
+                        <span class="inline-flex px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap shrink-0 {{ $badge['class'] }}">{{ $badge['label'] }}</span>
                     </div>
 
-                    <div class="mock-card-body">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="stat-tile">
-                                <div class="stat-ring" style="--pct: {{ $pct }}">
-                                    <div class="stat-ring-inner">
-                                        {{ $row['primaryScore'] !== null ? $row['primaryScore'] : '—' }}{{ $row['primaryMax'] ? '/'.$row['primaryMax'] : '' }}
-                                    </div>
-                                </div>
-                                <div class="stat-label">Первичный балл</div>
-                            </div>
-                            <div class="stat-tile">
-                                <div class="stat-ring" style="--pct: {{ $pct }}; --ring-color: #10b981; --ring-bg: #d1fae5;">
-                                    <div class="stat-ring-inner">{{ $row['scaledScore'] !== null ? $row['scaledScore'] : '—' }}</div>
-                                </div>
-                                <div class="stat-label">Баллы (из 100)</div>
+                    <div class="flex flex-col items-center gap-5 py-3">
+                        <div class="mock-chart-wrap">
+                            <canvas
+                                class="mock-chart"
+                                width="320" height="320"
+                                data-auto-pct="{{ $row['autoPct'] }}"
+                                data-manual-pct="{{ $row['manualPct'] }}"
+                            ></canvas>
+                            <div class="mock-chart-center">
+                                <div class="mock-chart-score">{{ $row['scaledScore'] }}<span class="mock-chart-score-max">/100</span></div>
+                                <div class="mock-chart-score-label">баллов</div>
                             </div>
                         </div>
+                        <div class="mock-legend">
+                            <div class="mock-legend-row">
+                                <span class="mock-legend-dot" style="background:#007AFF"></span>
+                                <span class="mock-legend-label">Первая часть</span>
+                                <span class="mock-legend-value">{{ $row['autoScaled'] }}</span>
+                            </div>
+                            <div class="mock-legend-row">
+                                <span class="mock-legend-dot" style="background:#AF52DE"></span>
+                                <span class="mock-legend-label">Вторая часть</span>
+                                <span class="mock-legend-value">{{ $row['manualScaled'] }}</span>
+                            </div>
+                        </div>
+                    </div>
 
-                        <div class="mt-4 flex items-center justify-between gap-2">
-                            <div class="text-xs text-zinc-500">
-                                @if($row['submittedAt'])
-                                    Сдан {{ $row['submittedAt']->format('d.m.Y') }}
-                                @else
-                                    Ещё не сдавался
-                                @endif
-                            </div>
-                            <span class="mock-cta">{{ $actionLabel }} →</span>
+                    <div class="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between gap-2">
+                        <div class="text-xs text-zinc-500">
+                            @if($row['submittedAt'])
+                                {{ $row['submittedAt']->translatedFormat('j F Y') }}
+                            @else
+                                Дата появится после выполнения
+                            @endif
                         </div>
+                        <span class="mock-cta">{{ $actionLabel }} →</span>
                     </div>
                 </a>
             @endforeach
@@ -101,86 +105,146 @@
     }
 
     .mock-card {
-        position: relative;
         display: block;
-        border-radius: 1.25rem;
-        overflow: hidden;
+        border-radius: 1rem;
         background: #fff;
-        box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 20px rgba(0,0,0,.06);
-        transition: transform .22s ease, box-shadow .22s ease;
-        isolation: isolate;
+        border: 1px solid #e4e4e7;
+        padding: 1.25rem;
     }
-    .mock-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 4px 10px rgba(0,0,0,.06), 0 18px 34px rgba(76,29,149,.16);
+
+    .mock-chart-wrap {
+        position: relative;
+        width: 210px;
+        height: 210px;
+        max-width: 100%;
     }
-    /* Диагональный световой блик по ховеру — чисто CSS, без лишних зависимостей. */
-    .mock-card::after {
-        content: '';
+    /* Диаграмма чисто декоративная: не реагирует на курсор (см. events: []
+       в инициализации Chart.js ниже) — pointer-events отключаем и на
+       уровне canvas тоже, на случай наведения между сегментами. */
+    .mock-chart {
+        pointer-events: none;
+    }
+    .mock-chart-center {
         position: absolute;
         inset: 0;
-        background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,.35) 50%, transparent 60%);
-        background-size: 250% 250%;
-        background-position: 130% 130%;
-        transition: background-position .7s ease;
-        pointer-events: none;
-        z-index: 5;
-    }
-    .mock-card:hover::after {
-        background-position: -30% -30%;
-    }
-
-    .mock-card-head {
-        position: relative;
-        padding: 1.25rem 1.25rem 1.1rem;
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 55%, #d946ef 100%);
-    }
-
-    .mock-card-body {
-        padding: 1.1rem 1.25rem 1.25rem;
-    }
-
-    .stat-tile {
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        line-height: 1;
+    }
+    .mock-chart-score {
+        font-size: 2.1rem;
+        font-weight: 700;
+        color: #18181b;
+    }
+    .mock-chart-score-max {
+        font-size: 1rem;
+        font-weight: 500;
+        color: #a1a1aa;
+    }
+    .mock-chart-score-label {
+        font-size: .75rem;
+        color: #a1a1aa;
+        margin-top: 6px;
+    }
+
+    .mock-legend {
+        width: 100%;
+        max-width: 220px;
+        display: flex;
+        flex-direction: column;
         gap: .5rem;
-        text-align: center;
     }
-    .stat-ring {
-        --pct: 0;
-        --ring-color: #7c3aed;
-        --ring-bg: #ede9fe;
-        width: 72px;
-        height: 72px;
-        border-radius: 9999px;
-        background: conic-gradient(var(--ring-color) calc(var(--pct) * 1%), var(--ring-bg) 0);
+    .mock-legend-row {
         display: flex;
         align-items: center;
-        justify-content: center;
-    }
-    .stat-ring-inner {
-        width: 54px;
-        height: 54px;
-        border-radius: 9999px;
-        background: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
+        gap: .5rem;
         font-size: .8rem;
-        color: #3f3f46;
+        color: #52525b;
     }
-    .stat-label {
-        font-size: 11px;
-        color: #71717a;
+    .mock-legend-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 9999px;
+        flex-shrink: 0;
+    }
+    .mock-legend-label {
+        flex: 1;
+        min-width: 0;
+    }
+    .mock-legend-value {
+        font-weight: 600;
+        color: #18181b;
     }
 
     .mock-cta {
-        font-size: .8rem;
+        font-size: .875rem;
         font-weight: 500;
-        color: #7c3aed;
+        color: #2927BE;
         white-space: nowrap;
     }
 </style>
+
+{{-- Chart.js — те же CDN и версия, что и в student/submissions/show.blade.php --}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    // Два вложенных кольца в стиле Apple Activity: сплошная скруглённая дуга
+    // на светлом треке, без подписей внутри canvas — итоговый балл наложен
+    // поверх обычным HTML (.mock-chart-center). ВАЖНО: заливка кольца — это
+    // % от СОБСТВЕННОГО максимума части (autoPct/manualPct), а не доля части
+    // в общем стобалльном счёте (то число, что в легенде под диаграммой) —
+    // иначе даже полностью верно решённая часть никогда не заполнила бы
+    // кольцо целиком. borderColor = фон карточки: белая обводка "прокусывает"
+    // заливку, создавая зазор между кольцами и воздух вокруг скруглённых
+    // концов дуги, а не просто два кольца впритык.
+    function makeSectionRings(canvas, autoPct, manualPct) {
+        new Chart(canvas.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                datasets: [
+                    {
+                        data: [autoPct, 100 - autoPct],
+                        backgroundColor: ['#007AFF', '#F0F7FF'],
+                        borderColor: '#fff',
+                        borderWidth: 5,
+                        borderRadius: 12,
+                        weight: 1,
+                    },
+                    {
+                        data: [manualPct, 100 - manualPct],
+                        backgroundColor: ['#AF52DE', '#F9F2FD'],
+                        borderColor: '#fff',
+                        borderWidth: 5,
+                        borderRadius: 12,
+                        weight: 1,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '62%',
+                rotation: -90,
+                circumference: 360,
+                animation: { duration: 600 },
+                // events: [] — полностью выключает обработку мыши: сегменты
+                // не подсвечиваются и не сдвигаются при наведении, диаграмма
+                // чисто декоративная (кликабельна только карточка-ссылка).
+                events: [],
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false },
+                },
+            },
+        });
+    }
+
+    document.querySelectorAll('canvas.mock-chart').forEach(function (cv) {
+        makeSectionRings(cv, Number(cv.dataset.autoPct || 0), Number(cv.dataset.manualPct || 0));
+    });
+})();
+</script>
 @endsection

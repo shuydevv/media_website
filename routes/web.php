@@ -227,13 +227,24 @@ Route::group(['namespace' => 'App\Http\Controllers\Controller'], function() {
 // });
 
 
-Route::get('/lessons', LessonByCourseController::class)->name('lessons.by-course');
-Route::get('/admin/api/courses/{course}/sessions', [ApiController::class, 'sessionsByCourse'])
-    ->name('admin.api.sessions.by-course');
+// Оба — ajax-хелперы для admin-форм (create/import домашки, create урока,
+// список сессий): раньше были объявлены без middleware вовсе, а второй ещё
+// и задваивал URI `/admin/api/courses/{course}/sessions` из защищённой
+// группы выше — RouteCollection индексирует маршруты по method+URI, так что
+// этот, зарегистрированный позже, тихо подменял собой защищённую версию и
+// открывал эндпоинт анонимусам. Явный middleware здесь не даёт повторить
+// ошибку, даже если кто-то уберёт защищённый дубль выше.
+Route::get('/lessons', LessonByCourseController::class)
+    ->middleware(['auth', 'admin', 'verified'])
+    ->name('lessons.by-course');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/promo/redeem', [RedeemController::class, 'form'])->name('promo.redeem.form');
-    Route::post('/promo/redeem', [RedeemController::class, 'redeem'])->name('promo.redeem');
+    // throttle: без лимита залогиненный пользователь мог перебирать коды
+    // без ограничения по частоте попыток.
+    Route::post('/promo/redeem', [RedeemController::class, 'redeem'])
+        ->middleware('throttle:10,1')
+        ->name('promo.redeem');
 });
 
 // Route::match(['get', 'post'], '/promo/redeem', RedeemController::class)
@@ -262,6 +273,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/checkout/course/{course}', [CourseCheckoutController::class, 'show'])
         ->name('checkout.course.show');
     Route::post('/checkout/course/{course}', [CourseCheckoutController::class, 'apply'])
+        ->middleware('throttle:10,1')
         ->name('checkout.course.apply');
 });
 
@@ -304,6 +316,10 @@ Route::middleware(['auth'])->prefix('student')->name('student.')->group(function
         ->name('profile.background.select');
     Route::post('/profile/background/purchase', [\App\Http\Controllers\Student\ProfileController::class, 'purchaseBackground'])
         ->name('profile.background.purchase');
+    Route::post('/profile/accessory/select', [\App\Http\Controllers\Student\ProfileController::class, 'selectAccessory'])
+        ->name('profile.accessory.select');
+    Route::post('/profile/accessory/purchase', [\App\Http\Controllers\Student\ProfileController::class, 'purchaseAccessory'])
+        ->name('profile.accessory.purchase');
     Route::post('/profile/avatar', [\App\Http\Controllers\Student\ProfileController::class, 'updateAvatar'])
         ->name('profile.avatar.update');
     Route::delete('/profile/avatar', [\App\Http\Controllers\Student\ProfileController::class, 'removeAvatar'])
@@ -331,6 +347,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/student/billing/{course}', [\App\Http\Controllers\Student\BillingSettingsController::class, 'update'])
         ->name('student.billing.update');
     Route::post('/student/billing/{course}/promo', [\App\Http\Controllers\Student\BillingSettingsController::class, 'applyPromo'])
+        ->middleware('throttle:10,1')
         ->name('student.billing.promo.apply');
 });
 
@@ -346,13 +363,17 @@ Route::middleware(['auth', 'billing.current'])
             ->name('lessons.show');
     });
 
-// Сдача домашки студентом — пошагово, по одному вопросу на странице
-Route::middleware(['auth'])
+// Сдача домашки студентом — пошагово, по одному вопросу на странице.
+// billing.current — на всех шагах, не только на входе (submissions.create):
+// продолжение уже начатой попытки раньше не перепроверяло доступ вовсе,
+// студент с оплатой, просрочившейся прямо во время визарда, мог дойти до
+// конца (EnsureCourseBillingCurrent::resolveCourse() умеет резолвить курс
+// через {submission} — см. её же комментарий).
+Route::middleware(['auth', 'billing.current'])
     ->prefix('student')
     ->name('student.')
     ->group(function () {
         Route::get('/homeworks/{homework}/submit', [StudentSubmissionController::class, 'create'])
-            ->middleware('billing.current')
             ->name('submissions.create');
 
         Route::get('/submissions/{submission}/questions/{position}', [StudentSubmissionController::class, 'question'])

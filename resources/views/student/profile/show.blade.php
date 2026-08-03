@@ -86,6 +86,15 @@
             filter: grayscale(65%);
             opacity: .55;
         }
+        /* Иконка пиццы в кнопке "Купить за" — не фон-превью, не должна
+           затемняться/сереть или проваливаться на новую строку от общего
+           правила ".fish-bg-thumb-wrap img" выше. */
+        .fish-bg-buy-btn img {
+            display: inline-block;
+            filter: none;
+            opacity: 1;
+            vertical-align: middle;
+        }
         .fish-bg-lock-badge {
             position: absolute;
             top: 6px;
@@ -222,6 +231,51 @@
         .fish-bg-modal-confirm:hover {
             background: #27272a;
         }
+
+        /* Аксессуары — вторая косметическая категория, без картинок (нет
+           арта), просто эмодзи в кружке-чипе. Компактнее фонов: сетка сама
+           переносится по ширине, отдельной мобильной карусели не нужно. */
+        .fish-acc-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+        .fish-acc-chip {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 9999px;
+            border: 2px solid #e4e4e7; /* zinc-200 */
+            background: #fff;
+            font-size: 24px;
+            line-height: 1;
+            cursor: pointer;
+            position: relative;
+            padding: 0;
+        }
+        .fish-acc-chip.fish-acc-chip-selected {
+            border-width: 3px;
+            border-color: #3b82f6;
+        }
+        .fish-acc-chip.fish-acc-locked {
+            opacity: .55;
+            filter: grayscale(65%);
+        }
+        .fish-acc-chip:disabled {
+            cursor: not-allowed;
+        }
+        .fish-acc-lock-badge {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            font-size: 13px;
+            background: rgba(17, 24, 39, .75);
+            border-radius: 9999px;
+            padding: 1px 3px;
+            line-height: 1;
+        }
     </style>
 
     <div class="profile-tabs mb-5">
@@ -269,7 +323,11 @@
             <div>
                 <div class="flex items-center justify-between mb-4">
                     <span class="sans-medium text-lg text-zinc-900">Фон</span>
-                    <span class="text-sm text-zinc-500">Корм: <span class="text-base font-medium text-zinc-900">{{ $fishBalance }}</span></span>
+                    <span class="text-sm text-zinc-500 inline-flex items-center gap-1">
+                        Корм:
+                        <img src="{{ asset('img/pizza.svg') }}" alt="" class="w-5 h-5 inline-block">
+                        <span class="text-base font-medium text-zinc-900">{{ $fishBalance }}</span>
+                    </span>
                 </div>
                 {{-- Десктоп: сетка 3 в ряд. --}}
                 <div class="fish-bg-grid-desktop grid grid-cols-3 gap-5 w-full">
@@ -296,6 +354,30 @@
                     <span class="mt-1 block text-xs text-red-600">{{ $message }}</span>
                 @enderror
             </div>
+
+            {{-- Аксессуары временно скрыты (@if(false), не удалено —
+                 включить обратно, просто убрав это условие) --}}
+            @if(false)
+            {{-- Аксессуары — второй ряд косметики под фонами, тот же
+                 принцип (бесплатный дефолт "none" + платные за корм), но
+                 без картинок: реального арта нет, вместо него эмодзи-чипы
+                 (см. FishFoodService::accessoryEmoji()). --}}
+            <div class="mt-8">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="sans-medium text-lg text-zinc-900">Аксессуар</span>
+                </div>
+                <div class="fish-acc-grid">
+                    @foreach ($fishAccessories as $slug => $label)
+                        <div>
+                            @include('student.partials.profile-fish-accessory-item')
+                        </div>
+                    @endforeach
+                </div>
+                @error('fish_accessory')
+                    <span class="mt-1 block text-xs text-red-600">{{ $message }}</span>
+                @enderror
+            </div>
+            @endif
         </x-ui.card>
     </div>
 
@@ -312,6 +394,26 @@
         </div>
     </div>
 
+    {{-- Модалка покупки аксессуара — тоже временно скрыта вместе с самой
+         секцией аксессуаров выше (@if(false)); JS ниже уже проверяет
+         document.getElementById('fish-acc-buy-modal') на null, так что
+         скрипт трогать не нужно. --}}
+    @if(false)
+    {{-- Подтверждение покупки аксессуара — та же модалка-паттерн, что и у
+         фонов, отдельный узел + JS-блок ниже, чтобы не путать друг с
+         другом форму, ожидающую подтверждения (pendingForm). --}}
+    <div id="fish-acc-buy-modal" class="fish-bg-modal-overlay" hidden>
+        <div class="fish-bg-modal">
+            <div class="fish-bg-modal-title">Открыть аксессуар?</div>
+            <div class="fish-bg-modal-text"></div>
+            <div class="fish-bg-modal-actions">
+                <button type="button" class="fish-bg-modal-btn fish-bg-modal-cancel">Отмена</button>
+                <button type="button" class="fish-bg-modal-btn fish-bg-modal-confirm">Купить</button>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Вкладка «Аккаунт» --}}
     <div id="profile-tab-account" class="profile-tab-panel" hidden>
         <div class="flex flex-col gap-4">
@@ -326,10 +428,7 @@
                              class="w-16 h-16 rounded-full object-cover border border-gray-200 shrink-0">
                     @else
                         <span class="w-16 h-16 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center text-gray-400 shrink-0">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7">
-                                <circle cx="12" cy="8" r="4"></circle>
-                                <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path>
-                            </svg>
+                            <x-icon name="user-01" class="w-7 h-7" />
                         </span>
                     @endif
 
@@ -480,6 +579,17 @@
                     </div>
                 </form>
             </x-ui.card>
+
+            {{-- Выход — раньше жил футером на дашборде, убрали оттуда,
+                 единственное место теперь здесь. --}}
+            <x-ui.card class="profile-card">
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="text-sm text-red-600 hover:text-red-700 transition">
+                        Выйти из аккаунта
+                    </button>
+                </form>
+            </x-ui.card>
         </div>
     </div>
 </div>
@@ -542,6 +652,49 @@
             if (!btn) return;
             evt.preventDefault();
             openModal(btn.closest('form'), btn.dataset.bgLabel || '', btn.dataset.bgPrice || '');
+        });
+
+        cancelBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', function (evt) {
+            if (evt.target === modal) closeModal();
+        });
+        document.addEventListener('keydown', function (evt) {
+            if (evt.key === 'Escape' && !modal.hidden) closeModal();
+        });
+        confirmBtn.addEventListener('click', function () {
+            if (pendingForm) pendingForm.submit();
+            closeModal();
+        });
+    })();
+
+    // Подтверждение покупки аксессуара — тот же паттерн, что и у фонов
+    // выше, но отдельная модалка/pendingForm, чтобы не смешивать очередь
+    // подтверждения между двумя категориями.
+    (function () {
+        var modal = document.getElementById('fish-acc-buy-modal');
+        if (!modal) return;
+
+        var textEl = modal.querySelector('.fish-bg-modal-text');
+        var cancelBtn = modal.querySelector('.fish-bg-modal-cancel');
+        var confirmBtn = modal.querySelector('.fish-bg-modal-confirm');
+        var pendingForm = null;
+
+        function openModal(form, label, price) {
+            pendingForm = form;
+            textEl.textContent = 'Открыть аксессуар «' + label + '» за ' + price + ' корма?';
+            modal.hidden = false;
+        }
+
+        function closeModal() {
+            modal.hidden = true;
+            pendingForm = null;
+        }
+
+        document.addEventListener('click', function (evt) {
+            var btn = evt.target.closest('.fish-acc-locked');
+            if (!btn) return;
+            evt.preventDefault();
+            openModal(btn.closest('form'), btn.dataset.accLabel || '', btn.dataset.accPrice || '');
         });
 
         cancelBtn.addEventListener('click', closeModal);

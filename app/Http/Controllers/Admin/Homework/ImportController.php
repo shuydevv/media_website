@@ -114,6 +114,30 @@ class ImportController extends Controller
         $data = $topRules->validated();
         $tasks = $decoded['tasks'] ?? [];
 
+        $existing = !empty($data['id']) ? Homework::find($data['id']) : null;
+
+        // Без "id" в файле форма всегда создавала бы новую домашку — в том
+        // числе при случайной повторной отправке ТОЙ ЖЕ формы (двойной клик,
+        // "не сработало? нажму ещё раз" во время загрузки картинок). Так
+        // из двух реально загруженных файлов за несколько минут получилось
+        // 5 копий одного пробника с одинаковым названием. Раз id не дали —
+        // считаем совпадение (курс+тип+название) вероятным дублем и просим
+        // подтверждения, а не создаём тихо ещё одну копию.
+        if (!$existing) {
+            $duplicateIds = Homework::where('course_id', $courseId)
+                ->where('type', $data['type'] ?? 'homework')
+                ->where('title', $data['title'])
+                ->pluck('id');
+
+            if ($duplicateIds->isNotEmpty() && !$request->boolean('confirm_duplicate')) {
+                return back()->withErrors([
+                    'file' => 'Домашка «' . $data['title'] . '» на этом курсе уже есть (id: ' . $duplicateIds->implode(', ') . '). '
+                        . 'Похоже на повторную отправку той же формы — если так, просто не отправляйте её ещё раз. '
+                        . 'Если нужна отдельная копия — отметьте галочку «Всё равно создать дубликат» ниже и загрузите файл заново.',
+                ])->withInput();
+            }
+        }
+
         // Валидируем ВСЕ задания заранее, ничего не записывая в БД — только
         // после этого понятно, есть ли смысл вообще создавать/трогать
         // домашку. Так и должна была работать транзакция, но homeworks/
@@ -131,7 +155,6 @@ class ImportController extends Controller
             ])->withInput();
         }
 
-        $existing = !empty($data['id']) ? Homework::find($data['id']) : null;
         $isUpdate = (bool) $existing;
 
         // Урок необязателен. Если не выбран на форме: у новой домашки
@@ -144,6 +167,24 @@ class ImportController extends Controller
             $lessonId = $existing->lesson_id;
         }
 
+        // К одному уроку — не больше одной домашки любого типа (см. миграцию
+        // add_unique_lesson_id_to_homeworks_table и unique-индекс, который
+        // она добавляет). Проверка здесь — только для дружелюбного сообщения
+        // вместо голой SQL-ошибки; настоящая защита от гонки (два почти
+        // одновременных запроса оба проходят этот чек до того, как любой из
+        // них закоммитится) — это сам индекс в БД, см. catch ниже.
+        if ($lessonId !== null) {
+            $lessonTaken = Homework::where('lesson_id', $lessonId)
+                ->when($existing, fn ($q) => $q->where('id', '!=', $existing->id))
+                ->exists();
+
+            if ($lessonTaken) {
+                return back()->withErrors([
+                    'lesson_id' => 'К этому уроку уже прикреплена другая домашка — у одного урока может быть только одна.',
+                ])->withInput();
+            }
+        }
+
         $attrs = [
             'title'       => $data['title'],
             'description' => $data['description'] ?? null,
@@ -153,18 +194,31 @@ class ImportController extends Controller
             'lesson_id'   => $lessonId,
         ];
 
-        if ($existing) {
-            $existing->update($attrs);
-            // Полная замена, не слияние — иначе пришлось бы придумывать
-            // построчное сопоставление "старое задание N = новое M", а для
-            // JSON-файла, который просто переиспользуют целиком, это лишняя
-            // сложность без явной пользы. Раз мы уже знаем (см. выше), что
-            // есть минимум одно валидное задание на замену — старые можно
-            // без риска удалять прямо сейчас.
-            $existing->tasks()->delete();
-            $homework = $existing;
-        } else {
-            $homework = Homework::create($attrs);
+        try {
+            if ($existing) {
+                $existing->update($attrs);
+                // Полная замена, не слияние — иначе пришлось бы придумывать
+                // построчное сопоставление "старое задание N = новое M", а для
+                // JSON-файла, который просто переиспользуют целиком, это лишняя
+                // сложность без явной пользы. Раз мы уже знаем (см. выше), что
+                // есть минимум одно валидное задание на замену — старые можно
+                // без риска удалять прямо сейчас.
+                $existing->tasks()->delete();
+                $homework = $existing;
+            } else {
+                $homework = Homework::create($attrs);
+            }
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Гонка всё же случилась (см. комментарий выше) — unique-индекс
+            // на lesson_id отклонил вставку/обновление. Не 500, а тот же
+            // дружелюбный текст, что и в предварительной проверке.
+            if ((string) $e->getCode() !== '23000') {
+                throw $e;
+            }
+
+            return back()->withErrors([
+                'lesson_id' => 'К этому уроку уже прикреплена другая домашка — у одного урока может быть только одна.',
+            ])->withInput();
         }
 
         $results = $this->persistTasks($homework, $pending, $results, $courseId);

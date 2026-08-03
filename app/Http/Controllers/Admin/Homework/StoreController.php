@@ -18,15 +18,30 @@ class StoreController extends Controller
     {
         $validated = $request->validated();
 
-        $homework = Homework::create([
-            'title'       => $validated['title'],
-            'description' => $validated['description'] ?? null,
-            'type'        => $validated['type'],
-            'due_at'      => $validated['due_at'] ?? null,
-            'mock_number' => $validated['mock_number'] ?? null,
-            'course_id'   => $request->course_id,
-            'lesson_id'   => $request->lesson_id,
-        ]);
+        try {
+            $homework = Homework::create([
+                'title'       => $validated['title'],
+                'description' => $validated['description'] ?? null,
+                'type'        => $validated['type'],
+                'due_at'      => $validated['due_at'] ?? null,
+                'mock_number' => $validated['mock_number'] ?? null,
+                'course_id'   => $request->course_id,
+                'lesson_id'   => $request->lesson_id,
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // К одному уроку — не больше одной домашки (unique-индекс на
+            // lesson_id, см. миграцию add_unique_lesson_id_to_homeworks_table).
+            // StoreRequest уже проверяет это до сохранения — сюда попадаем,
+            // только если два запроса прошли ту проверку почти одновременно
+            // (гонка), а не как обычный путь ошибки.
+            if ((string) $e->getCode() !== '23000') {
+                throw $e;
+            }
+
+            return back()->withErrors([
+                'lesson_id' => 'К этому уроку уже прикреплена другая домашка — у одного урока может быть только одна.',
+            ])->withInput();
+        }
 
         if (!empty($validated['tasks'])) {
             foreach ($validated['tasks'] as $taskData) {

@@ -305,13 +305,49 @@ class BillingService
             throw new \DomainException($error);
         }
 
-        $pivot = $this->pivotOrFail($user, $course);
-        $pivot->promo_code_id = $promo->id;
-        $pivot->save();
+        return DB::transaction(function () use ($promo, $user, $course) {
+            // lockForUpdate: без этого два параллельных applyPromoCode() (или
+            // конкурентный access-редемпшн того же кода из RedeemController)
+            // оба видят один used_count из PromoLookup::find() выше и оба
+            // проходят проверку лимита — используем ещё раз, уже под
+            // блокировкой, прежде чем инкрементить.
+            $locked = \App\Models\PromoCode::whereKey($promo->id)->lockForUpdate()->first();
 
-        $promo->increment('used_count');
+            if (!is_null($locked->max_uses) && $locked->used_count >= $locked->max_uses) {
+                throw new \DomainException('Достигнут лимит использований промокода');
+            }
 
-        return $promo;
+            // lockForUpdate тоже на пивоте — без этого два параллельных
+            // applyPromoCode() для одной и той же записи оба видят
+            // promo_code_id === null и оба проходят проверку ниже, тратя
+            // used_count дважды на один и тот же слот подписки.
+            $pivot = CourseUser::where('user_id', $user->id)
+                ->where('course_id', $course->id)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$pivot) {
+                throw new \DomainException('User is not enrolled in this course.');
+            }
+
+            // В UI форма подключения кода скрыта, если код уже подключён, но
+            // это только фронтовая защита — прямой POST на
+            // student.billing.promo.apply/admin.billing.promo.store раньше
+            // позволял переподключать коды поверх старого сколько угодно раз,
+            // каждый раз тратя used_count без какого-либо per-user лимита
+            // (в отличие от access-кодов, которые защищены уникальным
+            // индексом на promo_redemptions).
+            if ($pivot->promo_code_id !== null) {
+                throw new \DomainException('К этой записи уже подключён промокод — сначала отключите текущий.');
+            }
+
+            $pivot->promo_code_id = $locked->id;
+            $pivot->save();
+
+            $locked->increment('used_count');
+
+            return $locked;
+        });
     }
 
     public function removePromoCode(User $user, Course $course): void

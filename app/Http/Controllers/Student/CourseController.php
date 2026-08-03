@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Homework;
 use App\Models\HomeworkTask;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -38,7 +39,7 @@ class CourseController extends Controller
                 },
             ])
             ->get()
-            ->map(function ($s) use ($tz) {
+            ->map(function ($s) use ($tz, $user) {
                 // Нормализуем дату и время
                 $day = $s->date instanceof CarbonInterface
                     ? $s->date->format('Y-m-d')
@@ -81,7 +82,7 @@ class CourseController extends Controller
                 $s->_end   = $end;
 
                 // Цвет значка домашки на картинке урока (см. homeworkBadgeColor)
-                $s->_homeworkColor = $this->homeworkBadgeColor(optional($s->lesson)->homework);
+                $s->_homeworkColor = $this->homeworkBadgeColor(optional($s->lesson)->homework, $user);
 
                 return $s;
             })
@@ -125,7 +126,7 @@ class CourseController extends Controller
      * брошено — эта ветка там тоже разбирает наличие ручных заданий), а выбор
      * "актуального" сабмишена — как в LessonController::show() (latest('id')).
      */
-    private function homeworkBadgeColor(?Homework $hw): ?string
+    private function homeworkBadgeColor(?Homework $hw, User $user): ?string
     {
         if (!$hw) {
             return null;
@@ -134,7 +135,7 @@ class CourseController extends Controller
         $submission = $hw->submissions->first();
 
         if (!$submission) {
-            return ($hw->due_at !== null && now()->isAfter($hw->due_at)) ? 'red' : 'gray';
+            return $hw->isOverdueFor($user) ? 'red' : 'gray';
         }
 
         if ($submission->status === 'in_progress') {

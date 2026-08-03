@@ -9,7 +9,7 @@ class ResetFishLevel extends Command
 {
     protected $signature = 'fish:reset
         {user=demo.student@example.com : Email или ID ученика}
-        {--corm=15 : Сколько корма сразу выдать после сброса (для быстрого тестирования левел-апа)}';
+        {--corm=45 : Сколько корма сразу выдать после сброса (для быстрого тестирования левел-апа)}';
 
     protected $description = 'Сбрасывает прогресс маскота-рыбы ученика до уровня 1 — для тестирования анимаций';
 
@@ -28,7 +28,6 @@ class ResetFishLevel extends Command
 
         $user->fish_total_fed = 0;
         $user->fish_corm_balance = max(0, (int) $this->option('corm'));
-        $user->fish_streak_count = 0;
         $user->fish_last_active_date = null;
         $user->fish_milestones = null;
         $user->save();

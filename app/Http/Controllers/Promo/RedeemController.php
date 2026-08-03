@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Promo;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Course;
+use App\Models\PromoCode;
 use App\Models\PromoRedemption;
 use App\Service\EnrollmentService;
 use App\Service\Pricing\PromoLookup;
+use Illuminate\Support\Facades\DB;
 
 class RedeemController extends Controller
 {
@@ -48,27 +50,59 @@ class RedeemController extends Controller
             return back()->withErrors(['code' => 'Курс не указан или не найден'])->withInput();
         }
 
+        $user = $request->user();
+
+        // Один и тот же access-промокод раньше можно было применить сколько
+        // угодно раз одному пользователю — каждый раз продлевая доступ и
+        // тратя общий max_uses, рассчитанный на разных студентов.
+        if (PromoRedemption::where('promo_code_id', $promo->id)->where('user_id', $user->id)->exists()) {
+            return back()->withErrors(['code' => 'Вы уже использовали этот промокод.'])->withInput();
+        }
+
         // Срок доступа
         $expiresAt = now()->addDays($promo->duration_days);
 
-        // Зачисляем через единый сервис
-        $enroll->enrollUser($request->user(), $course, [
-            'status'      => 'active',
-            'enrolled_at' => now(),
-            'expires_at'  => $expiresAt,
-            'source'      => 'promo',
-            'promo_code'  => $promo->code,
-        ]);
+        try {
+            DB::transaction(function () use ($promo, $course, $user, $expiresAt, $enroll) {
+                // Перечитываем и блокируем строку промокода — без этого два
+                // параллельных запроса могли пройти проверку max_uses в
+                // PromoLookup::find() (выполненную до транзакции) от одного и
+                // того же used_count и оба применить код, превысив лимит.
+                $locked = PromoCode::whereKey($promo->id)->lockForUpdate()->first();
 
-        // Фиксируем использование и редемпшн
-        $promo->increment('used_count');
-        PromoRedemption::create([
-            'promo_code_id' => $promo->id,
-            'user_id'       => $request->user()->id,
-            'course_id'     => $course->id,
-            'enrolled_at'   => now(),
-            'expires_at'    => $expiresAt,
-        ]);
+                if (!is_null($locked->max_uses) && $locked->used_count >= $locked->max_uses) {
+                    throw new \DomainException('Достигнут лимит использований промокода');
+                }
+
+                $enroll->enrollUser($user, $course, [
+                    'status'      => 'active',
+                    'enrolled_at' => now(),
+                    'expires_at'  => $expiresAt,
+                    'source'      => 'promo',
+                    'promo_code'  => $locked->code,
+                ]);
+
+                $locked->increment('used_count');
+
+                // Уникальный индекс [promo_code_id, user_id] — вторая линия
+                // защиты от повторного применения тем же пользователем на
+                // случай гонки между проверкой exists() выше и этой записью.
+                PromoRedemption::create([
+                    'promo_code_id' => $locked->id,
+                    'user_id'       => $user->id,
+                    'course_id'     => $course->id,
+                    'enrolled_at'   => now(),
+                    'expires_at'    => $expiresAt,
+                ]);
+            });
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ((string) $e->getCode() === '23000') {
+                return back()->withErrors(['code' => 'Вы уже использовали этот промокод.'])->withInput();
+            }
+            throw $e;
+        } catch (\DomainException $e) {
+            return back()->withErrors(['code' => $e->getMessage()])->withInput();
+        }
 
         return redirect()->route('student.dashboard')
             ->with('success', "Доступ к «{$course->title}» активирован до {$expiresAt->format('d.m.Y H:i')}");
