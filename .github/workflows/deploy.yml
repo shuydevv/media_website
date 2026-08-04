@@ -1,0 +1,31 @@
+name: Deploy
+
+on:
+  workflow_dispatch: {}
+
+# Prevent two deploys from racing each other; queue instead of overlapping.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Run remote deploy
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "${SSH_PORT:-22}" -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          # The server key is restricted via a forced command in authorized_keys
+          # (see main-app/deploy/README.md), so whatever we "request" here is
+          # ignored server-side — it always runs deploy.sh. -T disables the
+          # pty since the forced command doesn't need one.
+          ssh -T -p "${SSH_PORT:-22}" "${SSH_USER}@${SSH_HOST}" true
