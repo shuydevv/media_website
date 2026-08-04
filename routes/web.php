@@ -42,6 +42,9 @@ use App\Http\Controllers\Mentor\ReviewAiController;
 |
 */
 
+// Health-check для deploy.sh (Laravel 10 не даёт /up из коробки, в отличие от 11+)
+Route::get('/up', fn () => response('OK', 200));
+
 Route::group(['namespace' => 'App\Http\Controllers\Main'], function() {
     Route::get('/', 'IndexController')->name('index');
     Route::get('/repetitor', 'RepetitorController')->name('main.repetitor');
