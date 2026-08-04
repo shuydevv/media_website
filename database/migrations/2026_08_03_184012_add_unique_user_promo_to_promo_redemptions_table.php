@@ -15,17 +15,25 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Порядок важен: promo_code_id_user_id_index держит FK на promo_code_id.
+        // Если сначала dropIndex — MySQL падает с ошибкой 1553 (нельзя снять
+        // индекс, пока на нём висит foreign key), поэтому сперва создаём
+        // замену, и только потом убираем старый индекс.
+        Schema::table('promo_redemptions', function (Blueprint $table) {
+            $table->unique(['promo_code_id', 'user_id']);
+        });
         Schema::table('promo_redemptions', function (Blueprint $table) {
             $table->dropIndex(['promo_code_id', 'user_id']);
-            $table->unique(['promo_code_id', 'user_id']);
         });
     }
 
     public function down(): void
     {
         Schema::table('promo_redemptions', function (Blueprint $table) {
-            $table->dropUnique(['promo_code_id', 'user_id']);
             $table->index(['promo_code_id', 'user_id']);
+        });
+        Schema::table('promo_redemptions', function (Blueprint $table) {
+            $table->dropUnique(['promo_code_id', 'user_id']);
         });
     }
 };
