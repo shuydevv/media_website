@@ -32,6 +32,7 @@ return [
         1 => 'ikrinka',
         2 => 'little_shark',
         3 => 'grown_shark',
+        4 => 'gym_shark',
     ],
 
     // Названия уровней для UI (карточка кормления, баннер левел-апа).

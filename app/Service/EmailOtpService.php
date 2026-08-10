@@ -33,14 +33,9 @@ class EmailOtpService
 
         // Уведомление: код + подписанная кнопка
         optional(auth()->user())->notify(new VerifyEmailWithCode($code, $userId));
-        // Если пользователь не аутентифицирован: создателя письма нет — отправим через notifiable-объект
+        // Если пользователь не аутентифицирован: создателя письма нет — отправим через notifiable-route
         if (!auth()->check()) {
-            // Вручную "нотифицируем" (через notifiable route)
-            (new class($email) {
-                public function routeNotificationForMail() { return $this->email; }
-                public function __construct(public string $email) {}
-                public function notify($notification) { $notification->toMail($this); \Illuminate\Support\Facades\Notification::route('mail', $this->email)->notify($notification); }
-            })->notify(new VerifyEmailWithCode($code, $userId));
+            \Illuminate\Support\Facades\Notification::route('mail', $email)->notify(new VerifyEmailWithCode($code, $userId));
         }
 
         return $vid;
@@ -65,11 +60,7 @@ class EmailOtpService
         Cache::put($this->key($vid), $data, $data['expires_at'] - time());
         RateLimiter::hit($this->sendKey($email), 60);
 
-        (new class($email) {
-            public function routeNotificationForMail() { return $this->email; }
-            public function __construct(public string $email) {}
-            public function notify($notification) { $notification->toMail($this); \Illuminate\Support\Facades\Notification::route('mail', $this->email)->notify($notification); }
-        })->notify(new VerifyEmailWithCode($code, $userId));
+        \Illuminate\Support\Facades\Notification::route('mail', $email)->notify(new VerifyEmailWithCode($code, $userId));
     }
 
     public function verify(string $vid, string $code): string
