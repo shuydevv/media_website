@@ -83,6 +83,17 @@ mkdir -p "$NEW/storage/framework/cache/data" "$NEW/storage/framework/sessions" "
 ln -s "$SHARED/storage/app" "$NEW/storage/app"
 ln -s "$SHARED/storage/logs" "$NEW/storage/logs"
 mkdir -p "$NEW/bootstrap/cache"
+# mkdir above creates these owned by $USER (deploy), group "deploy" — php-fpm
+# runs as www-data, which only gets the world "r-x" bits on that (no write),
+# so any runtime write (file cache, bootstrap cache, session files if the
+# driver ever changes from 'database') 500s silently before Laravel's own
+# exception handler is even registered, so it doesn't show up in
+# storage/logs/laravel.log — only in the webserver/php-fpm error log. `deploy`
+# is a member of the www-data group (see /etc/group), so chgrp here needs no
+# sudo; setgid (g+s) on directories makes files created later by www-data
+# inherit the www-data group too, not just these two right after mkdir.
+chgrp -R www-data "$NEW/storage/framework" "$NEW/bootstrap/cache"
+chmod -R 2775 "$NEW/storage/framework" "$NEW/bootstrap/cache"
 
 composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
