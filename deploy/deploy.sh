@@ -66,7 +66,22 @@ fi
 chmod 600 .env
 
 rm -rf "$NEW/storage"
-ln -s "$SHARED/storage" "$NEW/storage"
+mkdir -p "$NEW/storage/framework/cache/data" "$NEW/storage/framework/sessions" "$NEW/storage/framework/testing" "$NEW/storage/framework/views"
+# Only storage/app (uploads) and storage/logs are genuinely persistent —
+# symlink those two into shared storage. storage/framework/{views,cache,
+# sessions,testing} must stay LOCAL to this release, not shared: the
+# pre-flight `view:clear`/`view:cache` etc. below run before cutover while
+# $CUR still points at $PREV and is serving live traffic. If framework/
+# were shared, `view:clear` would delete the compiled Blade views the live
+# release is using out from under it, and concurrent PHP-FPM workers on
+# $PREV racing to recompile the same shared, non-atomically-written cache
+# file could interleave writes into a truncated/corrupted compiled view —
+# surfacing later as a bogus "unexpected end of file, expecting elseif or
+# else or endif" on some unrelated admin page until the next full
+# view:cache. Keeping framework/* per-release makes the "still not live"
+# comment above actually true.
+ln -s "$SHARED/storage/app" "$NEW/storage/app"
+ln -s "$SHARED/storage/logs" "$NEW/storage/logs"
 mkdir -p "$NEW/bootstrap/cache"
 
 composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
