@@ -111,9 +111,18 @@ return [
     | rid of old sessions from storage. Here are the chances that it will
     | happen on a given request. By default, the odds are 2 out of 100.
     |
+    | Снижено с [2, 100]: сборка мусора теперь идёт по расписанию, вне
+    | пиковых часов (App\Console\Commands\PruneExpiredSessions, dailyAt в
+    | App\Console\Kernel::schedule()) — раньше GC-DELETE на MyISAM брал лок
+    | на всю таблицу `sessions` прямо внутри случайного пользовательского
+    | запроса и вешал сайт для всех остальных посетителей одновременно (см.
+    | миграцию convert_sessions_table_to_innodb). Не выключено полностью —
+    | оставлен редкий фолбэк на случай, если запланированная команда по
+    | какой-то причине не выполнится на сервере (сломанный cron и т.п.).
+    |
     */
 
-    'lottery' => [2, 100],
+    'lottery' => [1, 1000],
 
     /*
     |--------------------------------------------------------------------------

@@ -27,6 +27,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('homeworks:notify-due-soon')->dailyAt('09:00');
         $schedule->command('lessons:notify-starting-soon')->everyFifteenMinutes();
         $schedule->command('queue:monitor-health')->everyFiveMinutes();
+        $schedule->command('sessions:prune')->dailyAt('04:30');
     }
 
 }
