@@ -7,7 +7,7 @@
 @section('content')
 <div class="max-w-5xl mx-auto px-4 py-6">
 
-    <h1 class="sans-medium text-2xl md:text-3xl mb-6 text-zinc-900">Пробники</h1>
+    <h1 class="sans-medium text-xl md:text-3xl mb-4 sm:mb-6 text-zinc-900">Пробники</h1>
 
     @if($rows->isEmpty())
         <x-ui.card class="text-zinc-600 text-center">
@@ -110,6 +110,11 @@
         background: #fff;
         border: 1px solid #e4e4e7;
         padding: 1.25rem;
+    }
+    @media (max-width: 480px) {
+        .mock-card { padding: 1rem; }
+        .mock-chart-wrap { width: 170px; height: 170px; }
+        .mock-chart-score { font-size: 1.7rem; }
     }
 
     .mock-chart-wrap {

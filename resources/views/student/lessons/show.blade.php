@@ -4,18 +4,18 @@
 
 @section('content')
 <div class="max-w-6xl mx-auto md:px-6 px-4 py-6">
-  <h1 class="sans-medium text-2xl md:text-3xl mt-6 mb-3 text-zinc-900">{{ $lesson->title }}</h1>
+  <h1 class="sans-medium text-xl md:text-3xl mt-6 mb-3 text-zinc-900">{{ $lesson->title }}</h1>
   @if($lesson->description)
-    <p class="mt-2 md:mb-12 mb-8 text-zinc-700 md:text-lg text-base">{{ $lesson->description }}</p>
+    <p class="mt-2 mb-6 md:mb-12 text-zinc-700 text-sm md:text-lg">{{ $lesson->description }}</p>
   @endif
 
   @if ($lesson->recording_link)
-  <div class="inline-block md:py-4 py-2 md:px-5 px-4 rounded-2xl md:text-xl text-lg md:mb-4 mb-4 bg-blue-50 border border-blue-200 text-blue-900"><x-icon name="video-recorder" class="inline-block relative bottom-0.5 mr-2 w-5 h-5" />Запись трансляции</div>
+  <div class="inline-block py-2 px-4 md:py-4 md:px-5 rounded-2xl text-base md:text-xl mb-4 bg-blue-50 border border-blue-200 text-blue-900"><x-icon name="video-recorder" class="inline-block relative bottom-0.5 mr-2 w-5 h-5" />Запись трансляции</div>
   <div class="border-4 border-blue-100 rounded-xl" style="position: relative; padding-top: 56.25%; width: 100%"><iframe src="https://kinescope.io/embed/{{$lesson->recording_link}}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer; clipboard-write; screen-wake-lock;" frameborder="0" allowfullscreen style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;"></iframe></div>
   @endif
 
   @if ($lesson->short_class)
-  <div class="inline-block p-4 px-5 rounded-2xl text-xl md:mb-4 mb-4 mt-12 bg-blue-50 border border-blue-200 text-blue-900"><x-icon name="video-recorder" class="inline-block relative bottom-0.5 mr-2 w-5 h-5" />"Сок" — Выжимка урока</div>
+  <div class="inline-block py-2 px-4 md:py-4 md:px-5 rounded-2xl text-base md:text-xl mb-4 mt-8 md:mt-12 bg-blue-50 border border-blue-200 text-blue-900"><x-icon name="video-recorder" class="inline-block relative bottom-0.5 mr-2 w-5 h-5" />"Сок" — Выжимка урока</div>
   <div class="border-4 border-blue-100 rounded-xl" style="position: relative; padding-top: 56.25%; width: 100%"><iframe src="https://kinescope.io/embed/{{$lesson->short_class}}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer; clipboard-write; screen-wake-lock;" frameborder="0" allowfullscreen style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;"></iframe></div>
   @endif
 
@@ -43,16 +43,16 @@
   </div>
   @endif
 
-  <div class="max-w-6xl mx-auto mt-12 mb-16 px-4 md:px-6 flex flex-col md:flex-row gap-4 md:gap-6">
+  <div class="max-w-6xl mx-auto mt-8 mb-10 md:mt-12 md:mb-16 px-4 md:px-6 flex flex-col md:flex-row gap-4 md:gap-6">
   {{-- Конспект --}}
-  <x-ui.card tone="blue" class="flex-1 flex flex-col sm:flex-row items-center gap-0 sm:gap-6">
+  <x-ui.card tone="blue" class="flex-1 flex flex-col sm:flex-row items-center gap-3 sm:gap-6">
     <img
       class="w-28 h-28 sm:w-36 sm:h-36 lg:w-48 lg:h-48 -scale-x-100 {{ $lesson->notes_link ? '' : 'opacity-40' }}"
       src="{{ asset('img/hand-holding-notes.webp') }}"
       alt="Иконка конспекта"
     >
     <div class="flex-1 text-center sm:text-left">
-      <h3 class="text-xl sm:text-2xl font-medium text-blue-900 mb-10 sm:mb-4">
+      <h3 class="text-lg sm:text-2xl font-medium text-blue-900 mb-2 sm:mb-4">
         {{ $lesson->notes_link ? 'Конспект урока' : 'Конспекта нет' }}
       </h3>
 
@@ -61,7 +61,7 @@
           Скачать конспект
         </x-ui.button>
       @else
-        <p class="block w-full text-center px-6 py-4 text-base tracking-wide font-medium rounded-xl border-2 bg-blue-50 border-zinc-300 text-zinc-400">
+        <p class="block w-full text-center px-4 py-3 md:px-6 md:py-4 text-sm md:text-base tracking-wide font-medium rounded-xl border-2 bg-blue-50 border-zinc-300 text-zinc-400">
           Скачивать нечего
         </p>
       @endif
@@ -69,9 +69,9 @@
   </x-ui.card>
 
   {{-- Домашка --}}
-  <x-ui.card tone="blue" class="flex-1 flex flex-col sm:flex-row items-center gap-0 sm:gap-6">
+  <x-ui.card tone="blue" class="flex-1 flex flex-col sm:flex-row items-center gap-3 sm:gap-6">
     <img
-      class="w-40 h-40 sm:w-36 sm:h-36 lg:w-48 lg:h-48 -scale-x-100 {{ ($lesson->homework && !$homeworkUpcoming) ? '' : 'opacity-40' }}"
+      class="w-28 h-28 sm:w-36 sm:h-36 lg:w-48 lg:h-48 -scale-x-100 {{ ($lesson->homework && !$homeworkUpcoming) ? '' : 'opacity-40' }}"
       src="{{ asset('img/homework-icon.webp') }}"
       alt="Иконка домашнего задания"
     >
@@ -81,10 +81,10 @@
           {{-- Домашка привязана к этому уроку, но сам урок ещё не наступил —
                выглядит так же "неактивно", как и полное отсутствие домашки
                выше, без кликабельной кнопки. --}}
-          <h3 class="text-xl sm:text-2xl font-medium text-blue-900 mb-10 sm:mb-3">ДЗ откроется позже</h3>
-          <p class="text-base text-blue-900/80">Домашнее задание станет доступно после урока</p>
+          <h3 class="text-lg sm:text-2xl font-medium text-blue-900 mb-2 sm:mb-3">ДЗ откроется позже</h3>
+          <p class="text-sm md:text-base text-blue-900/80">Домашнее задание станет доступно после урока</p>
         @else
-          <h3 class="text-xl sm:text-2xl font-medium text-blue-900 mb-10 sm:mb-4">Домашнее задание</h3>
+          <h3 class="text-lg sm:text-2xl font-medium text-blue-900 mb-2 sm:mb-4">Домашнее задание</h3>
 
           @if(!empty($mySubmission))
             {{-- Есть завершённая попытка → показываем результаты --}}
@@ -100,8 +100,8 @@
           @endif
         @endif
       @else
-        <h3 class="text-xl sm:text-2xl font-medium text-blue-900 mb-10 sm:mb-3">Домашнего задания пока нет</h3>
-        <p class="text-base text-blue-900/80">Возможно, оно будет позже. А может и не будет</p>
+        <h3 class="text-lg sm:text-2xl font-medium text-blue-900 mb-2 sm:mb-3">Домашнего задания пока нет</h3>
+        <p class="text-sm md:text-base text-blue-900/80">Возможно, оно будет позже. А может и не будет</p>
       @endif
     </div>
   </x-ui.card>

@@ -26,7 +26,7 @@
 
     $sizeClasses = $size === 'sm'
         ? 'rounded-lg px-4 py-3'
-        : 'rounded-xl py-4 ' . ($block ? 'px-3' : 'px-6 md:px-8');
+        : 'rounded-xl py-3 sm:py-4 ' . ($block ? 'px-3' : 'px-5 sm:px-6 md:px-8');
 
     // Задизейбленное состояние всегда одного вида, независимо от variant —
     // раньше это решалось в двух чуть разных оттенках серого в разных

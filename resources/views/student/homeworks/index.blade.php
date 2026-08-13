@@ -24,7 +24,7 @@
 @section('content')
 <div class="max-w-4xl mx-auto px-4 py-6">
 
-    <h1 class="sans-medium text-2xl md:text-3xl mb-6 text-zinc-900">Домашки</h1>
+    <h1 class="sans-medium text-xl md:text-3xl mb-4 sm:mb-6 text-zinc-900">Домашки</h1>
 
     <div class="flex flex-wrap gap-2 mb-6" id="hw-filters">
         <button type="button" data-filter="todo" class="hw-filter-btn px-3 py-1.5 rounded-full text-sm border">Нужно сделать</button>

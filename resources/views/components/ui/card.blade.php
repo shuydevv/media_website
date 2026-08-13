@@ -21,6 +21,6 @@
     $toneClasses = $tones[$tone] ?? $tones['white'];
 @endphp
 
-<div {{ $attributes->merge(['class' => "rounded-2xl border {$toneClasses} p-5"]) }}>
+<div {{ $attributes->merge(['class' => "rounded-2xl border {$toneClasses} p-4 sm:p-5"]) }}>
     {{ $slot }}
 </div>

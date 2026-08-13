@@ -134,7 +134,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
   {{-- Заголовок (левая половина на ПК) + итог/действие (правая половина, по правому краю) --}}
   <div class="mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
     <div class="min-w-0 sm:w-1/2">
-      <h1 class="sans-medium text-2xl md:text-2xl text-zinc-900">
+      <h1 class="sans-medium text-xl md:text-2xl text-zinc-900">
         {{ $homework->title ?? 'Домашнее задание' }}
       </h1>
       <div class="sans text-sm text-zinc-500 mt-1">
@@ -168,7 +168,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
     {{-- Левая: автопроверка --}}
     <x-ui.card>
       <div class="flex items-center justify-between mb-4">
-        <h2 class="sans-medium text-xl md:text-xl text-zinc-900">Первая часть</h2>
+        <h2 class="sans-medium text-lg md:text-xl text-zinc-900">Первая часть</h2>
       </div>
 
 @php
@@ -272,7 +272,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
     {{-- Правая: ручная проверка --}}
     <x-ui.card>
       <div class="flex items-center justify-between mb-4">
-        <h2 class="sans-medium text-xl md:text-xl text-zinc-900">Вторая часть</h2>
+        <h2 class="sans-medium text-lg md:text-xl text-zinc-900">Вторая часть</h2>
       </div>
 
 @php
@@ -429,7 +429,7 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
 
   {{-- ===== Детализация по каждому заданию (под карточками результатов) ===== --}}
 <div class="mt-8">
-  <h3 class="sans-medium text-xl md:text-2xl text-zinc-900 mb-4">Разбор заданий</h3>
+  <h3 class="sans-medium text-lg md:text-2xl text-zinc-900 mb-4">Разбор заданий</h3>
 
   @forelse($tasksCol as $i => $t)
     @php

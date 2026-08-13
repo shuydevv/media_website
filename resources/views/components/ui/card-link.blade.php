@@ -16,7 +16,7 @@
 @php
     $toneClasses = $highlighted ? 'bg-amber-50/40 border-amber-200' : 'bg-white border-gray-200';
 
-    $classes = "w-full text-left flex items-start justify-between gap-4 rounded-2xl border {$toneClasses} p-5 hover:border-amber-300 hover:shadow-sm transition";
+    $classes = "w-full text-left flex items-start justify-between gap-4 rounded-2xl border {$toneClasses} p-4 sm:p-5 hover:border-amber-300 hover:shadow-sm transition";
 @endphp
 
 @if ($attributes->has('href'))

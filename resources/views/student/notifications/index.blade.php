@@ -8,7 +8,7 @@
 <div class="max-w-4xl mx-auto px-4 py-6">
 
     <div class="flex items-center justify-between gap-4 mb-6">
-        <h1 class="sans-medium text-2xl md:text-3xl text-zinc-900">Уведомления</h1>
+        <h1 class="sans-medium text-xl md:text-3xl text-zinc-900">Уведомления</h1>
         @if($notifications->contains(fn($n) => $n->read_at === null))
             <form method="POST" action="{{ route('student.notifications.markAllRead') }}">
                 @csrf

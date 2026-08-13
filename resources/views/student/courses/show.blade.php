@@ -36,7 +36,7 @@
      homeworks/index и т.д.): плоский px-4, без sm:/lg: прогрессии. --}}
 <div class="max-w-6xl mx-auto px-4 py-6">
   <div class="mb-6">
-    <h1 class="sans-medium text-2xl md:text-3xl mb-2 md:mb-3 text-zinc-900">{{ $course->title }}</h1>
+    <h1 class="sans-medium text-xl md:text-3xl mb-2 md:mb-3 text-zinc-900">{{ $course->title }}</h1>
 
     {{-- Сроки курса: надёжный вывод, даже если поля не кастятся к Carbon --}}
     @if(!empty($course->start_date) || !empty($course->end_date))
@@ -142,11 +142,11 @@
           <div class="mt-3 md:mt-4 md:mb-2 mb-1 min-w-0">
             @if($lesson && $lessonHref)
               <a href="{{ $lessonHref }}"
-                 class="block truncate text-3xl md:text-4xl tracking-wide font-medium text-blue-900">
+                 class="block truncate text-2xl md:text-4xl tracking-wide font-medium text-blue-900">
                 {{ $lesson->title }}
               </a>
             @elseif($lesson)
-              <div class="truncate text-3xl md:text-4xl tracking-wide font-medium text-blue-900">
+              <div class="truncate text-2xl md:text-4xl tracking-wide font-medium text-blue-900">
                 {{ $lesson->title }}
               </div>
             @else
@@ -204,7 +204,7 @@
         {{-- Заголовок месяца, с заглавной буквы и двоеточием --}}
         <div>
           <div class="flex justify-center">
-            <div class="md:text-base tracking-wide text-lg border-2 rounded-2xl border-blue-100 inline-block py-1.5 px-4 font-normal text-blue-800 mt-6 md:mb-6 mb-4">
+            <div class="text-sm md:text-base tracking-wide border-2 rounded-2xl border-blue-100 inline-block py-1.5 px-4 font-normal text-blue-800 mt-6 md:mb-6 mb-4">
               <x-icon name="calendar" class="inline-block relative bottom-1 mr-1 w-4 h-4" />
               {{ \Illuminate\Support\Str::ucfirst($monthKey) }}:
             </div>

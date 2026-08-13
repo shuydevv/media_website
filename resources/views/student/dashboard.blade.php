@@ -527,7 +527,7 @@
     <div class="w-full md:mb-16 mb-12">
     <x-ui.card class="max-w-6xl mx-auto">
         <div class="flex justify-between items-end mb-4 border-b border-gray-200 pb-2 px-1">
-            <h2 class="sans-medium text-xl md:text-2xl tracking-wide text-zinc-900"><x-icon name="calendar" class="inline-block relative bottom-1 mr-1 w-5 h-5" /> Расписание уроков</h2>
+            <h2 class="sans-medium text-lg md:text-2xl tracking-wide text-zinc-900"><x-icon name="calendar" class="inline-block relative bottom-1 mr-1 w-5 h-5" /> Расписание уроков</h2>
             <div class="flex gap-2">
                 <button id="swiper-prev" class="w-9 h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white" disabled aria-label="Предыдущие дни">
                     <x-icon name="chevron-left" class="w-4 h-4" />
@@ -702,7 +702,7 @@
     updateButtons();
 </script>
 
-    <h2 class="sans-medium text-xl md:text-2xl tracking-wide md:mb-4 mb-3 mt-4 text-zinc-900">Мои курсы</h2>
+    <h2 class="sans-medium text-lg md:text-2xl tracking-wide md:mb-4 mb-3 mt-4 text-zinc-900">Мои курсы</h2>
 
     @if($courses->isEmpty())
         <x-ui.card class="text-zinc-600">
