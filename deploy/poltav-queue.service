@@ -1,0 +1,30 @@
+[Unit]
+Description=Poltavskiy Media - Laravel queue worker
+After=network.target mysql.service
+
+[Service]
+User=deploy
+Group=deploy
+Restart=always
+RestartSec=3
+
+# /var/www/poltav/current — симлинк на актуальный релиз, а не жёстко забитый
+# путь: если так же захардкодить конкретный releases/<timestamp>, воркер
+# переживёт сколько угодно деплоев на старом коде, а когда деплой рано или
+# поздно удалит эту папку при уборке старых релизов (RELEASES_TO_KEEP) —
+# начнёт падать на каждом require случайно ещё не подгруженного класса.
+# Именно так однажды тихо легла вся отправка писем.
+WorkingDirectory=/var/www/poltav/current
+ExecStart=/usr/bin/php /var/www/poltav/current/artisan queue:work --queue=default --sleep=3 --tries=3 --timeout=120 --max-time=3600
+
+# --max-time=3600 — воркер сам выходит раз в час, systemd (Restart=always)
+# тут же поднимает новый процесс заново резолвя симлинк current/artisan.
+# Дополнительная страховка на случай, если сигнал `artisan queue:restart`
+# после деплоя почему-то не долетит (кэш-based, зависит от storage/framework/
+# cache) — раз в час воркер и так пересоберётся на актуальном релизе.
+
+StandardOutput=append:/var/www/poltav/shared/storage/logs/queue-worker.log
+StandardError=append:/var/www/poltav/shared/storage/logs/queue-worker.log
+
+[Install]
+WantedBy=multi-user.target

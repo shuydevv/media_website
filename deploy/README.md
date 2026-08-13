@@ -92,3 +92,72 @@ Blade-вьюхи, файловый кэш, сессии) — теперь лок
 вьюхи несколькими воркерами php-fpm иногда обрывала запись на середине и
 давала на проде "unexpected end of file, expecting elseif or else or
 endif" на случайной админ-странице.
+
+## 5. Воркер очереди (`queue:work`) — обязательно под systemd
+
+Очередь (`QUEUE_CONNECTION=database`) используется почти всеми уведомлениями,
+включая коды подтверждения на почту (`app/Notifications/*` в основном
+`ShouldQueue`) — без работающего воркера они просто тихо копятся в `jobs`/
+`failed_jobs`, а пользователь видит только "письмо не пришло". Однажды воркер
+был запущен вручную (`nohup php artisan queue:work ... &`) без вообще какого-
+либо супервизора — он пережил несколько деплоев на старом коде незамеченным,
+пока `deploy.sh` не подчистил старые релизы, после чего каждая job стала
+падать. `queue:restart` в `deploy.sh` — это лишь сигнал через кэш, который
+воркер ловит МЕЖДУ джобами; без процесса, который реально его перезапускает
+после штатной остановки, сигнал можно упустить навсегда.
+
+Разово на сервере:
+
+```bash
+sudo cp /var/www/poltav/current/deploy/poltav-queue.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now poltav-queue
+
+# добить старый неуправляемый процесс, если он ещё жив (см. `ps aux | grep queue:work`)
+kill <PID старого queue:work>
+```
+
+`deploy.sh`/`rollback.sh` после этого сами делают
+`sudo systemctl restart poltav-queue` при каждом деплое/откате — нужен ещё
+один passwordless-sudoers, аналогично `systemctl reload php8.2-fpm`:
+
+```
+deploy ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart poltav-queue, /usr/bin/systemctl reload php8.2-fpm
+```
+
+## 6. Алерт в Telegram, если очередь встала или посыпались failed_jobs
+
+`queue:monitor-health` (расписание — каждые 5 минут, `App\Console\Kernel`)
+проверяет: (а) не висит ли самая старая необработанная job в `jobs` дольше
+10 минут — признак, что воркер вообще не работает; (б) не появились ли новые
+`failed_jobs` с прошлой проверки. Алертит через Telegram
+(`App\Service\Ops\TelegramAlert`), не почтой — именно почта чаще всего и
+оказывается тем, что сломалось (см. инцидент с истёкшим тарифом SMTP:
+172 писем тихо провалились в `failed_jobs`, узнали только когда студент
+пожаловался, что код не пришёл).
+
+В `shared/.env` (или в `.env` релиза, если `shared/.env` не используется)
+добавьте:
+
+```
+TELEGRAM_BOT_TOKEN=...
+TELEGRAM_CHAT_ID=...
+```
+
+Можно завести отдельного бота, либо переиспользовать токен/chat_id, уже
+зашитый в `app/Http/Controllers/LeadController.php` (заявки с сайта) — тогда
+алерты об инфраструктуре будут падать в тот же чат, что и лиды. Без этих
+переменных `queue:monitor-health` просто пишет в `storage/logs/laravel.log`
+и молча ничего никуда не шлёт — тоже лучше, чем полная тишина, но легко
+пропустить.
+
+## 7. Разобраться с уже накопившимися `failed_jobs`
+
+После того как причина сбоя устранена (например, продлён тариф у SMTP-
+провайдера), зависшие в очереди job'ы уйдут сами при следующей попытке
+воркера — а вот те, что уже исчерпали `--tries=3` и осели в `failed_jobs`,
+нужно вернуть в очередь руками:
+
+```bash
+cd /var/www/poltav/current && php artisan queue:retry all
+```

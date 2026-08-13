@@ -17,6 +17,7 @@ REPO="${REPO:-https://github.com/shuydevv/media_website.git}"
 BRANCH="${BRANCH:-main}"
 RELEASES_TO_KEEP="${RELEASES_TO_KEEP:-5}"
 PHP_FPM_SERVICE="${PHP_FPM_SERVICE:-php8.2-fpm}"
+QUEUE_SERVICE="${QUEUE_SERVICE:-poltav-queue}"
 REL="$(date +%Y%m%d%H%M%S)"
 NEW="$RELEASES/$REL"
 
@@ -43,6 +44,7 @@ on_error() {
     log "⏪ Rolling back symlink to previous release: $PREV"
     ln -sfn "$PREV" "$CUR"
     php "$CUR/artisan" up || true
+    sudo -n systemctl restart "$QUEUE_SERVICE" 2>/dev/null || true
     log "⚠️  Code was rolled back. If migrations ran before the failure, verify DB state manually — they were NOT auto-reverted."
   else
     # Nothing was switched yet; make sure whatever is live is not stuck down.
@@ -138,6 +140,17 @@ if command -v sudo >/dev/null && sudo -n systemctl reload "$PHP_FPM_SERVICE" 2>/
   log "Reloaded $PHP_FPM_SERVICE"
 else
   log "⚠️  Could not reload $PHP_FPM_SERVICE (opcache may serve stale code until it reloads on its own). Check sudoers."
+fi
+
+# `queue:restart` above is a cache-based signal the worker only picks up
+# between jobs — belt-and-suspenders with an actual service restart, so a
+# stuck/crashed worker (or one that just never saw the signal) doesn't keep
+# silently running old code from a release that housekeeping will delete
+# later. See deploy/poltav-queue.service and README for one-time setup.
+if command -v sudo >/dev/null && sudo -n systemctl restart "$QUEUE_SERVICE" 2>/dev/null; then
+  log "Restarted $QUEUE_SERVICE"
+else
+  log "⚠️  Could not restart $QUEUE_SERVICE (relying on queue:restart signal alone). Check sudoers / that the unit is installed."
 fi
 
 # ---------------------------------------------------------------------------

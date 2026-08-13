@@ -11,6 +11,7 @@ APP="${APP:-/var/www/poltav}"
 RELEASES="$APP/releases"
 CUR="$APP/current"
 PHP_FPM_SERVICE="${PHP_FPM_SERVICE:-php8.2-fpm}"
+QUEUE_SERVICE="${QUEUE_SERVICE:-poltav-queue}"
 
 log() { echo "[rollback] $*"; }
 
@@ -40,6 +41,12 @@ if command -v sudo >/dev/null && sudo -n systemctl reload "$PHP_FPM_SERVICE" 2>/
   log "Reloaded $PHP_FPM_SERVICE"
 else
   log "⚠️  Could not reload $PHP_FPM_SERVICE — check sudoers."
+fi
+
+if command -v sudo >/dev/null && sudo -n systemctl restart "$QUEUE_SERVICE" 2>/dev/null; then
+  log "Restarted $QUEUE_SERVICE"
+else
+  log "⚠️  Could not restart $QUEUE_SERVICE — check sudoers."
 fi
 
 log "✅ Rolled back to $TARGET"

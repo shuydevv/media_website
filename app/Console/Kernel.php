@@ -26,6 +26,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('billing:notify-promise-expiring')->dailyAt('08:30');
         $schedule->command('homeworks:notify-due-soon')->dailyAt('09:00');
         $schedule->command('lessons:notify-starting-soon')->everyFifteenMinutes();
+        $schedule->command('queue:monitor-health')->everyFiveMinutes();
     }
 
 }
