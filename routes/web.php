@@ -1,35 +1,22 @@
 <?php
 
+use App\Http\Controllers\Admin\Course\IndexController;
+use App\Http\Controllers\Admin\Course\ShowController;
+use App\Http\Controllers\Admin\Lesson\LessonByCourseController;
+use App\Http\Controllers\Admin\Promo\PromoCodeController;
+use App\Http\Controllers\Checkout\CourseCheckoutController;
+use App\Http\Controllers\Mentor\ReviewAiController;
+use App\Http\Controllers\Mentor\SubmissionController as MentorSubmissionController;
+use App\Http\Controllers\Promo\RedeemController;
+use App\Http\Controllers\Student\DashboardController;
+use App\Http\Controllers\Student\LessonController as StudentLessonController;
+use App\Http\Controllers\Student\SubmissionController;
+use App\Http\Controllers\Student\SubmissionController as StudentSubmissionController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\Admin\Course\IndexController;
-use App\Http\Controllers\Admin\Course\ShowController;
-use App\Http\Controllers\Admin\Course\CreateController;
-use App\Http\Controllers\Admin\Course\StoreController;
-use App\Http\Controllers\Admin\Course\EditController;
-use App\Http\Controllers\Admin\Course\UpdateController;
-use App\Http\Controllers\Admin\Course\DestroyController;
-use App\Http\Controllers\Admin\Lesson\LessonByCourseController;
-use App\Http\Controllers\Admin\Session\ApiController;
-use App\Http\Controllers\LessonAjaxController;
-use App\Http\Controllers\Promo\RedeemController;
-use App\Http\Controllers\Student\DashboardController;
-use App\Http\Controllers\Admin\Promo\PromoCodeController;
-use App\Http\Controllers\Checkout\CourseCheckoutController;
-use App\Http\Controllers\Student\CourseController;
-use App\Http\Controllers\Student\LessonController as StudentLessonController;
-use App\Http\Controllers\Student\SubmissionController as StudentSubmissionController;
-use App\Http\Controllers\Mentor\SubmissionController as MentorSubmissionController;
-use App\Http\Controllers\Student\SubmissionController;
-use App\Http\Controllers\Mentor\ReviewAiController;
-
 // --- Mentor/Admin: проверка письменной части ---
 // use App\Http\Controllers\Mentor\SubmissionReviewController;
-
-
-
-
 
 /*
 |--------------------------------------------------------------------------
@@ -45,18 +32,18 @@ use App\Http\Controllers\Mentor\ReviewAiController;
 // Health-check для deploy.sh (Laravel 10 не даёт /up из коробки, в отличие от 11+)
 Route::get('/up', fn () => response('OK', 200));
 
-Route::group(['namespace' => 'App\Http\Controllers\Main'], function() {
+Route::group(['namespace' => 'App\Http\Controllers\Main'], function () {
     Route::get('/', 'IndexController')->name('index');
     Route::get('/repetitor', 'RepetitorController')->name('main.repetitor');
     Route::get('/author', 'AuthorController')->name('main.author');
     // Route::get('/shpargalki', 'ShpargalkiController')->name('main.shpargalki');
 });
-Route::group(['namespace' => 'App\Http\Controllers\Post', 'prefix' => 'posts'], function() {
+Route::group(['namespace' => 'App\Http\Controllers\Post', 'prefix' => 'posts'], function () {
     Route::get('/', 'IndexController')->name('post.index');
     Route::get('/{post:path}', 'ShowController')->name('post.show');
 });
 
-Route::group(['namespace' => 'App\Http\Controllers\Exercise', 'prefix' => 'exercises'], function() {
+Route::group(['namespace' => 'App\Http\Controllers\Exercise', 'prefix' => 'exercises'], function () {
     Route::get('/', 'IndexController')->name('exercise.index');
     Route::get('/{exercise}', 'ShowController')->name('exercise.show');
 });
@@ -66,169 +53,166 @@ Route::group(['namespace' => 'App\Http\Controllers\Exercise', 'prefix' => 'exerc
 //     Route::get('/{post:path}', 'ShowController')->name('post.show');
 // });
 
-Route::group(['namespace' => 'App\Http\Controllers\Shpargalka', 'prefix' => 'materials'], function() {
+Route::group(['namespace' => 'App\Http\Controllers\Shpargalka', 'prefix' => 'materials'], function () {
     Route::get('/', 'IndexController')->name('shpargalka.index');
     Route::get('/{shpargalka}', 'ShowController')->name('shpargalka.show');
 });
-Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin', 
-'middleware' => ['auth', 'admin', 'verified']], function() {
-    Route::group(['namespace' => 'Main'], function() {
-        Route::get('/', 'IndexController')->name('main.index');
-    });
+Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
+    'middleware' => ['auth', 'admin', 'verified']], function () {
+        Route::group(['namespace' => 'Main'], function () {
+            Route::get('/', 'IndexController')->name('main.index');
+        });
 
-    Route::group(['namespace' => 'Course', 'prefix' => 'courses'], function() {
-        Route::get('/', 'IndexController')->name('admin.courses.index');
-        Route::get('/create', 'CreateController')->name('admin.courses.create');
-        Route::post('/store', 'StoreController')->name('admin.courses.store');
-        Route::get('/{course}', 'ShowController')->name('admin.courses.show');
-        Route::get('/{course}/edit', 'EditController')->name('admin.courses.edit');
-        Route::patch('/{course}', 'UpdateController')->name('admin.courses.update');
-        Route::delete('/{course}', 'DestroyController')->name('admin.courses.destroy');
+        Route::group(['namespace' => 'Course', 'prefix' => 'courses'], function () {
+            Route::get('/', 'IndexController')->name('admin.courses.index');
+            Route::get('/create', 'CreateController')->name('admin.courses.create');
+            Route::post('/store', 'StoreController')->name('admin.courses.store');
+            Route::get('/{course}', 'ShowController')->name('admin.courses.show');
+            Route::get('/{course}/edit', 'EditController')->name('admin.courses.edit');
+            Route::patch('/{course}', 'UpdateController')->name('admin.courses.update');
+            Route::delete('/{course}', 'DestroyController')->name('admin.courses.destroy');
 
-    });
+        });
 
-        Route::group(['namespace' => 'Session', 'prefix' => 'sessions'], function() {
+        Route::group(['namespace' => 'Session', 'prefix' => 'sessions'], function () {
             Route::get('/', 'IndexController')->name('admin.sessions.index');
             Route::get('/create', 'CreateController')->name('admin.sessions.create');
             Route::post('/store', 'StoreController')->name('admin.sessions.store');
             Route::get('{session}/edit', 'EditController')->name('admin.sessions.edit');
             Route::put('{session}', 'UpdateController')->name('admin.sessions.update');
             Route::delete('{session}', 'DestroyController')->name('admin.sessions.destroy');
-    });
+        });
 
-    Route::group(['namespace' => 'Lesson', 'prefix' => 'lessons'], function() {
+        Route::group(['namespace' => 'Lesson', 'prefix' => 'lessons'], function () {
             Route::get('/', 'IndexController')->name('admin.lessons.index');
             Route::get('/create', 'CreateController')->name('admin.lessons.create');
             Route::post('/', 'StoreController')->name('admin.lessons.store');
             Route::get('/{lesson}/edit', 'EditController')->name('admin.lessons.edit');
             Route::put('/{lesson}', 'UpdateController')->name('admin.lessons.update');
             Route::delete('/{lesson}', 'DestroyController')->name('admin.lessons.destroy');
+        });
+        // });
+
+        Route::group(['namespace' => 'Homework', 'prefix' => 'homeworks'], function () {
+            Route::get('/', 'IndexController')->name('admin.homeworks.index');
+            Route::get('create', 'CreateController')->name('admin.homeworks.create');
+            // Массовая загрузка через JSON-файл — до /{homework}, тот же повод,
+            // что и у create выше.
+            Route::get('import', 'ImportController@create')->name('admin.homeworks.import');
+            Route::post('import', 'ImportController@store')->name('admin.homeworks.import.store');
+            Route::get('import/example', 'ImportController@example')->name('admin.homeworks.import.example');
+            Route::get('{homework}/edit', 'EditController')->name('admin.homeworks.edit');
+            Route::get('/{homework}', 'ShowController')->name('admin.homeworks.show');
+            Route::post('/', 'StoreController')->name('admin.homeworks.store');
+            Route::put('/{homework}', 'UpdateController')->name('admin.homeworks.update');
+            Route::delete('/{homework}', 'DestroyController')->name('admin.homeworks.destroy');
+            Route::post('/{homework}/duplicate', 'DuplicateController')->name('admin.homeworks.duplicate');
+        });
+
+        Route::get('/api/courses/{course}/sessions', [\App\Http\Controllers\Admin\Session\ApiController::class, 'sessionsByCourse']);
+
+        Route::group(['namespace' => 'Category', 'prefix' => 'categories'], function () {
+            Route::get('/', 'IndexController')->name('admin.category.index');
+            Route::get('/create', 'CreateController')->name('admin.category.create');
+            Route::post('/store', 'StoreController')->name('admin.category.store');
+            Route::get('/{category}', 'ShowController')->name('admin.category.show');
+            Route::get('/{category}/edit', 'EditController')->name('admin.category.edit');
+            Route::patch('/{category}', 'UpdateController')->name('admin.category.update');
+            Route::delete('/{category}', 'DeleteController')->name('admin.category.delete');
+            // Route::get('/store', 'IndexController')->name('category.index');
+        });
+
+        Route::group(['namespace' => 'Section', 'prefix' => 'sections'], function () {
+            Route::get('/', 'IndexController')->name('admin.section.index');
+            Route::get('/create', 'CreateController')->name('admin.section.create');
+            Route::post('/store', 'StoreController')->name('admin.section.store');
+            Route::get('/{section}', 'ShowController')->name('admin.section.show');
+            Route::get('/{section}/edit', 'EditController')->name('admin.section.edit');
+            Route::patch('/{section}', 'UpdateController')->name('admin.section.update');
+            Route::delete('/{section}', 'DeleteController')->name('admin.section.delete');
+            // Route::get('/store', 'IndexController')->name('category.index');
+        });
+
+        Route::group(['namespace' => 'Topic', 'prefix' => 'topics'], function () {
+            Route::get('/', 'IndexController')->name('admin.topic.index');
+            Route::get('/create', 'CreateController')->name('admin.topic.create');
+            Route::post('/store', 'StoreController')->name('admin.topic.store');
+            Route::get('/{topic}', 'ShowController')->name('admin.topic.show');
+            Route::get('/{topic}/edit', 'EditController')->name('admin.topic.edit');
+            Route::patch('/{topic}', 'UpdateController')->name('admin.topic.update');
+            Route::delete('/{topic}', 'DeleteController')->name('admin.topic.delete');
+            // Route::get('/store', 'IndexController')->name('category.index');
+        });
+        Route::group(['namespace' => 'Shpargalka', 'prefix' => 'shpargalki'], function () {
+            Route::get('/', 'IndexController')->name('admin.shpargalka.index');
+            Route::get('/create', 'CreateController')->name('admin.shpargalka.create');
+            Route::post('/store', 'StoreController')->name('admin.shpargalka.store');
+            Route::get('/{shpargalka}', 'ShowController')->name('admin.shpargalka.show');
+            Route::get('/{shpargalka}/edit', 'EditController')->name('admin.shpargalka.edit');
+            Route::patch('/{shpargalka}', 'UpdateController')->name('admin.shpargalka.update');
+            Route::delete('/{shpargalka}', 'DeleteController')->name('admin.shpargalka.delete');
+
+        });
+
+        Route::group(['namespace' => 'Tag', 'prefix' => 'tags'], function () {
+            Route::get('/', 'IndexController')->name('admin.tag.index');
+            Route::get('/create', 'CreateController')->name('admin.tag.create');
+            Route::post('/store', 'StoreController')->name('admin.tag.store');
+            Route::get('/{tag}', 'ShowController')->name('admin.tag.show');
+            Route::get('/{tag}/edit', 'EditController')->name('admin.tag.edit');
+            Route::patch('/{tag}', 'UpdateController')->name('admin.tag.update');
+            Route::delete('/{tag}', 'DeleteController')->name('admin.tag.delete');
+        });
+
+        Route::group(['namespace' => 'Post', 'prefix' => 'posts'], function () {
+            Route::get('/', 'IndexController')->name('admin.post.index');
+            Route::get('/create', 'CreateController')->name('admin.post.create');
+            Route::post('/store', 'StoreController')->name('admin.post.store');
+            Route::get('/{post}', 'ShowController')->name('admin.post.show');
+            Route::get('/{post}/edit', 'EditController')->name('admin.post.edit');
+            Route::patch('/{post}', 'UpdateController')->name('admin.post.update');
+            Route::delete('/{post}', 'DeleteController')->name('admin.post.delete');
+        });
+
+        Route::group(['namespace' => 'Exercise', 'prefix' => 'exercises'], function () {
+            Route::get('/', 'IndexController')->name('admin.exercise.index');
+            Route::get('/create', 'CreateController')->name('admin.exercise.create');
+            Route::post('/store', 'StoreController')->name('admin.exercise.store');
+            Route::get('/{exercise}', 'ShowController')->name('admin.exercise.show');
+            Route::get('/{exercise}/edit', 'EditController')->name('admin.exercise.edit');
+            Route::patch('/{exercise}', 'UpdateController')->name('admin.exercise.update');
+            Route::delete('/{exercise}', 'DeleteController')->name('admin.exercise.delete');
+        });
+
+        Route::group(['namespace' => 'User', 'prefix' => 'users'], function () {
+            Route::get('/', 'IndexController')->name('admin.user.index');
+            Route::get('/create', 'CreateController')->name('admin.user.create');
+            Route::post('/store', 'StoreController')->name('admin.user.store');
+            Route::get('/{user}', 'ShowController')->name('admin.user.show');
+            Route::get('/{user}/edit', 'EditController')->name('admin.user.edit');
+            Route::patch('/{user}', 'UpdateController')->name('admin.user.update');
+            Route::delete('/{user}', 'DeleteController')->name('admin.user.delete');
+        });
+
+        // Без 'namespace' => 'User' — контроллер лежит в Admin\Billing, передан полным классом
+        Route::post('/users/{user}/courses/{course}/payments', \App\Http\Controllers\Admin\Billing\RecordPaymentController::class)
+            ->name('admin.billing.payments.store');
+
+        Route::post('/users/{user}/courses/{course}/promo', [\App\Http\Controllers\Admin\Billing\PromoAttachmentController::class, 'store'])
+            ->name('admin.billing.promo.store');
+        Route::delete('/users/{user}/courses/{course}/promo', [\App\Http\Controllers\Admin\Billing\PromoAttachmentController::class, 'destroy'])
+            ->name('admin.billing.promo.destroy');
+
+        Route::put('/users/{user}/courses/{course}/autopay', [\App\Http\Controllers\Admin\Billing\AutopayController::class, 'update'])
+            ->name('admin.billing.autopay.update');
     });
-    // });
-
-    Route::group(['namespace' => 'Homework', 'prefix' => 'homeworks'], function() {
-        Route::get('/', 'IndexController')->name('admin.homeworks.index');
-        Route::get('create', 'CreateController')->name('admin.homeworks.create');
-        // Массовая загрузка через JSON-файл — до /{homework}, тот же повод,
-        // что и у create выше.
-        Route::get('import', 'ImportController@create')->name('admin.homeworks.import');
-        Route::post('import', 'ImportController@store')->name('admin.homeworks.import.store');
-        Route::get('import/example', 'ImportController@example')->name('admin.homeworks.import.example');
-        Route::get('{homework}/edit', 'EditController')->name('admin.homeworks.edit');
-        Route::get('/{homework}', 'ShowController')->name('admin.homeworks.show');
-        Route::post('/', 'StoreController')->name('admin.homeworks.store');
-        Route::put('/{homework}', 'UpdateController')->name('admin.homeworks.update');
-        Route::delete('/{homework}', 'DestroyController')->name('admin.homeworks.destroy');
-        Route::post('/{homework}/duplicate', 'DuplicateController')->name('admin.homeworks.duplicate');
-    });
-
-    Route::get('/api/courses/{course}/sessions', [\App\Http\Controllers\Admin\Session\ApiController::class, 'sessionsByCourse']);
-
-
-    Route::group(['namespace' => 'Category', 'prefix' => 'categories'], function() {
-        Route::get('/', 'IndexController')->name('admin.category.index');
-        Route::get('/create', 'CreateController')->name('admin.category.create');
-        Route::post('/store', 'StoreController')->name('admin.category.store');
-        Route::get('/{category}', 'ShowController')->name('admin.category.show');
-        Route::get('/{category}/edit', 'EditController')->name('admin.category.edit');
-        Route::patch('/{category}', 'UpdateController')->name('admin.category.update');
-        Route::delete('/{category}', 'DeleteController')->name('admin.category.delete');
-        // Route::get('/store', 'IndexController')->name('category.index');
-    });
-
-    Route::group(['namespace' => 'Section', 'prefix' => 'sections'], function() {
-        Route::get('/', 'IndexController')->name('admin.section.index');
-        Route::get('/create', 'CreateController')->name('admin.section.create');
-        Route::post('/store', 'StoreController')->name('admin.section.store');
-        Route::get('/{section}', 'ShowController')->name('admin.section.show');
-        Route::get('/{section}/edit', 'EditController')->name('admin.section.edit');
-        Route::patch('/{section}', 'UpdateController')->name('admin.section.update');
-        Route::delete('/{section}', 'DeleteController')->name('admin.section.delete');
-        // Route::get('/store', 'IndexController')->name('category.index');
-    });
-
-    Route::group(['namespace' => 'Topic', 'prefix' => 'topics'], function() {
-        Route::get('/', 'IndexController')->name('admin.topic.index');
-        Route::get('/create', 'CreateController')->name('admin.topic.create');
-        Route::post('/store', 'StoreController')->name('admin.topic.store');
-        Route::get('/{topic}', 'ShowController')->name('admin.topic.show');
-        Route::get('/{topic}/edit', 'EditController')->name('admin.topic.edit');
-        Route::patch('/{topic}', 'UpdateController')->name('admin.topic.update');
-        Route::delete('/{topic}', 'DeleteController')->name('admin.topic.delete');
-        // Route::get('/store', 'IndexController')->name('category.index');
-    });
-    Route::group(['namespace' => 'Shpargalka', 'prefix' => 'shpargalki'], function() {
-        Route::get('/', 'IndexController')->name('admin.shpargalka.index');
-        Route::get('/create', 'CreateController')->name('admin.shpargalka.create');
-        Route::post('/store', 'StoreController')->name('admin.shpargalka.store');
-        Route::get('/{shpargalka}', 'ShowController')->name('admin.shpargalka.show');
-        Route::get('/{shpargalka}/edit', 'EditController')->name('admin.shpargalka.edit');
-        Route::patch('/{shpargalka}', 'UpdateController')->name('admin.shpargalka.update');
-        Route::delete('/{shpargalka}', 'DeleteController')->name('admin.shpargalka.delete');
-
-    });
-
-    Route::group(['namespace' => 'Tag', 'prefix' => 'tags'], function() {
-        Route::get('/', 'IndexController')->name('admin.tag.index');
-        Route::get('/create', 'CreateController')->name('admin.tag.create');
-        Route::post('/store', 'StoreController')->name('admin.tag.store');
-        Route::get('/{tag}', 'ShowController')->name('admin.tag.show');
-        Route::get('/{tag}/edit', 'EditController')->name('admin.tag.edit');
-        Route::patch('/{tag}', 'UpdateController')->name('admin.tag.update');
-        Route::delete('/{tag}', 'DeleteController')->name('admin.tag.delete');
-    });
-
-    Route::group(['namespace' => 'Post', 'prefix' => 'posts'], function() {
-        Route::get('/', 'IndexController')->name('admin.post.index');
-        Route::get('/create', 'CreateController')->name('admin.post.create');
-        Route::post('/store', 'StoreController')->name('admin.post.store');
-        Route::get('/{post}', 'ShowController')->name('admin.post.show');
-        Route::get('/{post}/edit', 'EditController')->name('admin.post.edit');
-        Route::patch('/{post}', 'UpdateController')->name('admin.post.update');
-        Route::delete('/{post}', 'DeleteController')->name('admin.post.delete');
-    });
-
-    Route::group(['namespace' => 'Exercise', 'prefix' => 'exercises'], function() {
-        Route::get('/', 'IndexController')->name('admin.exercise.index');
-        Route::get('/create', 'CreateController')->name('admin.exercise.create');
-        Route::post('/store', 'StoreController')->name('admin.exercise.store');
-        Route::get('/{exercise}', 'ShowController')->name('admin.exercise.show');
-        Route::get('/{exercise}/edit', 'EditController')->name('admin.exercise.edit');
-        Route::patch('/{exercise}', 'UpdateController')->name('admin.exercise.update');
-        Route::delete('/{exercise}', 'DeleteController')->name('admin.exercise.delete');
-    });
-
-    Route::group(['namespace' => 'User', 'prefix' => 'users'], function() {
-        Route::get('/', 'IndexController')->name('admin.user.index');
-        Route::get('/create', 'CreateController')->name('admin.user.create');
-        Route::post('/store', 'StoreController')->name('admin.user.store');
-        Route::get('/{user}', 'ShowController')->name('admin.user.show');
-        Route::get('/{user}/edit', 'EditController')->name('admin.user.edit');
-        Route::patch('/{user}', 'UpdateController')->name('admin.user.update');
-        Route::delete('/{user}', 'DeleteController')->name('admin.user.delete');
-    });
-
-    // Без 'namespace' => 'User' — контроллер лежит в Admin\Billing, передан полным классом
-    Route::post('/users/{user}/courses/{course}/payments', \App\Http\Controllers\Admin\Billing\RecordPaymentController::class)
-        ->name('admin.billing.payments.store');
-
-    Route::post('/users/{user}/courses/{course}/promo', [\App\Http\Controllers\Admin\Billing\PromoAttachmentController::class, 'store'])
-        ->name('admin.billing.promo.store');
-    Route::delete('/users/{user}/courses/{course}/promo', [\App\Http\Controllers\Admin\Billing\PromoAttachmentController::class, 'destroy'])
-        ->name('admin.billing.promo.destroy');
-
-    Route::put('/users/{user}/courses/{course}/autopay', [\App\Http\Controllers\Admin\Billing\AutopayController::class, 'update'])
-        ->name('admin.billing.autopay.update');
-});
-Route::group(['namespace' => 'App\Http\Controllers\Controller'], function() {
+Route::group(['namespace' => 'App\Http\Controllers\Controller'], function () {
     Route::get('/1', 'ComponentController');
 });
-
 
 // Route::get('/', function () {
 //     return view('welcome');
 // });
-
 
 // Оба — ajax-хелперы для admin-форм (create/import домашки, create урока,
 // список сессий): раньше были объявлены без middleware вовсе, а второй ещё
@@ -422,18 +406,16 @@ Route::middleware(['auth', 'mentor'])
     });
 
 Route::middleware(['auth'])->group(function () {
-Route::get('/student/submissions/{submission}', [SubmissionController::class, 'show'])
+    Route::get('/student/submissions/{submission}', [SubmissionController::class, 'show'])
         ->name('student.submissions.show');
 });
-
 
 // ==== РЕВЬЮ КУРАТОРА ====
 use App\Http\Controllers\Mentor\SubmissionReviewController;
 
-
 Route::prefix('mentor/review')
     ->name('mentor.review.')
-    ->middleware(['auth','mentor'])
+    ->middleware(['auth', 'mentor'])
     ->group(function () {
         Route::get('/inbox', [SubmissionReviewController::class, 'inbox'])->name('inbox');
         Route::get('/{submission}', [SubmissionReviewController::class, 'show'])->name('show');
@@ -460,7 +442,6 @@ Route::prefix('mentor/review')
         Route::post('/{submission}/finish-and-next', [SubmissionReviewController::class, 'finishAndNext'])->name('finish_next');
     });
 
-
 use App\Http\Controllers\Admin\TaskController;
 use App\Http\Controllers\Admin\TaskImportController;
 use App\Http\Controllers\Admin\TaskPreviewController;
@@ -473,17 +454,17 @@ use App\Http\Controllers\Admin\TaskPreviewController;
 // залогиненному пользователю.
 Route::prefix('admin/tasks')->middleware(['auth', 'admin'])->group(function () {
 
-    Route::get('/',          [TaskController::class, 'index'])->name('admin.tasks.index');
-    Route::get('/create',    [TaskController::class, 'create'])->name('admin.tasks.create');
-    Route::post('/',         [TaskController::class, 'store'])->name('admin.tasks.store');
+    Route::get('/', [TaskController::class, 'index'])->name('admin.tasks.index');
+    Route::get('/create', [TaskController::class, 'create'])->name('admin.tasks.create');
+    Route::post('/', [TaskController::class, 'store'])->name('admin.tasks.store');
 
     // Live-превью «как видит студент» прямо в форме — до сохранения, без модели.
-    Route::post('/preview',  TaskPreviewController::class)->name('admin.tasks.preview');
+    Route::post('/preview', TaskPreviewController::class)->name('admin.tasks.preview');
 
     // Массовая загрузка через JSON-файл — литеральные пути ДО /{task},
     // иначе роутер примет "import"/"preview" за значение {task}.
-    Route::get('/import',    [TaskImportController::class, 'create'])->name('admin.tasks.import');
-    Route::post('/import',   [TaskImportController::class, 'store'])->name('admin.tasks.import.store');
+    Route::get('/import', [TaskImportController::class, 'create'])->name('admin.tasks.import');
+    Route::post('/import', [TaskImportController::class, 'store'])->name('admin.tasks.import.store');
     Route::get('/import/example', [TaskImportController::class, 'example'])->name('admin.tasks.import.example');
 
     // Живая проверка "есть ли уже критерии/баллы у этого номера" — форма
@@ -495,9 +476,9 @@ Route::prefix('admin/tasks')->middleware(['auth', 'admin'])->group(function () {
     // ДО /{task}, иначе роутер принял бы это за show(task="lookup").
     Route::get('/lookup/{task}', [TaskController::class, 'lookup'])->name('admin.tasks.lookup');
 
-    Route::get('/{task}',    [TaskController::class, 'show'])->name('admin.tasks.show');
+    Route::get('/{task}', [TaskController::class, 'show'])->name('admin.tasks.show');
     Route::get('/{task}/edit', [TaskController::class, 'edit'])->name('admin.tasks.edit');
-    Route::put('/{task}',    [TaskController::class, 'update'])->name('admin.tasks.update');
+    Route::put('/{task}', [TaskController::class, 'update'])->name('admin.tasks.update');
     Route::post('/{task}/duplicate', [TaskController::class, 'duplicate'])->name('admin.tasks.duplicate');
 
     // Критерии проверки — намеренно отдельная страница от содержания задания.
@@ -505,12 +486,10 @@ Route::prefix('admin/tasks')->middleware(['auth', 'admin'])->group(function () {
     Route::put('/{task}/criteria', [TaskController::class, 'updateCriteria'])->name('admin.tasks.criteria.update');
 });
 
-
-use Illuminate\Support\Facades\Http;
-
-use App\Http\Controllers\Auth\PhoneAuthController;
 use App\Http\Controllers\Auth\EmailAuthController;
+use App\Http\Controllers\Auth\PhoneAuthController;
 use App\Http\Controllers\Onboarding\ProfileController;
+use Illuminate\Support\Facades\Http;
 
 // Телефонный вход/регистрация (публичные)
 Route::get('/auth/phone', [PhoneAuthController::class, 'showPhoneForm'])->name('auth.phone.show');
@@ -538,13 +517,15 @@ Route::middleware('guest')->group(function () {
     // Повторная отправка
     Route::post('/auth/email/resend', [EmailAuthController::class, 'resend'])->name('auth.email.resend');
 
+    // Статус доставки письма (JS-поллинг на странице ввода кода — письмо уходит через
+    // очередь, см. VerifyEmailWithCode)
+    Route::get('/auth/email/status', [EmailAuthController::class, 'status'])->name('auth.email.status');
+
     // Шаг 2Б: подтверждение по подписанной ссылке
     Route::get('/auth/email/link/{id}', [EmailAuthController::class, 'verifyByLink'])
-        ->middleware(['signed','throttle:6,1'])
+        ->middleware(['signed', 'throttle:6,1'])
         ->name('auth.email.link');
 });
-
-
 
 Route::get('/dev/ip-https', function () {
     return Http::withOptions([
@@ -553,21 +534,18 @@ Route::get('/dev/ip-https', function () {
     ])->get('https://api.ipify.org')->body();
 });
 
-
-
-
 // Auth::routes(['verify' => true]);
 
 // Выключаем штатную /register, оставляем остальное (login, reset, verify)
 Auth::routes(['verify' => true, 'register' => false]);
 
 // На всякий случай перенаправим старые ссылки на наш новый поток
-Route::get('/register', fn() => redirect()->route('auth.email.show'))->name('register');
+Route::get('/register', fn () => redirect()->route('auth.email.show'))->name('register');
 
 use App\Http\Controllers\HomeRedirectController;
 
 Route::get('/home', HomeRedirectController::class)
-    ->middleware(['auth','verified'])
+    ->middleware(['auth', 'verified'])
     ->name('home');
 
 use App\Http\Controllers\LeadController;
@@ -577,4 +555,3 @@ Route::post('/lead', [LeadController::class, 'store'])
     ->middleware('throttle:10,1'); // необязательно, но полезно
 
 Route::view('/thank-you', 'thank-you');
-

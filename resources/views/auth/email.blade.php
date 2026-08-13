@@ -16,16 +16,28 @@
   <div class="bg-white border rounded-2xl p-6 shadow-sm">
     <h1 class="text-2xl font-semibold sans mb-2">Регистрация по e-mail</h1>
 
-    <form method="post" action="{{ route('auth.email.send') }}" class="space-y-4">
+    <form method="post" action="{{ route('auth.email.send') }}" class="space-y-4" id="email-auth-form">
       @csrf
       <label class="block">
         <span class="text-sm text-gray-700">E-mail</span>
         <input type="email" name="email" placeholder="mail@mail.com" class="mt-1 w-full border rounded-lg px-3 py-2 input-focus" required autofocus>
       </label>
       <div class="pt-2">
-        <button class="w-full rounded-lg px-4 py-3 bg-zinc-900 text-white font-medium hover:bg-zinc-800 transition">Получить код</button>
+        <button type="submit" class="w-full rounded-lg px-4 py-3 bg-zinc-900 text-white font-medium hover:bg-zinc-800 transition">Получить код</button>
       </div>
     </form>
   </div>
 </div>
+<script>
+{{-- Без этого двойной тап на медленной мобильной сети уходит двумя параллельными
+     запросами — второй падает на уникальном индексе email (гонка между SELECT и
+     INSERT в EmailAuthController::send()). Дизейбл кнопки не убирает саму гонку
+     (её ловит catch на сервере), но делает её на порядок реже. --}}
+document.getElementById('email-auth-form').addEventListener('submit', function (e) {
+  const btn = e.target.querySelector('button[type="submit"]');
+  if (btn.disabled) { e.preventDefault(); return; }
+  btn.disabled = true;
+  btn.textContent = 'Отправка…';
+});
+</script>
 @endsection
