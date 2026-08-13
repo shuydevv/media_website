@@ -108,10 +108,18 @@
             }
             .dashboard-mascot-row {
                 flex-direction: column;
-                align-items: stretch;
-                gap: 1.5rem;
+                align-items: center;
+                gap: 1rem;
             }
+            /* Раньше маскот растягивался на всю ширину карточки (width:100%) —
+               при aspect-square на узком экране это давало квадрат ~300px+,
+               визуально "гигантский". Ограничиваем компактным размером и
+               центрируем, блок кормления под ним остаётся на всю ширину. */
             .dashboard-mascot-row #greeting-mascot {
+                width: 160px;
+                max-width: 55%;
+            }
+            .dashboard-mascot-row #fish-card {
                 width: 100%;
             }
         }
@@ -526,13 +534,13 @@
 
     <div class="w-full md:mb-16 mb-12">
     <x-ui.card class="max-w-6xl mx-auto">
-        <div class="flex justify-between items-end mb-4 border-b border-gray-200 pb-2 px-1">
-            <h2 class="sans-medium text-lg md:text-2xl tracking-wide text-zinc-900"><x-icon name="calendar" class="inline-block relative bottom-1 mr-1 w-5 h-5" /> Расписание уроков</h2>
-            <div class="flex gap-2">
-                <button id="swiper-prev" class="w-9 h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white" disabled aria-label="Предыдущие дни">
+        <div class="flex justify-between items-center gap-2 mb-4 border-b border-gray-200 pb-2 px-1">
+            <h2 class="sans-medium text-base md:text-2xl md:tracking-wide text-zinc-900 whitespace-nowrap"><x-icon name="calendar" class="inline-block relative bottom-0.5 mr-1 w-4 h-4 md:w-5 md:h-5" /> Расписание уроков</h2>
+            <div class="flex gap-2 shrink-0">
+                <button id="swiper-prev" class="w-8 h-8 md:w-9 md:h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white" disabled aria-label="Предыдущие дни">
                     <x-icon name="chevron-left" class="w-4 h-4" />
                 </button>
-                <button id="swiper-next" class="w-9 h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white" aria-label="Следующие дни">
+                <button id="swiper-next" class="w-8 h-8 md:w-9 md:h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white" aria-label="Следующие дни">
                     <x-icon name="chevron-right" class="w-4 h-4" />
                 </button>
             </div>

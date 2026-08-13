@@ -34,16 +34,18 @@
             default => [null, null],
           };
         @endphp
-        <x-ui.card-link href="{{ route('student.tasks.show', $task) }}" class="flex items-center justify-between gap-3">
-          <div class="min-w-0">
-            <div class="text-xs text-zinc-400 uppercase tracking-wide mb-1">
-              {{ $task->category?->title ?? 'Без категории' }} @if($task->number) · № {{ $task->number }} @endif
+        <x-ui.card-link href="{{ route('student.tasks.show', $task) }}">
+          <div class="min-w-0 w-full">
+            <div class="flex items-center justify-between gap-2 mb-1">
+              <div class="text-xs text-zinc-400 uppercase tracking-wide truncate">
+                {{ $task->category?->title ?? 'Без категории' }} @if($task->number) · № {{ $task->number }} @endif
+              </div>
+              @if($badge[0])
+                <span class="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $badge[1] }}">{{ $badge[0] }}</span>
+              @endif
             </div>
             <div class="text-zinc-900 truncate">{{ \Illuminate\Support\Str::limit(strip_tags((string) $task->question_text), 90) ?: 'Без текста' }}</div>
           </div>
-          @if($badge[0])
-            <span class="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $badge[1] }}">{{ $badge[0] }}</span>
-          @endif
         </x-ui.card-link>
       @endforeach
     </div>

@@ -501,7 +501,8 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
             №{{ $titleNo }} в ЕГЭ
           </span>
           <span class="sans-medium text-lg text-zinc-900 truncate">
-            Задание №{{ $titleNo }}
+            <span class="sm:hidden">№{{ $titleNo }}</span>
+            <span class="hidden sm:inline">Задание №{{ $titleNo }}</span>
           </span>
         </div>
         <span class="inline-flex items-center shrink-0 whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-medium {{ $badge['bg'] }} {{ $badge['text'] }}">

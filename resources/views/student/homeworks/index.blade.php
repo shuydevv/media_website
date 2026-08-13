@@ -95,10 +95,21 @@
                 <x-ui.card-link href="{{ $actionUrl }}"
                    data-group="{{ $filterGroup }}"
                    class="hw-card">
-                    <div class="min-w-0">
-                        <div class="flex items-center gap-2 flex-wrap mb-1">
-                            <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium {{ $badge['class'] }}">{{ $badge['label'] }}</span>
-                            <span class="text-xs text-zinc-400">{{ $row['course_title'] }}</span>
+                    {{-- w-full — иначе внешний flex у x-ui.card-link сжимал бы
+                         этот блок только до ширины его самой длинной строки, и
+                         заголовок домашки строкой ниже truncate-ился раньше
+                         правого края карточки, хотя место под ним было
+                         свободно (ссылка "Начать →" мешала только верхней
+                         строке, но ужимала всю колонку целиком). Метка
+                         действия теперь в одной строке с бейджем статуса, а не
+                         отдельным элементом сбоку от всей колонки. --}}
+                    <div class="min-w-0 w-full">
+                        <div class="flex items-center justify-between gap-2 mb-1">
+                            <div class="flex items-center gap-2 flex-wrap min-w-0">
+                                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium {{ $badge['class'] }}">{{ $badge['label'] }}</span>
+                                <span class="text-xs text-zinc-400 truncate">{{ $row['course_title'] }}</span>
+                            </div>
+                            <span class="shrink-0 text-sm font-medium text-amber-700 whitespace-nowrap">{{ $actionLabel }} →</span>
                         </div>
                         <div class="font-medium text-zinc-900 truncate">{{ $hw->title }}</div>
                         <div class="text-sm text-zinc-500 mt-0.5">
@@ -112,7 +123,6 @@
                             @endif
                         </div>
                     </div>
-                    <span class="shrink-0 text-sm font-medium text-amber-700 whitespace-nowrap">{{ $actionLabel }} →</span>
                 </x-ui.card-link>
             @endforeach
         </div>
