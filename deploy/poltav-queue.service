@@ -3,8 +3,20 @@ Description=Poltavskiy Media - Laravel queue worker
 After=network.target mysql.service
 
 [Service]
-User=deploy
-Group=deploy
+# www-data, не deploy: php-fpm тоже работает как www-data (см. pool.d/*.conf),
+# и оба процесса пишут в один и тот же storage/framework/cache/data —
+# Laravel создаёт подпапки там с правами 0755 (Filesystem::makeDirectory()),
+# setgid на storage/framework передаёт группу новым подпапкам, но НЕ право
+# записи для группы. Пока воркер был deploy, а не www-data, он не мог писать
+# в cache-подпапки, которые первым создал php-fpm (deploy состоит в группе
+# www-data, но у группы там нет w-бита, только r-x) — и наоборот. На практике
+# это ловилось как "Permission denied" при попытке воркера записать статус
+# доставки письма с кодом входа (App\Providers\AppServiceProvider — Cache::put
+# для /auth/email/status), из-за чего JS-поллер на странице входа ждал
+# несуществующий статус бесконечно. Один и тот же пользователь для обоих
+# процессов убирает саму возможность такого конфликта.
+User=www-data
+Group=www-data
 Restart=always
 RestartSec=3
 
