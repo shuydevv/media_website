@@ -78,7 +78,6 @@
 @font-face {
   font-family: 'Oktyabrina';
   src:
-  url("../fonts/Oktyabrina.woff2") format("woff2"),
   url('../fonts/Oktyabrina-script.ttf') format('truetype');
   font-weight: 400;        /* поставь реальный вес из метаданных шрифта */
   font-style: normal;      /* если это не курсив */

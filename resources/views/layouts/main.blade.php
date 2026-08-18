@@ -13,7 +13,13 @@
 
         <!-- Styles -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
-        <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+        {{-- defer: раньше грузился синхронно и блокировал парсинг всего <head> (включая
+             @vite ниже) до ответа cdn.jsdelivr.net — на нестабильной мобильной сети это
+             давало пустой белый/чёрный экран до тайм-аута. Каждая страница, которой реально
+             нужен Swiper, всё равно подгружает его сама inline перед `new Swiper(...)`
+             (см. home/course/post/shpargalka blade), так что этот тег в head сейчас ничего
+             не обслуживает — просто нельзя было держать его блокирующим. --}}
+        <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
         @vite('resources/css/app.css')
 
         <!-- htmx: AJAX-переходы без перезагрузки страницы -->
