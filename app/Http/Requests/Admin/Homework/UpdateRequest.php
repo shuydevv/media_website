@@ -19,6 +19,7 @@ class UpdateRequest extends FormRequest
             'title'       => ['required','string','max:255'],
             'description' => ['nullable','string'],
             'type'        => ['required','in:homework,mock'],
+            'due_at'      => ['nullable','date'],
             'mock_number' => ['nullable','integer','min:1'],
             'course_id'   => ['required','integer','exists:courses,id'],
             // К одному уроку — не больше одной домашки любого типа (см.
