@@ -192,8 +192,9 @@
     }
 </style>
 
-{{-- Chart.js — те же CDN и версия, что и в student/submissions/show.blade.php --}}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{-- Chart.js — те же CDN и версия, что и в student/submissions/show.blade.php.
+     defer: не блокирует рендер того, что ниже, пока грузится с CDN. --}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
 <script>
 (function () {
     // Два вложенных кольца в стиле Apple Activity: сплошная скруглённая дуга
@@ -247,8 +248,15 @@
         });
     }
 
-    document.querySelectorAll('canvas.mock-chart').forEach(function (cv) {
-        makeSectionRings(cv, Number(cv.dataset.autoPct || 0), Number(cv.dataset.manualPct || 0));
+    // Chart.js теперь подключён с defer — ждём DOMContentLoaded (тот же приём, что в
+    // student/submissions/show.blade.php), иначе window.Chart ещё не определён на
+    // момент, когда парсер доходит до этого inline-скрипта.
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof window.Chart === 'undefined') return;
+
+        document.querySelectorAll('canvas.mock-chart').forEach(function (cv) {
+            makeSectionRings(cv, Number(cv.dataset.autoPct || 0), Number(cv.dataset.manualPct || 0));
+        });
     });
 })();
 </script>

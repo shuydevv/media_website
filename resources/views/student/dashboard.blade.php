@@ -668,7 +668,9 @@
     </x-ui.card>
 </div>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
+{{-- Swiper CSS уже в общем бандле (resources/css/app.css, @import 'swiper/css/bundle') —
+     здесь раньше был ещё один блокирующий <link> на тот же cdn.jsdelivr.net, дублирующий
+     стили. JS всё ещё с CDN (нужен синхронно прямо здесь для new Swiper() ниже). --}}
 <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
 
 <script>

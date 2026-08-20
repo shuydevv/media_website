@@ -890,8 +890,8 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
     .ans-fail{ border-color:#EF4444; }     /* красный */
     .ans-neutral{ border-color:#e5e7eb; }  /* серый (правильный ответ) */
   </style>
-  {{-- Chart.js --}}
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  {{-- Chart.js — defer: не блокирует рендер того, что ниже, пока грузится с CDN. --}}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
 
   <script>
   (function () {
@@ -940,12 +940,19 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
       });
     }
 
-    // Инициализация всех .result-ring
-    document.querySelectorAll('canvas.result-ring').forEach(cv => {
-      const pct   = Number(cv.dataset.percent || 0);
-      const color = cv.dataset.color || '#AF52DE';
-      const track = cv.dataset.track || '#F1E1F9';
-      makeResultRing(cv, pct, color, track);
+    // Инициализация всех .result-ring — ждём DOMContentLoaded, т.к. Chart.js теперь
+    // подключён с defer (та же причина и тот же приём, что у GSAP чуть ниже в этом файле):
+    // без этого inline-скрипт, который парсится раньше, видит window.Chart ещё не
+    // определённым.
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof window.Chart === 'undefined') return;
+
+      document.querySelectorAll('canvas.result-ring').forEach(cv => {
+        const pct   = Number(cv.dataset.percent || 0);
+        const color = cv.dataset.color || '#AF52DE';
+        const track = cv.dataset.track || '#F1E1F9';
+        makeResultRing(cv, pct, color, track);
+      });
     });
   })();
   </script>
