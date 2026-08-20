@@ -1,3 +1,11 @@
+/* @import обязан стоять раньше всех остальных правил (кроме @charset) — иначе браузер/
+   PostCSS его молча игнорирует. Раньше swiper-css грузился блокирующим <link> с
+   cdn.jsdelivr.net в layouts/main.blade.php — на нестабильной мобильной сети это давало
+   пустой белый/чёрный экран до тайм-аута (см. историю бага). Самохостим через Vite,
+   чтобы страницы с Swiper (course/*, post/*, shpargalka/*, student/profile) не зависели
+   от внешнего CDN вообще. */
+@import 'swiper/css/bundle';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
