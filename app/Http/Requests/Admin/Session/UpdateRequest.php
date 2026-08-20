@@ -24,7 +24,7 @@ class UpdateRequest extends FormRequest
     public function attributes(): array
     {
         return [
-             'date'             => ['required', 'date'],  
+            'date' => 'Дата',
             'start_time' => 'Время начала',
             'duration_minutes' => 'Длительность',
             'status' => 'Статус',
