@@ -39,7 +39,9 @@ class HomeworkController extends Controller
             ->get()
             // Пока урок, к которому привязана домашка, ещё не наступил, ученик
             // вообще не должен знать о её существовании (см. Homework::isLessonUpcoming()).
-            ->reject(fn (Homework $hw) => $hw->isLessonUpcoming())
+            // То же самое, если урок прошёл ДО зачисления ученика на курс —
+            // домашка от прошлого потока (см. Homework::isLessonBeforeEnrollment()).
+            ->reject(fn (Homework $hw) => $hw->isLessonUpcoming() || $hw->isLessonBeforeEnrollment($user))
             ->values();
 
         $latestSubmissionByHomework = Submission::query()

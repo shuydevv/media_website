@@ -78,7 +78,13 @@ class NotifyHomeworkDueSoonTest extends TestCase
         ]);
         $this->createdCourseIds[] = $course->id;
 
-        app(EnrollmentService::class)->enrollUser($user, $course, ['source' => 'manual']);
+        // Зачисление — заведомо раньше урока (см. ниже, урок вчера): иначе
+        // Homework::isLessonBeforeEnrollment() сочтёт урок предшествующим
+        // зачислению и скроет домашку целиком, как для "прошлого потока".
+        app(EnrollmentService::class)->enrollUser($user, $course, [
+            'source' => 'manual',
+            'enrolled_at' => now()->subWeek(),
+        ]);
 
         $session = CourseSession::create([
             'course_id' => $course->id,

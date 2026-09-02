@@ -31,7 +31,9 @@ class MockController extends Controller
             ->where('type', 'mock')
             ->with(['course', 'tasks', 'lesson.courseSession'])
             ->get()
-            ->reject(fn (Homework $hw) => $hw->isLessonUpcoming())
+            // Как и в HomeworkController::index() — ни ещё не наступивший урок,
+            // ни урок, прошедший до зачисления ученика на курс, показывать нельзя.
+            ->reject(fn (Homework $hw) => $hw->isLessonUpcoming() || $hw->isLessonBeforeEnrollment($user))
             ->values();
 
         $mockIds = $mocks->pluck('id');

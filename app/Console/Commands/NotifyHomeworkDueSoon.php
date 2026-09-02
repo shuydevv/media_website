@@ -34,6 +34,13 @@ class NotifyHomeworkDueSoon extends Command
             }
 
             foreach ($billing->activeStudentsWithAccess($hw->course) as $student) {
+                // Зачисление у каждого студента своё, поэтому в отличие от
+                // isLessonUpcoming() (общий для всех, отфильтрован выше) эту
+                // проверку нельзя вынести из цикла (см. Homework::isLessonBeforeEnrollment()).
+                if ($hw->isLessonBeforeEnrollment($student)) {
+                    continue;
+                }
+
                 $hasFinalSubmission = Submission::where('homework_id', $hw->id)
                     ->where('user_id', $student->id)
                     ->whereIn('status', ['checked', 'pending', 'expired'])

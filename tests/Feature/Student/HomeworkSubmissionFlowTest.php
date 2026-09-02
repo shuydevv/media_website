@@ -331,15 +331,17 @@ class HomeworkSubmissionFlowTest extends TestCase
     {
         $student = $this->makeStudent();
         $course = $this->makeCourse();
-        $lesson = $this->makeLesson($course);
+        $lesson = $this->makeLesson($course); // сессия урока — now()->subDay()
 
         // Дедлайн — от прошлого потока, задолго до того, как этот студент
-        // вообще подключился к курсу.
+        // вообще подключился к курсу. Урок при этом НЕ должен предшествовать
+        // зачислению (иначе сработает Homework::isLessonBeforeEnrollment() и
+        // домашка будет скрыта целиком — это отдельный тест ниже), поэтому
+        // зачисление здесь — между дедлайном и датой урока, а не позже урока.
         $homework = $this->makeHomework($course, $lesson, ['due_at' => now()->subWeek()]);
         $this->makeAutoTask($homework, 1, '12', 2);
 
-        // Зачисление происходит ПОСЛЕ дедлайна — это и есть проверяемый случай.
-        $this->enroll($student, $course, now());
+        $this->enroll($student, $course, now()->subDays(2));
 
         $rows = $this->actingAs($student)
             ->get(route('student.homeworks.index'))
@@ -365,6 +367,42 @@ class HomeworkSubmissionFlowTest extends TestCase
 
         $submission->refresh();
         $this->assertSame('checked', $submission->status, 'Сдача не должна помечаться "expired" из-за дедлайна, наступившего до зачисления');
+    }
+
+    /**
+     * В отличие от предыдущего теста (дедлайн до зачисления, но урок —
+     * после) здесь зачисление происходит ПОСЛЕ самого урока — домашка от
+     * прошлого потока/курса, который студент не застал. Такая домашка
+     * должна быть скрыта полностью: и в списке, и по прямой ссылке (404),
+     * см. Homework::isLessonBeforeEnrollment().
+     *
+     * @test
+     */
+    public function homework_for_a_lesson_before_enrollment_is_hidden_entirely()
+    {
+        $student = $this->makeStudent();
+        $course = $this->makeCourse();
+        $lesson = $this->makeLesson($course); // сессия урока — now()->subDay()
+
+        $homework = $this->makeHomework($course, $lesson);
+        $this->makeAutoTask($homework, 1, '12', 2);
+
+        // Зачисление — уже ПОСЛЕ урока.
+        $this->enroll($student, $course, now());
+
+        $rows = $this->actingAs($student)
+            ->get(route('student.homeworks.index'))
+            ->assertOk()
+            ->viewData('rows');
+
+        $row = $rows->firstWhere(fn ($r) => $r['homework']->id === $homework->id);
+        $this->assertNull($row, 'Домашка к уроку, прошедшему до зачисления студента, не должна быть видна в списке');
+
+        $this->actingAs($student)
+            ->get(route('student.submissions.create', $homework))
+            ->assertNotFound();
+
+        $this->assertSame(0, Submission::where('homework_id', $homework->id)->count());
     }
 
     /** @test */

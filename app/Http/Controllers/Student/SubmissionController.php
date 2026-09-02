@@ -21,12 +21,14 @@ class SubmissionController extends Controller
     {
         $this->authorize('view', $homework);
 
+        $user = $request->user();
+
         // Пока урок, к которому привязана домашка, ещё не наступил, доступа
         // к ней быть не должно вообще — 404, а не 403, чтобы прямой ссылкой
         // тоже нельзя было узнать о её существовании (см. Homework::isLessonUpcoming()).
-        abort_if($homework->isLessonUpcoming(), 404);
-
-        $user = $request->user();
+        // Та же логика для урока, прошедшего до зачисления ученика на курс
+        // (см. Homework::isLessonBeforeEnrollment()).
+        abort_if($homework->isLessonUpcoming() || $homework->isLessonBeforeEnrollment($user), 404);
 
         $inProgress = Submission::where('homework_id', $homework->id)
             ->where('user_id', $user->id)

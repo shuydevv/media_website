@@ -81,6 +81,14 @@ class CourseController extends Controller
                 $s->_start = $start;
                 $s->_end   = $end;
 
+                // $s — уже полностью загруженная CourseSession для этого урока;
+                // проставляем обратные relations вручную, чтобы isLessonBeforeEnrollment()
+                // внутри homeworkBadgeColor() не дёргала лишний запрос за courseSession.
+                if ($s->lesson && $s->lesson->homework) {
+                    $s->lesson->setRelation('courseSession', $s);
+                    $s->lesson->homework->setRelation('lesson', $s->lesson);
+                }
+
                 // Цвет значка домашки на картинке урока (см. homeworkBadgeColor)
                 $s->_homeworkColor = $this->homeworkBadgeColor(optional($s->lesson)->homework, $user);
 
@@ -129,6 +137,13 @@ class CourseController extends Controller
     private function homeworkBadgeColor(?Homework $hw, User $user): ?string
     {
         if (!$hw) {
+            return null;
+        }
+
+        // Урок прошёл до зачисления ученика на курс (домашка от прошлого
+        // потока) — как и в HomeworkController/LessonController, значок не
+        // показываем вовсе (см. Homework::isLessonBeforeEnrollment()).
+        if ($hw->isLessonBeforeEnrollment($user)) {
             return null;
         }
 

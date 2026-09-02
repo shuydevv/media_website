@@ -26,7 +26,17 @@ class LessonController extends Controller
             $homework->setRelation('lesson', $lesson);
             $homeworkUpcoming = $homework->isLessonUpcoming();
 
-            if (auth()->check()) {
+            // Урок прошёл до зачисления ученика на курс (домашка от прошлого
+            // потока) — как и с ещё не наступившим уроком, ученик не должен
+            // о ней знать. В отличие от "откроется позже" (см. blade) её
+            // уже не откроют никогда, поэтому не показываем даже неактивной
+            // плашкой — обнуляем relation, чтобы страница вела себя так же,
+            // как при полном отсутствии домашки у урока.
+            if ($homework->isLessonBeforeEnrollment(auth()->user())) {
+                $lesson->setRelation('homework', null);
+                $homework = null;
+                $homeworkUpcoming = false;
+            } elseif (auth()->check()) {
                 // Только ЗАВЕРШЁННая попытка — повод показать "Смотреть
                 // результаты". Незаконченная (in_progress) — это не
                 // результат, туда нечего смотреть; кнопка "Перейти к

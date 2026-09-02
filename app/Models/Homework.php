@@ -59,6 +59,27 @@ class Homework extends Model
     }
 
     /**
+     * Урок, к которому привязана домашка, прошёл ДО того, как ученик был
+     * зачислён на курс (домашка осталась от прошлого потока/до его
+     * регистрации) — как и с ещё не наступившим уроком (isLessonUpcoming()),
+     * ученик о такой домашке вообще не должен знать. Сравниваем с
+     * courseEnrolledAt(), а не users.created_at напрямую — тот же принцип,
+     * что и в isOverdueFor(), чтобы ориентироваться на дату подключения
+     * именно к ЭТОМУ курсу, а не на дату регистрации в системе вообще.
+     */
+    public function isLessonBeforeEnrollment(User $user): bool
+    {
+        $session = $this->lesson?->courseSession;
+        if ($session === null || $session->start_date_time === null) {
+            return false;
+        }
+
+        $enrolledAt = $user->courseEnrolledAt($this->course_id);
+
+        return $enrolledAt !== null && $session->start_date_time->lt($enrolledAt);
+    }
+
+    /**
      * Число разрешённых попыток сдачи — 2 по умолчанию (столбец
      * attempts_allowed и заведён с default(2), см. миграцию add_score_and_
      * attempts), 0/null трактуем так же, а не как "безлимит": такого режима

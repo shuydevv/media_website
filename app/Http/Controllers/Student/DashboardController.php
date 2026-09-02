@@ -134,7 +134,9 @@ $homeworks = Homework::query()
     ->get()
     // Пока урок ещё не наступил, ученик не должен знать о домашке к нему —
     // ни в расписании, ни где-либо ещё (см. Homework::isLessonUpcoming()).
-    ->reject(fn (Homework $hw) => $hw->isLessonUpcoming())
+    // То же самое для урока, прошедшего до зачисления ученика на курс
+    // (см. Homework::isLessonBeforeEnrollment()).
+    ->reject(fn (Homework $hw) => $hw->isLessonUpcoming() || $hw->isLessonBeforeEnrollment($user))
     ->values();
 
         // Сабмишены пользователя по этим домашкам — без $user->submissions()
