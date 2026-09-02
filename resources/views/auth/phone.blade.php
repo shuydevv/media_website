@@ -14,6 +14,9 @@
 
     <form method="post" action="{{ route('auth.phone.send') }}" class="space-y-4">
       @csrf
+      <div style="position:absolute; left:-9999px; top:-9999px;" aria-hidden="true">
+        <input type="text" name="hp_website" tabindex="-1" autocomplete="off">
+      </div>
       <label class="block">
         <span class="text-sm text-gray-700">Номер телефона</span>
         <input name="phone" type="tel" inputmode="tel" autocomplete="tel"

@@ -25,6 +25,14 @@ class EmailAuthController extends Controller
 
     public function send(Request $request)
     {
+        // Honeypot: поле скрыто от людей вёрсткой, обычный бот его заполняет.
+        // Отвечаем тем же самым "успехом", что и на реальный запрос, чтобы бот
+        // не понял, что его отсеяли, но код не отправляем и юзера не создаём.
+        if ($request->filled('hp_website')) {
+            return redirect()->route('auth.email.show')
+                ->with('status', 'Если такой адрес существует, мы отправили код.');
+        }
+
         $data = $request->validate([
             'email' => ['required', 'email', 'max:255'],
         ]);

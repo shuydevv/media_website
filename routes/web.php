@@ -188,6 +188,9 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
             Route::get('/', 'IndexController')->name('admin.user.index');
             Route::get('/create', 'CreateController')->name('admin.user.create');
             Route::post('/store', 'StoreController')->name('admin.user.store');
+            // До '/{user}' — иначе роутер примет 'bots' за значение параметра.
+            Route::get('/bots/preview', 'BotsPreviewController')->name('admin.user.bots.preview');
+            Route::delete('/bots', 'BotsDestroyController')->name('admin.user.bots.destroy');
             Route::get('/{user}', 'ShowController')->name('admin.user.show');
             Route::get('/{user}/edit', 'EditController')->name('admin.user.edit');
             Route::patch('/{user}', 'UpdateController')->name('admin.user.update');

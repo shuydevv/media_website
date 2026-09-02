@@ -17,6 +17,12 @@ class PhoneAuthController extends Controller
     }
 
     public function sendCode(PhoneRequest $request) {
+        // Honeypot: см. пояснение в EmailAuthController::send() — тот же приём.
+        if ($request->filled('hp_website')) {
+            return redirect()->route('auth.phone.show')
+                ->with('status', 'Если такой номер существует, мы отправили код.');
+        }
+
         $phone = \App\Service\OtpService::normalizePhone($request->input('phone'));
         $vid = $this->otp->createChallenge($phone);
         session(['otp_vid' => $vid]);

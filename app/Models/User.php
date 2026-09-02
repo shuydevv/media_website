@@ -60,6 +60,34 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(\App\Models\Submission::class);
     }
 
+    public function payments()
+    {
+        return $this->hasMany(\App\Models\Payment::class);
+    }
+
+    public function taskAttempts()
+    {
+        return $this->hasMany(\App\Models\TaskAttempt::class);
+    }
+
+    /**
+     * Кандидаты на чистку от ботов: ни email, ни телефон не подтверждены и
+     * нигде не оставили реального следа (курс, оплата, домашка, попытка
+     * задания) — см. Admin/User/BotsPreviewController. Намеренно не опираемся
+     * на "последний вход", такого поля в схеме нет, а сессии в БД сами
+     * протухают по session.lifetime, так что это не надёжная история входов.
+     */
+    public function scopeBotCandidates($query)
+    {
+        return $query->where('role', self::ROLE_READER)
+            ->whereNull('email_verified_at')
+            ->whereNull('phone_verified_at')
+            ->doesntHave('courses')
+            ->doesntHave('submissions')
+            ->doesntHave('payments')
+            ->doesntHave('taskAttempts');
+    }
+
     /**
      * Момент зачисления на конкретный курс (для "домашка выложена раньше,
      * чем ученик подключился" — см. Homework::isOverdueFor()). Приоритет:

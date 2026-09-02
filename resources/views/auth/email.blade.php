@@ -18,6 +18,12 @@
 
     <form method="post" action="{{ route('auth.email.send') }}" class="space-y-4" id="email-auth-form">
       @csrf
+      {{-- Honeypot: скрыто от людей (CSS + tabindex + aria-hidden), но обычный
+           бот, слепо заполняющий все input на странице, попадётся. Не полагаться
+           на display:none — некоторые боты его распознают и пропускают поле. --}}
+      <div style="position:absolute; left:-9999px; top:-9999px;" aria-hidden="true">
+        <input type="text" name="hp_website" tabindex="-1" autocomplete="off">
+      </div>
       <label class="block">
         <span class="text-sm text-gray-700">E-mail</span>
         <input type="email" name="email" placeholder="mail@mail.com" class="mt-1 w-full border rounded-lg px-3 py-2 input-focus" required autofocus>

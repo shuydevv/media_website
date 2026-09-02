@@ -1,14 +1,26 @@
 @extends('admin.layouts.main')
 
 @section('content')
+@if(session('success'))
+    <div class="mb-4 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+        {{ session('success') }}
+    </div>
+@endif
+
 <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-semibold">Пользователи</h1>
 
-    <a href="{{ route('admin.user.create') }}"
-       class="inline-flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700">
-        <x-icon name="plus" class="w-4 h-4" />
-        Создать пользователя
-    </a>
+    <div class="flex items-center gap-2">
+        <a href="{{ route('admin.user.bots.preview') }}"
+           class="inline-flex items-center gap-2 px-4 py-2 bg-zinc-100 text-zinc-700 rounded-lg hover:bg-zinc-200">
+            Удалить ботов
+        </a>
+        <a href="{{ route('admin.user.create') }}"
+           class="inline-flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700">
+            <x-icon name="plus" class="w-4 h-4" />
+            Создать пользователя
+        </a>
+    </div>
 </div>
 
 <form method="GET" class="mb-4">
