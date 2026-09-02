@@ -13,7 +13,7 @@ APP="${APP:-/var/www/poltav}"
 RELEASES="$APP/releases"
 SHARED="$APP/shared"
 CUR="$APP/current"
-REPO="${REPO:-https://github.com/shuydevv/media_website.git}"
+REPO="${REPO:-git@github.com:shuydevv/media_website.git}"
 BRANCH="${BRANCH:-main}"
 RELEASES_TO_KEEP="${RELEASES_TO_KEEP:-5}"
 PHP_FPM_SERVICE="${PHP_FPM_SERVICE:-php8.2-fpm}"
@@ -57,18 +57,17 @@ trap on_error ERR
 # ---------------------------------------------------------------------------
 # 1) Fetch new release (nothing user-facing touched yet — safe to fail here)
 # ---------------------------------------------------------------------------
-# GIT_TERMINAL_PROMPT=0 — репозиторий публичный, анонимный clone не должен
-# спрашивать логин/пароль вовсе; но иногда GitHub спорадически отвечает на
-# анонимный git-clone с этого сервера отказом ("could not read Username"),
-# хотя тот же самый repo секундами позже клонируется чисто — похоже на
-# точечный anti-abuse троттлинг анонимного git-upload-pack с хостинговых IP,
-# не проблема сети/DNS/TLS (curl к github.com отвечает нормально всегда).
-# Без этой переменной git с реальным терминалом в такой момент показывает
-# ЖИВОЙ интерактивный "Username for 'https://github.com':" — что выглядит
-# как настоящий запрос пароля от GitHub, хотя ввести туда всё равно нечего
-# (GitHub отключил парольную аутентификацию для git ещё в 2021). Форсируем
-# быстрый отказ вместо зависания на вводе и ретраим — та же болячка,
-# которую поймали руками при диагностике.
+# Клон по SSH (deploy-ключ ~deploy/.ssh/id_ed25519_github_deploy, read-only,
+# зарегистрирован в Settings → Deploy keys репозитория) — раньше был
+# анонимный HTTPS-clone, но GitHub стал стабильно отвечать на POST
+# /git-upload-pack с этого IP 401 (WWW-Authenticate: Basic realm="GitHub"),
+# похоже на anti-abuse блок анонимного git-протокола с хостинговых IP; GET
+# /info/refs при этом отвечал нормально, поэтому симптом выглядел как
+# спорадический сбой, а не постоянный. SSH этому троттлингу не подвержен.
+# GIT_TERMINAL_PROMPT=0 — на случай любого будущего auth-сбоя git должен
+# сразу упасть с понятной ошибкой, а не зависнуть на живом интерактивном
+# промпте (raw https://github.com отключил парольную аутентификацию ещё в
+# 2021, так что вводить туда всё равно было бы нечего).
 export GIT_TERMINAL_PROMPT=0
 clone_ok=0
 for attempt in 1 2 3; do

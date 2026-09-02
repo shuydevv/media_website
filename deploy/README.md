@@ -5,6 +5,53 @@
 прогонит миграции, переключит симлинк, проверит health-check и при сбое
 сам откатится.
 
+## 0. Deploy-ключ, чтобы сервер мог клонировать репозиторий
+
+`deploy.sh` тянет код по SSH (`git@github.com:shuydevv/media_website.git`),
+не анонимным HTTPS — репозиторий публичный, и анонимный `git clone` вроде
+как не должен требовать логин, но GitHub на практике иногда отвечает на
+POST `/git-upload-pack` с хостинговых IP 401'м (anti-abuse троттлинг
+анонимного git-протокола) — так и обнаружили: `deploy` на сервере стал
+стабильно падать на `git clone` с "could not read Username", хотя `curl`
+до github.com отвечал нормально. SSH этому не подвержен.
+
+Разово на **сервере**, под `deploy`:
+
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_github_deploy -N "" -C "poltav-server-deploy-readonly"
+cat ~/.ssh/id_ed25519_github_deploy.pub   # это вставляете в GitHub, см. ниже
+```
+
+Добавьте `~/.ssh/config`:
+
+```
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_github_deploy
+    IdentitiesOnly yes
+```
+
+И запись в `~/.ssh/known_hosts` — не через `ssh-keyscan` (TOFU, доверие с
+первого коннекта), а вручную, официальным ed25519-ключом GitHub
+(`https://api.github.com/meta` → `ssh_keys`, актуален на 2026-09-02):
+
+```
+github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+```
+
+Публичную часть ключа (`id_ed25519_github_deploy.pub`) добавьте в
+**GitHub → репозиторий → Settings → Deploy keys → Add deploy key** —
+галку "Allow write access" **не ставить**, ключу нужно только читать.
+
+Проверка: `ssh -T git@github.com` от `deploy` должен ответить
+`Hi shuydevv/media_website! You've successfully authenticated...`.
+
+Это отдельный ключ от того, что в разделе 1 ниже — тот пускает GitHub
+Actions НА сервер по SSH, этот пускает сам сервер С сервера НА GitHub за
+кодом. Оба read-only/forced-command в своей роли, ни один не даёт больше
+доступа, чем нужен для деплоя.
+
 ## 1. Ключ для GitHub Actions, ограниченный только деплоем
 
 На **своей машине** (не на сервере) сгенерируйте отдельную пару ключей —
