@@ -60,6 +60,204 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(\App\Models\Submission::class);
     }
 
+    /**
+     * Статус для /admin/crm — 'key' машинный (для фильтров/JS), 'label'/'color'
+     * для отображения. Намеренно НЕ отдельное хранимое поле — "активный"/
+     * "просрочен"/"заморожен"/"завершил" считаются из уже загруженной
+     * pivot-коллекции courses() (без доп. запросов, в отличие от
+     * BillingService::hasAccess(), который бьёт в БД по одному курсу за раз —
+     * на списке из многих учеников это была бы N+1), остальное — из ручного
+     * crm_stage. Приоритет (сверху вниз, первое совпадение побеждает):
+     * Отказался → Активный → Просрочена оплата → Заморожен → Завершил курс →
+     * Пробный/Связались (crm_stage) → Новый. Активный стоит выше просрочки/
+     * заморозки специально: если у ученика два курса и один из них исправно
+     * оплачивается, это не тот случай, который надо показывать как проблемный.
+     */
+    public function crmStatus(): array
+    {
+        if ($this->crm_stage === 'lost') {
+            return ['key' => 'lost', 'label' => 'Отказался', 'color' => 'rose'];
+        }
+
+        $hasActive = false;
+        $hasPastDue = false;
+        $hasFrozen = false;
+        $hasCompleted = false;
+
+        foreach ($this->courses as $course) {
+            $pivot = $course->pivot;
+
+            if ($pivot->status === 'completed') {
+                $hasCompleted = true;
+                continue;
+            }
+
+            if ($pivot->status === 'suspended') {
+                $hasFrozen = true;
+                continue;
+            }
+
+            if ($pivot->status !== 'active') {
+                continue;
+            }
+
+            // courses() не объявляет ->using(CourseUser::class), поэтому $pivot —
+            // обычный Illuminate\...\Pivot без кастов CourseUser::$casts: даты
+            // приходят сырыми строками из БД, парсим вручную вместо ->isPast().
+            if ($pivot->billing_interval_days === null) {
+                // Ручное/промо: между истечением expires_at и ночным прогоном
+                // enrollments:expire (переведёт в suspended) есть короткое
+                // окно, когда status ещё 'active', но доступа уже нет — это не
+                // "просрочка" в смысле биллинга, отдельного флага не заводим,
+                // просто не считаем активным.
+                if ($pivot->expires_at === null || !\Carbon\Carbon::parse($pivot->expires_at)->isPast()) {
+                    $hasActive = true;
+                }
+                continue;
+            }
+
+            $dueOk = $pivot->next_payment_due_at && !\Carbon\Carbon::parse($pivot->next_payment_due_at)->isPast();
+            $promiseOk = $pivot->promised_payment_expires_at && !\Carbon\Carbon::parse($pivot->promised_payment_expires_at)->isPast();
+
+            if ($dueOk || $promiseOk) {
+                $hasActive = true;
+            } else {
+                $hasPastDue = true;
+            }
+        }
+
+        if ($hasActive) {
+            return ['key' => 'active', 'label' => 'Активный ученик', 'color' => 'emerald'];
+        }
+
+        if ($hasPastDue) {
+            return ['key' => 'past_due', 'label' => 'Просрочена оплата', 'color' => 'rose'];
+        }
+
+        if ($hasFrozen) {
+            return ['key' => 'frozen', 'label' => 'Заморожен', 'color' => 'amber'];
+        }
+
+        if ($hasCompleted) {
+            return ['key' => 'completed', 'label' => 'Завершил курс', 'color' => 'blue'];
+        }
+
+        if ($this->crm_stage === 'trial_done') {
+            return ['key' => 'trial_done', 'label' => 'Пробный урок пройден', 'color' => 'gray'];
+        }
+
+        if ($this->crm_stage === 'contacted') {
+            return ['key' => 'contacted', 'label' => 'Связались', 'color' => 'gray'];
+        }
+
+        return ['key' => 'new', 'label' => 'Новый', 'color' => 'gray'];
+    }
+
+    /**
+     * Ушёл из основного списка /admin/crm на отдельную "архивную" страницу
+     * (Admin\Crm\ArchiveController) — цикл с этим учеником для менеджера
+     * закрыт, держать его среди тех, с кем ещё работают, только мешает.
+     */
+    public function isClosedInCrm(): bool
+    {
+        return in_array($this->crmStatus()['key'], ['completed', 'lost'], true);
+    }
+
+    /**
+     * Порядок сортировки /admin/crm — не по алфавиту/дате, а по срочности:
+     * кому просрочили оплату или кто заморожен, нужно увидеть раньше, чем
+     * тех, у кого и так всё в порядке (активные). Меньше число — выше в
+     * списке. new/contacted/trial_done в одной группе — все ждут действия
+     * менеджера примерно одинаково, порядок между ними отдельно не важен.
+     */
+    public function crmSortPriority(): int
+    {
+        return match ($this->crmStatus()['key']) {
+            'past_due' => 0,
+            'frozen' => 1,
+            'new', 'contacted', 'trial_done' => 2,
+            'active' => 3,
+            default => 4,
+        };
+    }
+
+    /**
+     * Полный словарь статусов для селекта в /admin/crm (порядок = порядок
+     * в выпадающем списке). 'selectable' => false — вычисляется системой,
+     * руками через селект не выставляется (можно увидеть текущим значением,
+     * но не выбрать) — иначе можно было бы "назначить" ученику активный
+     * доступ, которого у него на самом деле нет.
+     */
+    public static function crmStatusOptions(): array
+    {
+        return [
+            'new'        => ['label' => 'Новый', 'color' => 'gray', 'selectable' => true],
+            'contacted'  => ['label' => 'Связались', 'color' => 'gray', 'selectable' => true],
+            'trial_done' => ['label' => 'Пробный урок пройден', 'color' => 'gray', 'selectable' => true],
+            'active'     => ['label' => 'Активный ученик', 'color' => 'emerald', 'selectable' => false],
+            'past_due'   => ['label' => 'Просрочена оплата', 'color' => 'rose', 'selectable' => false],
+            'frozen'     => ['label' => 'Заморожен', 'color' => 'amber', 'selectable' => false],
+            'completed'  => ['label' => 'Завершил курс', 'color' => 'blue', 'selectable' => false],
+            'lost'       => ['label' => 'Отказался', 'color' => 'rose', 'selectable' => true],
+        ];
+    }
+
+    /**
+     * Какие опции реально показать в селекте — зависит от текущего статуса,
+     * не всегда все восемь сразу. Пока ученик в ручной "домашней" воронке
+     * (new/contacted/trial_done/lost — ни одна не завязана на реальные
+     * курс/оплату) — видны все четыре, можно свободно переключаться между
+     * ними. Как только статус определяется реальными данными (active/
+     * past_due/frozen/completed) — единственный осмысленный ручной вариант
+     * это "отказался"; показывать остальные три "домашних" не нужно, они
+     * всё равно ничего не изменят (crmStatus() пересчитает по реальным
+     * данным заново, см. её приоритет).
+     */
+    public static function crmStatusOptionsFor(string $currentKey): array
+    {
+        $all = self::crmStatusOptions();
+        $manualPipeline = ['new', 'contacted', 'trial_done', 'lost'];
+
+        $keys = in_array($currentKey, $manualPipeline, true)
+            ? $manualPipeline
+            : [$currentKey, 'lost'];
+
+        $result = [];
+        foreach ($keys as $key) {
+            $result[$key] = $all[$key];
+        }
+
+        return $result;
+    }
+
+    /**
+     * crmStatus() + готовый набор опций селекта для текущего статуса — для
+     * JSON-ответов ChecklistController/AccessController. Опции нужны в
+     * ответе, а не только цвет/лейбл: набор пунктов в селекте зависит от
+     * статуса (crmStatusOptionsFor()), и после сохранения фронт должен
+     * перестроить сам список <option>, а не только перекрасить — иначе,
+     * например, после перехода в "Активный ученик" в селекте так и
+     * останутся "Новый"/"Связались"/"Пробный урок пройден", которых там
+     * уже не должно быть.
+     */
+    public function crmStatusPayload(): array
+    {
+        $status = $this->crmStatus();
+
+        $options = [];
+        foreach (self::crmStatusOptionsFor($status['key']) as $key => $opt) {
+            $options[] = [
+                'value' => $key === 'new' ? '' : $key,
+                'label' => $opt['label'],
+                'disabled' => !$opt['selectable'],
+                'selected' => $key === $status['key'],
+            ];
+        }
+        $status['options'] = $options;
+
+        return $status;
+    }
+
     public function payments()
     {
         return $this->hasMany(\App\Models\Payment::class);
@@ -86,6 +284,23 @@ class User extends Authenticatable implements MustVerifyEmail
             ->doesntHave('submissions')
             ->doesntHave('payments')
             ->doesntHave('taskAttempts');
+    }
+
+    /**
+     * Скрывает из /admin/crm самозарегистрировавшихся, но так и не
+     * подтвердивших почту/телефон — это боты или бросившие регистрацию на
+     * середине, а не реальные лиды (created_by_admin_id проставляется
+     * только в Admin\User\StoreController — см. её комментарий). Ученика,
+     * приглашённого админом, видно всегда, даже пока он не перешёл по
+     * ссылке — это реальный лид, а не мусор, скрывать его нельзя.
+     */
+    public function scopeVisibleInCrm($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereNotNull('created_by_admin_id')
+                ->orWhereNotNull('email_verified_at')
+                ->orWhereNotNull('phone_verified_at');
+        });
     }
 
     /**
@@ -146,7 +361,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'first_name', 'last_name',
         'password',
         'role',
-        'phone','phone_verified_at','timezone','locale',
+        'phone','phone_verified_at','timezone','locale','created_by_admin_id',
+        'crm_stage', 'crm_note',
         'fish_corm_balance', 'fish_total_fed', 'fish_last_active_date', 'fish_milestones',
         'fish_name', 'fish_background', 'fish_unlocked_backgrounds',
         'fish_accessory', 'fish_unlocked_accessories',

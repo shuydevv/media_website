@@ -36,6 +36,13 @@ public function show() {
             $user->timezone = $request->input('timezone');
         }
 
+        // Гейт EnsureProfileCompleted пускает дальше по этому полю — именно
+        // здесь ученик впервые задаёт свой пароль, ключевой момент "теперь
+        // это настоящий аккаунт, а не приглашение".
+        if (!$user->profile_completed_at) {
+            $user->profile_completed_at = now();
+        }
+
         $user->save();
 
         return redirect()->route('student.dashboard')->with('success', 'Профиль сохранён!');

@@ -195,6 +195,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
             Route::get('/{user}/edit', 'EditController')->name('admin.user.edit');
             Route::patch('/{user}', 'UpdateController')->name('admin.user.update');
             Route::delete('/{user}', 'DeleteController')->name('admin.user.delete');
+            Route::post('/{user}/invite', 'InviteController')->name('admin.user.invite');
         });
 
         // Без 'namespace' => 'User' — контроллер лежит в Admin\Billing, передан полным классом
@@ -208,6 +209,14 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
 
         Route::put('/users/{user}/courses/{course}/autopay', [\App\Http\Controllers\Admin\Billing\AutopayController::class, 'update'])
             ->name('admin.billing.autopay.update');
+
+        Route::group(['namespace' => 'Crm', 'prefix' => 'crm'], function () {
+            Route::get('/', 'IndexController')->name('admin.crm.index');
+            Route::get('/archive', 'ArchiveController')->name('admin.crm.archive');
+            Route::patch('/users/{user}/checklist', 'ChecklistController')->name('admin.crm.checklist.update');
+            Route::patch('/users/{user}/note', 'NoteController')->name('admin.crm.note.update');
+            Route::patch('/users/{user}/courses/{course}/access', 'AccessController')->name('admin.crm.access.update');
+        });
     });
 Route::group(['namespace' => 'App\Http\Controllers\Controller'], function () {
     Route::get('/1', 'ComponentController');
@@ -528,6 +537,13 @@ Route::middleware('guest')->group(function () {
     Route::get('/auth/email/link/{id}', [EmailAuthController::class, 'verifyByLink'])
         ->middleware(['signed', 'throttle:6,1'])
         ->name('auth.email.link');
+
+    // Вход по ссылке-приглашению (Admin\User\StoreController + InviteLinkMail) —
+    // отдельный роут от auth.email.link, т.к. ведёт себя иначе (сразу на дашборд,
+    // не на онбординг) и не должен затрагивать поведение самостоятельной регистрации.
+    Route::get('/auth/invite/{id}', [EmailAuthController::class, 'inviteLogin'])
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('auth.invite.link');
 });
 
 Route::get('/dev/ip-https', function () {

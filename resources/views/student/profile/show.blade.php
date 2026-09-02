@@ -499,7 +499,7 @@
                     </label>
 
                     <label class="block">
-                        <span class="text-sm text-zinc-700">Логин в телеграм</span>
+                        <span class="text-sm text-zinc-700">Имя пользователя в телеграм</span>
                         <input type="text" name="name" placeholder="@username"
                                value="{{ old('name', $user->name) }}"
                                class="mt-1 w-full border rounded-lg px-3 py-2 input-focus" required>

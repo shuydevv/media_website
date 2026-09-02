@@ -22,8 +22,8 @@
     </div>
     
     <div class="mb-4">
-      <label class="block text-sm mb-1">Логин в телеграм</label>
-      <input required name="name" value=""
+      <label class="block text-sm mb-1">Имя пользователя в телеграм</label>
+      <input required name="name" value="{{ old('name', $user->name) }}"
              class="w-full border rounded-lg px-3 py-2">
     </div>
 

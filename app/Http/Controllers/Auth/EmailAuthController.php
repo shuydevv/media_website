@@ -147,6 +147,39 @@ class EmailAuthController extends Controller
         return redirect()->route('onboarding.profile.show');
     }
 
+    /**
+     * Вход по ссылке-приглашению из письма админ-созданного аккаунта
+     * (Admin\User\StoreController) — не путать с verifyByLink() выше
+     * (та — для самостоятельной OTP-регистрации).
+     *
+     * Переход по ссылке сам по себе считается подтверждением почты (раз
+     * письмо дошло и ссылка открыта — доступ к почте доказан), но "ссылка
+     * использована" проверяем по profile_completed_at, а не по
+     * hasVerifiedEmail(): email помечается верифицированным сразу при первом
+     * клике, а профиль/пароль ученик заполняет уже ПОСЛЕ, на онбординге
+     * (гейт — EnsureProfileCompleted). Если проверять по verified, повторный
+     * переход по той же ссылке до завершения регистрации (например, открыл
+     * с телефона, не закончил, вернулся с компьютера) ошибочно считался бы
+     * "уже использованной".
+     */
+    public function inviteLogin(int $id)
+    {
+        $user = User::findOrFail($id);
+
+        if ($user->profile_completed_at) {
+            return redirect()->route('login')
+                ->with('status', 'Эта ссылка уже использована. Войдите обычным способом.');
+        }
+
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+
+        Auth::login($user, true);
+
+        return redirect()->route('onboarding.profile.show');
+    }
+
     private function assertNotVerified(User $user): void
     {
         if ($user->hasVerifiedEmail()) {

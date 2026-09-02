@@ -34,6 +34,7 @@
                         <a href="{{route('admin.tag.index')}}"><li class="mb-2 hover:opacity-50">Тэги</li></a>
                         <a href="{{route('admin.post.index')}}"><li class="mb-2 hover:opacity-50">Посты</li></a>
                         <a href="{{route('admin.user.index')}}"><li class="mb-2 hover:opacity-50">Пользователи</li></a>
+                        <a href="{{route('admin.crm.index')}}"><li class="mb-2 hover:opacity-50">CRM</li></a>
                         <a href="{{route('admin.shpargalka.index')}}"><li class="mb-2 hover:opacity-50">Шпаргалки</li></a>
                         <hr class="mt-4 mb-4">
                         

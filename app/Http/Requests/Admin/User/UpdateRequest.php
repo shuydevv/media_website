@@ -22,21 +22,41 @@ class UpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
-            'email' => 'required|string|email|unique:users,email' . $this->user_id,
+            'first_name' => 'required|string|max:100',
+            'last_name' => 'nullable|string|max:100',
+            'name' => 'nullable|string|max:100',
+            'email' => 'required|string|email|unique:users,email,' . $this->user_id,
+            'phone' => 'nullable|string|max:32',
             'user_id' => 'required|integer|exists:users,id',
-            'role' => 'required|integer'
+            'role' => 'required|integer',
+            // Изменение/выдача доступа к курсам прямо со страницы редактирования —
+            // та же механика, что и при создании (см. StoreRequest).
+            'course_ids' => 'nullable|array',
+            'course_ids.*' => 'integer|exists:courses,id',
+            'access_until' => 'nullable|array',
+            'access_until.*' => 'nullable|date',
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            foreach ($this->input('course_ids', []) as $courseId) {
+                if (empty($this->input("access_until.{$courseId}"))) {
+                    $validator->errors()->add("access_until.{$courseId}", 'Укажите дату доступа для выбранного курса');
+                }
+            }
+        });
     }
 
     public function messages() {
         return [
-            'name.required' => 'Это поле необходимо для заполнения',
-            'name.string' => 'Имя должно быть строкой',
+            'first_name.required' => 'Это поле необходимо для заполнения',
+            'first_name.string' => 'Имя должно быть строкой',
             'email.required' => 'Это поле необходимо для заполнения',
             'email.string' => 'Почта должна быть строкой',
             'email.email' => 'Введите корректную электронную почту в формате mail@mail.com',
-            'email.enique' => 'Пользователь с таким email уже существует',
+            'email.unique' => 'Пользователь с таким email уже существует',
         ];
     }
 }
