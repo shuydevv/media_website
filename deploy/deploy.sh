@@ -57,7 +57,30 @@ trap on_error ERR
 # ---------------------------------------------------------------------------
 # 1) Fetch new release (nothing user-facing touched yet — safe to fail here)
 # ---------------------------------------------------------------------------
-git clone -b "$BRANCH" --depth=1 "$REPO" "$NEW"
+# GIT_TERMINAL_PROMPT=0 — репозиторий публичный, анонимный clone не должен
+# спрашивать логин/пароль вовсе; но иногда GitHub спорадически отвечает на
+# анонимный git-clone с этого сервера отказом ("could not read Username"),
+# хотя тот же самый repo секундами позже клонируется чисто — похоже на
+# точечный anti-abuse троттлинг анонимного git-upload-pack с хостинговых IP,
+# не проблема сети/DNS/TLS (curl к github.com отвечает нормально всегда).
+# Без этой переменной git с реальным терминалом в такой момент показывает
+# ЖИВОЙ интерактивный "Username for 'https://github.com':" — что выглядит
+# как настоящий запрос пароля от GitHub, хотя ввести туда всё равно нечего
+# (GitHub отключил парольную аутентификацию для git ещё в 2021). Форсируем
+# быстрый отказ вместо зависания на вводе и ретраим — та же болячка,
+# которую поймали руками при диагностике.
+export GIT_TERMINAL_PROMPT=0
+clone_ok=0
+for attempt in 1 2 3; do
+  if git clone -b "$BRANCH" --depth=1 "$REPO" "$NEW"; then
+    clone_ok=1
+    break
+  fi
+  log "⚠️  git clone попытка $attempt/3 не удалась, повтор через 5с..."
+  rm -rf "$NEW"
+  sleep 5
+done
+[ "$clone_ok" = "1" ] || { log "❌ git clone не удался после 3 попыток"; false; }
 cd "$NEW"
 
 if [ -f "$SHARED/.env" ]; then
