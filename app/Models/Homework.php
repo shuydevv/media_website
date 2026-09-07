@@ -42,6 +42,21 @@ class Homework extends Model
         return $this->hasMany(\App\Models\Submission::class);
     }
 
+    public function unlocks()
+    {
+        return $this->hasMany(HomeworkUnlock::class);
+    }
+
+    /**
+     * Админ точечно открыл доступ этому ученику в обход
+     * isLessonBeforeEnrollment() — см. Admin\Homework\Unlock\StoreController/
+     * DestroyController и миграцию create_homework_unlocks_table.
+     */
+    public function isUnlockedFor(User $user): bool
+    {
+        return $this->unlocks()->where('user_id', $user->id)->exists();
+    }
+
     /**
      * Урок, к которому привязана домашка, ещё не наступил — до этого момента
      * ученик вообще не должен знать о существовании домашки (не в расписании,
@@ -66,6 +81,11 @@ class Homework extends Model
      * courseEnrolledAt(), а не users.created_at напрямую — тот же принцип,
      * что и в isOverdueFor(), чтобы ориентироваться на дату подключения
      * именно к ЭТОМУ курсу, а не на дату регистрации в системе вообще.
+     *
+     * Админ может точечно снять этот запрет для конкретного ученика —
+     * например, попросили досдать домашку за прошлый поток — см.
+     * isUnlockedFor()/HomeworkUnlock. Проверяем это последним — лишний
+     * запрос к homework_unlocks нужен только когда без него было бы 404.
      */
     public function isLessonBeforeEnrollment(User $user): bool
     {
@@ -75,8 +95,9 @@ class Homework extends Model
         }
 
         $enrolledAt = $user->courseEnrolledAt($this->course_id);
+        $isBeforeEnrollment = $enrolledAt !== null && $session->start_date_time->lt($enrolledAt);
 
-        return $enrolledAt !== null && $session->start_date_time->lt($enrolledAt);
+        return $isBeforeEnrollment && !$this->isUnlockedFor($user);
     }
 
     /**

@@ -107,6 +107,11 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
             Route::put('/{homework}', 'UpdateController')->name('admin.homeworks.update');
             Route::delete('/{homework}', 'DestroyController')->name('admin.homeworks.destroy');
             Route::post('/{homework}/duplicate', 'DuplicateController')->name('admin.homeworks.duplicate');
+
+            // Точечное открытие домашки ученику, который записался на курс
+            // позже, чем прошёл её урок (см. Homework::isLessonBeforeEnrollment()).
+            Route::post('/{homework}/unlocks', 'Unlock\StoreController')->name('admin.homeworks.unlocks.store');
+            Route::delete('/{homework}/unlocks/{user}', 'Unlock\DestroyController')->name('admin.homeworks.unlocks.destroy');
         });
 
         Route::get('/api/courses/{course}/sessions', [\App\Http\Controllers\Admin\Session\ApiController::class, 'sessionsByCourse']);

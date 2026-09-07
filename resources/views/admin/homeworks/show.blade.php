@@ -125,6 +125,74 @@
     @empty
         <div class="text-gray-500">Заданий нет</div>
     @endforelse
+
+    {{-- Ученики, которые записались на курс ПОСЛЕ урока этой домашки — по
+         умолчанию не видят её и не могут открыть даже по прямой ссылке
+         (см. Homework::isLessonBeforeEnrollment()). Здесь можно точечно
+         открыть/закрыть доступ для конкретного ученика. --}}
+    @if($lateEnrollmentRows->isNotEmpty())
+        <h2 class="text-lg font-semibold mb-4 mt-8">Доступ для записавшихся позже</h2>
+        <p class="text-sm text-gray-500 mb-4">
+            Урок этой домашки прошёл до того, как эти ученики записались на курс — обычная логика
+            прячет от них домашку. Здесь можно точечно открыть доступ (или закрыть обратно).
+        </p>
+
+        @if(session('success'))
+            <div class="mb-4 text-green-600 text-sm">{{ session('success') }}</div>
+        @endif
+        @if ($errors->any())
+            <div class="mb-4 text-red-600 text-sm">
+                <ul class="list-disc pl-5">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <table class="w-full table-auto border text-sm mb-6">
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="p-2 border text-left">Ученик</th>
+                    <th class="p-2 border text-left">Записался</th>
+                    <th class="p-2 border text-left">Статус</th>
+                    <th class="p-2 border">Действие</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($lateEnrollmentRows as $row)
+                    <tr>
+                        <td class="p-2 border">{{ $row['student']->name }} ({{ $row['student']->email }})</td>
+                        <td class="p-2 border">{{ $row['enrolledAt']?->format('d.m.Y') ?? '—' }}</td>
+                        <td class="p-2 border">
+                            @if($row['unlocked'])
+                                <span class="text-green-700">Открыта админом</span>
+                            @else
+                                <span class="text-red-600">Заблокирована</span>
+                            @endif
+                        </td>
+                        <td class="p-2 border text-center">
+                            @if($row['unlocked'])
+                                <form method="post" action="{{ route('admin.homeworks.unlocks.destroy', [$homework, $row['student']]) }}"
+                                      onsubmit="return confirm('Закрыть доступ обратно для {{ $row['student']->name }}?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:underline">Закрыть доступ</button>
+                                </form>
+                            @else
+                                <form method="post" action="{{ route('admin.homeworks.unlocks.store', $homework) }}">
+                                    @csrf
+                                    <input type="hidden" name="user_id" value="{{ $row['student']->id }}">
+                                    <button type="submit" class="text-blue-600 hover:underline">Открыть доступ</button>
+                                </form>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
+
     <div class="mt-6 flex items-center gap-3">
     <a href="{{ route('admin.homeworks.edit', $homework) }}"
        class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
