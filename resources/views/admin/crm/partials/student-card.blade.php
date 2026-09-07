@@ -62,7 +62,7 @@
                 $rawUntil = $isBilling ? $pivot->next_payment_due_at : $pivot->expires_at;
                 $until = $rawUntil ? \Illuminate\Support\Carbon::parse($rawUntil) : null;
                 $isOverdue = $until && $until->isPast();
-                $isSoon = $until && !$isOverdue && now()->diffInDays($until) <= 3;
+                $isSoon = $until && !$isOverdue && now()->diffInDays($until) <= \App\Models\User::CRM_SOON_THRESHOLD_DAYS;
                 $dateColor = $isOverdue ? 'text-rose-600' : ($isSoon ? 'text-amber-600' : 'text-zinc-700');
                 $lastPayment = $student->payments->firstWhere('course_id', $course->id);
             @endphp

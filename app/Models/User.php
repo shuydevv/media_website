@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
+use App\Notifications\ResetPasswordNotification;
 use App\Notifications\SendVerifyWithQueueNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use App\Notifications\ResetPasswordNotification;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -18,14 +18,16 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasApiTokens, HasFactory, Notifiable;
     // SoftDeletes;
 
-    const ROLE_ADMIN  = 1;
+    const ROLE_ADMIN = 1;
+
     const ROLE_READER = 2;
+
     const ROLE_MENTOR = 3;
 
     public static function getRoles()
     {
         return [
-            self::ROLE_ADMIN  => 'Админ',
+            self::ROLE_ADMIN => 'Админ',
             self::ROLE_READER => 'Пользователь',
             self::ROLE_MENTOR => 'Куратор',
         ];
@@ -89,11 +91,13 @@ class User extends Authenticatable implements MustVerifyEmail
 
             if ($pivot->status === 'completed') {
                 $hasCompleted = true;
+
                 continue;
             }
 
             if ($pivot->status === 'suspended') {
                 $hasFrozen = true;
+
                 continue;
             }
 
@@ -110,14 +114,15 @@ class User extends Authenticatable implements MustVerifyEmail
                 // окно, когда status ещё 'active', но доступа уже нет — это не
                 // "просрочка" в смысле биллинга, отдельного флага не заводим,
                 // просто не считаем активным.
-                if ($pivot->expires_at === null || !\Carbon\Carbon::parse($pivot->expires_at)->isPast()) {
+                if ($pivot->expires_at === null || ! \Carbon\Carbon::parse($pivot->expires_at)->isPast()) {
                     $hasActive = true;
                 }
+
                 continue;
             }
 
-            $dueOk = $pivot->next_payment_due_at && !\Carbon\Carbon::parse($pivot->next_payment_due_at)->isPast();
-            $promiseOk = $pivot->promised_payment_expires_at && !\Carbon\Carbon::parse($pivot->promised_payment_expires_at)->isPast();
+            $dueOk = $pivot->next_payment_due_at && ! \Carbon\Carbon::parse($pivot->next_payment_due_at)->isPast();
+            $promiseOk = $pivot->promised_payment_expires_at && ! \Carbon\Carbon::parse($pivot->promised_payment_expires_at)->isPast();
 
             if ($dueOk || $promiseOk) {
                 $hasActive = true;
@@ -164,6 +169,46 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Порог для быстрого фильтра "Скоро истекает" на /admin/crm — общий,
+     * чтобы бейдж-фильтр в списке и подсветка даты внутри карточки ученика
+     * (student-card.blade.php) не разъезжались.
+     */
+    public const CRM_SOON_THRESHOLD_DAYS = 3;
+
+    /**
+     * "Скоро истекает" — хотя бы один курс сейчас реально активен (не
+     * просрочен, не через "обещанный платёж"), но его "до" дата
+     * (next_payment_due_at для биллинга, expires_at для разового/промо)
+     * наступает в ближайшие CRM_SOON_THRESHOLD_DAYS дней. Не пересекается
+     * с past_due — там дата уже прошла, здесь ещё нет. Промис-платежи
+     * (promised_payment_expires_at) намеренно не считаем "скоро истекает" —
+     * это уже отдельная история просрочки с отсрочкой, а не спокойный
+     * апкоминг-платёж.
+     */
+    public function crmExpiresSoon(): bool
+    {
+        foreach ($this->courses as $course) {
+            $pivot = $course->pivot;
+
+            if ($pivot->status !== 'active') {
+                continue;
+            }
+
+            $rawUntil = $pivot->billing_interval_days === null ? $pivot->expires_at : $pivot->next_payment_due_at;
+            if ($rawUntil === null) {
+                continue;
+            }
+
+            $until = \Carbon\Carbon::parse($rawUntil);
+            if (! $until->isPast() && now()->diffInDays($until) <= self::CRM_SOON_THRESHOLD_DAYS) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Порядок сортировки /admin/crm — не по алфавиту/дате, а по срочности:
      * кому просрочили оплату или кто заморожен, нужно увидеть раньше, чем
      * тех, у кого и так всё в порядке (активные). Меньше число — выше в
@@ -191,14 +236,14 @@ class User extends Authenticatable implements MustVerifyEmail
     public static function crmStatusOptions(): array
     {
         return [
-            'new'        => ['label' => 'Новый', 'color' => 'gray', 'selectable' => true],
-            'contacted'  => ['label' => 'Связались', 'color' => 'gray', 'selectable' => true],
+            'new' => ['label' => 'Новый', 'color' => 'gray', 'selectable' => true],
+            'contacted' => ['label' => 'Связались', 'color' => 'gray', 'selectable' => true],
             'trial_done' => ['label' => 'Пробный урок пройден', 'color' => 'gray', 'selectable' => true],
-            'active'     => ['label' => 'Активный ученик', 'color' => 'emerald', 'selectable' => false],
-            'past_due'   => ['label' => 'Просрочена оплата', 'color' => 'rose', 'selectable' => false],
-            'frozen'     => ['label' => 'Заморожен', 'color' => 'amber', 'selectable' => false],
-            'completed'  => ['label' => 'Завершил курс', 'color' => 'blue', 'selectable' => false],
-            'lost'       => ['label' => 'Отказался', 'color' => 'rose', 'selectable' => true],
+            'active' => ['label' => 'Активный ученик', 'color' => 'emerald', 'selectable' => false],
+            'past_due' => ['label' => 'Просрочена оплата', 'color' => 'rose', 'selectable' => false],
+            'frozen' => ['label' => 'Заморожен', 'color' => 'amber', 'selectable' => false],
+            'completed' => ['label' => 'Завершил курс', 'color' => 'blue', 'selectable' => false],
+            'lost' => ['label' => 'Отказался', 'color' => 'rose', 'selectable' => true],
         ];
     }
 
@@ -249,7 +294,7 @@ class User extends Authenticatable implements MustVerifyEmail
             $options[] = [
                 'value' => $key === 'new' ? '' : $key,
                 'label' => $opt['label'],
-                'disabled' => !$opt['selectable'],
+                'disabled' => ! $opt['selectable'],
                 'selected' => $key === $status['key'],
             ];
         }
@@ -361,7 +406,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'first_name', 'last_name',
         'password',
         'role',
-        'phone','phone_verified_at','timezone','locale','created_by_admin_id',
+        'phone', 'phone_verified_at', 'timezone', 'locale', 'created_by_admin_id',
         'crm_stage', 'crm_note',
         'fish_corm_balance', 'fish_total_fed', 'fish_last_active_date', 'fish_milestones',
         'fish_name', 'fish_background', 'fish_unlocked_backgrounds',
@@ -399,7 +444,7 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->notify(new SendVerifyWithQueueNotification());
     }
 
-        public function sendPasswordResetNotification($token): void
+    public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPasswordNotification($token));
     }
@@ -421,7 +466,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function getAvatarUrlAttribute(): ?string
     {
-        if (!$this->avatar) {
+        if (! $this->avatar) {
             return null;
         }
 
