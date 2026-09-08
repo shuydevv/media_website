@@ -598,4 +598,55 @@ class HomeworkSubmissionFlowTest extends TestCase
             ->get(route('student.submissions.show', $submission))
             ->assertOk();
     }
+
+    /**
+     * Регресс на второй, независимый недочёт: isLessonBeforeEnrollment()
+     * добавлен в проект позже, чем часть студентов успела сдать домашки,
+     * формально попадающие под это правило (урок за несколько дней до
+     * courseEnrolledAt() — например, из-за небольшой задержки между тем,
+     * когда доступ реально появился, и моментом, когда это записалось в
+     * course_user). Ретроактивно прятать уже сданную и оценённую работу
+     * нельзя — hasSubmissionFrom() должен быть исключением, симметричным
+     * isUnlockedFor().
+     *
+     * @test
+     */
+    public function homework_with_existing_submission_stays_visible_even_if_lesson_precedes_enrollment()
+    {
+        $student = $this->makeStudent();
+        $course = $this->makeCourse();
+        $lesson = $this->makeLesson($course); // сессия урока — now()->subDay()
+
+        $homework = $this->makeHomework($course, $lesson);
+        $this->makeAutoTask($homework, 1, '12', 2);
+
+        // Зачисление — уже ПОСЛЕ урока (формально "домашка от прошлого
+        // потока"), но submission ниже создаётся напрямую в обход визарда —
+        // как если бы студент сдал её ДО того, как в проекте появилось само
+        // правило isLessonBeforeEnrollment().
+        $this->enroll($student, $course, now());
+
+        $submission = Submission::create([
+            'homework_id' => $homework->id,
+            'user_id' => $student->id,
+            'status' => 'checked',
+            'total_score' => 2,
+            'autocheck_score' => 2,
+        ]);
+
+        $rows = $this->actingAs($student)
+            ->get(route('student.homeworks.index'))
+            ->assertOk()
+            ->viewData('rows');
+
+        $row = $rows->firstWhere(fn ($r) => $r['homework']->id === $homework->id);
+        $this->assertNotNull(
+            $row,
+            'Домашка с уже существующим submission не должна прятаться из-за isLessonBeforeEnrollment() — работа реальна и уже оценена'
+        );
+
+        $this->actingAs($student)
+            ->get(route('student.submissions.show', $submission))
+            ->assertOk();
+    }
 }

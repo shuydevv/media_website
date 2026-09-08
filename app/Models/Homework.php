@@ -58,6 +58,21 @@ class Homework extends Model
     }
 
     /**
+     * У ученика уже есть попытка сдачи этой домашки — второе (после
+     * isUnlockedFor()) исключение из isLessonBeforeEnrollment(). Дата урока
+     * и дата зачисления — эвристика "мог ли ученик вообще узнать об этой
+     * домашке", а не запрет постфактум: если submission уже существует,
+     * значит в момент сдачи доступ был и работа реальна (проверена/оценена)
+     * — прятать её из-за более поздней правки enrolled_at или из-за самого
+     * факта, что isLessonBeforeEnrollment() появился в проекте позже, чем
+     * ученик сдал домашку, нельзя.
+     */
+    public function hasSubmissionFrom(User $user): bool
+    {
+        return $this->submissions()->where('user_id', $user->id)->exists();
+    }
+
+    /**
      * Урок, к которому привязана домашка, ещё не наступил — до этого момента
      * ученик вообще не должен знать о существовании домашки (не в расписании,
      * не в списке домашек, и напрямую по ссылке зайти тоже нельзя). Если
@@ -84,8 +99,16 @@ class Homework extends Model
      *
      * Админ может точечно снять этот запрет для конкретного ученика —
      * например, попросили досдать домашку за прошлый поток — см.
-     * isUnlockedFor()/HomeworkUnlock. Проверяем это последним — лишний
-     * запрос к homework_unlocks нужен только когда без него было бы 404.
+     * isUnlockedFor()/HomeworkUnlock. Второе исключение — уже существующий
+     * submission (см. hasSubmissionFrom()): само это правило появилось в
+     * проекте позже, чем часть учеников успела сдать домашки, которые под
+     * него подпадают (урок за пару дней до формальной даты зачисления —
+     * например, из-за задержки между тем, когда ученик реально получил
+     * доступ, и моментом, когда это записалось в courseEnrolledAt()).
+     * Ретроактивно прятать уже оценённую работу из-за правила, которого не
+     * было в момент её сдачи, нельзя. Оба исключения проверяем последними —
+     * лишние запросы (unlocks/submissions) нужны только когда без них было
+     * бы 404.
      */
     public function isLessonBeforeEnrollment(User $user): bool
     {
@@ -97,7 +120,7 @@ class Homework extends Model
         $enrolledAt = $user->courseEnrolledAt($this->course_id);
         $isBeforeEnrollment = $enrolledAt !== null && $session->start_date_time->lt($enrolledAt);
 
-        return $isBeforeEnrollment && !$this->isUnlockedFor($user);
+        return $isBeforeEnrollment && !$this->isUnlockedFor($user) && !$this->hasSubmissionFrom($user);
     }
 
     /**

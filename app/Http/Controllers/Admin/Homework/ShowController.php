@@ -24,9 +24,16 @@ class ShowController extends Controller
             $lateEnrollmentRows = $homework->course->students()
                 ->orderBy('name')
                 ->get()
-                ->map(function ($student) use ($lessonDate, $unlockedUserIds, $homework) {
+                ->map(function ($student) use ($unlockedUserIds, $homework) {
                     $enrolledAt = $student->courseEnrolledAt($homework->course_id);
-                    $blocked = $enrolledAt !== null && $lessonDate->lt($enrolledAt);
+                    // Через сам Homework::isLessonBeforeEnrollment(), а не
+                    // повторную ручную формулу — иначе список молчаливо
+                    // разойдётся с реальным поведением, как только у метода
+                    // появляется новое исключение (см. hasSubmissionFrom()):
+                    // ученик с уже сданной работой фактически не заблокирован,
+                    // и не должен выглядеть здесь как "требует ручного
+                    // открытия доступа".
+                    $blocked = $homework->isLessonBeforeEnrollment($student);
 
                     return [
                         'student'    => $student,
