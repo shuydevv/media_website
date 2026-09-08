@@ -38,6 +38,7 @@ class IndexController extends Controller
         $status = trim($request->string('status')->toString());
         $sort = trim($request->string('sort')->toString()) ?: 'urgency';
         $soonOnly = $request->boolean('soon');
+        $remindersOnly = $request->boolean('reminders');
         $dateFrom = trim($request->string('date_from')->toString());
         $dateTo = trim($request->string('date_to')->toString());
 
@@ -63,6 +64,7 @@ class IndexController extends Controller
                 // Отсортированы по дате платежа заранее — для каждого курса берём
                 // firstWhere('course_id', ...) в шаблоне, без доп. запросов на строку.
                 'payments' => fn ($query) => $query->orderByDesc('paid_at'),
+                'crmReminders',
             ])
             ->orderByDesc('created_at')
             ->get()
@@ -84,6 +86,7 @@ class IndexController extends Controller
         // менялись от того, что сейчас введено в поиске.
         $statusCounts = array_fill_keys(self::PIPELINE_STATUS_KEYS, 0);
         $soonCount = 0;
+        $reminderCount = 0;
         foreach ($base as $student) {
             $key = $student->crmStatus()['key'];
             if (array_key_exists($key, $statusCounts)) {
@@ -91,6 +94,9 @@ class IndexController extends Controller
             }
             if ($student->crmExpiresSoon()) {
                 $soonCount++;
+            }
+            if ($student->hasActiveCrmReminder()) {
+                $reminderCount++;
             }
         }
 
@@ -130,6 +136,7 @@ class IndexController extends Controller
             })
             ->when($status !== '', fn ($c) => $c->filter(fn (User $u) => $u->crmStatus()['key'] === $status))
             ->when($soonOnly, fn ($c) => $c->filter(fn (User $u) => $u->crmExpiresSoon()))
+            ->when($remindersOnly, fn ($c) => $c->filter(fn (User $u) => $u->hasActiveCrmReminder()))
             ->when($dateFromParsed, fn ($c) => $c->filter(fn (User $u) => $u->created_at && $u->created_at->greaterThanOrEqualTo($dateFromParsed)))
             ->when($dateToParsed, fn ($c) => $c->filter(fn (User $u) => $u->created_at && $u->created_at->lessThanOrEqualTo($dateToParsed)))
             ->values();
@@ -158,6 +165,7 @@ class IndexController extends Controller
             'date_from' => $dateFrom ?: null,
             'date_to' => $dateTo ?: null,
             'soon' => $soonOnly ? 1 : null,
+            'reminders' => $remindersOnly ? 1 : null,
         ]);
 
         return view('admin.crm.index', [
@@ -168,6 +176,8 @@ class IndexController extends Controller
             'sortOptions' => self::SORT_OPTIONS,
             'soonOnly' => $soonOnly,
             'soonCount' => $soonCount,
+            'remindersOnly' => $remindersOnly,
+            'reminderCount' => $reminderCount,
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
             'filterParams' => $filterParams,
@@ -180,25 +190,28 @@ class IndexController extends Controller
     }
 
     /**
-     * Сортировка списка. 'urgency' (по умолчанию) не трогаем — там просрочка
-     * уже стоит на первом месте через crmSortPriority(). Для остальных трёх
-     * режимов явно пришпиливаем "Просрочена оплата" наверх поверх выбранного
-     * порядка — иначе, отсортировав "по имени" или "по дате", менеджер мог
-     * бы случайно закопать самого срочного ученика где-то в середине списка.
-     * Работает через два последовательных sortBy — PHP 8+ гарантирует
-     * стабильность сортировки, поэтому второй проход (по флагу "просрочен")
+     * Сортировка списка. 'urgency' (по умолчанию) не трогаем — там нужный
+     * приоритет уже стоит на первом месте через crmSortPriority(). Для
+     * остальных трёх режимов явно пришпиливаем "Есть активное напоминание"
+     * и следом "Просрочена оплата" наверх поверх выбранного порядка —
+     * иначе, отсортировав "по имени" или "по дате", менеджер мог бы
+     * случайно закопать самого срочного ученика где-то в середине списка.
+     * Не переиспользуем crmSortPriority() целиком (у неё 5 уровней) —
+     * здесь нужен именно троичный пин, чтобы всё остальное осталось в
+     * выбранном порядке. Работает через два последовательных sortBy —
+     * PHP 8+ гарантирует стабильность сортировки, поэтому второй проход
      * не портит порядок, заданный первым проходом внутри каждой группы.
      */
     private function applySort($all, string $sort)
     {
-        $pastDueFirst = fn (User $u) => $u->crmStatus()['key'] === 'past_due' ? 0 : 1;
+        $priority = fn (User $u) => $u->hasActiveCrmReminder() ? 0 : ($u->crmStatus()['key'] === 'past_due' ? 1 : 2);
 
         return match ($sort) {
-            'created_desc' => $all->sortByDesc('created_at')->sortBy($pastDueFirst)->values(),
-            'created_asc' => $all->sortBy('created_at')->sortBy($pastDueFirst)->values(),
+            'created_desc' => $all->sortByDesc('created_at')->sortBy($priority)->values(),
+            'created_asc' => $all->sortBy('created_at')->sortBy($priority)->values(),
             'name' => $all
                 ->sortBy(fn (User $u) => mb_strtolower(trim(($u->first_name ?? '').' '.($u->last_name ?? '')) ?: ($u->name ?? '')))
-                ->sortBy($pastDueFirst)
+                ->sortBy($priority)
                 ->values(),
             default => $all->sortBy(fn (User $u) => $u->crmSortPriority())->values(),
         };

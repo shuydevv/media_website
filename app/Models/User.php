@@ -208,6 +208,21 @@ class User extends Authenticatable implements MustVerifyEmail
         return false;
     }
 
+    public function crmReminders()
+    {
+        return $this->hasMany(\App\Models\CrmReminder::class)->orderBy('due_at');
+    }
+
+    /**
+     * Наступило ли хотя бы одно напоминание — работает на уже загруженной
+     * relation (см. IndexController/ArchiveController, крутят её в цикле по
+     * всем ученикам списка), отдельного запроса не делает.
+     */
+    public function hasActiveCrmReminder(): bool
+    {
+        return $this->crmReminders->contains(fn (CrmReminder $r) => $r->isActive());
+    }
+
     /**
      * Порядок сортировки /admin/crm — не по алфавиту/дате, а по срочности:
      * кому просрочили оплату или кто заморожен, нужно увидеть раньше, чем
@@ -217,6 +232,10 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function crmSortPriority(): int
     {
+        if ($this->hasActiveCrmReminder()) {
+            return -1;
+        }
+
         return match ($this->crmStatus()['key']) {
             'past_due' => 0,
             'frozen' => 1,

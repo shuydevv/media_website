@@ -41,12 +41,15 @@
                        class="input-focus sans text-sm border-0 p-0 w-[130px]" title="Регистрация по">
             </div>
             <button class="rounded-lg px-3 py-2 border sans text-sm shrink-0">Искать</button>
-            @if(!empty($q) || !empty($status) || !empty($dateFrom) || !empty($dateTo) || ($sort ?? 'urgency') !== 'urgency' || !empty($soonOnly))
+            @if(!empty($q) || !empty($status) || !empty($dateFrom) || !empty($dateTo) || ($sort ?? 'urgency') !== 'urgency' || !empty($soonOnly) || !empty($remindersOnly))
                 <a href="{{ route('admin.crm.index') }}" class="rounded-lg px-3 py-2 border sans text-sm text-zinc-500 shrink-0">Сброс</a>
             @endif
         </div>
         @if($soonOnly)
             <input type="hidden" name="soon" value="1">
+        @endif
+        @if($remindersOnly)
+            <input type="hidden" name="reminders" value="1">
         @endif
     </form>
 
@@ -107,6 +110,20 @@
                        class="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs sans-medium transition {{ $badgeColorClasses['amber'] }} {{ $soonOnly ? 'ring-2 ring-offset-1 ring-zinc-400' : 'opacity-80 hover:opacity-100' }}">
                         Скоро истекает
                         <span class="opacity-70">{{ $soonCount }}</span>
+                    </a>
+                    @php
+                        $remindersTarget = $filterParams;
+                        if ($remindersOnly) {
+                            unset($remindersTarget['reminders']);
+                        } else {
+                            $remindersTarget['reminders'] = 1;
+                        }
+                    @endphp
+                    <a href="{{ route('admin.crm.index', $remindersTarget) }}"
+                       title="Наступившие напоминания, поставленные в карточках учеников"
+                       class="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs sans-medium transition {{ $badgeColorClasses['amber'] }} {{ $remindersOnly ? 'ring-2 ring-offset-1 ring-zinc-400' : 'opacity-80 hover:opacity-100' }}">
+                        Уведомления
+                        <span class="opacity-70">{{ $reminderCount }}</span>
                     </a>
                 </div>
             </div>

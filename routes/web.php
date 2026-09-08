@@ -222,6 +222,9 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
             Route::patch('/users/{user}/checklist', 'ChecklistController')->name('admin.crm.checklist.update');
             Route::patch('/users/{user}/note', 'NoteController')->name('admin.crm.note.update');
             Route::patch('/users/{user}/courses/{course}/access', 'AccessController')->name('admin.crm.access.update');
+            Route::post('/users/{user}/reminders', 'Reminder\StoreController')->name('admin.crm.reminders.store');
+            Route::patch('/reminders/{reminder}', 'Reminder\UpdateController')->name('admin.crm.reminders.update');
+            Route::delete('/reminders/{reminder}', 'Reminder\DestroyController')->name('admin.crm.reminders.destroy');
         });
     });
 Route::group(['namespace' => 'App\Http\Controllers\Controller'], function () {

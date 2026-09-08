@@ -24,6 +24,7 @@ class ArchiveController extends Controller
             ->with([
                 'courses',
                 'payments' => fn ($query) => $query->orderByDesc('paid_at'),
+                'crmReminders',
             ])
             ->when($q, function ($query) use ($q) {
                 $query->where(function ($s) use ($q) {

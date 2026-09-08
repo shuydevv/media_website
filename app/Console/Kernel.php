@@ -2,12 +2,10 @@
 
 namespace App\Console;
 
-use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
 {
-
     /**
      * Register the commands for the application.
      */
@@ -24,10 +22,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('billing:send-reminders')->dailyAt('08:00');
         $schedule->command('billing:notify-overdue')->dailyAt('08:15');
         $schedule->command('billing:notify-promise-expiring')->dailyAt('08:30');
+        $schedule->command('crm:notify-reminders-due')->dailyAt('08:45');
         $schedule->command('homeworks:notify-due-soon')->dailyAt('09:00');
         $schedule->command('lessons:notify-starting-soon')->everyFifteenMinutes();
         $schedule->command('queue:monitor-health')->everyFiveMinutes();
         $schedule->command('sessions:prune')->dailyAt('04:30');
     }
-
 }

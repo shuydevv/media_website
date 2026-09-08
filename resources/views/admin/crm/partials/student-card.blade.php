@@ -40,7 +40,34 @@
             </div>
         </div>
 
-        <div class="shrink-0">
+        <div class="shrink-0 flex items-center gap-2 relative" data-reminder-widget>
+            <button type="button" data-reminder-toggle class="relative text-amber-500 hover:text-amber-600" title="Напоминания">
+                <x-icon name="bell-01" class="w-5 h-5" />
+                <span class="absolute -top-1 -right-1 bg-white rounded-full leading-none">
+                    <x-icon name="plus" class="w-3 h-3" />
+                </span>
+            </button>
+
+            <div data-reminder-popover hidden
+                 class="absolute right-0 top-full mt-2 w-72 bg-white border border-zinc-200 rounded-xl shadow-lg p-3 z-20 text-left">
+                <div class="sans text-xs text-zinc-400 uppercase tracking-wide mb-2">Напоминания</div>
+                <div class="space-y-1.5 mb-2 empty:mb-0" data-reminder-popover-list>
+                    @foreach($student->crmReminders as $reminder)
+                        @include('admin.crm.partials.reminder-row', ['reminder' => $reminder])
+                    @endforeach
+                </div>
+                <div class="flex flex-col gap-1.5 border-t border-zinc-100 pt-2">
+                    <input type="date" data-reminder-new-date
+                           class="border rounded-lg px-2 py-1 input-focus sans text-sm">
+                    <input type="text" data-reminder-new-note placeholder="Что сделать…" maxlength="500"
+                           class="border rounded-lg px-2 py-1 input-focus sans text-sm">
+                    <button type="button" data-reminder-add
+                            class="rounded-lg px-2 py-1 bg-zinc-900 text-white text-xs sans-medium hover:bg-zinc-800">
+                        Добавить
+                    </button>
+                </div>
+            </div>
+
             <select class="crm-stage-select rounded-lg px-2 py-1.5 sans text-sm border {{ $selectColorClasses[$status['color']] }}">
                 @foreach(\App\Models\User::crmStatusOptionsFor($status['key']) as $key => $opt)
                     @php $optValue = $key === 'new' ? '' : $key; @endphp
@@ -104,6 +131,12 @@
         @empty
             <div class="sans text-sm text-zinc-400">Курсов нет</div>
         @endforelse
+    </div>
+
+    <div class="mt-3 space-y-1.5" data-reminder-body-list {{ $student->crmReminders->isEmpty() ? 'hidden' : '' }}>
+        @foreach($student->crmReminders as $reminder)
+            @include('admin.crm.partials.reminder-body-row', ['reminder' => $reminder])
+        @endforeach
     </div>
 
     <div class="mt-3" data-field-group>
