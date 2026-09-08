@@ -4,7 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Школа Александра Полтавского</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  {{-- Раньше этот <link> был обычным блокирующим stylesheet: до ответа cdn.jsdelivr.net
+       страница вообще ничего не рисовала (белый/чёрный экран на нестабильной мобильной
+       сети — та же причина, что чинили в layouts/main.blade.php). rel="preload" грузит
+       CSS в фоне, не блокируя парсинг/первую отрисовку; onload переключает его в реальный
+       stylesheet, когда он готов. noscript — на случай отключённого JS. --}}
+  <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"></noscript>
   
 
 <!-- Yandex.Metrika counter -->
@@ -512,7 +518,9 @@
 
 <section class="px-3">
     <h2 class="max-w-6xl mx-auto text-2xl md:text-4xl font-bold md:mb-8 mb-4">Отзывы моих учеников</h2>
-<link rel="stylesheet" href="https://unpkg.com/swiper@10/swiper-bundle.min.css" />
+{{-- Тот же приём, что у Tailwind-стилей выше — не блокируем рендер в ожидании CDN. --}}
+<link rel="preload" as="style" href="https://unpkg.com/swiper@10/swiper-bundle.min.css" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://unpkg.com/swiper@10/swiper-bundle.min.css"></noscript>
 
 <div class="w-full mb-8">
   <div class="swiper reviews-swiper w-full max-w-6xl mx-auto">
@@ -1114,10 +1122,15 @@
 </script>
 <!-- ====================================================================== -->
 
-<!-- Swiper JS (убери, если уже подключено) -->
-<script src="https://unpkg.com/swiper@10/swiper-bundle.min.js"></script>
+<!-- Swiper JS (убери, если уже подключено). defer — не блокирует рендер того, что ниже. -->
+<script src="https://unpkg.com/swiper@10/swiper-bundle.min.js" defer></script>
 
 <script>
+  // defer откладывает выполнение до конца парсинга — оборачиваем в DOMContentLoaded,
+  // иначе на момент выполнения этого инлайн-скрипта window.Swiper ещё не определён.
+  document.addEventListener('DOMContentLoaded', function () {
+  if (typeof window.Swiper === 'undefined') return;
+
   // Инициализация
   const reviewsSwiper = new Swiper('.reviews-swiper', {
     // Мобильная базовая конфигурация
@@ -1162,6 +1175,7 @@
   };
   window.addEventListener('resize', onResize);
   onResize();
+  }); // конец DOMContentLoaded
 </script>
 
 
