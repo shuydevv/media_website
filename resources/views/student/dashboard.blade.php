@@ -670,10 +670,16 @@
 
 {{-- Swiper CSS уже в общем бандле (resources/css/app.css, @import 'swiper/css/bundle') —
      здесь раньше был ещё один блокирующий <link> на тот же cdn.jsdelivr.net, дублирующий
-     стили. JS всё ещё с CDN (нужен синхронно прямо здесь для new Swiper() ниже). --}}
-<script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
+     стили. JS теперь с defer — не блокирует рендер того, что ниже (карточки курсов и
+     дальше), пока грузится с CDN. --}}
+<script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js" defer></script>
 
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+   // defer откладывает выполнение до конца парсинга — без этой обёртки на момент
+   // выполнения скрипта window.Swiper ещё не определён (тот же приём, что и в
+   // main/repetitor.blade.php).
+   if (typeof window.Swiper === 'undefined') return;
 
    // NEW: найдём индекс опорного дня (highlight)
    const slidesInDom = document.querySelectorAll('.mySwiper .swiper-slide');
@@ -710,6 +716,7 @@
     nextBtn.addEventListener('click', () => swiper.slideNext());
 
     updateButtons();
+}); // конец DOMContentLoaded
 </script>
 
     <h2 class="sans-medium text-lg md:text-2xl tracking-wide md:mb-4 mb-3 mt-4 text-zinc-900">Мои курсы</h2>
