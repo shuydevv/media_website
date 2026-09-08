@@ -3,6 +3,8 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -43,6 +45,20 @@ class Handler extends ExceptionHandler
     {
         $this->reportable(function (Throwable $e) {
             //
+        });
+
+        // Ссылки-подтверждения (auth.email.link, auth.invite.link) подписаны с TTL
+        // (см. VerifyEmailWithCode::toMail()) — если по ссылке переходят повторно
+        // после истечения срока (например, ученик кликнул её со второго устройства,
+        // не будучи залогиненным, спустя больше часа), Laravel по умолчанию кидает
+        // голую 403-страницу вместо понятного поведения. Отправляем на главную.
+        $this->renderable(function (InvalidSignatureException $e, Request $request) {
+            if ($request->expectsJson()) {
+                return null;
+            }
+
+            return redirect()->route('index')
+                ->with('status', 'Ссылка недействительна или уже устарела.');
         });
     }
 }

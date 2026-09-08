@@ -137,6 +137,17 @@ class EmailAuthController extends Controller
     {
         $user = User::findOrFail($id);
 
+        // Тот же кейс, что и в inviteLogin() ниже: письмо с этой ссылкой
+        // остаётся у ученика (в почте/пересланное админом) и после того, как
+        // регистрация уже завершена. Повторный переход раньше молча логинил
+        // ученика заново и кидал на онбординг поверх уже заполненного
+        // профиля; сверяемся по profile_completed_at, а не по
+        // hasVerifiedEmail() — см. развёрнутый комментарий у inviteLogin().
+        if ($user->profile_completed_at) {
+            return redirect()->route('login')
+                ->with('status', 'Эта ссылка уже использована. Войдите обычным способом.');
+        }
+
         if (! $user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
         }
