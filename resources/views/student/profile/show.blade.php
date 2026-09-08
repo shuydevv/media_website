@@ -711,11 +711,17 @@
     })();
 
     // Мобильная карусель фонов — тот же Swiper, что уже используется на
-    // дашборде для расписания уроков (подключён глобально в layouts/main.blade.php).
+    // дашборде для расписания уроков (подключён глобально в layouts/main.blade.php
+    // через <script defer>). Обязательно ждём DOMContentLoaded: defer откладывает
+    // выполнение библиотеки до конца парсинга документа, а этот <script> — обычный,
+    // синхронный, и без обёртки выполнялся бы раньше — window.Swiper на тот момент
+    // ещё не определён, и карусель тихо не инициализировалась вообще (баг, из-за
+    // которого на мобильном был виден только первый фон и выбрать остальные было
+    // нельзя). Тот же приём — в student/dashboard.blade.php и main/repetitor.blade.php.
     // Инициализируем лениво, по границе media query, а не всегда: Swiper не
     // может измерить ширину слайдов на скрытом (display:none) контейнере,
     // а на десктопе карусель как раз скрыта в пользу обычной сетки.
-    (function () {
+    document.addEventListener('DOMContentLoaded', function () {
         var swiperEl = document.querySelector('.fish-bg-swiper');
         if (!swiperEl || typeof Swiper === 'undefined') return;
 
@@ -740,6 +746,6 @@
         } else {
             mq.addListener(sync);
         }
-    })();
+    });
 </script>
 @endsection
