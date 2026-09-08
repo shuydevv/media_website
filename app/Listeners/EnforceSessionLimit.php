@@ -28,6 +28,14 @@ class EnforceSessionLimit
             return;
         }
 
+        // Вход админа под учеником (Admin\User\ImpersonateController) тоже
+        // Login-событие, но это не "новое устройство" ученика — не должен
+        // выбивать его реальные активные сессии просто потому что админ
+        // заглянул в аккаунт.
+        if (session()->has('impersonator_id')) {
+            return;
+        }
+
         $currentId = session()->getId();
 
         $otherSessionIds = DB::table('sessions')

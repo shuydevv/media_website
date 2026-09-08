@@ -55,6 +55,7 @@
 
     </head>
     <body class="{{ request()->routeIs('student.*') ? 'pb-20 student-portal' : '' }}">
+        @include('partials.impersonation-banner')
         <div class="relative border-b ">
             {{-- Обычный <style>, не Tailwind-классы (max-w-6xl/p-4 и т.п.) —
                  в этом браузере часть Tailwind-классов ненадёжно

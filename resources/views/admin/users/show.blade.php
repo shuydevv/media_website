@@ -8,6 +8,15 @@
         <a href="{{ route('admin.user.edit', $user->id) }}"
            class="px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800">Изменить</a>
 
+        @if($user->isStudent())
+            <form method="POST" action="{{ route('admin.user.impersonate', $user->id) }}">
+                @csrf
+                <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                    Войти как ученик
+                </button>
+            </form>
+        @endif
+
         @if($user->deleted_at)
             <form method="POST" action="{{ route('admin.user.restore', $user->id) }}">
                 @csrf

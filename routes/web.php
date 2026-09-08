@@ -201,6 +201,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
             Route::patch('/{user}', 'UpdateController')->name('admin.user.update');
             Route::delete('/{user}', 'DeleteController')->name('admin.user.delete');
             Route::post('/{user}/invite', 'InviteController')->name('admin.user.invite');
+            Route::post('/{user}/impersonate', 'ImpersonateController')->name('admin.user.impersonate');
         });
 
         // Без 'namespace' => 'User' — контроллер лежит в Admin\Billing, передан полным классом
@@ -283,6 +284,13 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/student/dashboard', DashboardController::class)->name('student.dashboard');
+});
+
+// Без middleware 'admin' — в момент вызова текущий пользователь это ученик,
+// под которым вошёл админ (см. Admin\User\ImpersonateController).
+Route::middleware(['auth'])->group(function () {
+    Route::post('/impersonate/leave', \App\Http\Controllers\ImpersonationLeaveController::class)
+        ->name('impersonate.leave');
 });
 
 Route::middleware(['auth'])->group(function () {
