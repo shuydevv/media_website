@@ -355,6 +355,17 @@ class User extends Authenticatable implements MustVerifyEmail
      * старых/тестовых записей) → users.created_at как крайний фоллбек.
      * Мемоизируем по course_id, чтобы не дёргать запрос на каждую домашку
      * курса при переборе списка.
+     *
+     * Самоисцеление от бага в EnrollmentService::enrollUser() (был исправлен,
+     * но мог успеть затереть enrolled_at до фикса): повторный вызов
+     * enrollUser() на уже существующем зачислении — например, ручная
+     * реактивация доступа админом после истечения промокода —
+     * перезаписывал course_user.enrolled_at на now(), из-за чего все
+     * домашки от уроков до этой даты (включая уже сделанные) пропадали
+     * из списков и по прямой ссылке. promo_redemptions.enrolled_at
+     * баг не трогал (пишется один раз в RedeemController::redeem() и
+     * больше не обновляется) — если там есть более ранняя дата для той
+     * же пары user+course, значит текущий pivot испорчен, берём её.
      */
     private array $courseEnrolledAtCache = [];
 
@@ -366,6 +377,14 @@ class User extends Authenticatable implements MustVerifyEmail
 
         $pivot = $this->courses()->where('courses.id', $courseId)->first()?->pivot;
         $value = $pivot?->enrolled_at ?? $pivot?->created_at;
+
+        $promoEnrolledAt = PromoRedemption::where('user_id', $this->id)
+            ->where('course_id', $courseId)
+            ->value('enrolled_at');
+
+        if ($promoEnrolledAt !== null && ($value === null || \Illuminate\Support\Carbon::parse($promoEnrolledAt)->lt($value))) {
+            $value = $promoEnrolledAt;
+        }
 
         return $this->courseEnrolledAtCache[$courseId]
             = ($value ? \Illuminate\Support\Carbon::parse($value) : $this->created_at);

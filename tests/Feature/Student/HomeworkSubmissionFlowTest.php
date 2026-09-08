@@ -8,6 +8,8 @@ use App\Models\CourseUser;
 use App\Models\Homework;
 use App\Models\HomeworkTask;
 use App\Models\Lesson;
+use App\Models\PromoCode;
+use App\Models\PromoRedemption;
 use App\Models\Submission;
 use App\Models\User;
 use Carbon\Carbon;
@@ -31,9 +33,18 @@ class HomeworkSubmissionFlowTest extends TestCase
     /** @var int[] */
     private array $userIds = [];
 
+    /** @var int[] */
+    private array $promoCodeIds = [];
+
     protected function tearDown(): void
     {
         Carbon::setTestNow();
+
+        if ($this->promoCodeIds !== []) {
+            // cascadeOnDelete на promo_redemptions.promo_code_id подчистит
+            // сами редимы вместе с кодом.
+            PromoCode::whereIn('id', $this->promoCodeIds)->delete();
+        }
 
         if ($this->courseIds !== []) {
             $homeworkIds = Homework::whereIn('course_id', $this->courseIds)->pluck('id');
@@ -509,5 +520,82 @@ class HomeworkSubmissionFlowTest extends TestCase
         $this->actingAs($student)->post(route('student.submissions.question.save', [$submission, 1]), ['answer' => '124']);
         $student->refresh();
         $this->assertSame(1, (int) $student->fish_corm_balance, 'Корм должен подстроиться под текущий (уменьшившийся) балл, а не остаться от первого ответа');
+    }
+
+    /**
+     * Регресс на баг: EnrollmentService::enrollUser() при повторном вызове на
+     * уже существующем зачислении (например, Admin\User\UpdateController при
+     * ручной реактивации доступа после истечения промокода) затирал
+     * course_user.enrolled_at на now(). Из-за этого Homework::
+     * isLessonBeforeEnrollment() решал, что уже сделанная студентом домашка —
+     * "от прошлого потока", и прятал её из списка и по прямой ссылке (404),
+     * хотя сам Submission никуда не девался.
+     *
+     * User::courseEnrolledAt() теперь подстраховывается по
+     * promo_redemptions.enrolled_at (эту таблицу баг не трогает — пишется
+     * один раз при редиме и больше не обновляется) — здесь напрямую портим
+     * course_user.enrolled_at, минуя фикс в EnrollmentService, чтобы
+     * проверить именно эту подстраховку.
+     *
+     * @test
+     */
+    public function homework_done_via_promo_stays_visible_after_enrolled_at_gets_corrupted()
+    {
+        $student = $this->makeStudent();
+        $course = $this->makeCourse();
+        $lesson = $this->makeLesson($course); // сессия урока — now()->subDay()
+
+        $promo = PromoCode::create([
+            'code' => 'TEST-'.uniqid(),
+            'kind' => 'access',
+            'course_id' => $course->id,
+            'duration_days' => 30,
+        ]);
+        $this->promoCodeIds[] = $promo->id;
+
+        $originalEnrolledAt = now()->subMonths(2);
+
+        // Как при настоящем редиме промокода (RedeemController::redeem()) —
+        // урок прошёл уже ПОСЛЕ зачисления, домашка законно видна и сделана.
+        $this->enroll($student, $course, $originalEnrolledAt);
+        PromoRedemption::create([
+            'promo_code_id' => $promo->id,
+            'user_id' => $student->id,
+            'course_id' => $course->id,
+            'enrolled_at' => $originalEnrolledAt,
+            'expires_at' => $originalEnrolledAt->copy()->addDays(30),
+        ]);
+
+        $homework = $this->makeHomework($course, $lesson);
+        $this->makeAutoTask($homework, 1, '12', 2);
+
+        $this->actingAs($student)->get(route('student.submissions.create', $homework));
+        $submission = Submission::where('homework_id', $homework->id)->where('user_id', $student->id)->firstOrFail();
+        $this->actingAs($student)->post(route('student.submissions.question.check', [$submission, 1]), ['answer' => '12']);
+        $this->actingAs($student)->post(route('student.submissions.finish.submit', $submission));
+
+        $submission->refresh();
+        $this->assertSame('checked', $submission->status);
+
+        // Симулируем сам баг: доступ истёк и был реактивирован админом так,
+        // что enrolled_at затёрся на "сегодня" — как это делал старый
+        // EnrollmentService::enrollUser() без переданного enrolled_at.
+        CourseUser::where('user_id', $student->id)->where('course_id', $course->id)
+            ->update(['enrolled_at' => now()]);
+
+        $rows = $this->actingAs($student)
+            ->get(route('student.homeworks.index'))
+            ->assertOk()
+            ->viewData('rows');
+
+        $row = $rows->firstWhere(fn ($r) => $r['homework']->id === $homework->id);
+        $this->assertNotNull(
+            $row,
+            'Уже сделанная домашка не должна пропадать из списка из-за испорченного course_user.enrolled_at — courseEnrolledAt() должен подстраховаться по promo_redemptions'
+        );
+
+        $this->actingAs($student)
+            ->get(route('student.submissions.show', $submission))
+            ->assertOk();
     }
 }

@@ -94,4 +94,37 @@ class EnrollmentServiceTest extends TestCase
 
         Notification::assertSentToTimes($user, EnrolledInCourseNotification::class, 1);
     }
+
+    /** @test */
+    public function reactivating_an_existing_enrollment_does_not_reset_enrolled_at()
+    {
+        Notification::fake();
+
+        $user = $this->makeUser();
+        $course = $this->makeCourse();
+
+        $originalEnrolledAt = now()->subMonths(3);
+
+        // Как при первичном редиме промокода (см. RedeemController::redeem()).
+        $this->enroll->enrollUser($user, $course, [
+            'status' => 'active',
+            'enrolled_at' => $originalEnrolledAt,
+            'source' => 'promo',
+            'promo_code' => 'TEST123',
+        ]);
+
+        // Как при ручной реактивации админом после истечения доступа
+        // (Admin\User\UpdateController) — enrolled_at/source/promo_code
+        // намеренно не передаются, только expires_at.
+        $this->enroll->enrollUser($user, $course, [
+            'source' => 'manual',
+            'expires_at' => now()->addMonth(),
+        ]);
+
+        $pivot = CourseUser::where('user_id', $user->id)->where('course_id', $course->id)->firstOrFail();
+
+        $this->assertTrue($pivot->enrolled_at->equalTo($originalEnrolledAt));
+        $this->assertSame('promo', $pivot->source);
+        $this->assertSame('TEST123', $pivot->promo_code);
+    }
 }
