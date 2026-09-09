@@ -64,9 +64,15 @@
   };
 
   $allManualClosed = true;
+  $manualTotal = $manualTasks->count();
+  $manualClosedCount = 0;
   foreach ($manualTasks as $i => $t) {
       $tid = (string)($t->id ?? $t->task_id ?? "t_manual_{$i}");
-      if (!$isTaskClosed($tid)) { $allManualClosed = false; break; }
+      if ($isTaskClosed($tid)) {
+          $manualClosedCount++;
+      } else {
+          $allManualClosed = false;
+      }
   }
 @endphp
 
@@ -95,6 +101,10 @@
 
     {{-- таймер лока в шапке --}}
     <div class="shrink-0 flex flex-col items-end gap-2">
+      <div class="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium">
+        Проверено: <span id="progress-count">{{ $manualClosedCount }}</span> из {{ $manualTotal }}
+      </div>
+
       <div class="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm">
         <div class="text-gray-600">Лок до:</div>
         <div class="font-semibold">
@@ -105,6 +115,11 @@
         @if(($submission->lock_expires_at && now()->lt($submission->lock_expires_at)))
           <div class="text-xs text-gray-500 mt-1">
             Осталось: <span id="lock-countdown">—:—</span>
+          </div>
+        @endif
+        @if($submission->locked_by && $submission->locked_by !== $user->id && now()->lt($submission->lock_expires_at))
+          <div class="text-xs text-amber-700 mt-1">
+            Занято: {{ $submission->lockedByUser?->name ?? ('ID '.$submission->locked_by) }}
           </div>
         @endif
       </div>
@@ -165,6 +180,10 @@
       $tid         = $t->id ?? ("t_manual_$i");
       $maxScore    = (int)($t->max_score ?? 3);
       $studentAns  = (string)($answers[$tid] ?? '');
+
+      // История прошлых попыток студента по этому номеру задания
+      $taskHistory = app(\App\Service\Homework\StudentTaskHistory::class)
+          ->forTaskNumber((int)$student->id, $t->number ?? null, (int)$submission->id);
 
       // Критерии: общие для (категория, номер) задания, см. TaskCriteria
       $taskIdForDb = $t->task_id ?? $t->id ?? null;
@@ -279,6 +298,21 @@
         </div>
       </div>
 
+      @if(trim((string)($t->question_text ?? '')) !== '')
+      <div class="mb-4">
+        <div class="text-xs text-gray-500 mb-1">Текст задания</div>
+        <div class="whitespace-pre-wrap rounded-xl border border-blue-100 bg-blue-50 px-3 py-3 text-sm">
+          {{ $t->question_text }}
+        </div>
+        @if(trim((string)($t->passage_text ?? '')) !== '')
+          <details class="mt-2 rounded-xl border border-gray-200 p-3 bg-gray-50">
+            <summary class="text-sm text-gray-700 cursor-pointer select-none">Показать текст к заданию</summary>
+            <div class="mt-2 whitespace-pre-wrap text-sm text-gray-800">{{ $t->passage_text }}</div>
+          </details>
+        @endif
+      </div>
+      @endif
+
       <div class="mb-4">
         <div class="text-xs text-gray-500 mb-1">Ответ ученика</div>
         <div class="whitespace-pre-wrap rounded-xl border border-gray-100 bg-gray-50 px-3 py-3 text-sm">
@@ -301,11 +335,25 @@
           <label class="block text-sm font-medium mb-1">Обоснование баллов</label>
           <textarea name="reason" rows="4" class="smart-textarea w-full border rounded-xl px-3 py-2" placeholder="По критериям экзамена...">{{ $curReason }}</textarea>
           <div class="text-[11px] text-gray-400 mt-1">Опишите, почему выставлены именно такие баллы.</div>
+          @if(!empty($quickPhrases['reason']))
+            <div class="flex flex-wrap gap-1.5 mt-2">
+              @foreach($quickPhrases['reason'] as $phrase)
+                <button type="button" class="quick-phrase-btn text-xs px-2 py-1 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-100" data-target="reason" data-phrase="{{ e($phrase) }}">{{ \Illuminate\Support\Str::limit($phrase, 28) }}</button>
+              @endforeach
+            </div>
+          @endif
         </div>
 
         <div>
           <label class="block text-sm font-medium mb-1">Комментарий ученику</label>
           <textarea name="comment" rows="5" class="smart-textarea w-full border rounded-xl px-3 py-2" placeholder="Понятный комментарий для ученика...">{{ $curComment }}</textarea>
+          @if(!empty($quickPhrases['comment']))
+            <div class="flex flex-wrap gap-1.5 mt-2">
+              @foreach($quickPhrases['comment'] as $phrase)
+                <button type="button" class="quick-phrase-btn text-xs px-2 py-1 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-100" data-target="comment" data-phrase="{{ e($phrase) }}">{{ \Illuminate\Support\Str::limit($phrase, 28) }}</button>
+              @endforeach
+            </div>
+          @endif
         </div>
 
         {{-- Спойлер с критериями (из tasks.criteria) --}}
@@ -325,6 +373,21 @@
             @endif
           </div>
         </details>
+
+        @if(!empty($taskHistory))
+        <details class="rounded-xl border border-gray-200 p-3 bg-gray-50">
+          <summary class="text-sm text-gray-700 cursor-pointer select-none">
+            Прошлые попытки студента по этому номеру задания
+          </summary>
+          <div class="mt-2 flex flex-wrap gap-2">
+            @foreach($taskHistory as $h)
+              <span class="inline-flex items-center rounded-full border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700" title="{{ $h['date'] }}">
+                {{ $h['score'] }} / {{ $h['max'] }} <span class="text-gray-400 ml-1">({{ $h['date'] }})</span>
+              </span>
+            @endforeach
+          </div>
+        </details>
+        @endif
 
         <div class="flex flex-wrap items-center gap-2 justify-start pt-1">
           {{-- Кнопки слева --}}
@@ -364,6 +427,7 @@
               class="save-task-btn px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
               disabled
             >Сохранить</button>
+            <span class="save-status text-xs text-gray-500"></span>
           </div>
 
           {{-- Галочка согласия справа --}}
@@ -415,6 +479,28 @@
 document.addEventListener('DOMContentLoaded', () => {
   const perTaskForms = document.querySelectorAll('.per-task-form');
 
+  // Незасейвленные задания — предупреждаем при уходе со страницы (A4) и
+  // держим счётчик прогресса (A2) в синхронизации с реальным состоянием
+  // карточек, а не только с тем, что было при загрузке страницы.
+  const dirtyTasks = new Set();
+  window.addEventListener('beforeunload', (ev) => {
+    if (dirtyTasks.size === 0) return;
+    ev.preventDefault();
+    ev.returnValue = '';
+  });
+
+  const progressCountEl = document.getElementById('progress-count');
+  function isCardClosed(card) {
+    return card.dataset.skipped === '1' || card.dataset.state === 'done';
+  }
+  function updateProgressCount() {
+    if (!progressCountEl) return;
+    const cards = document.querySelectorAll('.review-card');
+    let closed = 0;
+    cards.forEach((c) => { if (isCardClosed(c)) closed++; });
+    progressCountEl.textContent = String(closed);
+  }
+
   function cardSetState(card, state){
     if (card.dataset.skipped === '1') return;
     card.dataset.state = state;
@@ -422,6 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (state === 'done')      card.classList.add('border-green-400');
     else if (state === 'editing') card.classList.add('border-blue-400');
     else                        card.classList.add('border-gray-200');
+    updateProgressCount();
   }
 
   function markCardValidity(cardEl, isValid) {
@@ -432,6 +519,8 @@ document.addEventListener('DOMContentLoaded', () => {
   perTaskForms.forEach((form) => {
     const card = form.closest('.review-card') || form.parentElement;
     const taskId = form.dataset.task || '';
+    const submissionId = form.dataset.submission || '';
+    const draftKey = `mentor_review_draft:${submissionId}:${taskId}`;
 
     const scoreHidden  = form.querySelector(`#score-${CSS.escape(taskId)}`);
     const scoreVisible = document.querySelector(`[data-input-for="score-${CSS.escape(taskId)}"]`);
@@ -443,9 +532,88 @@ document.addEventListener('DOMContentLoaded', () => {
     const consentWrap = form.querySelector('.consent-wrap');
     const consentChk  = consentWrap ? consentWrap.querySelector('.consent-checkbox') : null;
     const saveBtn     = form.querySelector('.save-task-btn');
+    const statusEl    = form.querySelector('.save-status');
 
     const hasDb = form.dataset.hasDb === '1';
     if (hasDb) cardSetState(card, 'done');
+
+    // Черновик в localStorage (B6) — подстраховка от истёкшего лока
+    // (ниже все поля формы блокируются разом) и случайного reload.
+    // Восстанавливаем только в пустые поля, чтобы не перетереть то, что
+    // реально уже сохранено в БД или пришло от AI.
+    function readDraft() {
+      try {
+        const raw = localStorage.getItem(draftKey);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) { return null; }
+    }
+    function writeDraft() {
+      try {
+        localStorage.setItem(draftKey, JSON.stringify({
+          score:   scoreVisible ? scoreVisible.value : '',
+          reason:  reasonEl ? reasonEl.value : '',
+          comment: commentEl ? commentEl.value : '',
+        }));
+      } catch (e) { /* приватный режим и т.п. — черновик просто не сохранится */ }
+    }
+    function clearDraft() {
+      try { localStorage.removeItem(draftKey); } catch (e) {}
+    }
+
+    const draft = readDraft();
+    if (draft) {
+      let restored = false;
+      if (scoreVisible && scoreVisible.value === '' && draft.score)          { scoreVisible.value = draft.score; restored = true; }
+      if (reasonEl && reasonEl.value.trim() === '' && draft.reason)          { reasonEl.value = draft.reason; restored = true; }
+      if (commentEl && commentEl.value.trim() === '' && draft.comment)       { commentEl.value = draft.comment; restored = true; }
+      if (restored && statusEl) statusEl.textContent = 'Восстановлен черновик';
+    }
+
+    let autosaveTimer = null;
+
+    async function doSave() {
+      if (statusEl) statusEl.textContent = 'Сохраняем…';
+      try {
+        const resp = await fetch(form.action, {
+          method: 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+          },
+          body: new FormData(form),
+        });
+        const data = await resp.json().catch(() => null);
+        if (!resp.ok || !data || !data.ok) throw new Error('save failed');
+
+        dirtyTasks.delete(taskId);
+        clearDraft();
+        form.dataset.hasDb = '1';
+        cardSetState(card, 'done');
+        if (statusEl) statusEl.textContent = 'Сохранено';
+      } catch (e) {
+        console.error(e);
+        if (statusEl) statusEl.textContent = 'Ошибка сохранения, попробуйте ещё раз';
+      }
+    }
+
+    form.addEventListener('submit', (ev) => {
+      // Только «Сохранить» уходит через fetch — «Пропустить»/«Вернуть» и
+      // AI-кнопки используют formaction и должны навигировать как обычно
+      // (AI-кнопка вообще не доходит сюда — её click-обработник ниже сам
+      // делает preventDefault до наступления submit).
+      if (ev.submitter !== saveBtn) return;
+      ev.preventDefault();
+      if (autosaveTimer) { clearTimeout(autosaveTimer); autosaveTimer = null; }
+      doSave();
+    });
+
+    // Горячая клавиша Ctrl/Cmd+Enter (C9) — привязана к конкретной карточке
+    // через её форму, см. глобальный keydown-обработник ниже.
+    form.__mentorReviewSave = () => {
+      if (autosaveTimer) { clearTimeout(autosaveTimer); autosaveTimer = null; }
+      doSave();
+    };
 
     function syncScoreToHidden() {
       let v = scoreVisible && scoreVisible.value !== '' ? Number(scoreVisible.value) : NaN;
@@ -490,6 +658,19 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       syncScoreToHidden();
       updateSaveAvailability();
+
+      dirtyTasks.add(taskId);
+      writeDraft();
+      if (statusEl) statusEl.textContent = '';
+
+      // Автосохранение (B5) — тот же путь, что и ручной клик по «Сохранить»,
+      // через ~1.5с простоя после последней правки, только когда форма
+      // валидна для сохранения (см. updateSaveAvailability()).
+      if (autosaveTimer) clearTimeout(autosaveTimer);
+      autosaveTimer = setTimeout(() => {
+        autosaveTimer = null;
+        if (!saveBtn.disabled) doSave();
+      }, 1500);
     }
 
     if (scoreVisible) {
@@ -518,6 +699,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
     syncScoreToHidden();
     updateSaveAvailability();
+  });
+
+  updateProgressCount();
+
+  // Быстрые фразы (C7) — вставляют текст в соответствующее textarea той же
+  // карточки и дёргают 'input' на самом textarea (а не на форме — обработчики
+  // навешаны точечно на элементы, всплытие с формы их не достанет).
+  document.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('.quick-phrase-btn');
+    if (!btn) return;
+    const form = btn.closest('.per-task-form');
+    const el = form ? form.querySelector(`textarea[name="${btn.dataset.target}"]`) : null;
+    if (!el) return;
+    const phrase = btn.dataset.phrase || '';
+    el.value = el.value.trim() !== '' ? (el.value.replace(/\s+$/, '') + ' ' + phrase) : phrase;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+
+  // Горячие клавиши (C9): Ctrl/Cmd+Enter — сохранить текущую карточку;
+  // Alt+вверх/вниз — перейти к следующей/предыдущей непроверенной карточке.
+  document.addEventListener('keydown', (ev) => {
+    if ((ev.ctrlKey || ev.metaKey) && ev.key === 'Enter') {
+      const form = document.activeElement && document.activeElement.closest('.per-task-form');
+      if (form && typeof form.__mentorReviewSave === 'function') {
+        ev.preventDefault();
+        form.__mentorReviewSave();
+      }
+      return;
+    }
+
+    if (ev.altKey && (ev.key === 'ArrowDown' || ev.key === 'ArrowUp')) {
+      const cards = Array.from(document.querySelectorAll('.review-card'));
+      if (!cards.length) return;
+      ev.preventDefault();
+
+      const current = document.activeElement ? document.activeElement.closest('.review-card') : null;
+      const idx = current ? cards.indexOf(current) : -1;
+      const dir = ev.key === 'ArrowDown' ? 1 : -1;
+
+      let next = null;
+      for (let step = 1; step <= cards.length; step++) {
+        const pos = ((idx + dir * step) % cards.length + cards.length) % cards.length;
+        if (!isCardClosed(cards[pos])) { next = cards[pos]; break; }
+      }
+      if (!next) next = cards[((idx + dir) % cards.length + cards.length) % cards.length];
+
+      next.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const focusable = next.querySelector('textarea, input:not([type="hidden"])');
+      if (focusable) focusable.focus();
+    }
   });
 
 

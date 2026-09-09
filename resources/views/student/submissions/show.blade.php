@@ -836,16 +836,16 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
     </div>
     @endif
     --}}
-    @if($hasScore && !$skipped && trim((string)$mentorNote) !== '')
-    <div class="rounded-xl border border-gray-200 p-3 px-4">
-      <div class="text-xs text-zinc-500 mb-2">Пояснение куратора</div>
-      <div class="text-sm whitespace-pre-wrap break-words">{{ $norm($mentorNote) }}</div>
-    </div>
-    @endif
     @if($hasScore && !$skipped && trim((string)$mentorReason) !== '')
     <div class="rounded-xl border border-gray-200 p-3">
       <div class="text-xs text-zinc-500 mb-1">Обоснование баллов</div>
       <div class="text-sm whitespace-pre-wrap break-words">{{ $norm($mentorReason) }}</div>
+    </div>
+    @endif
+    @if($hasScore && !$skipped && trim((string)$mentorNote) !== '')
+    <div class="rounded-xl border border-gray-200 p-3 px-4">
+      <div class="text-xs text-zinc-500 mb-2">Пояснение куратора</div>
+      <div class="text-sm whitespace-pre-wrap break-words">{{ $norm($mentorNote) }}</div>
     </div>
     @endif
   </div>

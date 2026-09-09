@@ -71,6 +71,12 @@ class Submission extends Model
         return $this->belongsTo(User::class);
     }
 
+    /** Куратор, который сейчас держит лок на этой попытке (см. locked_by). */
+    public function lockedByUser()
+    {
+        return $this->belongsTo(User::class, 'locked_by');
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Скоупы (для inbox и ревью)
@@ -96,6 +102,39 @@ class Submission extends Model
     {
         return $query->where('locked_by', $userId)
                      ->where('lock_expires_at', '>', now());
+    }
+
+    /**
+     * Очередь работ, актуальных для проверки куратором: не занятых чужим
+     * активным локом, и без «устаревших» попыток — если студент успел
+     * начать вторую попытку по той же домашке до того, как куратор
+     * проверил первую, обе какое-то время висят как pending/expired, но
+     * куратору нужна только последняя (именно по ней выставляется итог).
+     *
+     * Вынесено сюда из Mentor\SubmissionController::index() — та же
+     * логика была продублирована (без dedup) в
+     * Mentor\SubmissionReviewController::finishAndNext(), из-за чего после
+     * проверки последней попытки куратору предлагалась следующая по
+     * очереди — в том числе более ранняя, уже переигранная попытка того же
+     * ученика по той же домашке.
+     */
+    public static function pendingReviewQueue(): \Illuminate\Support\Collection
+    {
+        return static::query()
+            ->with(['user', 'homework.tasks'])
+            ->where(function (Builder $q) {
+                $q->whereNull('locked_by')
+                  ->orWhere('lock_expires_at', '<=', now());
+            })
+            ->whereIn('status', ['pending', 'expired'])
+            ->orderBy('created_at')
+            ->get()
+            ->reject(fn (Submission $s) => $s->status === 'expired' && $s->allManualTasksClosedForMentor())
+            ->sortBy('id')
+            ->groupBy(fn (Submission $s) => $s->user_id . ':' . $s->homework_id)
+            ->map->last()
+            ->sortBy('created_at')
+            ->values();
     }
 
     /*

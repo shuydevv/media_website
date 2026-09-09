@@ -27,33 +27,9 @@ class SubmissionController extends Controller
         // сюда попадали бы и полностью авто-проверенные просроченные работы,
         // которым ручная проверка вообще не нужна (finishSubmit() всегда
         // переводит в expired при просрочке, независимо от того, есть ли
-        // там что проверять руками).
-        //
-        // whereNull/orWhere раньше не были сгруппированы в один where(fn) —
-        // из-за этого "AND status" в SQL приклеивался только к последней
-        // ветке OR, и в очередь утекало вообще всё подряд: и уже проверенные
-        // работы (у них locked_by тоже null — его сбрасывает
-        // finalizeSubmission()), и даже не отправленные студентом
-        // in_progress-попытки.
-        $queue = Submission::query()
-            ->with(['user', 'homework.tasks'])
-            ->where(function ($q) {
-                $q->whereNull('locked_by')
-                  ->orWhere('lock_expires_at', '<=', now());
-            })
-            ->whereIn('status', ['pending', 'expired'])
-            ->orderBy('created_at')
-            ->get()
-            ->reject(fn (Submission $s) => $s->status === 'expired' && $s->allManualTasksClosedForMentor())
-            // Если студент начал вторую попытку до того, как куратор
-            // проверил первую, обе какое-то время висят как pending —
-            // куратору должна быть видна только последняя из них (именно по
-            // ней и нужно выставлять итог), а не обе сразу.
-            ->sortBy('id')
-            ->groupBy(fn (Submission $s) => $s->user_id . ':' . $s->homework_id)
-            ->map->last()
-            ->sortBy('created_at')
-            ->values();
+        // там что проверять руками). Дедуп устаревших попыток — см.
+        // Submission::pendingReviewQueue().
+        $queue = Submission::pendingReviewQueue();
 
         // ⚠️ Работы с пропущенными заданиями (для админа)
         $skipped = Submission::with(['user','homework'])

@@ -56,7 +56,8 @@ class SubmissionReviewController extends Controller
         }
 
         return view('mentor.review.show', [
-            'submission' => $submission->loadMissing(['user','homework.lesson.courseSession.course']),
+            'submission'   => $submission->loadMissing(['user','homework.lesson.courseSession.course','lockedByUser']),
+            'quickPhrases' => config('mentor_quick_phrases', []),
         ]);
     }
 
@@ -113,6 +114,19 @@ class SubmissionReviewController extends Controller
         }
 
         $submission->save();
+
+        // Автосохранение из блейда дёргает этот же роут через fetch с
+        // Accept: application/json (см. show.blade.php) — обычная
+        // POST-форма без JS продолжает получать redirect-фоллбек.
+        if ($request->wantsJson()) {
+            return response()->json([
+                'ok'      => true,
+                'taskId'  => $taskKey,
+                'score'   => $row['score']   ?? null,
+                'reason'  => $row['reason']  ?? '',
+                'comment' => $row['comment'] ?? '',
+            ]);
+        }
 
         return back()->with('success', 'Задание сохранено');
     }
@@ -189,17 +203,16 @@ class SubmissionReviewController extends Controller
         $this->authorize('update', $submission);
         $this->finalizeSubmission($request, $submission);
 
-        // Очередь — та же логика, что и в MentorSubmissionController::index():
-        // не залоченные (либо лок истёк) работы в статусе pending, старые впереди.
-        $next = Submission::query()
-            ->where('id', '!=', $submission->id)
-            ->where('status', 'pending')
-            ->where(function ($q) {
-                $q->whereNull('locked_by')
-                    ->orWhereNull('lock_expires_at')
-                    ->orWhere('lock_expires_at', '<=', now());
-            })
-            ->orderBy('created_at')
+        // Очередь — та же логика, что и в MentorSubmissionController::index()
+        // (Submission::pendingReviewQueue()). Раньше здесь была отдельная
+        // упрощённая версия без дедупа устаревших попыток: если куратор
+        // только что проверил вторую попытку студента, а первая (тоже
+        // pending, потому что до неё очередь не дошла) была старше по
+        // created_at — "Завершить и следующую" предлагал куратору именно
+        // её, хотя она уже переиграна второй попыткой и проверять её смысла
+        // нет.
+        $next = Submission::pendingReviewQueue()
+            ->reject(fn (Submission $s) => $s->id === $submission->id)
             ->first();
 
         if ($next) {
