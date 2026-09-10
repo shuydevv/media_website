@@ -82,7 +82,7 @@
     </div>
 
     <div class="mt-3 space-y-2">
-        @forelse($student->courses as $course)
+        @forelse($student->courses->where('pivot.status', 'active') as $course)
             @php
                 $pivot = $course->pivot;
                 $isBilling = $pivot->billing_interval_days !== null;
