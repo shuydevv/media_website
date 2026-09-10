@@ -114,6 +114,14 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
             Route::delete('/{homework}/unlocks/{user}', 'Unlock\DestroyController')->name('admin.homeworks.unlocks.destroy');
         });
 
+        Route::group(['namespace' => 'Announcement', 'prefix' => 'announcements'], function () {
+            Route::get('/', 'IndexController')->name('admin.announcements.index');
+            Route::get('/create', 'CreateController')->name('admin.announcements.create');
+            Route::post('/store', 'StoreController')->name('admin.announcements.store');
+            Route::patch('/{announcement}/deactivate', 'DeactivateController')->name('admin.announcements.deactivate');
+            Route::delete('/{announcement}', 'DestroyController')->name('admin.announcements.destroy');
+        });
+
         Route::get('/api/courses/{course}/sessions', [\App\Http\Controllers\Admin\Session\ApiController::class, 'sessionsByCourse']);
 
         Route::group(['namespace' => 'Category', 'prefix' => 'categories'], function () {
@@ -344,6 +352,11 @@ Route::middleware(['auth'])->prefix('student')->name('student.')->group(function
     // маскоту не должен зависеть от статуса оплаты.
     Route::post('/fish/feed', [\App\Http\Controllers\Student\FishController::class, 'feed'])
         ->name('fish.feed');
+
+    // Оповещения админа (баннер в шапке) — тоже без billing.current, чтобы
+    // сообщение о переносе занятия видел и ученик с приостановленным доступом.
+    Route::post('/announcements/{announcement}/dismiss', [\App\Http\Controllers\Student\AnnouncementController::class, 'dismiss'])
+        ->name('announcements.dismiss');
 });
 
 Route::middleware(['auth'])->group(function () {

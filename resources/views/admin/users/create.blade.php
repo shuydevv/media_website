@@ -77,8 +77,20 @@
         </div>
     </div>
 
+    <div class="border-t pt-4">
+        <label class="flex items-start gap-2 text-sm sans cursor-pointer">
+            <input type="checkbox" name="skip_invite" value="1" id="skip-invite"
+                   class="checkbox-custom mt-0.5" style="width:18px;height:18px;"
+                   {{ old('skip_invite') ? 'checked' : '' }}>
+            <span>
+                Не отправлять приглашение
+                <span class="block text-xs text-zinc-400 mt-0.5">Только для внутренней работы в CRM — у пользователя не будет доступа к платформе, пока приглашение не отправят вручную с его страницы.</span>
+            </span>
+        </label>
+    </div>
+
     <div class="pt-2">
-        <button type="submit" class="rounded-lg px-4 py-3 bg-zinc-900 text-white font-medium hover:bg-zinc-800 transition sans-medium">
+        <button type="submit" id="submit-btn" class="rounded-lg px-4 py-3 bg-zinc-900 text-white font-medium hover:bg-zinc-800 transition sans-medium">
             Создать и отправить приглашение
         </button>
     </div>
@@ -93,5 +105,15 @@ document.querySelectorAll('.course-toggle').forEach(function (checkbox) {
     checkbox.addEventListener('change', sync);
     sync(); // сразу применить при отрисовке (в т.ч. после ошибки валидации с old())
 });
+
+(function () {
+    var skipInvite = document.getElementById('skip-invite');
+    var submitBtn = document.getElementById('submit-btn');
+    var sync = function () {
+        submitBtn.textContent = skipInvite.checked ? 'Создать без приглашения' : 'Создать и отправить приглашение';
+    };
+    skipInvite.addEventListener('change', sync);
+    sync();
+})();
 </script>
 @endsection

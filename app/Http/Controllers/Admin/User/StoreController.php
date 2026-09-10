@@ -19,7 +19,8 @@ class StoreController extends Controller
 
         $courseIds = $data['course_ids'] ?? [];
         $accessUntil = $data['access_until'] ?? [];
-        unset($data['course_ids'], $data['access_until']);
+        $skipInvite = (bool) ($data['skip_invite'] ?? false);
+        unset($data['course_ids'], $data['access_until'], $data['skip_invite']);
 
         // "name" здесь — логин в телеграме (то же поле, что на онбординге
         // ученика), не полное имя. Админ может знать его заранее и указать
@@ -46,6 +47,16 @@ class StoreController extends Controller
                 'source' => 'manual',
                 'expires_at' => Carbon::parse($accessUntil[$courseId])->endOfDay(),
             ]);
+        }
+
+        // Служебная запись для внутренней работы в CRM — доступ к платформе
+        // не нужен, приглашение не отправляем (email мог быть не рабочим/
+        // техническим). Пригласить позже всё ещё можно вручную с edit-страницы
+        // (Admin\User\InviteController) — profile_completed_at у такого
+        // пользователя пуст, кнопка повторной отправки видна как обычно.
+        if ($skipInvite) {
+            return redirect()->route('admin.user.edit', $user)
+                ->with('success', 'Пользователь создан без отправки приглашения.');
         }
 
         $inviteUrl = $invite->send($user);

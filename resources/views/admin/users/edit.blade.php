@@ -111,7 +111,12 @@ document.querySelectorAll('.course-toggle').forEach(function (checkbox) {
             Для восстановления доступа используйте обычное восстановление пароля («Забыли пароль?» на странице входа), не повторное приглашение.
         </p>
     @else
-        <p class="text-sm text-zinc-500 sans mb-2">Регистрация ещё не завершена — приглашение можно отправить повторно.</p>
+        <p class="text-sm text-zinc-500 sans mb-2">
+            Регистрация ещё не завершена — приглашение можно отправить повторно.
+            @if($user->invite_sent_at)
+                Ссылка сформирована {{ $user->invite_sent_at->format('d.m.Y H:i') }}.
+            @endif
+        </p>
         <form action="{{ route('admin.user.invite', $user) }}" method="post">
             @csrf
             <button type="submit" class="rounded-lg px-3 py-1.5 border sans text-sm text-zinc-600 hover:bg-zinc-50">

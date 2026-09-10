@@ -8,6 +8,7 @@ use App\Policies\CoursePolicy;
 use App\Service\EmailOtpService;
 use App\Service\Sms\FakeSmsSender;
 use App\Service\Sms\SmsSender;
+use App\View\Composers\AnnouncementBannerComposer;
 use App\View\Composers\BillingBannerComposer;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Cache;
@@ -40,6 +41,7 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
 
         View::composer('layouts.main', BillingBannerComposer::class);
+        View::composer('layouts.main', AnnouncementBannerComposer::class);
 
         // Статус доставки кода на email для /auth/email/status (JS-поллинг на странице
         // ввода кода) — противоположный случай (окончательный провал джобы) ловит

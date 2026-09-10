@@ -30,6 +30,11 @@ class UserInviteService
             ['id' => $user->id]
         );
 
+        // Фиксируем момент генерации ссылки (а не факт доставки письма) —
+        // именно от него отсчитывается DAYS_VALID, и админу на edit-странице
+        // нужно видеть, когда ссылка протухнет, даже если письмо не дошло.
+        $user->update(['invite_sent_at' => now()]);
+
         Mail::to($user->email)->send(new InviteLinkMail($loginUrl, self::DAYS_VALID));
 
         return $loginUrl;

@@ -105,6 +105,7 @@
                 </ul> --}}
             {{-- </div> --}}
         </div>
+        @include('partials.announcement-banner')
         @include('partials.billing-banner')
         @yield('content')
         @yield('scripts')

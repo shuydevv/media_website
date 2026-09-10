@@ -34,6 +34,9 @@ class StoreRequest extends FormRequest
             'course_ids.*' => 'integer|exists:courses,id',
             'access_until' => 'nullable|array',
             'access_until.*' => 'nullable|date',
+            // Для служебных записей (внутренняя работа в CRM) — не отправлять
+            // письмо-приглашение и не генерировать ссылку входа.
+            'skip_invite' => 'nullable|boolean',
         ];
     }
 

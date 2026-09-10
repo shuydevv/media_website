@@ -141,6 +141,11 @@
             </div>
 
             <div>
+                <div class="text-zinc-500">Ссылка-приглашение сформирована</div>
+                <div class="text-zinc-900">{{ $user->invite_sent_at?->format('d.m.Y H:i') ?: '—' }}</div>
+            </div>
+
+            <div>
                 <div class="text-zinc-500">Роль (raw)</div>
                 <div class="text-zinc-900">{{ $user->role ?? '—' }}</div>
             </div>
