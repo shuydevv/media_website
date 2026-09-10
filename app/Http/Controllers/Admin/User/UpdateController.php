@@ -22,6 +22,18 @@ class UpdateController extends Controller
 
         $user->update($data);
 
+        // Снятая галочка не присылает id курса вовсе, поэтому активные
+        // зачисления, которых нет среди $courseIds, нужно закрыть явно —
+        // иначе course_user так и останется status=active навсегда.
+        $currentActiveCourseIds = $user->courses()
+            ->wherePivot('status', 'active')
+            ->pluck('courses.id')
+            ->all();
+
+        foreach (array_diff($currentActiveCourseIds, $courseIds) as $courseId) {
+            $enroll->suspend($user, Course::findOrFail($courseId));
+        }
+
         // enrollUser() — upsert по (user_id, course_id): для уже выданного
         // курса просто обновит дату, для нового — создаст зачисление.
         foreach ($courseIds as $courseId) {
