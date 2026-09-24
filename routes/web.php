@@ -112,6 +112,10 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
             // позже, чем прошёл её урок (см. Homework::isLessonBeforeEnrollment()).
             Route::post('/{homework}/unlocks', 'Unlock\StoreController')->name('admin.homeworks.unlocks.store');
             Route::delete('/{homework}/unlocks/{user}', 'Unlock\DestroyController')->name('admin.homeworks.unlocks.destroy');
+
+            // Обнулить попытки конкретного ученика по этой домашке (удаляет
+            // его Submission, включая незавершённую, если есть).
+            Route::delete('/{homework}/students/{user}/attempts', 'Attempts\DestroyController')->name('admin.homeworks.attempts.reset');
         });
 
         Route::group(['namespace' => 'Announcement', 'prefix' => 'announcements'], function () {

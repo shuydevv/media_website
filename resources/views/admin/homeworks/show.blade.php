@@ -16,6 +16,19 @@
         Тип: {{ $homework->type === 'mock' ? 'Пробник' : 'Обычное ДЗ' }}
     </div>
 
+    @if(session('success'))
+        <div class="mb-4 text-green-600 text-sm">{{ session('success') }}</div>
+    @endif
+    @if ($errors->any())
+        <div class="mb-4 text-red-600 text-sm">
+            <ul class="list-disc pl-5">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <h2 class="text-lg font-semibold mb-4">Список заданий</h2>
 
     @forelse($homework->tasks as $index => $task)
@@ -126,6 +139,48 @@
         <div class="text-gray-500">Заданий нет</div>
     @endforelse
 
+    {{-- Попытки учеников по этой домашке — можно обнулить, если нужно дать
+         пересдать сверх обычного лимита попыток (Homework::attemptsAllowed()). --}}
+    @if($attemptsByStudent->isNotEmpty())
+        <h2 class="text-lg font-semibold mb-4 mt-8">Попытки учеников</h2>
+
+        <table class="w-full table-auto border text-sm mb-6">
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="p-2 border text-left">Ученик</th>
+                    <th class="p-2 border text-left">Попыток использовано</th>
+                    <th class="p-2 border text-left">Последний балл</th>
+                    <th class="p-2 border text-left">Статус</th>
+                    <th class="p-2 border">Действие</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($attemptsByStudent as $row)
+                    <tr>
+                        <td class="p-2 border">{{ $row['student']->name }} ({{ $row['student']->email }})</td>
+                        <td class="p-2 border">{{ $row['attemptsUsed'] }} / {{ $homework->attemptsAllowed() }}</td>
+                        <td class="p-2 border">{{ $row['lastScore'] ?? '—' }}</td>
+                        <td class="p-2 border">
+                            @if($row['inProgress'])
+                                <span class="text-blue-600">Есть незавершённая попытка</span>
+                            @else
+                                <span class="text-gray-500">—</span>
+                            @endif
+                        </td>
+                        <td class="p-2 border text-center">
+                            <form method="post" action="{{ route('admin.homeworks.attempts.reset', [$homework, $row['student']]) }}"
+                                  onsubmit="return confirm('Обнулить все попытки ученика {{ $row['student']->name }} по этой домашке? Это удалит все его попытки сдачи, включая незавершённую (если есть). Отменить нельзя.');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-600 hover:underline">Обнулить попытки</button>
+                            </form>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
+
     {{-- Ученики, которые записались на курс ПОСЛЕ урока этой домашки — по
          умолчанию не видят её и не могут открыть даже по прямой ссылке
          (см. Homework::isLessonBeforeEnrollment()). Здесь можно точечно
@@ -136,19 +191,6 @@
             Урок этой домашки прошёл до того, как эти ученики записались на курс — обычная логика
             прячет от них домашку. Здесь можно точечно открыть доступ (или закрыть обратно).
         </p>
-
-        @if(session('success'))
-            <div class="mb-4 text-green-600 text-sm">{{ session('success') }}</div>
-        @endif
-        @if ($errors->any())
-            <div class="mb-4 text-red-600 text-sm">
-                <ul class="list-disc pl-5">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
 
         <table class="w-full table-auto border text-sm mb-6">
             <thead>
