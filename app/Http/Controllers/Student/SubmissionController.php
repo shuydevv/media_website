@@ -8,7 +8,9 @@ use App\Models\HomeworkTask;
 use App\Models\Submission;
 use App\Service\FishFoodService;
 use App\Service\Homework\AutoGrader;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class SubmissionController extends Controller
@@ -52,7 +54,7 @@ class SubmissionController extends Controller
 
         $retry = $request->boolean('retry'); // флажок из ссылки «Перерешать работу»
 
-        if (!$retry) {
+        if (! $retry) {
             $existing = Submission::where('homework_id', $homework->id)
                 ->where('user_id', $user->id)
                 ->where('status', '!=', 'in_progress')
@@ -84,10 +86,10 @@ class SubmissionController extends Controller
 
         $attrs = [
             'homework_id' => $homework->id,
-            'user_id'     => $user->id,
-            'attempt_no'  => $attemptsUsed + 1,
-            'answers'     => [],
-            'status'      => 'in_progress',
+            'user_id' => $user->id,
+            'attempt_no' => $attemptsUsed + 1,
+            'answers' => [],
+            'status' => 'in_progress',
         ];
 
         // Пробник — фиксированный таймер на прохождение (3ч30м, см.
@@ -158,7 +160,7 @@ class SubmissionController extends Controller
 
         [$tasks, $task, $total] = $this->resolvePosition($submission, $position);
 
-        if (!$task->isAutoGradable()) {
+        if (! $task->isAutoGradable()) {
             abort(404);
         }
 
@@ -217,49 +219,77 @@ class SubmissionController extends Controller
      */
     private function persistAnswerAndAdvance(Request $request, Submission $submission, HomeworkTask $task, ?string $answer, ?array $result)
     {
-        $answers = $submission->answers ?? [];
-        $perTask = $submission->per_task_results ?? [];
         $fish = app(FishFoodService::class);
 
-        $answers[$task->id] = $answer;
+        // Без этой блокировки — классический lost update: два запроса по
+        // одному submission (двойной клик/тап по «Далее», две открытые
+        // вкладки, повтор на медленной сети) читают один и тот же устаревший
+        // answers/per_task_results, и тот, что сохраняется вторым, молча
+        // затирает ответ, записанный первым, — отсюда жалобы учеников на
+        // пропавшие ответы. Cache::lock — мьютекс на уровне приложения, не
+        // зависит от движка `submissions` (там lockForUpdate() ничего не
+        // даёт даже после перевода на InnoDB — тут гонка не между двумя
+        // читателями одной строки под FOR UPDATE, а между двумя процессами,
+        // каждый из которых читает СВОЮ копию модели до начала блокировки).
+        $lock = Cache::lock("submission-answer:{$submission->id}", 10);
 
-        if ($result !== null) {
-            // Корм за задание = балл за задание (см. FishFoodService::
-            // syncTaskCorm()) — переносим уже начисленное с прошлой попытки
-            // ответить на этот же вопрос, иначе дельта считалась бы от нуля
-            // и корм задваивался бы при переответе.
-            $result['fish_awarded'] = $perTask[$task->id]['fish_awarded'] ?? 0;
-            $perTask[$task->id] = $result;
-        } else {
-            unset($perTask[$task->id]); // ручные проверяет куратор — результата пока нет
+        try {
+            $lock->block(5, function () use ($fish, $request, $submission, $task, $answer, $result) {
+                // Перечитываем из БД под блокировкой — $submission, с которым
+                // пришли в этот метод, мог устареть, пока ждали лок (его
+                // мог только что сохранить конкурентный запрос).
+                $submission->refresh();
+
+                $answers = $submission->answers ?? [];
+                $perTask = $submission->per_task_results ?? [];
+
+                $answers[$task->id] = $answer;
+
+                if ($result !== null) {
+                    // Корм за задание = балл за задание (см. FishFoodService::
+                    // syncTaskCorm()) — переносим уже начисленное с прошлой попытки
+                    // ответить на этот же вопрос, иначе дельта считалась бы от нуля
+                    // и корм задваивался бы при переответе.
+                    $result['fish_awarded'] = $perTask[$task->id]['fish_awarded'] ?? 0;
+                    $perTask[$task->id] = $result;
+                } else {
+                    unset($perTask[$task->id]); // ручные проверяет куратор — результата пока нет
+                }
+
+                // Начисление корма и сохранение ответа — в одной транзакции:
+                // если save() не пройдёт, откатывается и уже начисленный
+                // корм. Без этого при сбое между двумя операциями
+                // fish_awarded оставался бы несохранённым (per_task_results
+                // не записался), и следующая попытка ответить на тот же
+                // вопрос начислила бы корм за него ещё раз поверх уже
+                // списанного в БД баланса.
+                DB::transaction(function () use (&$perTask, $task, $result, $fish, $request, $submission, $answers) {
+                    if ($result !== null) {
+                        $fish->syncTaskCorm($request->user(), $perTask[$task->id]);
+                    }
+
+                    $submission->answers = $answers;
+                    $submission->per_task_results = $perTask;
+                    $submission->save();
+                });
+            });
+        } catch (LockTimeoutException $e) {
+            // Не смогли получить блокировку за 5 секунд — похоже, другой
+            // запрос по этому же submission завис. Не сохраняем ответ
+            // поверх непонятного состояния — лучше явная ошибка (ученик
+            // увидит тост и попробует ещё раз), чем тихая потеря ответа.
+            abort(423, 'Не удалось сохранить ответ — попробуйте ещё раз через несколько секунд.');
         }
-
-        // Начисление корма (пишет в users, InnoDB) и сохранение ответа
-        // (submissions, MyISAM) — в одной транзакции: если save() не
-        // пройдёт, откатывается и уже начисленный корм. Без этого при сбое
-        // между двумя операциями fish_awarded оставался бы несохранённым
-        // (per_task_results не записался), и следующая попытка ответить на
-        // тот же вопрос начислила бы корм за него ещё раз поверх уже
-        // списанного в БД баланса.
-        DB::transaction(function () use (&$perTask, $task, $result, $fish, $request, $submission, $answers) {
-            if ($result !== null) {
-                $fish->syncTaskCorm($request->user(), $perTask[$task->id]);
-            }
-
-            $submission->answers = $answers;
-            $submission->per_task_results = $perTask;
-            $submission->save();
-        });
 
         // Пробник: как и модалка "Верно/Неверно" в check() выше, тост тоже
         // не должен показываться — иначе результат проверки всё равно
         // утекал бы студенту раньше срока, просто другим способом.
         $isMock = ($submission->homework?->type ?? null) === 'mock';
 
-        $trigger = ($result !== null && $result['status'] === 'ok' && !$isMock)
+        $trigger = ($result !== null && $result['status'] === 'ok' && ! $isMock)
             ? ['toast' => [
                 'message' => "Верно! {$result['score']} / {$result['max']} баллов",
-                'icon'    => $fish->mascotImageUrl($fish->levelFor((int) $request->user()->fish_total_fed), 'correct'),
+                'icon' => $fish->mascotImageUrl($fish->levelFor((int) $request->user()->fish_total_fed), 'correct'),
             ]]
             : null;
 
@@ -344,6 +374,7 @@ class SubmissionController extends Controller
 
         if ($claimed === 0) {
             $submission->refresh();
+
             return;
         }
 
@@ -378,13 +409,14 @@ class SubmissionController extends Controller
                 unset($perTask[$tid]['skipped']);
             } else {
                 $hasPendingManual = true;
+
                 continue;
             }
 
             $manualScore += (int) $perTask[$tid]['score'];
         }
 
-        $submission->autocheck_score  = $autoScore;
+        $submission->autocheck_score = $autoScore;
         $submission->per_task_results = $perTask;
 
         if ($hasPendingManual) {
@@ -397,7 +429,7 @@ class SubmissionController extends Controller
             // Ручных заданий либо нет вовсе, либо все пустые и уже закрыты
             // нулём выше — куратору отправлять нечего, можно сразу "Проверено".
             $submission->manual_score = $manualScore;
-            $submission->total_score  = $autoScore + $manualScore;
+            $submission->total_score = $autoScore + $manualScore;
             $submission->status = 'checked';
         }
 
@@ -423,7 +455,7 @@ class SubmissionController extends Controller
      */
     private function autoFinishIfExpired(Submission $submission): void
     {
-        if ($submission->status !== 'in_progress' || !$submission->isExpired()) {
+        if ($submission->status !== 'in_progress' || ! $submission->isExpired()) {
             return;
         }
 
@@ -452,7 +484,7 @@ class SubmissionController extends Controller
         // дефолт по-другому (?? 2, не ловит явный 0), из-за чего "Перерешать
         // работу" могла быть недоступна, хотя лимит ещё не исчерпан.
         $homework = (object) [
-            'id'    => $submission->homework_id,
+            'id' => $submission->homework_id,
             'title' => $hwRow->title ?? 'Домашняя работа',
             'tasks' => $tasks,
             'attempts_allowed' => Homework::normalizeAttemptsAllowed($hwRow->attempts_allowed ?? null),
@@ -498,18 +530,18 @@ class SubmissionController extends Controller
         $perTask = $submission->per_task_results ?? [];
 
         return [
-            'submission'  => $submission,
-            'homework'    => Homework::find($submission->homework_id),
-            'tasks'       => $tasks,
-            'task'        => $task,
-            'position'    => $position,
-            'total'       => $total,
+            'submission' => $submission,
+            'homework' => Homework::find($submission->homework_id),
+            'tasks' => $tasks,
+            'task' => $task,
+            'position' => $position,
+            'total' => $total,
             'savedAnswer' => $answers[$task->id] ?? null,
             'savedResult' => $perTask[$task->id] ?? null,
             'checkResult' => $checkResult,
             'checkAnswer' => $checkAnswer,
-            'fishLevel'   => app(FishFoodService::class)->levelFor((int) $request->user()->fish_total_fed),
-            'expiresAt'   => $submission->expires_at?->toIso8601String(),
+            'fishLevel' => app(FishFoodService::class)->levelFor((int) $request->user()->fish_total_fed),
+            'expiresAt' => $submission->expires_at?->toIso8601String(),
         ];
     }
 
@@ -519,14 +551,14 @@ class SubmissionController extends Controller
         $perTask = $submission->per_task_results ?? [];
 
         return [
-            'submission'  => $submission,
-            'homework'    => Homework::find($submission->homework_id),
-            'tasks'       => $tasks,
-            'answers'     => $answers,
-            'perTask'     => $perTask,
+            'submission' => $submission,
+            'homework' => Homework::find($submission->homework_id),
+            'tasks' => $tasks,
+            'answers' => $answers,
+            'perTask' => $perTask,
             'allAnswered' => $tasks->every(fn (HomeworkTask $t) => array_key_exists($t->id, $answers)),
-            'error'       => $error,
-            'expiresAt'   => $submission->expires_at?->toIso8601String(),
+            'error' => $error,
+            'expiresAt' => $submission->expires_at?->toIso8601String(),
         ];
     }
 
@@ -543,13 +575,13 @@ class SubmissionController extends Controller
 
         $nextPosition = null;
         foreach ($tasks as $i => $t) {
-            if (!array_key_exists($t->id, $answers)) {
+            if (! array_key_exists($t->id, $answers)) {
                 $nextPosition = $i + 1;
                 break;
             }
         }
 
-        if (!$this->isHtmx($request)) {
+        if (! $this->isHtmx($request)) {
             return $nextPosition
                 ? redirect()->route('student.submissions.question', [$submission, $nextPosition])
                 : redirect()->route('student.submissions.finish', $submission);
@@ -605,7 +637,7 @@ class SubmissionController extends Controller
         $answers = $submission->answers ?? [];
 
         foreach ($tasks as $i => $t) {
-            if (!array_key_exists($t->id, $answers)) {
+            if (! array_key_exists($t->id, $answers)) {
                 return redirect()->route('student.submissions.question', [$submission, $i + 1]);
             }
         }

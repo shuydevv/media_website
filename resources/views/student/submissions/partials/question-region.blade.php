@@ -60,6 +60,7 @@
          hx-swap="innerHTML"
          hx-push-url="true"
          hx-confirm="Перейти к отправке работы? Прогресс сохранится, неотвеченные вопросы можно будет решить позже."
+         hx-disabled-elt="this"
          class="relative inline-flex items-center px-3 py-1.5 rounded-lg border border-zinc-300 text-xs sm:text-sm text-zinc-600 hover:bg-zinc-50 whitespace-nowrap">
         <span class="btn-label">Перейти к отправке</span>
         <span class="btn-spinner">
@@ -88,6 +89,7 @@
          hx-target="#wizard-app"
          hx-swap="innerHTML"
          hx-push-url="true"
+         hx-disabled-elt="this"
          class="pill-nav-item inline-flex items-center justify-center w-9 h-9 rounded-lg border text-sm font-medium {{ $pillClasses[$st] }} {{ ($i + 1) === $position ? 'ring-2 ring-blue-500' : '' }}">
         {{ $i + 1 }}
       </a>
@@ -166,7 +168,8 @@
       <form method="POST" action="{{ route('student.submissions.question.save', [$submission, $position]) }}"
             hx-post="{{ route('student.submissions.question.save', [$submission, $position]) }}"
             hx-target="#wizard-app"
-            hx-swap="innerHTML">
+            hx-swap="innerHTML"
+            hx-disabled-elt="find button[type=submit]">
         @csrf
         <label class="block text-xs sm:text-sm text-zinc-700 mb-2">Ваш ответ</label>
         <textarea name="answer" rows="5" class="w-full border rounded-xl px-3 py-2 sm:py-3 text-sm sm:text-base">{{ old('answer', $prefill) }}</textarea>
@@ -209,7 +212,8 @@
       <form method="POST" action="{{ route('student.submissions.question.check', [$submission, $position]) }}"
             hx-post="{{ route('student.submissions.question.check', [$submission, $position]) }}"
             hx-target="#wizard-app"
-            hx-swap="innerHTML">
+            hx-swap="innerHTML"
+            hx-disabled-elt="find button[type=submit]">
         @csrf
         <label class="block text-xs sm:text-sm text-zinc-700">
           Ваш ответ
@@ -312,7 +316,8 @@
           <form class="flex-1" method="POST" action="{{ route('student.submissions.question.save', [$submission, $position]) }}"
                 hx-post="{{ route('student.submissions.question.save', [$submission, $position]) }}"
                 hx-target="#wizard-app"
-                hx-swap="innerHTML">
+                hx-swap="innerHTML"
+                hx-disabled-elt="find button[type=submit]">
             @csrf
             <input type="hidden" name="answer" value="{{ $checkAnswer }}">
             <button type="submit" class="relative w-full inline-flex items-center justify-center px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base">

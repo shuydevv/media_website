@@ -34,6 +34,15 @@
                     evt.detail.headers['X-CSRF-TOKEN'] = token.content;
                 }
             });
+
+            // Без таймаута зависший запрос (плохая сеть, БД под нагрузкой)
+            // крутит спиннер на кнопке вечно — ни ошибки, ни подсказки, что
+            // делать (см. htmx:timeout ниже). htmx-скрипт загружается через
+            // defer, поэтому ждём DOMContentLoaded — он гарантированно
+            // выполняется после всех defer-скриптов, включая htmx.org.
+            document.addEventListener('DOMContentLoaded', function () {
+                htmx.config.timeout = 15000;
+            });
         </script>
 
 
@@ -224,8 +233,18 @@
                     duration: 4000,
                 });
             }
+            // Запрос завис дольше htmx.config.timeout (см. выше) — раньше в
+            // этом случае кнопка просто вечно крутила спиннер без единой
+            // подсказки, что пошло не так (жалобы учеников на «зависает»).
+            function notifyTimeout() {
+                spawnToast('Сервер долго не отвечает. Проверьте соединение и попробуйте ещё раз.', {
+                    badge: 'bg-rose-50 text-rose-800',
+                    duration: 4000,
+                });
+            }
             document.body.addEventListener('htmx:responseError', notifyNetworkError);
             document.body.addEventListener('htmx:sendError', notifyNetworkError);
+            document.body.addEventListener('htmx:timeout', notifyTimeout);
         })();
         </script>
 

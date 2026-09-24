@@ -63,6 +63,7 @@
          hx-target="#wizard-app"
          hx-swap="innerHTML"
          hx-push-url="true"
+         hx-disabled-elt="this"
          class="relative flex items-center justify-between px-4 py-3 hover:bg-gray-50">
         <span class="btn-label text-sm sm:text-base text-zinc-800">Вопрос {{ $i + 1 }}</span>
         <span class="btn-spinner">
@@ -87,7 +88,8 @@
     <form method="POST" action="{{ route('student.submissions.finish.submit', $submission) }}"
           hx-post="{{ route('student.submissions.finish.submit', $submission) }}"
           hx-target="#wizard-app"
-          hx-swap="innerHTML">
+          hx-swap="innerHTML"
+          hx-disabled-elt="find button[type=submit]">
       @csrf
       <button type="submit" class="relative inline-flex items-center justify-center px-5 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base">
         <span class="btn-label">Завершить и отправить работу</span>
