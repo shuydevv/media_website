@@ -45,6 +45,23 @@
   $answers    = $submission->answers ?? [];
   $perTaskRes = $submission->per_task_results ?? [];
 
+  // Куратор сохраняет оценки по заданиям сразу (автосейв), а 'checked' ставится
+  // только по «Завершить проверку». Пока работа не завершена целиком, ученик не
+  // должен видеть ни баллы, ни обоснование, ни комментарий по ручным заданиям —
+  // иначе результат «протекает» по частям и может ещё поменяться. Прячем строки
+  // результата у ручных заданий с непустым ответом (пустые ответы закрыты
+  // нулём ещё при сдаче — см. Student\SubmissionController::finalize(), там
+  // куратору нечего проверять) — всё ниже по шаблону читает уже $perTaskRes.
+  if ($submission->status !== 'checked') {
+      foreach ($manualTasks as $mt) {
+          $mtid = $mt->id ?? ("t_manual_{$mt->_origIdx}");
+          $mAns = $answers[$mtid] ?? null;
+          if (is_scalar($mAns) && trim((string)$mAns) !== '') {
+              unset($perTaskRes[$mtid]);
+          }
+      }
+  }
+
   $getPerTask = function($taskId, $key, $default = null) use ($perTaskRes) {
       return $taskId !== null ? ($perTaskRes[$taskId][$key] ?? $default) : $default;
   };

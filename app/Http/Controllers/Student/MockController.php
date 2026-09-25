@@ -97,14 +97,15 @@ class MockController extends Controller
                 ? (int) $progressSubmission->autocheck_score
                 : (int) $autoTasks->sum(fn ($t) => (int) ($perTaskResults[$t->id]['score'] ?? 0));
 
+            // Оценки куратора попадают в per_task_results сразу (автосейв в
+            // Mentor\SubmissionReviewController::saveTask), а финальными
+            // становятся только при status='checked' — до этого баллы ручной
+            // части ученику не показываем, иначе результат протекает по
+            // частям и может ещё измениться. Пустые ответы на ручные задания
+            // закрываются нулём при сдаче, так что суммировать нечего.
             $manualScore = ($progressSubmission?->status === 'checked' && $progressSubmission->manual_score !== null)
                 ? (int) $progressSubmission->manual_score
-                : (int) $manualTasks->sum(function ($t) use ($perTaskResults) {
-                    $row = $perTaskResults[$t->id] ?? [];
-                    $hasScore = array_key_exists('score', $row) && $row['score'] !== null;
-
-                    return (!($row['skipped'] ?? false) && $hasScore) ? (int) $row['score'] : 0;
-                });
+                : 0;
 
             $pct = fn (int $score, int $max) => $max > 0 ? (int) round(min(100, max(0, $score * 100 / $max))) : 0;
 

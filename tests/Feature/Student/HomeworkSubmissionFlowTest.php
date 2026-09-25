@@ -306,6 +306,56 @@ class HomeworkSubmissionFlowTest extends TestCase
         $this->assertLessThanOrEqual(3, $saved, 'Оценка куратора должна клампиться до max_score задания (3), а не приниматься как есть');
     }
 
+    /**
+     * Автосейв куратора пишет оценку в per_task_results сразу, а статус
+     * 'checked' появляется только по «Завершить проверку». До этого момента
+     * ученик не должен видеть ни баллы, ни обоснование, ни комментарий.
+     *
+     * @test
+     */
+    public function student_does_not_see_mentor_review_until_it_is_finished()
+    {
+        $student = $this->makeStudent();
+        $mentor = $this->makeMentor();
+        $course = $this->makeCourse();
+        $lesson = $this->makeLesson($course);
+        $this->enroll($student, $course);
+
+        $homework = $this->makeHomework($course, $lesson);
+        $manual = $this->makeManualTask($homework, 1, 3);
+
+        $this->actingAs($student)->get(route('student.submissions.create', $homework));
+        $submission = Submission::where('homework_id', $homework->id)->where('user_id', $student->id)->firstOrFail();
+
+        $this->actingAs($student)
+            ->post(route('student.submissions.question.save', [$submission, 1]), ['answer' => 'мой развёрнутый ответ']);
+        $this->actingAs($student)->post(route('student.submissions.finish.submit', $submission));
+
+        $this->actingAs($mentor)->get(route('mentor.submissions.show', $submission))->assertOk();
+        $this->actingAs($mentor)
+            ->postJson(route('mentor.review.task.save', [$submission, $manual->id]), [
+                'score' => 2,
+                'reason' => 'СЕКРЕТНОЕ-ОБОСНОВАНИЕ',
+                'comment' => 'СЕКРЕТНЫЙ-КОММЕНТАРИЙ',
+            ])
+            ->assertOk();
+
+        $this->actingAs($student)
+            ->get(route('student.submissions.show', $submission))
+            ->assertOk()
+            ->assertDontSee('СЕКРЕТНОЕ-ОБОСНОВАНИЕ')
+            ->assertDontSee('СЕКРЕТНЫЙ-КОММЕНТАРИЙ')
+            ->assertSee('Ожидает проверки');
+
+        $this->actingAs($mentor)->post(route('mentor.review.finish', $submission));
+
+        $this->actingAs($student)
+            ->get(route('student.submissions.show', $submission))
+            ->assertOk()
+            ->assertSee('СЕКРЕТНОЕ-ОБОСНОВАНИЕ')
+            ->assertSee('СЕКРЕТНЫЙ-КОММЕНТАРИЙ');
+    }
+
     /** @test */
     public function overdue_homework_is_marked_expired_and_earns_no_completion_bonus()
     {

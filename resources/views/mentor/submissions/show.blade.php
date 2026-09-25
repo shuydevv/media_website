@@ -392,6 +392,8 @@
         <div class="flex flex-wrap items-center gap-2 justify-start pt-1">
           {{-- Кнопки слева --}}
           <div class="flex flex-wrap items-center gap-2">
+            {{-- ВРЕМЕННО скрыто: AI-проверка задания пока не нужна. Чтобы
+                 вернуть, раскомментировать (JS-обработчик regen ниже жив).
             <button
               formaction="{{ route('mentor.review.task.regen', [$submission, $tid]) }}"
               class="px-3 py-2 rounded-lg border-2 border-purple-200 text-purple-700 hover:bg-purple-50"
@@ -403,6 +405,7 @@
               </svg>
               AI-проверка
             </button>
+            --}}
 
 {{-- Пропустить / Вернуть --}}
   @if(!$isSkipped)
@@ -422,11 +425,8 @@
     </button>
   @endif
 
-            <button
-              type="submit"
-              class="save-task-btn px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-              disabled
-            >Сохранить</button>
+            {{-- Кнопки «Сохранить» нет: правки уходят на сервер автоматически
+                 (см. autosave в скрипте ниже), тут только статус. --}}
             <span class="save-status text-xs text-gray-500"></span>
           </div>
 
@@ -493,12 +493,24 @@ document.addEventListener('DOMContentLoaded', () => {
   function isCardClosed(card) {
     return card.dataset.skipped === '1' || card.dataset.state === 'done';
   }
+  // «Завершить»/«Завершить и взять следующую» раньше блокировались только
+  // сервером при загрузке страницы ($allManualClosed), а автосохранение идёт
+  // через fetch без перезагрузки — кнопки так и оставались disabled, работа
+  // висела у куратора вечно. Поэтому доступность пересчитываем здесь, на
+  // каждом изменении состояния карточек.
+  const finishBtns = document.querySelectorAll('.finish-btn, .finish-next-btn');
   function updateProgressCount() {
-    if (!progressCountEl) return;
     const cards = document.querySelectorAll('.review-card');
     let closed = 0;
     cards.forEach((c) => { if (isCardClosed(c)) closed++; });
-    progressCountEl.textContent = String(closed);
+    if (progressCountEl) progressCountEl.textContent = String(closed);
+
+    const allClosed = closed === cards.length;
+    finishBtns.forEach((b) => {
+      b.disabled = !allClosed;
+      if (allClosed) b.removeAttribute('title');
+      else b.title = 'Завершение доступно, когда все задания проверены или отправлены в отказ';
+    });
   }
 
   function cardSetState(card, state){
@@ -531,11 +543,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const consentWrap = form.querySelector('.consent-wrap');
     const consentChk  = consentWrap ? consentWrap.querySelector('.consent-checkbox') : null;
-    const saveBtn     = form.querySelector('.save-task-btn');
     const statusEl    = form.querySelector('.save-status');
 
-    const hasDb = form.dataset.hasDb === '1';
-    if (hasDb) cardSetState(card, 'done');
+    // Можно ли сейчас отправлять карточку на сервер (валидный балл + согласие
+    // с AI, если оно требуется) — пересчитывается в updateSaveAvailability().
+    let canSave = false;
+
+    if (form.dataset.hasDb === '1') cardSetState(card, 'done');
 
     // Черновик в localStorage (B6) — подстраховка от истёкшего лока
     // (ниже все поля формы блокируются разом) и случайного reload.
@@ -560,18 +574,22 @@ document.addEventListener('DOMContentLoaded', () => {
       try { localStorage.removeItem(draftKey); } catch (e) {}
     }
 
-    const draft = readDraft();
-    if (draft) {
-      let restored = false;
-      if (scoreVisible && scoreVisible.value === '' && draft.score)          { scoreVisible.value = draft.score; restored = true; }
-      if (reasonEl && reasonEl.value.trim() === '' && draft.reason)          { reasonEl.value = draft.reason; restored = true; }
-      if (commentEl && commentEl.value.trim() === '' && draft.comment)       { commentEl.value = draft.comment; restored = true; }
-      if (restored && statusEl) statusEl.textContent = 'Восстановлен черновик';
+    let autosaveTimer = null;
+    let editVersion = 0;               // растёт на каждую правку — см. runSave()
+    let saveChain = Promise.resolve(); // сохранения идут строго по очереди
+
+    // Отправка карточки на сервер. Сохранения сериализуем: иначе два запроса
+    // подряд (правка во время предыдущего fetch) могли бы прийти на сервер
+    // в обратном порядке, и старое значение затёрло бы новое. Значения формы
+    // читаем в момент реальной отправки, а не постановки в очередь.
+    function doSave() {
+      saveChain = saveChain.then(runSave);
+      return saveChain;
     }
 
-    let autosaveTimer = null;
-
-    async function doSave() {
+    async function runSave() {
+      if (!canSave) return;
+      const versionAtSend = editVersion;
       if (statusEl) statusEl.textContent = 'Сохраняем…';
       try {
         const resp = await fetch(form.action, {
@@ -586,37 +604,58 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await resp.json().catch(() => null);
         if (!resp.ok || !data || !data.ok) throw new Error('save failed');
 
-        dirtyTasks.delete(taskId);
-        clearDraft();
         form.dataset.hasDb = '1';
         cardSetState(card, 'done');
-        if (statusEl) statusEl.textContent = 'Сохранено';
+        // Если пока шёл запрос куратор успел что-то ещё поправить — карточка
+        // остаётся «несохранённой» до следующего автосейва.
+        if (versionAtSend === editVersion) {
+          dirtyTasks.delete(taskId);
+          clearDraft();
+          if (statusEl) statusEl.textContent = 'Сохранено';
+        }
       } catch (e) {
         console.error(e);
         if (statusEl) statusEl.textContent = 'Ошибка сохранения, попробуйте ещё раз';
       }
     }
 
-    form.addEventListener('submit', (ev) => {
-      // Только «Сохранить» уходит через fetch — «Пропустить»/«Вернуть» и
-      // AI-кнопки используют formaction и должны навигировать как обычно
-      // (AI-кнопка вообще не доходит сюда — её click-обработник ниже сам
-      // делает preventDefault до наступления submit).
-      if (ev.submitter !== saveBtn) return;
-      ev.preventDefault();
-      if (autosaveTimer) { clearTimeout(autosaveTimer); autosaveTimer = null; }
-      doSave();
-    });
-
-    // Горячая клавиша Ctrl/Cmd+Enter (C9) — привязана к конкретной карточке
-    // через её форму, см. глобальный keydown-обработник ниже.
+    // Ctrl/Cmd+Enter — сохранить карточку немедленно, не дожидаясь автосейва.
     form.__mentorReviewSave = () => {
       if (autosaveTimer) { clearTimeout(autosaveTimer); autosaveTimer = null; }
-      doSave();
+      return doSave();
     };
 
+    // Перед «Завершить»: досохранить только реально изменённую карточку
+    // (отложенная правка либо неудачный прошлый сейв) и дождаться идущего
+    // запроса. Нетронутые карточки НЕ пересылаем: saveTask() снимает флаг
+    // skipped, и «Пропущено» превратилось бы в обычную карточку.
+    form.__mentorReviewFlush = () => {
+      if (autosaveTimer || dirtyTasks.has(taskId)) {
+        if (autosaveTimer) { clearTimeout(autosaveTimer); autosaveTimer = null; }
+        return doSave();
+      }
+      return saveChain;
+    };
+
+    form.addEventListener('submit', (ev) => {
+      // Обычной отправкой формы остались только «Пропустить»/«Вернуть» — они
+      // используют formaction и должны навигировать как обычно. Неявную
+      // отправку (без нажатой кнопки, напр. Enter в поле) глушим: иначе она
+      // молча сработала бы как первая submit-кнопка формы.
+      if (!ev.submitter) ev.preventDefault();
+    });
+
+    // Пустой балл НЕ превращаем в 0: без кнопки «Сохранить» карточка
+    // считается проверенной только когда куратор явно ввёл балл (в том числе
+    // 0), иначе автосейв тихо ставил бы ноль, стоило лишь начать писать
+    // комментарий.
     function syncScoreToHidden() {
-      let v = scoreVisible && scoreVisible.value !== '' ? Number(scoreVisible.value) : NaN;
+      const raw = scoreVisible ? scoreVisible.value : '';
+      if (raw === '') {
+        if (scoreHidden) scoreHidden.value = '';
+        return;
+      }
+      let v = Number(raw);
       if (Number.isNaN(v)) v = 0;
       if (v < 0) v = 0;
       if (v > max) v = max;
@@ -625,11 +664,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateSaveAvailability() {
-      let v = scoreVisible && scoreVisible.value !== '' ? Number(scoreVisible.value) : NaN;
-      if (Number.isNaN(v)) v = 0;
-      const validScore = v >= 0 && v <= max;
-
-      if (scoreHidden) scoreHidden.value = String(Math.floor(v));
+      const raw = scoreVisible ? scoreVisible.value : '';
+      const v = raw !== '' ? Number(raw) : NaN;
+      const validScore = !Number.isNaN(v) && v >= 0 && v <= max;
 
       let consentOk = true;
       if (consentWrap && !consentWrap.classList.contains('hidden')) {
@@ -640,10 +677,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // TaskContentRules и SubmissionReviewController::saveTask, оба поля
       // nullable на сервере): куратор может сохранить оценку, не заполняя
       // их, если это осмысленно (например, работа оценена без комментария).
-      const canSave = validScore && consentOk;
-      saveBtn.disabled = !canSave;
+      canSave = validScore && consentOk;
 
-      if (!hasDb) {
+      if (form.dataset.hasDb !== '1') {
         if (canSave) cardSetState(card, 'editing');
         else         cardSetState(card, 'idle');
       }
@@ -659,17 +695,19 @@ document.addEventListener('DOMContentLoaded', () => {
       syncScoreToHidden();
       updateSaveAvailability();
 
+      editVersion++;
       dirtyTasks.add(taskId);
       writeDraft();
-      if (statusEl) statusEl.textContent = '';
+      if (statusEl) {
+        statusEl.textContent = canSave ? '' : 'Укажите баллы — без них задание не сохранится';
+      }
 
-      // Автосохранение (B5) — тот же путь, что и ручной клик по «Сохранить»,
-      // через ~1.5с простоя после последней правки, только когда форма
-      // валидна для сохранения (см. updateSaveAvailability()).
+      // Автосохранение (B5) — через ~1.5с простоя после последней правки,
+      // только когда карточка валидна для сохранения (см. updateSaveAvailability()).
       if (autosaveTimer) clearTimeout(autosaveTimer);
       autosaveTimer = setTimeout(() => {
         autosaveTimer = null;
-        if (!saveBtn.disabled) doSave();
+        if (canSave) doSave();
       }, 1500);
     }
 
@@ -695,13 +733,60 @@ document.addEventListener('DOMContentLoaded', () => {
       el.addEventListener('change', onAnyFieldEdited);
     });
 
-    if (consentChk) consentChk.addEventListener('change', updateSaveAvailability);
+    // Согласие с AI не проходит через onAnyFieldEdited() (тот, наоборот,
+    // сбрасывает галочку), поэтому ставим в очередь сохранение отдельно.
+    if (consentChk) consentChk.addEventListener('change', () => {
+      updateSaveAvailability();
+      if (canSave) {
+        editVersion++;
+        dirtyTasks.add(taskId);
+        form.__mentorReviewSave();
+      }
+    });
 
     syncScoreToHidden();
     updateSaveAvailability();
+
+    // Восстановление черновика — только в пустые поля, чтобы не перетереть
+    // то, что реально уже сохранено в БД или пришло от AI. Раз кнопки
+    // «Сохранить» больше нет, восстановленное сразу уходит в автосейв (через
+    // onAnyFieldEdited), а не ждёт, пока куратор что-нибудь допечатает.
+    const draft = readDraft();
+    if (draft) {
+      let restored = false;
+      if (scoreVisible && scoreVisible.value === '' && draft.score)          { scoreVisible.value = draft.score; restored = true; }
+      if (reasonEl && reasonEl.value.trim() === '' && draft.reason)          { reasonEl.value = draft.reason; restored = true; }
+      if (commentEl && commentEl.value.trim() === '' && draft.comment)       { commentEl.value = draft.comment; restored = true; }
+      if (restored) {
+        [reasonEl, commentEl].forEach((el) => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } });
+        onAnyFieldEdited();
+        if (statusEl && canSave) statusEl.textContent = 'Восстановлен черновик';
+      }
+    }
   });
 
   updateProgressCount();
+
+  // «Завершить» / «Завершить и взять следующую»: перед отправкой дожидаемся
+  // автосохранения всех карточек (debounce 1.5с — последняя правка могла ещё
+  // не уйти на сервер, и статус 'checked' закрыл бы работу без неё).
+  ['finish-form', 'finish-next-form'].forEach((id) => {
+    const f = document.getElementById(id);
+    if (!f) return;
+    f.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      finishBtns.forEach((b) => { b.disabled = true; });
+
+      await Promise.all(Array.from(perTaskForms).map((pf) => pf.__mentorReviewFlush && pf.__mentorReviewFlush()));
+
+      if (dirtyTasks.size > 0) {
+        alert('Не все изменения сохранились. Проверьте, что во всех заданиях указаны баллы и нет ошибок сохранения, и попробуйте ещё раз.');
+        updateProgressCount();
+        return;
+      }
+      f.submit(); // программный submit() не вызывает событие повторно
+    });
+  });
 
   // Быстрые фразы (C7) — вставляют текст в соответствующее textarea той же
   // карточки и дёргают 'input' на самом textarea (а не на форме — обработчики
@@ -717,7 +802,7 @@ document.addEventListener('DOMContentLoaded', () => {
     el.dispatchEvent(new Event('input', { bubbles: true }));
   });
 
-  // Горячие клавиши (C9): Ctrl/Cmd+Enter — сохранить текущую карточку;
+  // Горячие клавиши (C9): Ctrl/Cmd+Enter — сохранить текущую карточку сразу, не дожидаясь автосейва;
   // Alt+вверх/вниз — перейти к следующей/предыдущей непроверенной карточке.
   document.addEventListener('keydown', (ev) => {
     if ((ev.ctrlKey || ev.metaKey) && ev.key === 'Enter') {
