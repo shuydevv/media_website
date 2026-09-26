@@ -37,11 +37,36 @@
       </label>
 
       <div class="pt-2">
-        <button class="w-full rounded-lg px-4 py-3 bg-zinc-900 text-white font-medium hover:bg-zinc-800 transition">
-          Отправить ссылку
+        <button id="reset-submit" class="w-full rounded-lg px-4 py-3 bg-zinc-900 text-white font-medium hover:bg-zinc-800 transition disabled:opacity-50 disabled:cursor-not-allowed">
+          {{ session('status') ? 'Отправить ещё раз' : 'Отправить ссылку' }}
         </button>
       </div>
     </form>
+
+    <script>
+      (function () {
+        var form = document.currentScript.previousElementSibling;
+        var btn = document.getElementById('reset-submit');
+        var label = btn.textContent.trim();
+        var left = {{ (int) session('resend_in', 0) }};
+
+        function tick() {
+          if (left <= 0) { btn.disabled = false; btn.textContent = label; return; }
+          btn.disabled = true;
+          btn.textContent = 'Отправить ещё раз через ' + left + ' сек.';
+          left--;
+          setTimeout(tick, 1000);
+        }
+        tick();
+
+        // письмо отправляется синхронно и может занять несколько секунд —
+        // блокируем кнопку, чтобы не было двойных отправок
+        form.addEventListener('submit', function () {
+          btn.disabled = true;
+          btn.textContent = 'Отправляем…';
+        });
+      })();
+    </script>
 
     <div class="mt-6 pt-6 border-t border-gray-200 text-center">
       <p class="text-sm text-gray-600">

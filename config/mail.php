@@ -41,7 +41,9 @@ return [
             'encryption' => env('MAIL_ENCRYPTION', 'tls'),
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
-            'timeout' => null,
+            // без явного таймаута недоступный SMTP вешает запрос на ~60 сек
+            // (default_socket_timeout), а письмо сброса пароля шлётся синхронно
+            'timeout' => env('MAIL_TIMEOUT', 15),
             'local_domain' => env('MAIL_EHLO_DOMAIN'),
         ],
 
