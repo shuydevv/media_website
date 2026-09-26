@@ -29,7 +29,7 @@
     </form>
 
     <div class="mt-6 pt-6 border-t border-gray-200">
-      <p class="text-sm text-gray-500">{{ __('Нет доступа к почте? Вы можете выйти из аккаунта и зарегистрироваться на другую почту') }}</p>
+      <p class="text-sm text-gray-500">Нет доступа к почте? Напишите в поддержку.</p>
       <form action="{{ route('logout') }}" method="post" class="mt-2">
         @csrf
         <button type="submit" class="link-custom text-sm text-gray-700">{{ __('Выйти из аккаунта') }}</button>

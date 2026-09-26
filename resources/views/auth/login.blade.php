@@ -49,10 +49,6 @@
         </div>
       @endif
     </form>
-
-    <p class="mt-6 pt-6 border-t border-gray-200 text-sm text-gray-600 text-center">
-      {{ __('У вас еще нет аккаунта?') }} <a class="link-custom text-gray-900 font-medium" href="{{ route('register') }}">{{ __('Зарегистрируйтесь!') }}</a>
-    </p>
   </div>
 </div>
 @endsection

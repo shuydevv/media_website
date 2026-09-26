@@ -596,8 +596,11 @@ Route::get('/register', fn () => redirect()->route('auth.email.show'))->name('re
 
 use App\Http\Controllers\HomeRedirectController;
 
+// Без 'verified': это только редирект в кабинет по роли, а самостоятельной
+// регистрации больше нет — иначе вошедшие по телефону (почта-заглушка
+// @phone.local) попадали на страницу подтверждения несуществующей почты.
 Route::get('/home', HomeRedirectController::class)
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('home');
 
 use App\Http\Controllers\LeadController;
