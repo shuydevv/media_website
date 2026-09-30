@@ -15,8 +15,9 @@ class img extends Component
      * Create a new component instance.
      */
     public function __construct(
-        public string $img,
-        public string $description,
+        public string $description = '',
+        public ?string $src = null,
+        public string $img = '',
     ) {
     }
 
@@ -26,7 +27,7 @@ class img extends Component
     public function render(): View|Closure|string
     {
         return view('components.img', [
-            'images' => $this->currentPostImages(),
+            'image' => $this->currentPostImage($this->src, $this->img),
         ]);
     }
 }

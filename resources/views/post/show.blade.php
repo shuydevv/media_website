@@ -41,7 +41,8 @@
         <x-cover title1="{{$post->title}}. " title2="{{$post->title2}}" description="{{$post->description}}" :tags="$post->tags" isTherePlans="{{ $isTherePlans }}" img="{{ $post->main_image_url }}" />
 
         <x-block>
-            {!! Blade::render(\App\Support\BladeContent::fixAttributeQuotes($post->content)) !!}
+            {{-- Контент уже отрендерен ContentRenderer'ом (без Blade::render). --}}
+            {!! $content !!}
         </x-block>
 
         @if($post->category)

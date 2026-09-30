@@ -15,10 +15,11 @@ class quote extends Component
      * Create a new component instance.
      */
     public function __construct(
-        public string $text,
-        public string $name,
-        public string $description,
-        public string $img,
+        public string $text = '',
+        public string $name = '',
+        public string $description = '',
+        public ?string $src = null,
+        public string $img = '',
     ) {
     }
 
@@ -28,7 +29,7 @@ class quote extends Component
     public function render(): View|Closure|string
     {
         return view('components.quote', [
-            'images' => $this->currentPostImages(),
+            'image' => $this->currentPostImage($this->src, $this->img),
         ]);
     }
 }

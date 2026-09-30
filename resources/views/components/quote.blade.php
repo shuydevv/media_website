@@ -1,6 +1,3 @@
-    @php
-        $image = $images[$img] ?? null;
-    @endphp
     <div class="rounded-lg border md:p-4 p-2 md:mt-16 mt-10 md:mb-20 mb-12 flex justify-center flex-col items-center">
         <img class="md:mb-3 mb-1" src="{{asset('img/quote.svg')}}" alt="quote">
         <p class="text-center italic md:text-lg text-base sans font-medium text-zinc-900">{{$text}}</p>

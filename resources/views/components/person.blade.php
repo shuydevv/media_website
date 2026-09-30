@@ -1,6 +1,3 @@
-@php
-    $image = $images[$img] ?? null;
-@endphp
 <div class="flex flex-col items-center justify-center md:mt-10 md:mb-12 mt-8 mb-8">
     @if($image)
         <img class="rounded-full w-28 h-28 mb-3 object-cover" src="{{ asset('storage/' . $image->name) }}" alt="{{ $title }}">

@@ -4,6 +4,7 @@ namespace App\View\Components\Concerns;
 
 use App\Models\Image;
 use App\Models\Post;
+use App\Support\PostContent\PostImages;
 use Illuminate\Support\Collection;
 
 /**
@@ -18,19 +19,19 @@ use Illuminate\Support\Collection;
  * уже находит нужный Post через route model binding — просто нужно его
  * забрать, а не искать заново.
  *
- * Надёжнее всего — когда контроллер сам кладёт уже загруженные картинки
- * через CurrentPostImages::provide(): тогда компонент вообще не зависит от
- * роута/параметра запроса. route('post') остаётся фоллбеком.
+ * Сама страница поста через эти классы больше не ходит — её контент
+ * рендерит PostContent\ContentRenderer и передаёт картинки явно. Этот путь
+ * остался для контента, который ещё рендерится через Blade::render().
  */
 trait ResolvesCurrentPostImages
 {
+    protected function currentPostImage(?string $src, ?string $img): ?Image
+    {
+        return PostImages::find($this->currentPostImages(), $src, $img);
+    }
+
     protected function currentPostImages(): Collection
     {
-        $provided = CurrentPostImages::get();
-        if ($provided !== null) {
-            return $provided;
-        }
-
         $post = request()->route('post');
 
         if (!($post instanceof Post)) {
