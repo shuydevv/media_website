@@ -41,18 +41,66 @@ class ContentRenderer
 
     public function render(?string $content, Collection $images, array $logContext = []): HtmlString
     {
-        $content = (string) $content;
-        $pos = 0;
-        $nodes = $this->parseNodes($content, $pos, null, $logContext);
+        $malformed = [];
+        $nodes = $this->parse((string) $content, $malformed);
+
+        foreach ($malformed as $fragment) {
+            Log::warning('Post content: не удалось разобрать тег', $logContext + ['fragment' => $fragment]);
+        }
 
         return new HtmlString($this->renderNodes($nodes, $images, $logContext));
+    }
+
+    /**
+     * Разбор без рендера — для проверки контента при сохранении в админке.
+     *
+     * @return array{
+     *     images: list<array{tag: string, src: ?string, img: ?string}>,
+     *     unknown: list<string>,
+     *     malformed: list<string>,
+     * }
+     */
+    public function inspect(?string $content): array
+    {
+        $malformed = [];
+        $nodes = $this->parse((string) $content, $malformed);
+
+        $result = ['images' => [], 'unknown' => [], 'malformed' => $malformed];
+        $walk = function (array $nodes) use (&$walk, &$result) {
+            foreach ($nodes as $node) {
+                if (is_string($node)) {
+                    continue;
+                }
+                if (!isset(self::COMPONENTS[$node['name']])) {
+                    $result['unknown'][] = $node['name'];
+                } elseif (in_array($node['name'], self::IMAGE_COMPONENTS, true)) {
+                    $result['images'][] = [
+                        'tag' => $node['name'],
+                        'src' => $node['attrs']['src'] ?? null,
+                        'img' => $node['attrs']['img'] ?? null,
+                    ];
+                }
+                $walk($node['children']);
+            }
+        };
+        $walk($nodes);
+        $result['unknown'] = array_values(array_unique($result['unknown']));
+
+        return $result;
+    }
+
+    private function parse(string $content, array &$malformed): array
+    {
+        $pos = 0;
+
+        return $this->parseNodes($content, $pos, null, $malformed);
     }
 
     /**
      * Узел — либо строка (HTML как есть), либо компонент
      * ['name' => ..., 'attrs' => [...], 'children' => [...]].
      */
-    private function parseNodes(string $s, int &$pos, ?string $until, array $logContext): array
+    private function parseNodes(string $s, int &$pos, ?string $until, array &$malformed): array
     {
         $nodes = [];
         $len = strlen($s);
@@ -83,9 +131,7 @@ class ContentRenderer
 
             $tag = ComponentTag::parseOpening($s, $start);
             if ($tag === null) {
-                Log::warning('Post content: не удалось разобрать тег', $logContext + [
-                    'fragment' => mb_substr(substr($s, $start), 0, 120),
-                ]);
+                $malformed[] = mb_substr(substr($s, $start), 0, 120);
                 $gt = strpos($s, '>', $start);
                 $pos = $gt === false ? $len : $gt + 1;
                 continue;
@@ -95,7 +141,7 @@ class ContentRenderer
             $nodes[] = [
                 'name' => $tag['name'],
                 'attrs' => $this->attributeValues($tag['attrs']),
-                'children' => $tag['selfClosing'] ? [] : $this->parseNodes($s, $pos, $tag['name'], $logContext),
+                'children' => $tag['selfClosing'] ? [] : $this->parseNodes($s, $pos, $tag['name'], $malformed),
             ];
         }
 

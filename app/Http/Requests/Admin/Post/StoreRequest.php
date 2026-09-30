@@ -8,6 +8,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreRequest extends FormRequest
 {
+    use ValidatesPostContent;
+
     /**
      * Determine if the user is authorized to make this request.
      */

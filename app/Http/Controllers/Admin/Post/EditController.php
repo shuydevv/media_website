@@ -14,7 +14,8 @@ class EditController extends BaseController
     public function __invoke(Post $post) {
         $categories = Category::all();
         $tags = Tag::all();
-        $images = Image::all();
+        // Порядок по id — тот же, что у старых img="N" на странице поста.
+        $images = Image::where('post_id', $post->id)->orderBy('id')->get();
         return view('admin.posts.edit', compact('post', 'tags', 'categories', 'images'));
     }
 }

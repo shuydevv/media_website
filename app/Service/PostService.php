@@ -10,8 +10,12 @@ use Illuminate\Support\Facades\Storage;
 use App\Service\ImageCompressor;
 
 
-class PostService 
+class PostService
 {
+    public function __construct(private PostImageService $images)
+    {
+    }
+
     public function store($data) {
             if (isset($data['tag_ids'])) {
                 $tagIds = $data['tag_ids'];
@@ -35,40 +39,11 @@ class PostService
                 } 
             }
 
-            // dd($data);
-            $multi_images = [];
-
             $data_without_multi = $data;
+            unset($data_without_multi['multi_images']);
+            $post = Post::firstOrCreate($data_without_multi);
 
-            if (isset($data['multi_images'])) {
-                foreach ($data['multi_images'] as $image) {
-                    // dd($image);
-                    $multi_images[] = ImageCompressor::forContent()->storeAs($image, 'images');
-                }
-                unset($data_without_multi['multi_images']);
-                $post = Post::firstOrCreate($data_without_multi);
-
-                $i = 0;
-                foreach ($data['multi_images'] as $image) {
-                    $image_name = $image->getClientOriginalName(); 
-                    // dd($image_name);
-                    $images = Image::firstOrCreate(
-                        ['post_id' => $post->id,
-                                    'name' => $multi_images[$i],
-                                    'original_name' => $image_name],
-                    );
-                    $i++;
-                }
-            } else {
-                unset($data_without_multi['multi_images']);
-                $post = Post::firstOrCreate($data_without_multi);   
-            }
-            
-            
-            
-            // dd($data_without_multi);
-
-            // $data['multi_images'][0]->getClientOriginalName()
+            $this->images->apply($post, $data['multi_images'] ?? []);
 
             if (isset($tagIds)) {
                 $post->tags()->attach($tagIds);
@@ -100,41 +75,13 @@ class PostService
                 $data['main_image'] = ImageCompressor::forContent()->storeAs($data['main_image'], 'images');
             }
 
-            $multi_images = [];
-            if( array_key_exists('multi_images', $data)) {
-                foreach ($data['multi_images'] as $image) {
-                    $multi_images[] = ImageCompressor::forContent()->storeAs($image, 'images');
-                }
-            }
-
             $data_without_multi = $data;
-            unset($data_without_multi['multi_images']);
+            unset($data_without_multi['multi_images'], $data_without_multi['delete_images']);
             $post->update($data_without_multi);
 
-            // dd($data['multi_images']);
-            $toDelete = Image::where('post_id', $post->id)->get();
-            
-            if (isset($data['multi_images'])) {
-                $arrayLenght = count($data['multi_images']);
-                if ($arrayLenght > 0) {
-                    foreach ($toDelete as $item) {
-                        Storage::disk('public')->delete($item->name);
-                    }
-                    $deleted = Image::where('post_id', $post->id)->delete();
-                
-                    $i = 0;
-                    foreach ($data['multi_images'] as $image) { 
-                        $image_name = $image->getClientOriginalName(); 
-                        $images = Image::firstOrCreate(
-                            ['post_id' => $post->id,
-                                        'name' => $multi_images[$i],
-                                        'original_name' => $image_name],
-                        );
-                        $i++;
-                    }
-                }
-            }
-            // $deletedFromDB = 
+            // Картинки в посте: добавить новые, заменить одноимённые,
+            // удалить отмеченные (раньше любая загрузка стирала все старые).
+            $this->images->apply($post, $data['multi_images'] ?? [], $data['delete_images'] ?? []);
 
 
             // if (isset($tagIds)) {

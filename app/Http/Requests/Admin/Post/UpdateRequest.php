@@ -7,6 +7,8 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 class UpdateRequest extends FormRequest
 {
+    use ValidatesPostContent;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -34,6 +36,8 @@ class UpdateRequest extends FormRequest
             'tag_ids.*' => 'nullable|integer|exists:tags,id',
             'multi_images' => 'nullable|array',
             'multi_images.*' => 'image|max:5120',
+            'delete_images' => 'nullable|array',
+            'delete_images.*' => 'integer',
             'path'  => ['nullable','alpha_dash','max:150', Rule::unique('posts','path')->ignore($post->id)],
             'html_title' => 'nullable|string',
             'html_description' => 'nullable|string',
