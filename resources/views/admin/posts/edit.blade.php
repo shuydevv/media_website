@@ -71,7 +71,10 @@
                         <div class="w-40 text-xs">
                             <img class="w-40 h-28 object-cover border" src="{{ asset('storage/' . $image->name) }}" alt="{{ $src }}">
                             <p class="mt-1 font-mono break-all text-zinc-800">{{ $src !== '' ? $src : 'без имени, img="' . $index . '"' }}</p>
-                            <button type="button" class="mt-1 px-2 py-1 bg-zinc-100 hover:bg-zinc-200" data-copy-tag="{{ $tag }}">Скопировать тег</button>
+                            <div class="flex flex-col gap-1 mt-1">
+                                <button type="button" class="px-2 py-1 bg-zinc-100 hover:bg-zinc-200 text-left" data-copy-tag="{{ $tag }}">Скопировать тег</button>
+                                <button type="button" class="px-2 py-1 bg-zinc-100 hover:bg-zinc-200 text-left" data-insert-tag="{{ $tag }}">Вставить в текст</button>
+                            </div>
                             <label class="flex items-center gap-1 mt-1 text-red-600 cursor-pointer">
                                 <input type="checkbox" name="delete_images[]" value="{{ $image->id }}" @checked(in_array($image->id, $deleteIds, true))>
                                 удалить
@@ -86,33 +89,9 @@
                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" for="multiple_files">Главное изображение (обложка)</label>
                 <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" id="multiple_files" name="main_image" type="file"></div>
 
-            @include('admin.posts._images_upload')
+            @include('admin.posts._images_upload', ['existingImages' => $images])
 
             <a><button type="submit" class="mt-12 p-2 px-4 bg-zinc-200 hover:bg-zinc-300">Обновить пост</button></a>
         </form>
-
-        <script>
-            document.querySelectorAll('[data-copy-tag]').forEach(function (button) {
-                button.addEventListener('click', function () {
-                    var tag = button.getAttribute('data-copy-tag');
-                    var done = function () {
-                        button.textContent = 'Скопировано';
-                        setTimeout(function () { button.textContent = 'Скопировать тег'; }, 1500);
-                    };
-                    if (navigator.clipboard && window.isSecureContext) {
-                        navigator.clipboard.writeText(tag).then(done);
-                    } else {
-                        // http без TLS (локально) — clipboard API недоступен.
-                        var area = document.createElement('textarea');
-                        area.value = tag;
-                        document.body.appendChild(area);
-                        area.select();
-                        document.execCommand('copy');
-                        area.remove();
-                        done();
-                    }
-                });
-            });
-        </script>
 
 @endsection
