@@ -17,11 +17,20 @@ use Illuminate\Support\Collection;
  * и картинка внутри контента просто не показывалась. При этом контроллер
  * уже находит нужный Post через route model binding — просто нужно его
  * забрать, а не искать заново.
+ *
+ * Надёжнее всего — когда контроллер сам кладёт уже загруженные картинки
+ * через CurrentPostImages::provide(): тогда компонент вообще не зависит от
+ * роута/параметра запроса. route('post') остаётся фоллбеком.
  */
 trait ResolvesCurrentPostImages
 {
     protected function currentPostImages(): Collection
     {
+        $provided = CurrentPostImages::get();
+        if ($provided !== null) {
+            return $provided;
+        }
+
         $post = request()->route('post');
 
         if (!($post instanceof Post)) {

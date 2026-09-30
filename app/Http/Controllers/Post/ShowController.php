@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Image;
 use App\Models\Post;
+use App\View\Components\Concerns\CurrentPostImages;
 
 class ShowController extends Controller
 {
@@ -16,6 +17,7 @@ class ShowController extends Controller
         // резолвил через route model binding — ломалось на любом отклонении
         // URL (конечный слэш и т.п.) и требовало лишнего запроса в БД.
         $images = Image::where('post_id', $post->id)->orderBy('id')->get();
+        CurrentPostImages::provide($images);
 
         // "Планы по обществознанию" — служебная категория, не показываем
         // такие статьи в блоке "Другие статьи".
