@@ -60,9 +60,9 @@
     @endif
 
     <div class="bg-white border rounded-2xl shadow-sm p-4 md:p-5 mb-5">
-        <div class="flex flex-wrap gap-x-8 gap-y-4">
+        <div class="flex flex-wrap gap-x-6 sm:gap-x-8 gap-y-4">
             <div>
-                <div class="sans text-xs text-zinc-400 uppercase tracking-wide">Всего пользователей</div>
+                <div class="sans text-xs text-zinc-400 uppercase tracking-wide"><span class="hidden sm:inline">Всего </span>пользователей</div>
                 <div class="sans-medium text-2xl text-zinc-900 mt-0.5">{{ $totalUsers }}</div>
             </div>
             <div>

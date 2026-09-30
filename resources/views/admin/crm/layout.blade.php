@@ -59,11 +59,25 @@
 </head>
 <body class="text-zinc-800">
 
-    <div class="px-6 py-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm bg-zinc-900 sticky top-0 z-10">
-        <a href="{{ route('main.index') }}" class="text-white font-medium sans-medium">← Админ-панель</a>
-        <a href="{{ route('admin.crm.index') }}" class="{{ request()->routeIs('admin.crm.index') ? 'text-white' : 'text-zinc-400 hover:text-white' }}">CRM</a>
-        <a href="{{ route('admin.crm.archive') }}" class="{{ request()->routeIs('admin.crm.archive') ? 'text-white' : 'text-zinc-400 hover:text-white' }}">Завершили / отказались</a>
-        <a href="{{ route('admin.user.index') }}" class="text-zinc-400 hover:text-white ml-auto">Пользователи (полный список)</a>
+    {{-- На мобилке: служебные ссылки (назад/полный список) — одной мелкой
+         приглушённой строкой сверху, под ними вкладки CRM/Архив пилюлями с
+         явно выделенной активной. На md+ всё в одну строку. --}}
+    @php
+        $crmTabClass = fn (bool $active) => 'rounded-lg px-3 py-1.5 transition ' . ($active ? 'bg-white/10 text-white sans-medium' : 'text-zinc-400 hover:text-white hover:bg-white/5');
+    @endphp
+    <div class="px-4 md:px-6 py-2 md:py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm bg-zinc-900 sticky top-0 z-10">
+        <a href="{{ route('main.index') }}" class="text-xs md:text-sm text-zinc-400 md:text-white md:sans-medium hover:text-white md:mr-2">
+            ← <span class="md:hidden">Админка</span><span class="hidden md:inline">Админ-панель</span>
+        </a>
+        <nav class="order-last md:order-none w-full md:w-auto flex items-center gap-1">
+            <a href="{{ route('admin.crm.index') }}" class="{{ $crmTabClass(request()->routeIs('admin.crm.index')) }}">CRM</a>
+            <a href="{{ route('admin.crm.archive') }}" class="{{ $crmTabClass(request()->routeIs('admin.crm.archive')) }}">
+                <span class="md:hidden">Архив</span><span class="hidden md:inline">Завершили / отказались</span>
+            </a>
+        </nav>
+        <a href="{{ route('admin.user.index') }}" class="text-xs md:text-sm text-zinc-400 hover:text-white ml-auto">
+            <span class="md:hidden">Все пользователи</span><span class="hidden md:inline">Пользователи (полный список)</span>
+        </a>
     </div>
 
     <div class="max-w-5xl mx-auto px-4 md:px-6 py-8">
@@ -221,7 +235,7 @@
 
             // Статус: селект со всеми состояниями сразу — при выборе сохраняет
             // и перекрашивается по ответу сервера. Сервер может вернуть НЕ тот
-            // статус, что выбрали (например, выбрали "Связались", а у ученика
+            // статус, что выбрали (например, выбрали "Записался", а у ученика
             // на деле есть активный доступ — crmStatus() всё равно посчитает
             // его "Активный ученик", приоритет реальных данных выше ручной
             // отметки) — поэтому значение селекта синхронизируем с ответом,

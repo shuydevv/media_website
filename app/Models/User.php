@@ -71,7 +71,7 @@ class User extends Authenticatable implements MustVerifyEmail
      * на списке из многих учеников это была бы N+1), остальное — из ручного
      * crm_stage. Приоритет (сверху вниз, первое совпадение побеждает):
      * Отказался → Активный → Просрочена оплата → Заморожен → Завершил курс →
-     * Пробный/Связались (crm_stage) → Новый. Активный стоит выше просрочки/
+     * Внес предоплату/Записался (crm_stage) → Новый. Активный стоит выше просрочки/
      * заморозки специально: если у ученика два курса и один из них исправно
      * оплачивается, это не тот случай, который надо показывать как проблемный.
      */
@@ -148,11 +148,11 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         if ($this->crm_stage === 'trial_done') {
-            return ['key' => 'trial_done', 'label' => 'Пробный урок пройден', 'color' => 'gray'];
+            return ['key' => 'trial_done', 'label' => 'Внес предоплату', 'color' => 'gray'];
         }
 
         if ($this->crm_stage === 'contacted') {
-            return ['key' => 'contacted', 'label' => 'Связались', 'color' => 'gray'];
+            return ['key' => 'contacted', 'label' => 'Записался', 'color' => 'gray'];
         }
 
         return ['key' => 'new', 'label' => 'Новый', 'color' => 'gray'];
@@ -256,8 +256,8 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'new' => ['label' => 'Новый', 'color' => 'gray', 'selectable' => true],
-            'contacted' => ['label' => 'Связались', 'color' => 'gray', 'selectable' => true],
-            'trial_done' => ['label' => 'Пробный урок пройден', 'color' => 'gray', 'selectable' => true],
+            'contacted' => ['label' => 'Записался', 'color' => 'gray', 'selectable' => true],
+            'trial_done' => ['label' => 'Внес предоплату', 'color' => 'gray', 'selectable' => true],
             'active' => ['label' => 'Активный ученик', 'color' => 'emerald', 'selectable' => false],
             'past_due' => ['label' => 'Просрочена оплата', 'color' => 'rose', 'selectable' => false],
             'frozen' => ['label' => 'Заморожен', 'color' => 'amber', 'selectable' => false],
@@ -301,7 +301,7 @@ class User extends Authenticatable implements MustVerifyEmail
      * статуса (crmStatusOptionsFor()), и после сохранения фронт должен
      * перестроить сам список <option>, а не только перекрасить — иначе,
      * например, после перехода в "Активный ученик" в селекте так и
-     * останутся "Новый"/"Связались"/"Пробный урок пройден", которых там
+     * останутся "Новый"/"Записался"/"Внес предоплату", которых там
      * уже не должно быть.
      */
     public function crmStatusPayload(): array

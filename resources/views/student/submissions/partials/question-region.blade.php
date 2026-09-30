@@ -108,16 +108,16 @@
 
   <div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6">
     <div class="flex items-center justify-between gap-3 mb-4 sm:mb-5">
-      <div class="flex items-center gap-3">
-        <span class="inline-block px-2 py-0.5 text-xs rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700">
-          №{{ $task->number ?? '—' }} в ЕГЭ
+      <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+        <span class="shrink-0 inline-block px-2 py-0.5 text-xs rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700 whitespace-nowrap" title="Номер задания в ЕГЭ">
+          №{{ $task->number ?? '—' }}
         </span>
-        <span class="sans-medium text-lg text-zinc-900">Вопрос {{ $position }} из {{ $total }}</span>
+        <span class="sans-medium text-lg text-zinc-900 whitespace-nowrap">Вопрос {{ $position }} из {{ $total }}</span>
       </div>
 
       @if($hintText)
-        <button type="button" id="hint-toggle" class="text-xs sm:text-sm text-blue-600 hover:underline whitespace-nowrap">
-          Показать подсказку
+        <button type="button" id="hint-toggle" class="shrink-0 text-xs sm:text-sm text-blue-600 hover:underline whitespace-nowrap">
+          Подсказка
         </button>
       @endif
     </div>
@@ -172,7 +172,7 @@
             hx-disabled-elt="find button[type=submit]">
         @csrf
         <label class="block text-xs sm:text-sm text-zinc-700 mb-2">Ваш ответ</label>
-        <textarea name="answer" rows="5" class="w-full border rounded-xl px-3 py-2 sm:py-3 text-sm sm:text-base">{{ old('answer', $prefill) }}</textarea>
+        <textarea name="answer" data-answer-draft rows="5" class="w-full border rounded-xl px-3 py-2 sm:py-3 text-sm sm:text-base">{{ old('answer', $prefill) }}</textarea>
         <div class="text-[11px] sm:text-xs text-zinc-500 mt-2 mb-4">Ответ проверит ваш наставник</div>
         <x-ui.button type="submit" variant="accent" class="relative mt-8 text-sm sm:text-base">
           <span class="btn-label">Далее</span>
@@ -228,6 +228,7 @@
           type="text"
           name="answer"
           class="pin-hidden-input"
+          data-answer-draft
           autocomplete="off"
           value="{{ old('answer', $prefill) }}"
           @if(in_array($type, ['test','text_with_questions','matching','table'])) inputmode="numeric" pattern="[0-9\s]*" @endif
@@ -411,7 +412,7 @@
 
   btn.addEventListener('click', () => {
     open = !open;
-    btn.textContent = open ? 'Скрыть подсказку' : 'Показать подсказку';
+    btn.textContent = open ? 'Скрыть' : 'Подсказка';
 
     if (!gsapOk) {
       box.style.height = open ? 'auto' : '0';
@@ -431,6 +432,45 @@
 })();
 </script>
 @endif
+
+<script>
+(function () {
+  // Черновик ответа в localStorage — чтобы обновление страницы/случайный
+  // уход не стирали то, что ученик уже ввёл, но ещё не отправил. Храним
+  // вместе с черновиком base — сохранённый на сервере ответ на момент
+  // ввода: если сервер с тех пор принял другой ответ (отправили с другой
+  // вкладки/устройства или просто уже сохранили), черновик устарел и
+  // не должен перетирать актуальное значение.
+  const field = document.querySelector('[data-answer-draft]');
+  if (!field) return;
+
+  const key = 'hw-draft:{{ $submission->id }}:{{ $task->id }}';
+  const serverSaved = @json(is_scalar($savedAnswer) ? (string) $savedAnswer : '');
+
+  function read() {
+    try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; }
+  }
+  function write(v) {
+    try {
+      if (v === serverSaved) localStorage.removeItem(key);
+      else localStorage.setItem(key, JSON.stringify({ v: v, base: serverSaved }));
+    } catch (e) {}
+  }
+
+  const draft = read();
+  if (draft && typeof draft.v === 'string' && draft.base === serverSaved) {
+    if (draft.v !== field.value) {
+      const pin = field.parentElement && field.parentElement.querySelector('.pin-field');
+      if (pin && typeof pin._setPinFieldValue === 'function') pin._setPinFieldValue(draft.v);
+      else field.value = draft.v;
+    }
+  } else if (draft) {
+    try { localStorage.removeItem(key); } catch (e) {}
+  }
+
+  field.addEventListener('input', () => write(field.value));
+})();
+</script>
 
 <script>
 (function () {

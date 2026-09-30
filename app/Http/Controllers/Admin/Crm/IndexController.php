@@ -100,6 +100,11 @@ class IndexController extends Controller
             }
         }
 
+        // "Пользователей" в блоке статистики — только те, с кем сейчас реально
+        // работают: та же база CRM (без неподтверждённых регистраций-ботов,
+        // без архива completed/lost), минус замороженные.
+        $totalUsers = array_sum($statusCounts) - $statusCounts['frozen'];
+
         // Даты вводятся руками через ?date_from=/&date_to= (не только через
         // <input type="date">), поэтому парсим защищённо — битая дата не
         // должна валить страницу 500-й, просто не даёт фильтрации.
@@ -183,7 +188,7 @@ class IndexController extends Controller
             'filterParams' => $filterParams,
             'statusOptions' => $statusOptions,
             'statusCounts' => $statusCounts,
-            'totalUsers' => User::where('role', User::ROLE_READER)->count(),
+            'totalUsers' => $totalUsers,
             'courseStats' => $this->courseStats(),
             'monthlyRevenueRub' => $this->monthlyRevenue() / 100,
         ]);

@@ -49,7 +49,7 @@
             </button>
 
             <div data-reminder-popover hidden
-                 class="absolute right-0 top-full mt-2 w-72 bg-white border border-zinc-200 rounded-xl shadow-lg p-3 z-20 text-left">
+                 class="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100vw-2rem)] max-w-sm max-h-[80vh] overflow-y-auto sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:translate-x-0 sm:translate-y-0 sm:w-72 sm:max-h-none sm:overflow-visible bg-white border border-zinc-200 rounded-xl shadow-lg p-3 z-30 text-left">
                 <div class="sans text-xs text-zinc-400 uppercase tracking-wide mb-2">Напоминания</div>
                 <div class="space-y-1.5 mb-2 empty:mb-0" data-reminder-popover-list>
                     @foreach($student->crmReminders as $reminder)

@@ -27,7 +27,7 @@
 
       @if($hintText)
         <button type="button" id="hint-toggle" class="text-xs sm:text-sm text-blue-600 hover:underline whitespace-nowrap">
-          Показать подсказку
+          Подсказка
         </button>
       @endif
     </div>
@@ -102,7 +102,7 @@
   let open = false;
   btn.addEventListener('click', () => {
     open = !open;
-    btn.textContent = open ? 'Скрыть подсказку' : 'Показать подсказку';
+    btn.textContent = open ? 'Скрыть' : 'Подсказка';
     box.style.height = open ? box.scrollHeight + 'px' : '0';
   });
 })();
