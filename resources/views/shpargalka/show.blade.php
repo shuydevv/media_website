@@ -77,7 +77,7 @@
 
         <h2 class="sans md:mb-6 mb-4 md:text-3xl text-2xl tracking">Как выглядит документ:</h2>
 
-        {!! Blade::render($material->content, $new_images) !!}
+        {!! Blade::render(\App\Support\BladeContent::fixAttributeQuotes($material->content), $new_images) !!}
         {{-- <h2 class="sans md:mb-6 mb-4 md:text-2xl text-xl">Отзывы:</h2> --}}
         </div>
 

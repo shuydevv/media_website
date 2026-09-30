@@ -65,7 +65,7 @@
 
             
 
-            {!! Blade::render($post->content, $new_images) !!}
+            {!! Blade::render(\App\Support\BladeContent::fixAttributeQuotes($post->content), $new_images) !!}
 
             {{-- <div class="mt-8 w-full">
                 <details class="list-none cursor-pointer text-center mb-4 pb-4">
