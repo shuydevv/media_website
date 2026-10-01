@@ -15,4 +15,9 @@ class Section extends Model
     public function category() {
         return $this->belongsTo(Category::class, 'category_id', 'id');
     }
+
+    public function topics()
+    {
+        return $this->hasMany(Topic::class, 'section_id', 'id')->orderBy('id');
+    }
 }

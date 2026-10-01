@@ -43,6 +43,12 @@ Route::group(['namespace' => 'App\Http\Controllers\Post', 'prefix' => 'posts'], 
     Route::get('/{post:path}', 'ShowController')->name('post.show');
 });
 
+// Планы ЕГЭ по обществознанию — посты с тегом «Планы» (Post::PLAN_TAG).
+Route::group(['namespace' => 'App\Http\Controllers\Plan', 'prefix' => 'plans'], function () {
+    Route::get('/', 'IndexController')->name('plan.index');
+    Route::get('/{post:path}', 'ShowController')->name('plan.show');
+});
+
 Route::group(['namespace' => 'App\Http\Controllers\Exercise', 'prefix' => 'exercises'], function () {
     Route::get('/', 'IndexController')->name('exercise.index');
     Route::get('/{exercise}', 'ShowController')->name('exercise.show');

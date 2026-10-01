@@ -13,7 +13,8 @@
                 <a href="{{ request()->fullUrlWithQuery(['page' => null, 'post_category' => null]) }}"><li class="{{request()->query('post_category') == null ? 'bg-zinc-900 text-white border-zinc-900' : ''}} md:text-base text-sm px-4 py-2 border-2 rounded-full">Все статьи</li></a>
                 <a href="{{ request()->fullUrlWithQuery(['page' => null, 'post_category' => 'social_science']) }}"><li class="{{request()->query('post_category') == 'social_science' ? 'bg-zinc-900 text-white border-zinc-900' : ''}} md:text-base text-sm px-4 py-2 border-2 rounded-full">Обществознание</li></a>
                 <a href="{{ request()->fullUrlWithQuery(['page' => null, 'post_category' => 'history']) }}"><li class="{{request()->query('post_category') == 'history' ? 'bg-zinc-900 text-white border-zinc-900' : ''}} md:text-base text-sm px-4 py-2 border-2 rounded-full">История</li></a>
-                
+                <a class="noclass" href="{{ route('plan.index') }}"><li class="md:text-base text-sm px-4 py-2 border-2 rounded-full border-amber-600 text-amber-700 hover:bg-amber-50">Планы ЕГЭ по обществознанию →</li></a>
+
             </ul>
         </div>
         {{-- {{dd(request()->query('list'))}} --}}
@@ -26,9 +27,7 @@
         @endphp
         <x-more_cards_div title="{{$post_category_name}}">
             @foreach ($posts as $post)
-                @unless($post->tags->contains('title', 'Планы'))
-                    <a class="noclass" href="{{route('post.show', ['post' => $post->path])}}"><x-more_card title="{{$post->title}}" title2="{{$post->title2}}" description="Подзаголовок" :tags="$post->tags" img="{{ $post->main_image_url }}" /></a>
-                @endunless
+                <a class="noclass" href="{{ $post->url }}"><x-more_card title="{{$post->title}}" title2="{{$post->title2}}" description="Подзаголовок" :tags="$post->tags" img="{{ $post->main_image_url }}" /></a>
             @endforeach
 
             <x-slot:pagination>

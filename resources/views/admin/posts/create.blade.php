@@ -45,6 +45,7 @@
                     <option value="">Обществознание</option> --}}
                 </select>
             </div>
+            @include('admin.posts._topic_select', ['post' => null])
             <div class="mt-5">
                 <label class="mr-5">Выберите тэги:</label>
                 @foreach ($tags as $tag)

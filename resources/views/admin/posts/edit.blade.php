@@ -43,6 +43,7 @@
                     @endforeach
                 </select>
             </div>
+            @include('admin.posts._topic_select', ['post' => $post])
             <div class="mt-5 mb-5">
                 <p class="mr-5 font-medium mb-1">Выберите тэги:</p>
                 @php $checkedTagIds = array_map('intval', old('tag_ids', $post->tags->pluck('id')->all())); @endphp

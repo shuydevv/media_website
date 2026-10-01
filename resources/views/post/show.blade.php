@@ -11,7 +11,7 @@
     // невалидная вложенная разметка (layouts/main.blade.php уже открывает и
     // закрывает свой собственный <body>). data-protect-preps перенесён на
     // обычный div, второй <body>/<html> убраны.
-    $isTherePlans = $post->tags->contains('title', 'Планы');
+    $isTherePlans = $isPlan;
 @endphp
     <div data-protect-preps>
         <style>
@@ -49,15 +49,25 @@
             <x-ad_course subject="{{ $post->category->title }}" />
         @endif
 
-        @if(!$isTherePlans)
+        @if($isPlan)
+        <div class="container mx-auto max-w-screen-md px-3 md:mb-20 mb-16">
+            @if($otherPlans->isNotEmpty())
+                <h2 class="md:text-3xl text-2xl text-zinc-900 font-normal tracking-wider md:mb-6 mb-4">Другие планы</h2>
+                @include('plan._list', ['groups' => $otherPlans, 'compact' => true])
+            @endif
+            <div class="flex md:mt-10 mt-8">
+                <a class="noclass md:px-8 md:py-4 px-6 py-3 border-2 border-black bg-white text-black font-semimedium tracking-wider rounded-lg" href="{{ route('plan.index') }}">Все планы <img class="inline-block ml-1" src="{{ asset('img/arrow_black-button.svg') }}" alt=""></a>
+            </div>
+        </div>
+        @else
         <x-more_cards_div title="Другие статьи:">
             @foreach ($posts as $related)
-            <a class="noclass" href="{{ route('post.show', ['post' => $related->path]) }}"><x-more_card title="{{$related->title}}" title2="{{$related->title2}}" description="Подзаголовок" :tags="$related->tags" img="{{ $related->main_image_url }}" /></a>
+            <a class="noclass" href="{{ $related->url }}"><x-more_card title="{{$related->title}}" title2="{{$related->title2}}" description="Подзаголовок" :tags="$related->tags" img="{{ $related->main_image_url }}" /></a>
             @endforeach
 
             <x-slot:pagination>
                 <div class="flex justify-center md:mt-8 mt-1">
-                    <button class="md:px-8 md:py-4 px-6 py-3 border-2 border-black bg-white text-black font-semimedium tracking-wider rounded-lg">Все статьи <img class="inline-block ml-1" src="{{ asset('img/arrow_black-button.svg') }}" alt="" srcset=""></button>
+                    <a class="noclass md:px-8 md:py-4 px-6 py-3 border-2 border-black bg-white text-black font-semimedium tracking-wider rounded-lg" href="{{ route('post.index') }}">Все статьи <img class="inline-block ml-1" src="{{ asset('img/arrow_black-button.svg') }}" alt="" srcset=""></a>
                 </div>
             </x-slot:pagination>
         </x-more_cards_div>

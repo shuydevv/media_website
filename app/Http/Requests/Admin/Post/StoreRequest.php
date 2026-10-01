@@ -32,6 +32,7 @@ class StoreRequest extends FormRequest
             'content' => 'required|string',
             'main_image' => 'nullable|image|max:5120',
             'category_id' => 'required|integer|exists:categories,id',
+            'topic_id' => 'nullable|integer|exists:topics,id',
             'tag_id' => 'nullable|array',
             'tag_ids.*' => 'nullable|integer|exists:tags,id',
             'multi_images' => 'nullable|array',
