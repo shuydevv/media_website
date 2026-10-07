@@ -139,10 +139,102 @@ class SubmissionController extends Controller
 
         [$tasks, $task, $total] = $this->resolvePosition($submission, $position);
 
+        // Старт отсчёта времени на вопрос — закрывается в
+        // persistAnswerAndAdvance(). Повторное открытие того же вопроса
+        // отсчёт перезапускает: время, пока ученик был на другом вопросе
+        // или вне визарда, этому заданию не засчитывается.
+        $this->updateTaskMeta($request, $submission, $task->id, function (array $meta) {
+            $meta['opened_at'] = now()->timestamp;
+
+            return $meta;
+        });
+
         return view(
             $this->view($request, 'question'),
             $this->questionData($request, $submission, $tasks, $task, $position, $total)
         );
+    }
+
+    /**
+     * Ученик открыл подсказку к вопросу — только отметка для отчёта
+     * (submissions.task_meta), на прохождение не влияет.
+     */
+    public function hint(Request $request, Submission $submission, int $position)
+    {
+        $this->assertOwner($request, $submission);
+
+        if ($submission->status === 'in_progress') {
+            [, $task] = $this->resolvePosition($submission, $position);
+
+            $this->updateTaskMeta($request, $submission, $task->id, function (array $meta) {
+                $meta['hint'] = true;
+
+                return $meta;
+            });
+        }
+
+        return response()->noContent();
+    }
+
+    /**
+     * Аналитика по одному заданию попытки (submissions.task_meta[taskId]):
+     *  - seconds   — сколько секунд вопрос был открыт до сохранения ответа;
+     *  - wrong     — сколько раз проверка показала неверный/частичный ответ;
+     *  - first     — результат самой первой проверки (ok|partial|fail);
+     *  - hint      — открывал ли подсказку;
+     *  - opened_at — служебное: когда вопрос открыт сейчас (см. question()).
+     * Пишется под тем же Cache::lock, что и сам ответ (см.
+     * persistAnswerAndAdvance()) и отдельной моделью с одной колонкой —
+     * чтобы не затереть answers/per_task_results устаревшей копией. Любой
+     * сбой здесь глотаем: аналитика не должна ломать сдачу домашки.
+     */
+    private function updateTaskMeta(Request $request, Submission $submission, int $taskId, \Closure $mutate): void
+    {
+        // Админ, вошедший под учеником, смотрит визард — это не данные ученика.
+        if ($request->session()->has('impersonator_id')) {
+            return;
+        }
+
+        try {
+            Cache::lock("submission-answer:{$submission->id}", 10)->block(3, function () use ($submission, $taskId, $mutate) {
+                $fresh = Submission::query()->select(['id', 'task_meta'])->find($submission->id);
+                if (! $fresh) {
+                    return;
+                }
+
+                $all = $fresh->task_meta ?? [];
+                $all[$taskId] = $mutate($all[$taskId] ?? []);
+
+                // Не трогаем updated_at — по нему сортируется история
+                // проверенных работ (StudentTaskHistory).
+                $fresh->timestamps = false;
+                $fresh->task_meta = $all;
+                $fresh->save();
+            });
+        } catch (\Throwable $e) {
+            report($e);
+        }
+    }
+
+    /**
+     * Закрывает отсчёт времени на вопрос и запоминает результат первой
+     * проверки — вызывается из persistAnswerAndAdvance() уже под локом.
+     */
+    private function closeTaskMeta(array $meta, ?array $result): array
+    {
+        if (isset($meta['opened_at'])) {
+            // Потолок 30 минут на один заход: открытая и забытая вкладка
+            // не должна превращаться в "решал задание шесть часов".
+            $elapsed = max(0, now()->timestamp - (int) $meta['opened_at']);
+            $meta['seconds'] = (int) ($meta['seconds'] ?? 0) + min($elapsed, 1800);
+            unset($meta['opened_at']);
+        }
+
+        if ($result !== null && ! isset($meta['first'])) {
+            $meta['first'] = $result['status'];
+        }
+
+        return $meta;
     }
 
     /**
@@ -184,6 +276,16 @@ class SubmissionController extends Controller
         if ($result['status'] === 'ok') {
             return $this->persistAnswerAndAdvance($request, $submission, $task, $answer, $result);
         }
+
+        // Неверная проверка сама по себе нигде не сохраняется (ученик может
+        // переответить) — для отчёта считаем их отдельно, иначе решивший с
+        // первого раза неотличим от подобравшего ответ с пятого.
+        $this->updateTaskMeta($request, $submission, $task->id, function (array $meta) use ($result) {
+            $meta['wrong'] = (int) ($meta['wrong'] ?? 0) + 1;
+            $meta['first'] ??= $result['status'];
+
+            return $meta;
+        });
 
         return view(
             $this->view($request, 'question'),
@@ -254,6 +356,12 @@ class SubmissionController extends Controller
                     $perTask[$task->id] = $result;
                 } else {
                     unset($perTask[$task->id]); // ручные проверяет куратор — результата пока нет
+                }
+
+                if (! $request->session()->has('impersonator_id')) {
+                    $taskMeta = $submission->task_meta ?? [];
+                    $taskMeta[$task->id] = $this->closeTaskMeta($taskMeta[$task->id] ?? [], $result);
+                    $submission->task_meta = $taskMeta;
                 }
 
                 // Начисление корма и сохранение ответа — в одной транзакции:
@@ -418,6 +526,9 @@ class SubmissionController extends Controller
 
         $submission->autocheck_score = $autoScore;
         $submission->per_task_results = $perTask;
+        // Момент сдачи — updated_at для этого не годится, его потом
+        // перезапишет проверка куратора.
+        $submission->submitted_at = now();
 
         if ($hasPendingManual) {
             // Есть хотя бы одно непустое ручное задание — это по-прежнему

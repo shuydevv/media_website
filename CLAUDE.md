@@ -93,6 +93,18 @@ vendor/bin/pint                                     # форматировани
   (`POST /student/fish/feed`), настройки уровней в `config/fish.php`. Косметика, намеренно
   не завязана на billing-статус (см. комментарий у роута в `web.php`).
 
+- Отчёт по ученику — `/admin/users/{id}` (`Admin\User\ShowController` → `Service\StudentReport`,
+  только читает). Данные для него собираются в других местах: просмотр уроков —
+  `lesson_views` (скрипт плеера Kinescope `student/lessons/partials/watch-tracker.blade.php` →
+  `Student\LessonWatchController`), активность по дням — `user_activity_days`
+  (middleware `TrackStudentActivity`), время/неверные проверки/подсказки по заданию —
+  `submissions.task_meta` (`Student\SubmissionController`), момент сдачи —
+  `submissions.submitted_at`, кто проверял — `reviewed_by`/`reviewed_at` в `per_task_results`,
+  тема задания — `tasks.topic_id`, цель ученика — `course_user.target_score`/`entry_score`,
+  журнал голосовых — `student_feedback`. Всё это копится только с момента выкладки — для
+  более старых работ и уроков отчёт показывает «нет данных», а не ноль. Вход админа под
+  учеником (`impersonator_id` в сессии) в эту аналитику не пишется.
+
 **Auth** — не стандартный Breeze-флоу целиком: вход по телефону (OTP, `PhoneAuthController`,
 `Service/Sms/*`) и по email-коду/подписанной ссылке (`EmailAuthController`, `EmailOtpService`),
 классическая `/register` отключена (`Auth::routes(['register' => false])`) в пользу

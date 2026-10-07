@@ -20,6 +20,7 @@ class Task extends Model
     protected $fillable = [
         'category_id',
         'number',
+        'topic_id',
         'criteria_override',
         'type',
         'question_text',
@@ -57,6 +58,11 @@ class Task extends Model
     public function category()
     {
         return $this->belongsTo(\App\Models\Category::class);
+    }
+
+    public function topic()
+    {
+        return $this->belongsTo(\App\Models\Topic::class);
     }
 
     public function homeworkTasks()

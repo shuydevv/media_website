@@ -3,16 +3,22 @@
 namespace App\Http\Controllers\Admin\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\Payment;
 use App\Models\User;
-use App\Service\BillingService;
+use App\Service\StudentReport;
 
 class ShowController extends Controller
 {
-    public function __invoke(User $user, BillingService $billing) {
-        $enrollments = $user->courses()->wherePivot('status', 'active')->get();
-        $payments = Payment::where('user_id', $user->id)->with('course')->latest()->limit(20)->get();
-
-        return view('admin.users.show', compact('user', 'enrollments', 'payments', 'billing'));
+    /**
+     * Страница ученика — отчёт о прогрессе для преподавателя (см.
+     * StudentReport). Оплаты и доступ здесь больше не редактируются: это
+     * делается в /admin/crm (Admin\Crm\AccessController), блок "Оплата
+     * курсов" дублировал его вторым, расходящимся способом записать платёж.
+     */
+    public function __invoke(User $user, StudentReport $report)
+    {
+        return view('admin.users.show', [
+            'user' => $user,
+            'report' => $report->build($user),
+        ]);
     }
 }

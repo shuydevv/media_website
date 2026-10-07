@@ -410,9 +410,23 @@
 
   if (gsapOk) gsap.set(inner, { autoAlpha: 0, y: -6 });
 
+  // Отметка "открывал подсказку" для отчёта по ученику — один раз на показ
+  // вопроса, результат не важен (см. SubmissionController::hint()).
+  let hintReported = false;
+  function reportHint() {
+    if (hintReported) return;
+    hintReported = true;
+    fetch(@json(route('student.submissions.question.hint', [$submission, $position])), {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'X-CSRF-TOKEN': @json(csrf_token()), 'X-Requested-With': 'XMLHttpRequest' },
+    }).catch(() => {});
+  }
+
   btn.addEventListener('click', () => {
     open = !open;
     btn.textContent = open ? 'Скрыть' : 'Подсказка';
+    if (open) reportHint();
 
     if (!gsapOk) {
       box.style.height = open ? 'auto' : '0';

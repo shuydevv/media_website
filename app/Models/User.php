@@ -40,6 +40,7 @@ class User extends Authenticatable implements MustVerifyEmail
                 'status', 'enrolled_at', 'expires_at', 'source', 'payment_id', 'promo_code',
                 'billing_interval_days', 'next_payment_due_at', 'autopay_enabled',
                 'promised_payment_expires_at', 'promised_payment_used_at', 'reminder_sent_at',
+                'target_score', 'entry_score',
             ])
             ->withTimestamps();
     }
@@ -330,6 +331,21 @@ class User extends Authenticatable implements MustVerifyEmail
     public function taskAttempts()
     {
         return $this->hasMany(\App\Models\TaskAttempt::class);
+    }
+
+    public function lessonViews()
+    {
+        return $this->hasMany(\App\Models\LessonView::class);
+    }
+
+    public function activityDays()
+    {
+        return $this->hasMany(\App\Models\UserActivityDay::class);
+    }
+
+    public function feedback()
+    {
+        return $this->hasMany(\App\Models\StudentFeedback::class)->latest();
     }
 
     /**

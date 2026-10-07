@@ -104,6 +104,12 @@ class SubmissionReviewController extends Controller
         // Любое явное сохранение снимает флаг пропуска:
         unset($row['skipped']);
 
+        // Кто и когда поставил оценку — для отчёта по ученику
+        // (/admin/users/{id}); на логику "закрыто ли задание" не влияет,
+        // та смотрит только на score/reason/comment.
+        $row['reviewed_by'] = $request->user()->id;
+        $row['reviewed_at'] = now()->toDateTimeString();
+
         $per[$taskKey] = $row;
         $submission->per_task_results = $per;
 

@@ -242,6 +242,7 @@ class TaskController extends Controller
         $rules = array_merge(TaskContentRules::rules('bank'), [
             'category_id' => ['required','integer','exists:categories,id'],
             'number'      => ['nullable','string','max:255'],
+            'topic_id'    => ['nullable','integer','exists:topics,id'],
             'is_public'   => ['nullable','boolean'],
         ]);
         $attributes = array_merge(TaskContentRules::attributes(), [
@@ -256,6 +257,7 @@ class TaskController extends Controller
         return array_merge($content, [
             'category_id'    => (int) $data['category_id'],
             'number'         => ($data['number'] ?? null) ?: null,
+            'topic_id'       => ($data['topic_id'] ?? null) ?: null,
             'is_public'      => $request->boolean('is_public'),
         ]);
     }

@@ -27,6 +27,10 @@ class Submission extends Model
         // таймер пробника
         'started_at',
         'expires_at',
+        'submitted_at',
+
+        // аналитика по заданиям для отчёта: время, неверные проверки, подсказки
+        'task_meta',
 
         // блокировка ревью
         'locked_by',
@@ -44,6 +48,8 @@ class Submission extends Model
         'ai_frozen_hash'   => 'array',
         'started_at'       => 'datetime',
         'expires_at'       => 'datetime',
+        'submitted_at'     => 'datetime',
+        'task_meta'        => 'array',
     ];
 
     /**

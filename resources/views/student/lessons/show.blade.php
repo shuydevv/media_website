@@ -11,12 +11,12 @@
 
   @if ($lesson->recording_link)
   <div class="inline-block py-2 px-4 md:py-4 md:px-5 rounded-2xl text-base md:text-xl mb-4 bg-blue-50 border border-blue-200 text-blue-900"><x-icon name="video-recorder" class="inline-block relative bottom-0.5 mr-2 w-5 h-5" />Запись трансляции</div>
-  <div class="border-4 border-blue-100 rounded-xl" style="position: relative; padding-top: 56.25%; width: 100%"><iframe src="https://kinescope.io/embed/{{$lesson->recording_link}}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer; clipboard-write; screen-wake-lock;" frameborder="0" allowfullscreen style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;"></iframe></div>
+  <div class="border-4 border-blue-100 rounded-xl" style="position: relative; padding-top: 56.25%; width: 100%">@include('student.lessons.partials.kinescope-player', ['videoId' => $lesson->recording_link, 'kind' => 'recording'])</div>
   @endif
 
   @if ($lesson->short_class)
   <div class="inline-block py-2 px-4 md:py-4 md:px-5 rounded-2xl text-base md:text-xl mb-4 mt-8 md:mt-12 bg-blue-50 border border-blue-200 text-blue-900"><x-icon name="video-recorder" class="inline-block relative bottom-0.5 mr-2 w-5 h-5" />"Сок" — Выжимка урока</div>
-  <div class="border-4 border-blue-100 rounded-xl" style="position: relative; padding-top: 56.25%; width: 100%"><iframe src="https://kinescope.io/embed/{{$lesson->short_class}}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer; clipboard-write; screen-wake-lock;" frameborder="0" allowfullscreen style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;"></iframe></div>
+  <div class="border-4 border-blue-100 rounded-xl" style="position: relative; padding-top: 56.25%; width: 100%">@include('student.lessons.partials.kinescope-player', ['videoId' => $lesson->short_class, 'kind' => 'short'])</div>
   @endif
 
   {{-- Здесь позже добавим материалы и домашку --}}
@@ -27,7 +27,7 @@
    
     <div class="md:col-span-5">
       <div class="">
-        <div class="border-4 rounded-2xl border-blue-200" style="position: relative; padding-top: 56.25%; width: 100%"><iframe src="https://kinescope.io/embed/{{$lesson->meet_link}}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer; clipboard-write; screen-wake-lock;" frameborder="0" allowfullscreen style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;"></iframe></div>
+        <div class="border-4 rounded-2xl border-blue-200" style="position: relative; padding-top: 56.25%; width: 100%">@include('student.lessons.partials.kinescope-player', ['videoId' => $lesson->meet_link, 'kind' => 'live'])</div>
 
       </div>
     </div>
@@ -57,7 +57,9 @@
       </h3>
 
       @if ($lesson->notes_link)
-        <x-ui.button href="{{ $lesson->notes_link }}" class="w-full sm:w-auto">
+        {{-- Через наш роут, а не напрямую: он фиксирует факт открытия
+             конспекта для отчёта по ученику и сразу перенаправляет на файл. --}}
+        <x-ui.button href="{{ route('student.lessons.notes', $lesson) }}" class="w-full sm:w-auto">
           Скачать конспект
         </x-ui.button>
       @else
@@ -106,5 +108,7 @@
     </div>
   </x-ui.card>
 </div>
+
+@include('student.lessons.partials.watch-tracker')
 
 @endsection

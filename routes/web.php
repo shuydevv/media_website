@@ -220,6 +220,12 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
             Route::delete('/{user}', 'DeleteController')->name('admin.user.delete');
             Route::post('/{user}/invite', 'InviteController')->name('admin.user.invite');
             Route::post('/{user}/impersonate', 'ImpersonateController')->name('admin.user.impersonate');
+
+            // Отчёт по ученику (см. ShowController/StudentReport): цель по
+            // курсу и журнал обратной связи.
+            Route::patch('/{user}/courses/{course}/goal', 'GoalController')->name('admin.user.goal.update');
+            Route::post('/{user}/feedback', 'Feedback\StoreController')->name('admin.user.feedback.store');
+            Route::delete('/{user}/feedback/{feedback}', 'Feedback\DestroyController')->name('admin.user.feedback.destroy');
         });
 
         // Без 'namespace' => 'User' — контроллер лежит в Admin\Billing, передан полным классом
@@ -399,6 +405,14 @@ Route::middleware(['auth', 'billing.current'])
         // Страница урока для студента
         Route::get('/lessons/{lesson}', [StudentLessonController::class, 'show'])
             ->name('lessons.show');
+
+        // Учёт просмотра урока для отчёта по ученику — отметки от плеера
+        // и переход к конспекту (см. Student\LessonWatchController).
+        Route::post('/lessons/{lesson}/watch', [\App\Http\Controllers\Student\LessonWatchController::class, 'watch'])
+            ->middleware('throttle:60,1')
+            ->name('lessons.watch');
+        Route::get('/lessons/{lesson}/notes', [\App\Http\Controllers\Student\LessonWatchController::class, 'notes'])
+            ->name('lessons.notes');
     });
 
 // Сдача домашки студентом — пошагово, по одному вопросу на странице.
@@ -422,6 +436,9 @@ Route::middleware(['auth', 'billing.current'])
             ->whereNumber('position');
         Route::post('/submissions/{submission}/questions/{position}/save', [StudentSubmissionController::class, 'save'])
             ->name('submissions.question.save')
+            ->whereNumber('position');
+        Route::post('/submissions/{submission}/questions/{position}/hint', [StudentSubmissionController::class, 'hint'])
+            ->name('submissions.question.hint')
             ->whereNumber('position');
 
         Route::get('/submissions/{submission}/finish', [StudentSubmissionController::class, 'finish'])
