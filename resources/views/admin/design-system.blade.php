@@ -50,6 +50,7 @@
         <a href="#leftover">Незавершённая миграция</a>
         <a href="#new-typography" class="text-emerald-400">Новая система шрифтов</a>
         <a href="#apple-palette" class="text-emerald-400">Цветовая палитра</a>
+        <a href="#admin-components" class="text-emerald-400">Компоненты админки</a>
     </div>
 
     <div class="max-w-6xl mx-auto px-6 py-10">
@@ -910,7 +911,7 @@
 
         {{-- ================= ЦВЕТОВАЯ ПАЛИТРА (Apple) ================= --}}
         <section id="apple-palette" class="mb-16 scroll-mt-16 border-t-2 border-emerald-200 pt-10">
-            <div class="inline-block text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full mb-2">Целевая палитра, ещё нигде не применена</div>
+            <div class="inline-block text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full mb-2">Целевая палитра — применена в админке</div>
             <h2 class="text-2xl font-semibold mb-1">Цветовая палитра — на основе Apple</h2>
             <p class="text-gray-600 mb-3 max-w-3xl">
                 6 шкал по 10 оттенков (50–900), посчитаны в HSL от настоящих системных цветов
@@ -926,7 +927,9 @@
 
             <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-8 max-w-3xl text-sm text-amber-900">
                 Палитра описывает сам цвет, не роль — где именно он используется, решаем отдельно
-                (таблица ниже). Ничего в реальных страницах пока не переключено на эти классы —
+                (таблица ниже). На эти классы переведена админка: бейджи, алерты и статусы
+                (<code class="ds-swatch-label">x-ui.badge</code>, <code class="ds-swatch-label">x-ui.alert</code> —
+                см. «Компоненты админки» ниже). Кабинет ученика пока на прежних цветах —
                 это следующий шаг, отдельным подтверждённым проходом, как было с шрифтами.
             </div>
 
@@ -1024,6 +1027,164 @@
                     <div class="ds-swatch-label text-xs text-gray-500 mt-1">apple-red-650<br>#A02922</div>
                 </div>
             </div>
+        </section>
+
+        {{-- ================= КОМПОНЕНТЫ АДМИНКИ ================= --}}
+        <section id="admin-components" class="mb-16 scroll-mt-16 border-t-2 border-emerald-200 pt-10">
+            <div class="inline-block text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full mb-2">Целевая система — на ней собрана вся админка</div>
+            <h2 class="text-2xl font-semibold mb-1">Компоненты админки</h2>
+            <p class="text-gray-600 mb-8 max-w-3xl">
+                Живые компоненты <code class="ds-swatch-label">x-ui.*</code> из
+                <code class="ds-swatch-label">resources/views/components/ui/</code> — каждый образец ниже отрисован
+                самим компонентом, а не скопированными классами. Каркас страницы (сайдбар, шапка на телефоне, флеши
+                и ошибки валидации) — <code class="ds-swatch-label">admin/layouts/main.blade.php</code>, стили полей
+                и таблиц — <code class="ds-swatch-label">resources/css/admin.css</code>. Сузьте окно до ширины
+                телефона, чтобы увидеть, как перестраиваются таблица, вкладки и панель формы.
+            </p>
+
+            <h3 class="text-lg font-medium text-gray-700 mb-3">Кнопки — компактный размер и три «тихих» варианта</h3>
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+                <x-ui.button size="xs">Сохранить</x-ui.button>
+                <x-ui.button size="xs"><x-icon name="plus" class="w-4 h-4" />Создать</x-ui.button>
+                <x-ui.button size="xs" variant="secondary">Импорт</x-ui.button>
+                <x-ui.button size="xs" variant="ghost">Отмена</x-ui.button>
+                <x-ui.button size="xs" variant="danger-soft">Удалить</x-ui.button>
+                <x-ui.button size="xs" variant="danger">Удалить выбранных</x-ui.button>
+                <x-ui.button size="xs" :disabled="true">Недоступно</x-ui.button>
+            </div>
+            <p class="ds-swatch-label text-xs text-gray-500 mb-8">
+                &lt;x-ui.button size="xs" variant="primary | secondary | ghost | danger-soft | danger"&gt; —
+                44px по высоте на телефоне, 36px на десктопе. Основное действие на странице одно (primary),
+                остальные — secondary/ghost. Действие-форма (POST/DELETE с подтверждением) — &lt;x-ui.action-form&gt;.
+            </p>
+
+            <h3 class="text-lg font-medium text-gray-700 mb-3">Шапка страницы и вкладки</h3>
+            <div class="rounded-2xl border border-gray-200 bg-[#F9FAFA] p-4 sm:p-5 mb-2">
+                <x-ui.page-header title="Домашние задания" back="#admin-components" back-label="Назад" class="!mb-4">
+                    Пояснение под заголовком — одной-двумя строками.
+                    <x-slot:actions>
+                        <x-ui.button size="xs" variant="secondary">Импорт</x-ui.button>
+                        <x-ui.button size="xs"><x-icon name="plus" class="w-4 h-4" />Создать</x-ui.button>
+                    </x-slot:actions>
+                </x-ui.page-header>
+                <x-ui.tabs>
+                    <x-ui.tab href="#admin-components" :active="true">В работе</x-ui.tab>
+                    <x-ui.tab href="#admin-components">Завершили / отказались</x-ui.tab>
+                </x-ui.tabs>
+            </div>
+            <p class="ds-swatch-label text-xs text-gray-500 mb-8">&lt;x-ui.page-header title back back-label&gt; + слот actions · &lt;x-ui.tabs&gt; / &lt;x-ui.tab :active&gt;</p>
+
+            <h3 class="text-lg font-medium text-gray-700 mb-3">Поля формы</h3>
+            <x-ui.card class="max-w-2xl space-y-4 mb-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <x-ui.input name="ds_demo_name" label="Имя" value="Иван" />
+                    <x-ui.input name="ds_demo_phone" type="tel" label="Телефон" note="необязательно" placeholder="+7 999 123-45-67" />
+                </div>
+                <x-ui.select name="ds_demo_role" label="Роль" hint="Подсказка под полем — мелким серым.">
+                    <option>Ученик</option>
+                    <option>Куратор</option>
+                </x-ui.select>
+                <x-ui.textarea name="ds_demo_note" label="Комментарий" placeholder="Текст…"></x-ui.textarea>
+                <x-ui.input name="ds_demo_file" type="file" label="Файл" />
+                <div>
+                    <label class="ui-label" for="ds-demo-invalid">Поле с ошибкой</label>
+                    <input id="ds-demo-invalid" type="text" class="ui-input is-invalid" value="не число">
+                    <p class="ui-error">Введите число от 1 до 100.</p>
+                </div>
+                <x-ui.checkbox name="ds_demo_check" :checked="true">
+                    Отправить приглашение
+                    <span class="block text-xs text-zinc-500 mt-0.5">Вторая строка — пояснение к галочке.</span>
+                </x-ui.checkbox>
+            </x-ui.card>
+            <p class="ds-swatch-label text-xs text-gray-500 mb-8 max-w-3xl">
+                &lt;x-ui.input | select | textarea name label note hint&gt;, &lt;x-ui.checkbox&gt;, &lt;x-ui.field&gt; для
+                нестандартного содержимого. Ошибку валидации поле находит само по name. В разметке, которую
+                создаёт JS, — те же классы напрямую: ui-input, ui-label, ui-hint, ui-error. Шрифт в полях 16px на
+                телефоне (иначе iOS зумит страницу при фокусе) и 14px на десктопе; фокус — то же голубое кольцо, что
+                у input-focus и pin-box.
+            </p>
+
+            <h3 class="text-lg font-medium text-gray-700 mb-3">Бейджи и сообщения — палитра apple-*</h3>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <x-ui.badge>Не начато</x-ui.badge>
+                <x-ui.badge tone="blue">На проверке</x-ui.badge>
+                <x-ui.badge tone="green">Проверено</x-ui.badge>
+                <x-ui.badge tone="orange">Начал, не сдал</x-ui.badge>
+                <x-ui.badge tone="red">Срок вышел</x-ui.badge>
+                <x-ui.badge tone="purple">Пробник</x-ui.badge>
+                <x-ui.badge tone="indigo">Доступ</x-ui.badge>
+            </div>
+            <div class="space-y-2 max-w-2xl mb-2">
+                <x-ui.alert tone="green">Изменения сохранены.</x-ui.alert>
+                <x-ui.alert tone="red">Не сохранено — проверьте поля.</x-ui.alert>
+                <x-ui.alert tone="orange">Показаны первые 100 записей из 240.</x-ui.alert>
+                <x-ui.alert>Эти критерии общие для всех заданий № 5.</x-ui.alert>
+            </div>
+            <p class="ds-swatch-label text-xs text-gray-500 mb-8 max-w-3xl">
+                &lt;x-ui.badge tone="gray | blue | green | orange | red | purple | indigo"&gt; ·
+                &lt;x-ui.alert tone="blue | green | red | orange | gray"&gt;. Флеши session('success' | 'error' | 'status')
+                и список ошибок валидации каркас админки показывает сам — на странице их повторять не нужно.
+            </p>
+
+            <h3 class="text-lg font-medium text-gray-700 mb-3">Таблица — на телефоне превращается в карточки</h3>
+            <div class="max-w-3xl mb-2">
+                <x-ui.table>
+                    <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th>Тип</th>
+                            <th>Создано</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ([['Домашка №1: Древняя Русь', 'Домашка', 'gray'], ['Пробник №3', 'Пробник', 'purple']] as [$demoTitle, $demoType, $demoTone])
+                            <tr>
+                                <td data-primary><a href="#admin-components" class="font-medium text-zinc-900 hover:underline">{{ $demoTitle }}</a></td>
+                                <td data-label="Тип"><span><x-ui.badge :tone="$demoTone">{{ $demoType }}</x-ui.badge></span></td>
+                                <td data-label="Создано" class="text-zinc-500">07.10.2026</td>
+                                <td data-actions>
+                                    <div class="ui-table-actions md:justify-end -ml-3.5 md:ml-0">
+                                        <x-ui.button size="xs" variant="ghost">Изменить</x-ui.button>
+                                        <x-ui.button size="xs" variant="ghost"><span class="text-apple-red-650">Удалить</span></x-ui.button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </x-ui.table>
+            </div>
+            <p class="ds-swatch-label text-xs text-gray-500 mb-8 max-w-3xl">
+                &lt;x-ui.table&gt;: ячейкам задаются data-primary (заголовок карточки), data-label="…" (подпись колонки)
+                и data-actions (ряд кнопок) — уже 768px шапка прячется, каждая строка становится карточкой, без
+                горизонтальной прокрутки. Таблица внутри x-ui.card — класс ui-table ui-table-flush без обёртки.
+            </p>
+
+            <h3 class="text-lg font-medium text-gray-700 mb-3">Сводные цифры, пустое состояние, панель формы</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mb-2">
+                <x-ui.card>
+                    <div class="grid grid-cols-2 gap-4">
+                        <x-ui.stat label="Активных учеников">48</x-ui.stat>
+                        <x-ui.stat label="На проверке">
+                            7
+                            <x-slot:sub>работ ждут куратора</x-slot:sub>
+                        </x-ui.stat>
+                        <x-ui.stat label="Курс" size="md">История, годовой</x-ui.stat>
+                    </div>
+                </x-ui.card>
+                <x-ui.empty>Ничего не найдено</x-ui.empty>
+            </div>
+            <div class="max-w-3xl rounded-2xl border border-gray-200 bg-[#F9FAFA] px-4">
+                <x-ui.form-actions class="!static !mt-0">
+                    <x-ui.button size="xs">Сохранить изменения</x-ui.button>
+                    <x-ui.button size="xs" variant="ghost">Отмена</x-ui.button>
+                </x-ui.form-actions>
+            </div>
+            <p class="ds-swatch-label text-xs text-gray-500 mt-2 max-w-3xl">
+                &lt;x-ui.stat label size&gt; + слот sub · &lt;x-ui.empty&gt; · &lt;x-ui.form-actions&gt; — на странице прилипает к
+                низу экрана (здесь закреплена на месте), на телефоне кнопки растягиваются на всю ширину. Пагинация
+                списков — links('pagination.ui').
+            </p>
         </section>
 
         <div class="border-t border-gray-200 pt-8 text-sm text-gray-500">

@@ -1,20 +1,22 @@
 @extends('admin.layouts.main')
 
+@section('title', 'Создать тэг')
+
 @section('content')
-    <div>
-        <h1 class="text-xl sans mb-4">Создать тэг</h1>
-        <form action="{{route('admin.tag.store')}}" method="post">
-            @csrf
-            <div>
-                <label class="text-zinc-800 text-sm">Название тэга</label>
-                <input class="p-2 block border" type="text" placeholder="Введите название" name="title">
-            </div>
-            @error('title')
-            <p class="mt-2 text-red-400">*{{ $message }}</p>
-            @enderror
-            <a><button type="submit" class="mt-12 p-2 px-4 bg-zinc-200 hover:bg-zinc-300">Создать тэг</button></a>
-        </form>
-        
+<div class="max-w-xl">
+    <x-ui.page-header title="Создать тэг" :back="route('admin.tag.index')" back-label="Тэги" />
 
+    <form action="{{ route('admin.tag.store') }}" method="post">
+        @csrf
 
+        <x-ui.card class="space-y-4">
+            <x-ui.input name="title" label="Название тэга" value="{{ old('title') }}" placeholder="Введите название" required />
+        </x-ui.card>
+
+        <x-ui.form-actions>
+            <x-ui.button type="submit" size="xs">Создать тэг</x-ui.button>
+            <x-ui.button href="{{ route('admin.tag.index') }}" variant="ghost" size="xs">Отмена</x-ui.button>
+        </x-ui.form-actions>
+    </form>
+</div>
 @endsection

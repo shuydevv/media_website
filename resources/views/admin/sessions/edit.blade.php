@@ -1,90 +1,38 @@
 @extends('admin.layouts.main')
 
+@section('title', 'Редактирование занятия')
+
 @section('content')
-<div class="max-w-xl mx-auto p-6 bg-white rounded-xl shadow">
-    <h1 class="text-xl font-semibold mb-6">Редактировать занятие</h1>
-
-    @if (session('success'))
-        <div class="mb-4 text-green-600 text-sm">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if ($errors->any())
-        <div class="mb-4 text-red-600 text-sm">
-            <ul class="list-disc pl-5">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+<div class="max-w-2xl">
+    <x-ui.page-header title="Редактировать занятие" :back="route('admin.sessions.index')" back-label="Сессии" />
 
     <form method="POST" action="{{ route('admin.sessions.update', $session) }}">
         @csrf
         @method('PUT')
 
-        {{-- Дата --}}
-        <div class="mb-4">
-            <label for="date" class="block text-sm font-medium">Дата</label>
-            <input
-                type="date"
-                name="date"
-                id="date"
-                class="w-full border rounded px-3 py-2"
-                value="{{ old('date', $session->date) }}"
-                required
-            >
-        </div>
+        <x-ui.card class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <x-ui.input type="date" name="date" id="date" label="Дата" value="{{ old('date', $session->date) }}" required />
+                <x-ui.input type="time" name="start_time" id="start_time" label="Время начала" value="{{ old('start_time', substr($session->start_time, 0, 5)) }}" required />
+                <x-ui.input type="number" name="duration_minutes" id="duration_minutes" label="Длительность, минут" min="1" inputmode="numeric"
+                            value="{{ old('duration_minutes', $session->duration_minutes) }}" required />
+            </div>
+            {{-- Подсказка времени окончания считается на клиенте, на бэкенд не влияет --}}
+            <p id="end-time-hint" class="ui-hint -mt-2 empty:hidden"></p>
 
-        {{-- Время начала --}}
-        <div class="mb-4">
-            <label for="start_time" class="block text-sm font-medium">Время начала</label>
-            <input
-                type="time"
-                name="start_time"
-                id="start_time"
-                class="w-full border rounded px-3 py-2"
-                value="{{ old('start_time', substr($session->start_time, 0, 5)) }}"
-                required
-            >
-        </div>
+            <x-ui.select name="status" label="Статус занятия">
+                <option value="active" @selected(old('status', $session->status) === 'active')>Активное</option>
+                <option value="cancelled" @selected(old('status', $session->status) === 'cancelled')>Отменено</option>
+            </x-ui.select>
+        </x-ui.card>
 
-        {{-- Длительность, минут --}}
-        <div class="mb-4">
-            <label for="duration_minutes" class="block text-sm font-medium">Длительность (мин)</label>
-            <input
-                type="number"
-                min="1"
-                name="duration_minutes"
-                id="duration_minutes"
-                class="w-full border rounded px-3 py-2"
-                value="{{ old('duration_minutes', $session->duration_minutes) }}"
-                required
-            >
-            {{-- Необязательный подсказчик конечного времени (клиентский расчёт) --}}
-            <p id="end-time-hint" class="text-xs text-gray-500 mt-1"></p>
-        </div>
-
-        {{-- Статус занятия --}}
-        <div class="mb-6">
-            <label for="status" class="block text-sm font-medium">Статус занятия</label>
-            <select name="status" id="status" class="w-full border rounded px-3 py-2">
-                <option value="active" {{ old('status', $session->status) === 'active' ? 'selected' : '' }}>Активное</option>
-                <option value="cancelled" {{ old('status', $session->status) === 'cancelled' ? 'selected' : '' }}>Отменено</option>
-            </select>
-        </div>
-
-        <div class="flex items-center gap-3">
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                Сохранить изменения
-            </button>
-            <a href="{{ route('admin.sessions.index') }}" class="text-gray-600 hover:underline">Назад к списку</a>
-        </div>
+        <x-ui.form-actions>
+            <x-ui.button type="submit" size="xs">Сохранить изменения</x-ui.button>
+            <x-ui.button href="{{ route('admin.sessions.index') }}" variant="ghost" size="xs">Отмена</x-ui.button>
+        </x-ui.form-actions>
     </form>
 </div>
 
-{{-- Небольшой скрипт для подсказки времени окончания на клиенте (не влияет на бэкенд) --}}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const startInput = document.getElementById('start_time');

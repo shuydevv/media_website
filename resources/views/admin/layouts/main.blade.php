@@ -1,64 +1,172 @@
+{{--
+    Единый каркас админки: сайдбар слева на десктопе, на телефоне — липкая
+    шапка с бургером и выезжающее меню. Раскладка — классы .admin-* из
+    resources/css/admin.css, содержимое страниц — компоненты x-ui.*
+    (см. /admin/design-system, раздел «Компоненты админки»).
+
+    Секции страницы:
+      title   — название раздела: <title> и шапка на телефоне
+      content — содержимое
+    Стеки: head (стили страницы), page-scripts (скрипты/шаблоны в конце body).
+
+    Флеши session('success'|'status'|'error') и список ошибок валидации
+    выводятся здесь один раз — на страницах их повторять не нужно. Если форма
+    показывает ошибки сама (свой текст вокруг списка), страница объявляет
+    @section('own-errors', '1').
+--}}
+@php
+    $adminNav = [
+        null => [
+            ['Главная', route('main.index'), 'main.index'],
+        ],
+        'Ученики' => [
+            ['CRM', route('admin.crm.index'), 'admin.crm.*'],
+            ['Пользователи', route('admin.user.index'), 'admin.user.*'],
+            ['Оповещения', route('admin.announcements.index'), 'admin.announcements.*'],
+            ['Промокоды', route('admin.promos.index'), 'admin.promos.*'],
+        ],
+        'Обучение' => [
+            ['Курсы', route('admin.courses.index'), 'admin.courses.*'],
+            ['Сессии', route('admin.sessions.index'), 'admin.sessions.*'],
+            ['Уроки', route('admin.lessons.index'), 'admin.lessons.*'],
+            ['Домашки', route('admin.homeworks.index'), 'admin.homeworks.*'],
+            ['Банк заданий', route('admin.tasks.index'), 'admin.tasks.*'],
+            ['Проверка работ', route('mentor.submissions.index'), 'mentor.*'],
+        ],
+        'Сайт' => [
+            ['Посты', route('admin.post.index'), 'admin.post.*'],
+            ['Шпаргалки', route('admin.shpargalka.index'), 'admin.shpargalka.*'],
+            ['Упражнения', route('admin.exercise.index'), 'admin.exercise.*'],
+            ['Категории', route('admin.category.index'), 'admin.category.*'],
+            ['Разделы', route('admin.section.index'), 'admin.section.*'],
+            ['Темы', route('admin.topic.index'), 'admin.topic.*'],
+            ['Тэги', route('admin.tag.index'), 'admin.tag.*'],
+        ],
+        'Система' => [
+            ['Дизайн-система', route('admin.design-system'), 'admin.design-system'],
+            ['Открыть сайт', route('index'), null],
+        ],
+    ];
+    $adminUser = auth()->user();
+    $adminUserName = $adminUser
+        ? (trim(($adminUser->first_name ?? '').' '.($adminUser->last_name ?? '')) ?: ($adminUser->name ?: $adminUser->email))
+        : '';
+@endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="robots" content="noindex">
 
-        <title>Школа Полтавского</title>
+    <title>@yield('title', 'Админка') — Школа Полтавского</title>
 
-        <!-- Styles -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
-        <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-        @vite('resources/css/app.css')
-    </head>
-    <body>
-        <div class="flex justify-between mb-4 p-4 border w-full bg-white z-10 items-center flex-wrap grow-0">
-            <a href="{{route('main.index')}}"><h2 class="md:text-xl md:mb-0 mb-4 text-lg tracking-wide font-medium">Админ-панель</h2></a>
-            <ul class="gap-10 md:flex hidden">
-                <li style="color: rgb(217 119 6);" class="tracking-wide"></li>
-                <li class="tracking-wide"></li>
-                {{-- <li><a href="{{route('logout')}}">Выйти</a></li> --}}
-                <!-- <li>Бесплатные статьи</li> -->
-                <!-- <li>Вход / Регистрация</li> -->
-            </ul>
+    @vite('resources/css/app.css')
+    @stack('head')
+</head>
+<body class="admin-portal">
+<div class="admin-shell" id="admin-shell">
+
+    <header class="admin-topbar">
+        <button type="button" class="admin-topbar-btn" data-admin-nav-open aria-label="Открыть меню" aria-controls="admin-sidebar" aria-expanded="false">
+            <x-icon name="menu-01" class="w-6 h-6" />
+        </button>
+        <div class="sans-medium text-base text-zinc-900 truncate">@yield('title', 'Админка')</div>
+    </header>
+
+    <div class="admin-backdrop" data-admin-nav-close></div>
+
+    <aside class="admin-sidebar" id="admin-sidebar">
+        <div class="flex items-center justify-between gap-2 pl-6 pr-3 pt-5 pb-1">
+            <a href="{{ route('main.index') }}" class="block min-w-0">
+                <div class="font-oktyabrina text-xl leading-none tracking-wide text-zinc-800">Школа Полтавского</div>
+                <div class="sans-medium text-xs uppercase tracking-wide text-zinc-400 mt-1.5">Админ-панель</div>
+            </a>
+            <button type="button" class="admin-topbar-btn admin-sidebar-close" data-admin-nav-close aria-label="Закрыть меню">
+                <x-icon name="x-close" class="w-5 h-5" />
+            </button>
         </div>
-        <div class="container mx-auto max-w-screen-xl px-3 md:mb-20 mb-16 mt-8">
-            <div class="grid md:grid-cols-3 grid-cols-1 gap-4">
-                <div class="col-span-1">
-                    <ul class="border p-4">
-                        <a href="{{route('main.index')}}"><li class="mb-2 hover:opacity-50">Главная</li></a>
-                        <a href="{{route('admin.category.index')}}"><li class="mb-2 hover:opacity-50">Категории</li></a>
-                        <a href="{{route('admin.section.index')}}"><li class="mb-2 hover:opacity-50">Разделы</li></a>
-                        <a href="{{route('admin.topic.index')}}"><li class="mb-2 hover:opacity-50">Темы</li></a>
-                        <a href="{{route('admin.tag.index')}}"><li class="mb-2 hover:opacity-50">Тэги</li></a>
-                        <a href="{{route('admin.post.index')}}"><li class="mb-2 hover:opacity-50">Посты</li></a>
-                        <a href="{{route('admin.user.index')}}"><li class="mb-2 hover:opacity-50">Пользователи</li></a>
-                        <a href="{{route('admin.crm.index')}}"><li class="mb-2 hover:opacity-50">CRM</li></a>
-                        <a href="{{route('admin.announcements.index')}}"><li class="mb-2 hover:opacity-50">Оповещения</li></a>
-                        <a href="{{route('admin.shpargalka.index')}}"><li class="mb-2 hover:opacity-50">Шпаргалки</li></a>
-                        <hr class="mt-4 mb-4">
-                        
-                        <a href="{{route('admin.tasks.index')}}"><li class="mb-2 hover:opacity-50">Банк заданий</li></a>
-                        <hr class="mt-4 mb-4">
-                        <a href="{{route('admin.courses.index')}}"><li class="mb-2 hover:opacity-50">Курсы</li></a>
-                        <a href="{{route('admin.lessons.index')}}"><li class="mb-2 hover:opacity-50">Уроки</li></a>
-                        <a href="{{route('admin.sessions.index')}}"><li class="mb-2 hover:opacity-50">Сессии</li></a>
-                        <a href="{{route('admin.homeworks.index')}}"><li class="mb-2 hover:opacity-50">Домашки</li></a>
-                        {{-- <a href="{{route('admin.topic.index')}}"><li class="mb-2 hover:opacity-50">Тема</li></a>
-                        <a href="{{route('admin.section.index')}}"><li class="mb-2 hover:opacity-50">Раздел</li></a> --}}
-                        
-                        <form action="{{route('logout')}}" method="post">
-                            @csrf
-                            <button type="submit" class="mt-16 hover:opacity-50">Выйти</button>
-                        </form>
-                        
-                    </ul>
-                </div>
-                <div class="col-span-2 border p-4">
-                    @yield('content')
-                </div>
-            </div>
+
+        <nav class="flex-1 px-3 pb-4" aria-label="Разделы админки">
+            @foreach ($adminNav as $caption => $links)
+                @if ($caption)
+                    <div class="admin-nav-caption">{{ $caption }}</div>
+                @else
+                    <div class="mt-4"></div>
+                @endif
+                @foreach ($links as [$label, $url, $pattern])
+                    @php $isActive = $pattern && request()->routeIs($pattern); @endphp
+                    <a href="{{ $url }}" class="admin-nav-link {{ $isActive ? 'is-active' : '' }}" @if ($isActive) aria-current="page" @endif>{{ $label }}</a>
+                @endforeach
+            @endforeach
+        </nav>
+
+        <div class="border-t border-zinc-200 px-3 py-3">
+            @if ($adminUserName !== '')
+                <div class="px-3 pb-1 text-xs text-zinc-400 truncate">{{ $adminUserName }}</div>
+            @endif
+            <form action="{{ route('logout') }}" method="post">
+                @csrf
+                <button type="submit" class="admin-nav-link">Выйти</button>
+            </form>
         </div>
-    </body>
+    </aside>
+
+    <main class="admin-main">
+        <div class="admin-content">
+            @foreach (['success' => 'green', 'status' => 'green', 'error' => 'red'] as $flashKey => $flashTone)
+                @if (session($flashKey))
+                    <x-ui.alert :tone="$flashTone" class="mb-4">{{ session($flashKey) }}</x-ui.alert>
+                @endif
+            @endforeach
+
+            @if ($errors->any())
+                @sectionMissing('own-errors')
+                    <x-ui.alert tone="red" class="mb-4">
+                        <div class="font-medium mb-1">Не сохранено — проверьте поля:</div>
+                        <ul class="list-disc pl-5 space-y-0.5">
+                            @foreach ($errors->all() as $errorMessage)
+                                <li>{{ $errorMessage }}</li>
+                            @endforeach
+                        </ul>
+                    </x-ui.alert>
+                @endif
+            @endif
+
+            @yield('content')
+        </div>
+    </main>
+</div>
+
+@stack('page-scripts')
+
+<script>
+(function () {
+    var shell = document.getElementById('admin-shell');
+    var openBtn = document.querySelector('[data-admin-nav-open]');
+
+    function setOpen(open) {
+        shell.classList.toggle('is-nav-open', open);
+        document.body.style.overflow = open ? 'hidden' : '';
+        if (openBtn) openBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    if (openBtn) openBtn.addEventListener('click', function () { setOpen(true); });
+    document.querySelectorAll('[data-admin-nav-close]').forEach(function (el) {
+        el.addEventListener('click', function () { setOpen(false); });
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') setOpen(false);
+    });
+
+    // Подтверждение для форм с data-confirm (см. x-ui.action-form): текст
+    // берётся из атрибута, а не вшивается в onsubmit="confirm('…')".
+    document.addEventListener('submit', function (e) {
+        var message = e.target.getAttribute && e.target.getAttribute('data-confirm');
+        if (message && !window.confirm(message)) e.preventDefault();
+    });
+})();
+</script>
+</body>
 </html>

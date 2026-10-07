@@ -1,15 +1,14 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'CRM') — Школа Полтавского</title>
-    @vite('resources/css/app.css')
+{{--
+    Надстройка над общим каркасом админки для страниц CRM (index/archive):
+    своей разметки здесь нет — только стили полей карточки ученика и общий
+    для обеих страниц скрипт (статус, напоминания, заметка, дата доступа).
+    Секцию content страницы объявляют сами, она уходит в admin.layouts.main
+    как есть. Вкладки «В работе / Завершили» — x-ui.tabs в самих страницах.
+--}}
+@extends('admin.layouts.main')
+
+@push('head')
     <style>
-        {{-- Как и /admin/design-system: список плотный и широкий, в 2/3-колонку
-             admin.layouts.main он физически не помещается — свой минимальный каркас. --}}
-        body { background: #F9FAFA; }
         {{-- .input-focus:not(:placeholder-shown) в app.css красит синим любое
              непустое поле — в плотном списке это шумно и читается как
              предупреждение, а не обычное значение. .crm-note-view показывается
@@ -56,34 +55,9 @@
             display: none;
         }
     </style>
-</head>
-<body class="text-zinc-800">
+@endpush
 
-    {{-- На мобилке: служебные ссылки (назад/полный список) — одной мелкой
-         приглушённой строкой сверху, под ними вкладки CRM/Архив пилюлями с
-         явно выделенной активной. На md+ всё в одну строку. --}}
-    @php
-        $crmTabClass = fn (bool $active) => 'rounded-lg px-3 py-1.5 transition ' . ($active ? 'bg-white/10 text-white sans-medium' : 'text-zinc-400 hover:text-white hover:bg-white/5');
-    @endphp
-    <div class="px-4 md:px-6 py-2 md:py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm bg-zinc-900 sticky top-0 z-10">
-        <a href="{{ route('main.index') }}" class="text-xs md:text-sm text-zinc-400 md:text-white md:sans-medium hover:text-white md:mr-2">
-            ← <span class="md:hidden">Админка</span><span class="hidden md:inline">Админ-панель</span>
-        </a>
-        <nav class="order-last md:order-none w-full md:w-auto flex items-center gap-1">
-            <a href="{{ route('admin.crm.index') }}" class="{{ $crmTabClass(request()->routeIs('admin.crm.index')) }}">CRM</a>
-            <a href="{{ route('admin.crm.archive') }}" class="{{ $crmTabClass(request()->routeIs('admin.crm.archive')) }}">
-                <span class="md:hidden">Архив</span><span class="hidden md:inline">Завершили / отказались</span>
-            </a>
-        </nav>
-        <a href="{{ route('admin.user.index') }}" class="text-xs md:text-sm text-zinc-400 hover:text-white ml-auto">
-            <span class="md:hidden">Все пользователи</span><span class="hidden md:inline">Пользователи (полный список)</span>
-        </a>
-    </div>
-
-    <div class="max-w-5xl mx-auto px-4 md:px-6 py-8">
-        @yield('content')
-    </div>
-
+@push('page-scripts')
     {{-- Шаблоны для JS: реальные <x-icon>-SVG внутри <template> — компилируются
          сервером как обычно, но не рендерятся в DOM, пока JS их не клонирует.
          Так новые строки, добавленные без перезагрузки страницы, получают те
@@ -494,5 +468,4 @@
         });
     })();
     </script>
-</body>
-</html>
+@endpush

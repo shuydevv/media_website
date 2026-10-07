@@ -1,28 +1,28 @@
 @extends('admin.layouts.main')
 
+@section('title', 'Создать раздел')
+
 @section('content')
-    <div>
-        <h1 class="text-xl sans mb-4">Создать раздел</h1>
-        <form action="{{route('admin.section.store')}}" method="post">
-            @csrf
-            <div>
-                <label class="text-zinc-800 text-sm">Название раздела</label>
-                <input class="p-2 block border" type="text" placeholder="Введите название" name="title">
-            </div>
-            @error('title')
-            <p class="mt-2 text-red-400">*{{ $message }}</p>
-            @enderror
-            <div class="mt-5">
-                <label class="mr-5">Выберите категорию</label>
-                <select class="p-2 border" name="category_id">
-                    @foreach ($categories as $category)
-                    <option value="{{$category->id}}">{{$category->title}}</option>
-                    @endforeach
-                </select>
-            </div>
-            <a><button type="submit" class="mt-12 p-2 px-4 bg-zinc-200 hover:bg-zinc-300">Создать раздел</button></a>
-        </form>
-        
+<div class="max-w-xl">
+    <x-ui.page-header title="Создать раздел" :back="route('admin.section.index')" back-label="Разделы" />
 
+    <form action="{{ route('admin.section.store') }}" method="post">
+        @csrf
 
+        <x-ui.card class="space-y-4">
+            <x-ui.input name="title" label="Название раздела" value="{{ old('title') }}" placeholder="Введите название" required />
+
+            <x-ui.select name="category_id" label="Категория">
+                @foreach ($categories as $option)
+                    <option value="{{ $option->id }}" @selected(old('category_id') == $option->id)>{{ $option->title }}</option>
+                @endforeach
+            </x-ui.select>
+        </x-ui.card>
+
+        <x-ui.form-actions>
+            <x-ui.button type="submit" size="xs">Создать раздел</x-ui.button>
+            <x-ui.button href="{{ route('admin.section.index') }}" variant="ghost" size="xs">Отмена</x-ui.button>
+        </x-ui.form-actions>
+    </form>
+</div>
 @endsection

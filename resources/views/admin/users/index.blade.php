@@ -1,8 +1,9 @@
 @extends('admin.layouts.main')
 
+@section('title', 'Пользователи')
+
 @section('content')
 @php
-    $tabClass = fn (bool $active) => 'px-3 py-1.5 rounded-lg text-sm '.($active ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200');
     // Дата → сколько дней прошло и подпись ("сегодня", "вчера", "N дн. назад").
     $ago = function ($at) {
         if (! $at) {
@@ -14,71 +15,53 @@
     };
 @endphp
 
-@if(session('success'))
-    <div class="mb-4 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
-        {{ session('success') }}
-    </div>
-@endif
-
-<div class="flex items-center justify-between gap-3 flex-wrap mb-5">
-    <h1 class="text-2xl font-semibold">Пользователи</h1>
-
-    <div class="flex items-center gap-2">
-        <a href="{{ route('admin.user.bots.preview') }}"
-           class="inline-flex items-center gap-2 px-3 py-2 text-sm bg-zinc-100 text-zinc-700 rounded-lg hover:bg-zinc-200">
-            Удалить ботов
-        </a>
-        <a href="{{ route('admin.user.create') }}"
-           class="inline-flex items-center gap-2 px-3 py-2 text-sm bg-pink-600 text-white rounded-lg hover:bg-pink-700">
+<x-ui.page-header title="Пользователи">
+    <x-slot:actions>
+        <x-ui.button href="{{ route('admin.user.bots.preview') }}" variant="secondary" size="xs">Удалить ботов</x-ui.button>
+        <x-ui.button href="{{ route('admin.user.create') }}" size="xs">
             <x-icon name="plus" class="w-4 h-4" />
             Создать
-        </a>
-    </div>
-</div>
+        </x-ui.button>
+    </x-slot:actions>
+</x-ui.page-header>
 
-<div class="flex items-center gap-2 flex-wrap mb-3">
-    <a href="{{ route('admin.user.index', array_filter(['q' => $q])) }}" class="{{ $tabClass($scope === 'students') }}">Ученики на курсах</a>
-    <a href="{{ route('admin.user.index', array_filter(['scope' => 'all', 'q' => $q])) }}" class="{{ $tabClass($scope === 'all') }}">Все пользователи</a>
-</div>
+<x-ui.tabs class="mb-4">
+    <x-ui.tab href="{{ route('admin.user.index', array_filter(['q' => $q])) }}" :active="$scope === 'students'">Ученики на курсах</x-ui.tab>
+    <x-ui.tab href="{{ route('admin.user.index', array_filter(['scope' => 'all', 'q' => $q])) }}" :active="$scope === 'all'">Все пользователи</x-ui.tab>
+</x-ui.tabs>
 
 <form method="GET" class="mb-4 flex flex-wrap gap-2">
     @if($scope === 'all')
         <input type="hidden" name="scope" value="all">
     @endif
-    <input
-        type="text"
-        name="q"
-        value="{{ $q ?? '' }}"
-        placeholder="Поиск: имя, email, телефон…"
-        class="flex-1 min-w-[200px] bg-white border border-zinc-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
-    >
-    <select name="sort" class="border border-zinc-300 rounded-lg px-2 py-2 text-sm bg-white" onchange="this.form.submit()">
+    <x-ui.input name="q" type="search" value="{{ $q ?? '' }}" placeholder="Поиск: имя, email, телефон…" wrap="flex-1 min-w-[200px]" />
+    <x-ui.select name="sort" onchange="this.form.submit()" wrap="w-full sm:w-auto" aria-label="Сортировка">
         @foreach($sorts as $key => $sortLabel)
             <option value="{{ $key }}" @selected($sort === $key)>{{ $sortLabel }}</option>
         @endforeach
-    </select>
-    <button class="px-3 py-2 text-sm bg-zinc-900 text-white rounded-lg hover:bg-zinc-800">Искать</button>
+    </x-ui.select>
+    <x-ui.button type="submit" size="xs">Искать</x-ui.button>
     @if(!empty($q))
-        <a href="{{ route('admin.user.index', array_filter(['scope' => $scope === 'all' ? 'all' : null])) }}"
-           class="px-3 py-2 text-sm bg-zinc-100 text-zinc-700 rounded-lg hover:bg-zinc-200">Сброс</a>
+        <x-ui.button href="{{ route('admin.user.index', array_filter(['scope' => $scope === 'all' ? 'all' : null])) }}" variant="secondary" size="xs">Сброс</x-ui.button>
     @endif
 </form>
 
-{{-- Без горизонтальной прокрутки: фиксированные доли колонок, длинные значения
-     переносятся, а на узком экране колонка "За последнее время" скрывается. --}}
-<div class="bg-white rounded-2xl shadow-sm ring-1 ring-black/5 overflow-hidden">
-    <table class="w-full table-fixed text-sm">
-        <thead class="bg-zinc-50 text-left text-zinc-600">
+@if ($users->isEmpty())
+    <x-ui.empty>Ничего не найдено</x-ui.empty>
+@else
+    <x-ui.table>
+        <thead>
         <tr>
-            <th class="px-3 py-3 font-medium w-[38%]">Ученик</th>
-            <th class="px-3 py-3 font-medium">Активность</th>
-            <th class="px-3 py-3 font-medium hidden md:table-cell">За последнее время</th>
-            <th class="px-3 py-3 font-medium">Обратная связь</th>
+            <th class="w-[38%]">Ученик</th>
+            <th>Активность</th>
+            <th>За последнее время</th>
+            <th>Обратная связь</th>
+            <th></th>
         </tr>
         </thead>
 
-        <tbody class="divide-y divide-zinc-100">
-        @forelse ($users as $user)
+        <tbody>
+        @foreach ($users as $user)
             @php
                 $fullName = trim(($user->first_name ?? '').' '.($user->last_name ?? '')) ?: ($user->name ?: '—');
                 // Точная отметка (user_activity_days) копится недавно — до неё
@@ -86,61 +69,58 @@
                 $seen = $ago($user->activity_days_max_last_seen_at ?? $user->fish_last_active_date);
                 $feedback = $ago($user->feedback_max_created_at);
             @endphp
-            <tr class="hover:bg-zinc-50 align-top">
-                <td class="px-3 py-3 break-words">
+            <tr>
+                <td data-primary class="break-words">
                     <a href="{{ route('admin.user.show', $user) }}" class="font-medium text-zinc-900 hover:underline">{{ $fullName }}</a>
                     @unless($user->isStudent())
-                        <span class="ml-1 inline-flex px-2 py-0.5 rounded-full text-xs bg-amber-50 text-amber-700">{{ \App\Models\User::getRoles()[$user->role] ?? 'Роль '.$user->role }}</span>
+                        <x-ui.badge tone="orange" class="ml-1">{{ \App\Models\User::getRoles()[$user->role] ?? 'Роль '.$user->role }}</x-ui.badge>
                     @endunless
-                    <div class="text-xs text-zinc-500 mt-0.5">
+                    <div class="text-xs font-normal text-zinc-500 mt-0.5">
                         @if($user->name && $user->name !== $fullName)
-                            <a href="https://t.me/{{ ltrim($user->name, '@') }}" target="_blank" rel="noopener" class="text-blue-700 hover:underline">{{ $user->name }}</a>
+                            <a href="https://t.me/{{ ltrim($user->name, '@') }}" target="_blank" rel="noopener" class="text-apple-blue-700 hover:underline">{{ $user->name }}</a>
                         @else
                             {{ $user->email ?? '—' }}
                         @endif
                     </div>
-                    <div class="text-xs text-zinc-500 mt-0.5">
+                    <div class="text-xs font-normal text-zinc-500 mt-0.5">
                         {{ $user->courses->pluck('title')->implode(', ') ?: 'без курса' }}
                     </div>
                 </td>
 
-                <td class="px-3 py-3">
-                    @if($user->isStudent())
-                        <div class="{{ $seen && $seen['days'] >= 7 ? 'text-rose-700' : 'text-zinc-900' }}">
-                            {{ $seen ? $seen['text'] : 'не заходил' }}
+                @if($user->isStudent())
+                    <td data-label="Активность">
+                        <div>
+                            <div class="{{ $seen && $seen['days'] >= 7 ? 'text-apple-red-650' : 'text-zinc-900' }}">
+                                {{ $seen ? $seen['text'] : 'не заходил' }}
+                            </div>
+                            <div class="text-xs text-zinc-500">активных дней за 14: {{ $user->active_days_14 }}</div>
                         </div>
-                        <div class="text-xs text-zinc-500">активных дней за 14: {{ $user->active_days_14 }}</div>
-                    @else
-                        <span class="text-zinc-400">—</span>
-                    @endif
-                </td>
-
-                <td class="px-3 py-3 text-xs text-zinc-600 hidden md:table-cell">
-                    @if($user->isStudent())
-                        <div>работ сдано за 30 дней: <span class="text-zinc-900">{{ $user->submitted_30 }}</span></div>
-                        <div>уроков открыто за 14 дней: <span class="text-zinc-900">{{ $user->lessons_14 }}</span></div>
-                    @else
-                        <span class="text-zinc-400">—</span>
-                    @endif
-                </td>
-
-                <td class="px-3 py-3">
-                    @if($user->isStudent())
-                        <div class="{{ ! $feedback || $feedback['days'] >= 14 ? 'text-rose-700' : 'text-zinc-900' }}">
+                    </td>
+                    <td data-label="За последнее время" class="text-xs text-zinc-600">
+                        <div>
+                            <div>работ сдано за 30 дней: <span class="text-zinc-900">{{ $user->submitted_30 }}</span></div>
+                            <div>уроков открыто за 14 дней: <span class="text-zinc-900">{{ $user->lessons_14 }}</span></div>
+                        </div>
+                    </td>
+                    <td data-label="Обратная связь">
+                        <div class="{{ ! $feedback || $feedback['days'] >= 14 ? 'text-apple-red-650' : 'text-zinc-900' }}">
                             {{ $feedback ? $feedback['text'] : 'не было' }}
                         </div>
-                    @else
-                        <div class="text-zinc-400">—</div>
-                    @endif
-                    <a href="{{ route('admin.user.edit', $user) }}" class="text-xs text-zinc-500 hover:text-zinc-900 hover:underline">изменить</a>
+                    </td>
+                @else
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                @endif
+
+                <td data-actions>
+                    <x-ui.button href="{{ route('admin.user.edit', $user) }}" variant="ghost" size="xs" class="-ml-3.5 md:ml-0">Изменить</x-ui.button>
                 </td>
             </tr>
-        @empty
-            <tr><td colspan="4" class="px-4 py-8 text-center text-zinc-500">Ничего не найдено</td></tr>
-        @endforelse
+        @endforeach
         </tbody>
-    </table>
-</div>
+    </x-ui.table>
+@endif
 
 <p class="mt-3 text-xs text-zinc-500">
     Красным отмечены ученики, которые не заходили неделю и больше или не получали обратной связи две недели и больше.
@@ -148,6 +128,6 @@
 </p>
 
 <div class="mt-4">
-    {{ $users->links() }}
+    {{ $users->links('pagination.ui') }}
 </div>
 @endsection

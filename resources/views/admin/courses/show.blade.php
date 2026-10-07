@@ -1,12 +1,11 @@
 @extends('admin.layouts.main')
 
+@section('title', 'Курс')
+
 @section('content')
-    <div>
-        {{-- @dd($categories) --}}
+    <x-ui.page-header title="Курс" :back="route('admin.courses.index')" back-label="Курсы" />
 
-        <h1 class="text-xl sans mb-4">Тут нечего смотреть, смотри инфу о курсе в редактировании</h1> 
-
-
-        
-
+    <x-ui.empty>
+        Отдельной страницы просмотра у курса нет — вся информация в форме редактирования.
+    </x-ui.empty>
 @endsection

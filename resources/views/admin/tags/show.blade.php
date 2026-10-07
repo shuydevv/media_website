@@ -1,21 +1,18 @@
 @extends('admin.layouts.main')
 
+@section('title', 'Тэги')
+
 @section('content')
-    <div>
-
-        <h1 class="text-xl sans mb-4">Тэг {{$tag->title}}</h1> 
-
-        <div><span>Id: {{$tag->id}}</span> — Название: {{$tag->title}}</div>
-
-        <div class="flex gap-2">
-            <a href="{{route('admin.tag.edit', $tag)}}"><button class="mt-12 p-2 px-4 bg-zinc-200 hover:bg-zinc-300">Редактировать тэг</button></a>
-            <form action="{{ route('admin.tag.delete', $tag->id) }}" method="post">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="mt-12 p-2 px-4 bg-zinc-200 hover:bg-zinc-300">Удалить тэг</button>
-            </form>
-        </div>
-
-        
-
+    @include('admin.partials.simple-show', [
+        'title' => \Illuminate\Support\Str::limit(trim(strip_tags((string) $tag->title)), 120) ?: 'Без названия',
+        'backUrl' => route('admin.tag.index'),
+        'backLabel' => 'Тэги',
+        'rows' => [
+            'ID' => $tag->id,
+            'Название' => $tag->title,
+        ],
+        'editUrl' => route('admin.tag.edit', $tag),
+        'deleteUrl' => route('admin.tag.delete', $tag->id),
+        'deleteConfirm' => 'Удалить тэг?',
+    ])
 @endsection

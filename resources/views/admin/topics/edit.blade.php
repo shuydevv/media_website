@@ -1,29 +1,29 @@
 @extends('admin.layouts.main')
 
+@section('title', 'Редактировать тему')
+
 @section('content')
-    <div>
-        <h1 class="text-xl sans mb-4">Редактировать тему</h1>
-        <form action="{{ route('admin.topic.update', $topic->id) }}" method="post">
-            @csrf
-            @method('PATCH')
-            <div>
-                <label class="text-zinc-800 text-sm">Название темы</label>
-                <input class="p-2 block border" type="text" value="{{$topic->title}}" name="title">
-            </div>
-            @error('title')
-            <p class="mt-2 text-red-400">*{{ $message }}</p>
-            @enderror
-            <div class="mt-5">
-                <label class="mr-5">Выберите раздел</label>
-                <select class="p-2 border" value="{{$topic->section}}" name="section_id">
-                    @foreach ($sections as $section)
-                    <option value="{{$section->id}}" {{ $section->id == $topic->section_id ? ' selected' : '' }}>{{$section->title}}</option>
-                    @endforeach
-                </select>
-            </div>
-            <a><button type="submit" class="mt-12 p-2 px-4 bg-zinc-200 hover:bg-zinc-300">Опубликовать изменения</button></a>
-        </form>
-        
+<div class="max-w-xl">
+    <x-ui.page-header title="Редактировать тему" :back="route('admin.topic.show', $topic)" back-label="Назад" />
 
+    <form action="{{ route('admin.topic.update', $topic->id) }}" method="post">
+        @csrf
+        @method('PATCH')
 
+        <x-ui.card class="space-y-4">
+            <x-ui.input name="title" label="Название темы" value="{{ old('title', $topic->title) }}" placeholder="Введите название" required />
+
+            <x-ui.select name="section_id" label="Раздел">
+                @foreach ($sections as $option)
+                    <option value="{{ $option->id }}" @selected(old('section_id', $topic->section_id) == $option->id)>{{ $option->title }}</option>
+                @endforeach
+            </x-ui.select>
+        </x-ui.card>
+
+        <x-ui.form-actions>
+            <x-ui.button type="submit" size="xs">Сохранить изменения</x-ui.button>
+            <x-ui.button href="{{ route('admin.topic.show', $topic) }}" variant="ghost" size="xs">Отмена</x-ui.button>
+        </x-ui.form-actions>
+    </form>
+</div>
 @endsection

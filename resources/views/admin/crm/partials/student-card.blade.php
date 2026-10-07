@@ -8,7 +8,7 @@
         'rose'    => 'bg-rose-50 text-rose-700 border-rose-300',
     ];
 @endphp
-<div class="bg-white border rounded-2xl shadow-sm p-4 md:p-5" data-student-row data-user-id="{{ $student->id }}">
+<div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5" data-student-row data-user-id="{{ $student->id }}">
 
     <div class="flex items-start justify-between gap-3 flex-wrap">
         <div class="flex items-start gap-3 min-w-0">
@@ -27,7 +27,7 @@
                         </a>
                     @endif
                     @if($student->email)
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-zinc-200 text-xs text-zinc-600 sans">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-zinc-200 text-xs text-zinc-600 sans max-w-full break-all">
                             <x-icon name="mail-01" class="w-3 h-3 shrink-0" />
                             {{ $student->email }}
                         </span>
@@ -41,9 +41,9 @@
         </div>
 
         <div class="shrink-0 flex items-center gap-2 relative" data-reminder-widget>
-            <button type="button" data-reminder-toggle class="relative text-amber-500 hover:text-amber-600" title="Напоминания">
+            <button type="button" data-reminder-toggle class="relative p-2.5 -m-2.5 text-amber-500 hover:text-amber-600" title="Напоминания" aria-label="Напоминания">
                 <x-icon name="bell-01" class="w-5 h-5" />
-                <span class="absolute -top-1 -right-1 bg-white rounded-full leading-none">
+                <span class="absolute top-1.5 right-1.5 bg-white rounded-full leading-none">
                     <x-icon name="plus" class="w-3 h-3" />
                 </span>
             </button>
@@ -58,17 +58,17 @@
                 </div>
                 <div class="flex flex-col gap-1.5 border-t border-zinc-100 pt-2">
                     <input type="date" data-reminder-new-date
-                           class="border rounded-lg px-2 py-1 input-focus sans text-sm">
+                           class="border rounded-lg px-2 py-1.5 input-focus sans text-base md:text-sm">
                     <input type="text" data-reminder-new-note placeholder="Что сделать…" maxlength="500"
-                           class="border rounded-lg px-2 py-1 input-focus sans text-sm">
+                           class="border rounded-lg px-2 py-1.5 input-focus sans text-base md:text-sm">
                     <button type="button" data-reminder-add
-                            class="rounded-lg px-2 py-1 bg-zinc-900 text-white text-xs sans-medium hover:bg-zinc-800">
+                            class="rounded-lg px-3 min-h-10 md:min-h-8 bg-zinc-800 text-white text-sm md:text-xs sans-medium hover:bg-zinc-900">
                         Добавить
                     </button>
                 </div>
             </div>
 
-            <select class="crm-stage-select rounded-lg px-2 py-1.5 sans text-sm border {{ $selectColorClasses[$status['color']] }}">
+            <select class="crm-stage-select rounded-lg px-2 min-h-10 md:min-h-9 sans text-sm border {{ $selectColorClasses[$status['color']] }}">
                 @foreach(\App\Models\User::crmStatusOptionsFor($status['key']) as $key => $opt)
                     @php $optValue = $key === 'new' ? '' : $key; @endphp
                     <option value="{{ $optValue }}"
@@ -98,22 +98,22 @@
                 <span class="sans-medium text-zinc-800 min-w-0 truncate">{{ $course->title }}</span>
                 <span class="text-zinc-300">·</span>
 
-                <span data-field-group class="inline-flex items-center gap-1.5">
+                <span data-field-group class="inline-flex flex-wrap items-center gap-1.5">
                     <span data-view class="inline-flex items-center gap-1">
                         <span class="sans {{ $dateColor }}">до {{ \App\Support\CrmDate::format($until) ?? '—' }}</span>
-                        <button type="button" data-field-edit-toggle class="text-zinc-400 hover:text-zinc-700" title="Изменить дату">
+                        <button type="button" data-field-edit-toggle class="p-2.5 -m-2 text-zinc-400 hover:text-zinc-700" title="Изменить дату" aria-label="Изменить дату">
                             <x-icon name="edit-02" class="w-3.5 h-3.5" />
                         </button>
                     </span>
                     <input type="date" data-edit hidden
-                           class="crm-access-input border rounded-lg px-2 py-1 input-focus sans text-sm"
+                           class="crm-access-input border rounded-lg px-2 py-1.5 input-focus sans text-base md:text-sm"
                            value="{{ $until?->format('Y-m-d') }}">
                     <input type="number" data-edit hidden min="0" step="1" placeholder="Сумма, ₽ (необязательно)"
-                           class="crm-payment-amount border rounded-lg px-2 py-1 input-focus sans text-sm w-40">
-                    <button type="button" data-edit hidden class="crm-access-save rounded-lg px-2 py-1 bg-zinc-900 text-white text-xs sans-medium hover:bg-zinc-800">
+                           class="crm-payment-amount border rounded-lg px-2 py-1.5 input-focus sans text-base md:text-sm w-full sm:w-52">
+                    <button type="button" data-edit hidden class="crm-access-save rounded-lg px-3 min-h-10 md:min-h-8 bg-zinc-800 text-white text-sm md:text-xs sans-medium hover:bg-zinc-900">
                         Сохранить
                     </button>
-                    <button type="button" data-edit hidden class="crm-access-cancel text-xs text-zinc-400 hover:text-zinc-700 sans">
+                    <button type="button" data-edit hidden class="crm-access-cancel px-2 min-h-10 md:min-h-8 text-sm md:text-xs text-zinc-500 hover:text-zinc-800 sans">
                         Отмена
                     </button>
                     <span class="crm-access-saved text-emerald-600 opacity-0 transition-opacity">✓</span>
@@ -151,12 +151,12 @@
             <div class="crm-note-empty flex-1 sans text-sm text-zinc-400" {{ $student->crm_note ? 'hidden' : '' }}>
                 Заметок нет
             </div>
-            <button type="button" data-field-edit-toggle class="shrink-0 text-zinc-400 hover:text-zinc-700" title="Изменить комментарий">
+            <button type="button" data-field-edit-toggle class="shrink-0 p-2.5 -m-2 text-zinc-400 hover:text-zinc-700" title="Изменить комментарий" aria-label="Изменить комментарий">
                 <x-icon name="edit-02" class="w-3.5 h-3.5" />
             </button>
         </div>
         <textarea data-edit hidden rows="2"
-                  class="crm-note-input w-full border rounded-lg px-3 py-2 text-sm input-focus sans"
+                  class="crm-note-input w-full border rounded-lg px-3 py-2 text-base md:text-sm input-focus sans"
                   placeholder="Заметка…">{{ $student->crm_note }}</textarea>
         <span class="crm-note-saved text-emerald-600 text-xs sans opacity-0 transition-opacity">Сохранено ✓</span>
     </div>

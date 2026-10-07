@@ -1,21 +1,20 @@
 @extends('admin.layouts.main')
 
+@section('title', 'Посты')
+
 @section('content')
-    <div>
-
-        <h1 class="text-xl sans mb-4">Пост {{$post->title}}</h1> 
-
-        <div><span>Id: {{$post->id}}, Path: {{$post->id}}</span> — Название: {{$post->title}}</div>
-
-        <div class="flex gap-2">
-            <a href="{{route('admin.post.edit', $post)}}"><button class="mt-12 p-2 px-4 bg-zinc-200 hover:bg-zinc-300">Редактировать пост</button></a>
-            <form action="{{ route('admin.post.delete', $post->id) }}" method="post">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="mt-12 p-2 px-4 bg-zinc-200 hover:bg-zinc-300">Удалить пост</button>
-            </form>
-        </div>
-
-        
-
+    @include('admin.partials.simple-show', [
+        'title' => \Illuminate\Support\Str::limit(trim(strip_tags((string) $post->title)), 120) ?: 'Без названия',
+        'backUrl' => route('admin.post.index'),
+        'backLabel' => 'Посты',
+        'rows' => [
+            'ID' => $post->id,
+            'Название' => $post->title,
+            'Путь' => $post->path,
+            'Описание' => $post->description,
+        ],
+        'editUrl' => route('admin.post.edit', $post),
+        'deleteUrl' => route('admin.post.delete', $post->id),
+        'deleteConfirm' => 'Удалить пост безвозвратно?',
+    ])
 @endsection

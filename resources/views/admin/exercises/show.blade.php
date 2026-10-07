@@ -1,19 +1,20 @@
 @extends('admin.layouts.main')
 
+@section('title', 'Упражнения')
+
 @section('content')
-    <div>
-
-        <h1 class="text-xl sans mb-4">Упражнение {{$exercise->title}}</h1> 
-        <div><span>Id: {{$exercise->id}}</span> — Название: {{$exercise->title}}</div>
-        <div class="flex gap-2">
-            <a href="{{route('admin.exercise.edit', $exercise)}}"><button class="mt-12 p-2 px-4 bg-zinc-200 hover:bg-zinc-300">Редактировать упражнение</button></a>
-            <form action="{{ route('admin.exercise.delete', $exercise->id) }}" method="post">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="mt-12 p-2 px-4 bg-zinc-200 hover:bg-zinc-300">Удалить упражнение</button>
-            </form>
-        </div>
-
-        
-
+    @include('admin.partials.simple-show', [
+        'title' => \Illuminate\Support\Str::limit(trim(strip_tags((string) $exercise->title)), 120) ?: 'Без названия',
+        'backUrl' => route('admin.exercise.index'),
+        'backLabel' => 'Упражнения',
+        'rows' => [
+            'ID' => $exercise->id,
+            'Название' => $exercise->title,
+            'Номер в экзамене' => $exercise->ex_number,
+            'Ответ' => $exercise->answer,
+        ],
+        'editUrl' => route('admin.exercise.edit', $exercise),
+        'deleteUrl' => route('admin.exercise.delete', $exercise->id),
+        'deleteConfirm' => 'Удалить упражнение безвозвратно?',
+    ])
 @endsection

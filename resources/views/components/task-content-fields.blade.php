@@ -147,7 +147,7 @@
             <span class="task-number-hint ml-2 text-xs"></span>
         </div>
         <label class="block text-xs text-zinc-500 mb-1">Тип задания</label>
-        <select name="{{ $fname('type') }}" data-field="type" class="task-type w-full border rounded-lg px-3 py-2 text-sm">
+        <select name="{{ $fname('type') }}" data-field="type" class="task-type ui-input">
             <option value="">Выберите тип</option>
             <option value="test" @selected($currentType==='test')>Тест с вариантами</option>
             <option value="text_with_questions" @selected($currentType==='text_with_questions')>Текст с вопросами</option>
@@ -157,7 +157,7 @@
             <option value="written" @selected($currentType==='written')>Развёрнутый ответ</option>
             <option value="table" @selected($currentType==='table')>Таблица</option>
         </select>
-        @error($ename('type'))<div class="text-red-600 text-sm mt-1">{{ $message }}</div>@enderror
+        @error($ename('type'))<div class="ui-error">{{ $message }}</div>@enderror
     </div>
 
     {{-- Всё остальное — контент задания, "Правильный ответ", подсказка,
@@ -202,8 +202,8 @@
         {{-- Таблица --}}
         <div class="task-table hidden mt-1 mb-5 sm:mb-6">
             <div class="task-table-builder"></div>
-            <button type="button" class="task-table-toggle-json text-xs text-blue-600 hover:underline mt-2">Редактировать JSON вручную</button>
-            <textarea name="{{ $fname('table_content') }}" data-field="table_content" rows="8" class="task-table-json hidden w-full border rounded-lg px-3 py-2 font-mono text-xs mt-2">{{ $tableContentText ?: '{
+            <button type="button" class="task-table-toggle-json min-h-9 text-xs text-apple-blue-700 hover:underline mt-2">Редактировать JSON вручную</button>
+            <textarea name="{{ $fname('table_content') }}" data-field="table_content" rows="8" class="task-table-json hidden ui-input font-mono text-xs mt-2">{{ $tableContentText ?: '{
     "cols": ["Колонка 1", "Колонка 2"],
     "rows": [["ячейка_1", "ячейка_2"]],
     "blanks": [{"r": 0, "c": 1, "key": "А", "value": ""}]
@@ -215,7 +215,7 @@
         <div class="task-options hidden mt-3 sm:mt-4">
             <label class="block text-xs text-zinc-500 mb-1">Варианты ответа (каждый — с новой строки)</label>
             <textarea name="{{ $fname('options') }}" data-field="options" rows="5"
-                      class="task-lines-input w-full border rounded-lg px-3 py-2 text-sm font-mono">{{ $optionsText }}</textarea>
+                      class="task-lines-input ui-input font-mono">{{ $optionsText }}</textarea>
             {{-- Живая нумерация — сразу видно соответствие "вариант №N = цифра в ответе". --}}
             <div class="task-lines-preview mt-2 text-sm text-zinc-600 space-y-0.5"></div>
         </div>
@@ -226,21 +226,21 @@
             <div>
                 <label class="block text-xs text-zinc-500 mb-1">Заголовок левой колонки</label>
                 <input type="text" name="{{ $fname('left_title') }}" data-field="left_title"
-                       class="w-full border rounded-lg px-3 py-2 text-sm mb-2"
+                       class="ui-input mb-2"
                        placeholder="Левая колонка" value="{{ $old('left_title') }}">
                 <label class="block text-xs text-zinc-500 mb-1">Левая колонка (по строке)</label>
                 <textarea name="{{ $fname('matches.left') }}" data-field="matches.left" rows="4"
-                          class="task-lines-input w-full border rounded-lg px-3 py-2 text-sm" placeholder="А&#10;Б&#10;В">{{ $matchesLeftText }}</textarea>
+                          class="task-lines-input ui-input" placeholder="А&#10;Б&#10;В">{{ $matchesLeftText }}</textarea>
                 <div class="task-lines-preview mt-2 text-sm text-zinc-600 space-y-0.5"></div>
             </div>
             <div>
                 <label class="block text-xs text-zinc-500 mb-1">Заголовок правой колонки</label>
                 <input type="text" name="{{ $fname('right_title') }}" data-field="right_title"
-                       class="w-full border rounded-lg px-3 py-2 text-sm mb-2"
+                       class="ui-input mb-2"
                        placeholder="Правая колонка" value="{{ $old('right_title') }}">
                 <label class="block text-xs text-zinc-500 mb-1">Правая колонка (по строке)</label>
                 <textarea name="{{ $fname('matches.right') }}" data-field="matches.right" rows="4"
-                          class="task-lines-input w-full border rounded-lg px-3 py-2 text-sm" placeholder="1&#10;2&#10;3">{{ $matchesRightText }}</textarea>
+                          class="task-lines-input ui-input" placeholder="1&#10;2&#10;3">{{ $matchesRightText }}</textarea>
                 <div class="task-lines-preview mt-2 text-sm text-zinc-600 space-y-0.5"></div>
             </div>
         </div>
@@ -249,7 +249,7 @@
         <div class="task-image-auto-extra hidden mt-3 sm:mt-4">
             <label class="block text-xs text-zinc-500 mb-1">Варианты ответа (по одному в строке, необязательно)</label>
             <textarea name="{{ $fname('image_auto_options') }}" data-field="image_auto_options" rows="3"
-                      class="task-lines-input w-full border rounded-lg px-3 py-2 text-sm">{{ $imageAutoOptionsText }}</textarea>
+                      class="task-lines-input ui-input">{{ $imageAutoOptionsText }}</textarea>
             <div class="task-lines-preview mt-2 text-sm text-zinc-600 space-y-0.5"></div>
         </div>
 
@@ -286,7 +286,7 @@
                 </div>
             </div>
 
-            @error($ename('answer'))<div class="text-red-600 text-sm mt-1">{{ $message }}</div>@enderror
+            @error($ename('answer'))<div class="ui-error">{{ $message }}</div>@enderror
 
             {{-- Объяснение — только для авто-проверяемых типов (test/
                  text_with_questions/matching/image_auto/table): краткий разбор
@@ -299,7 +299,7 @@
             <div class="task-explanation hidden mt-4">
                 <label class="block text-xs text-zinc-500 mb-1">Объяснение задания (покажется ученику в разборе результатов — почему каждый пункт ответа верный или неверный)</label>
                 <textarea name="{{ $fname('explanation') }}" data-field="explanation" rows="3"
-                          class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Например: 1 — верно, потому что…; 2 — неверно, потому что…">{{ $old('explanation') }}</textarea>
+                          class="ui-input" placeholder="Например: 1 — верно, потому что…; 2 — неверно, потому что…">{{ $old('explanation') }}</textarea>
             </div>
         </div>
     </x-ui.card>
@@ -307,7 +307,7 @@
     {{-- Подсказка — не часть условия, покажется студенту отдельно по кнопке. --}}
     <div class="mt-4">
         <label class="block text-xs text-zinc-500 mb-1">Подсказка (необязательно, покажется студенту по кнопке)</label>
-        <textarea name="{{ $fname('hint') }}" data-field="hint" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm">{{ $old('hint') }}</textarea>
+        <textarea name="{{ $fname('hint') }}" data-field="hint" rows="2" class="ui-input">{{ $old('hint') }}</textarea>
     </div>
 
     {{-- "Порядок важен" — для matching/table это всегда true при проверке
@@ -322,7 +322,7 @@
     {{-- Итоговое превью — та же рендер-функция, что покажет сохранённому
          заданию: полезно свериться без add/delete-кнопок и селекторов. --}}
     <div class="task-preview mt-4">
-        <button type="button" class="task-preview-toggle text-xs text-blue-600 hover:underline">Показать итоговый вид</button>
+        <button type="button" class="task-preview-toggle min-h-9 text-xs text-apple-blue-700 hover:underline">Показать итоговый вид</button>
         <div class="task-preview-panel hidden mt-2 rounded-xl border border-gray-200 bg-white p-4 sm:p-6"></div>
     </div>
     </div>

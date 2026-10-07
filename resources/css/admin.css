@@ -1,0 +1,392 @@
+/* ==========================================================================
+   Админка (resources/views/admin/layouts/main.blade.php: <body class="admin-portal">).
+   Подключается из app.css через @import — отдельный файл только ради того,
+   чтобы не раздувать app.css; в сборку попадает тем же единым бандлом.
+
+   Каркас — обычным CSS с media query, а не Tailwind-брейкпоинтами: тот же
+   подход, что у #site-header-row в layouts/main.blade.php — раскладка
+   сайдбар/шапка не должна зависеть от того, применился ли md:/lg:-класс.
+   ========================================================================== */
+.admin-portal {
+    color: #27272a; /* zinc-800 */
+    background-color: #F9FAFA;
+}
+/* Глобальное h1, h2 { font-family: 'serif' } — наследие маркетингового сайта,
+   в админке отменяем так же, как в .student-portal. */
+.admin-portal h1,
+.admin-portal h2 {
+    font-family: 'sans';
+}
+.admin-portal input[type="radio"] {
+    accent-color: #18181b;
+    width: 18px;
+    height: 18px;
+}
+
+.admin-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 50;
+    width: 264px;
+    max-width: 86vw;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-right: 1px solid #e4e4e7;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+}
+.admin-shell.is-nav-open .admin-sidebar {
+    transform: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
+}
+.admin-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(24, 24, 27, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+}
+.admin-shell.is-nav-open .admin-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+}
+.admin-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 56px;
+    padding: 0 8px 0 4px;
+    background: rgba(255, 255, 255, 0.92);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid #e4e4e7;
+}
+.admin-topbar-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    color: #3f3f46;
+}
+.admin-topbar-btn:hover { background: #f4f4f5; }
+.admin-main {
+    /* Нижний отступ — под «домашний» индикатор на телефонах без кнопки. */
+    padding: 20px 16px calc(40px + env(safe-area-inset-bottom));
+    min-width: 0;
+}
+.admin-content {
+    max-width: 72rem;
+    margin: 0 auto;
+}
+.admin-nav-caption {
+    padding: 0 12px;
+    margin: 20px 0 6px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #a1a1aa;
+}
+.admin-nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 15px;
+    color: #52525b;
+    text-align: left;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+.admin-nav-link:hover {
+    background: #f4f4f5;
+    color: #18181b;
+}
+.admin-nav-link.is-active {
+    background: #18181b;
+    color: #fff;
+    font-weight: 500;
+}
+@media (min-width: 1024px) {
+    .admin-sidebar {
+        transform: none;
+        box-shadow: none !important;
+    }
+    .admin-topbar,
+    .admin-backdrop,
+    .admin-sidebar-close {
+        display: none;
+    }
+    .admin-main {
+        margin-left: 264px;
+        padding: 32px 40px 64px;
+    }
+    .admin-nav-link {
+        min-height: 36px;
+        padding: 6px 12px;
+        font-size: 14px;
+    }
+}
+
+/* ==========================================================================
+   Компоненты x-ui.* для форм/таблиц (см. /admin/design-system — «Компоненты
+   админки»). Классы, а не только Blade-компоненты: те же поля создаются и из
+   JS (клонирование карточек задания, строки расписания курса) — там Blade
+   недоступен, а выглядеть должно так же.
+   В @layer components — чтобы утилиты (w-24, mt-2 …) на том же элементе
+   по-прежнему выигрывали.
+   ========================================================================== */
+@layer components {
+    .ui-label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #3f3f46;
+    }
+    .ui-label-note {
+        font-weight: 400;
+        color: #a1a1aa;
+    }
+    .ui-hint {
+        margin-top: 6px;
+        font-size: 12px;
+        line-height: 1.45;
+        color: #71717a;
+    }
+    .ui-error {
+        margin-top: 6px;
+        font-size: 13px;
+        color: #A02922; /* apple-red-650 */
+    }
+    .ui-input {
+        display: block;
+        width: 100%;
+        min-height: 44px;
+        padding: 10px 12px;
+        border: 1px solid #d4d4d8;
+        border-radius: 10px;
+        background-color: #fff;
+        /* 16px на телефоне — иначе iOS Safari зумит страницу при фокусе. */
+        font-size: 16px;
+        line-height: 1.4;
+        color: #18181b;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+    .ui-input::placeholder { color: #a1a1aa; }
+    /* То же голубое кольцо, что у .input-focus / .pin-box.active. */
+    .ui-input:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+    }
+    .ui-input:disabled,
+    .ui-input[readonly] {
+        background-color: #f4f4f5;
+        color: #71717a;
+    }
+    .ui-input:disabled { cursor: not-allowed; }
+    .ui-input.is-invalid { border-color: #D74A42; /* apple-red-450 */ }
+    select.ui-input {
+        appearance: none;
+        -webkit-appearance: none;
+        padding-right: 36px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 18px 18px;
+        cursor: pointer;
+    }
+    textarea.ui-input {
+        min-height: 96px;
+        resize: vertical;
+    }
+    input[type="file"].ui-input {
+        padding: 7px;
+        font-size: 14px;
+        color: #52525b;
+        cursor: pointer;
+    }
+    input[type="file"].ui-input::file-selector-button {
+        margin-right: 12px;
+        padding: 6px 12px;
+        border: 0;
+        border-radius: 8px;
+        background: #f4f4f5;
+        font: inherit;
+        font-weight: 500;
+        color: #27272a;
+        cursor: pointer;
+    }
+    .ui-input-sm {
+        min-height: 40px;
+        padding: 7px 10px;
+    }
+    .ui-check {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        min-height: 28px;
+        font-size: 14px;
+        color: #27272a;
+        cursor: pointer;
+    }
+    .ui-check > input { margin-top: 1px; }
+
+    /* Панель действий формы: прилипает к низу экрана, чтобы «Сохранить» было
+       под пальцем на длинной форме, не дожидаясь прокрутки до конца. */
+    .ui-form-actions {
+        position: sticky;
+        bottom: 0;
+        z-index: 20;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-top: 24px;
+        padding: 14px 0 calc(12px + env(safe-area-inset-bottom));
+        background: linear-gradient(to bottom, rgba(249, 250, 250, 0), #F9FAFA 14px);
+    }
+
+    .ui-table-wrap {
+        background: #fff;
+        border: 1px solid #e4e4e7;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    .ui-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+    .ui-table th {
+        padding: 10px 16px;
+        background: #fafafa;
+        border-bottom: 1px solid #e4e4e7;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        text-align: left;
+        text-transform: uppercase;
+        white-space: nowrap;
+        color: #71717a;
+    }
+    .ui-table td {
+        padding: 12px 16px;
+        border-top: 1px solid #f4f4f5;
+        vertical-align: top;
+        color: #3f3f46;
+    }
+    .ui-table tbody tr:first-child td { border-top: 0; }
+    .ui-table tbody tr:hover { background: #fafafa; }
+    .ui-table td[data-actions] { white-space: nowrap; }
+    /* Таблица внутри карточки (x-ui.card): без своей рамки и боковых полей —
+       текст ячеек встаёт вровень с остальным содержимым карточки. */
+    .ui-table-flush th {
+        background: transparent;
+    }
+    .ui-table-flush th,
+    .ui-table-flush td {
+        padding-left: 0;
+        padding-right: 12px;
+    }
+    .ui-table-flush th:last-child,
+    .ui-table-flush td:last-child {
+        padding-right: 0;
+    }
+    .ui-table-flush tbody tr:hover { background: transparent; }
+    .ui-table-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 4px;
+    }
+}
+
+@media (min-width: 768px) {
+    .ui-input {
+        min-height: 40px;
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    .ui-input-sm {
+        min-height: 34px;
+        padding: 5px 10px;
+    }
+}
+
+/* Таблица на телефоне — список карточек, без горизонтальной прокрутки:
+   шапка прячется, подпись колонки берётся из data-label на ячейке.
+   data-primary — «заголовок» карточки, data-actions — ряд кнопок внизу. */
+@media (max-width: 767px) {
+    .ui-form-actions > * { flex: 1 1 auto; }
+
+    .ui-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+    }
+    .ui-table,
+    .ui-table tbody,
+    .ui-table tr,
+    .ui-table td {
+        display: block;
+        width: 100%;
+    }
+    .ui-table tr {
+        padding: 12px 16px;
+        border-top: 1px solid #e4e4e7;
+    }
+    .ui-table tbody tr:first-child { border-top: 0; }
+    .ui-table tbody tr:hover { background: transparent; }
+    .ui-table-flush tr {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    .ui-table td {
+        padding: 3px 0;
+        border: 0;
+    }
+    .ui-table td[data-label] {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        text-align: right;
+    }
+    .ui-table td[data-label]::before {
+        content: attr(data-label);
+        flex-shrink: 0;
+        padding-top: 1px;
+        font-size: 12px;
+        text-align: left;
+        color: #71717a;
+    }
+    .ui-table td[data-primary] {
+        padding-bottom: 6px;
+        font-size: 15px;
+        color: #18181b;
+    }
+    .ui-table td[data-actions] {
+        padding-top: 10px;
+        white-space: normal;
+    }
+    .ui-table td:empty { display: none; }
+}

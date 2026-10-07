@@ -1,50 +1,53 @@
 @extends('admin.layouts.main')
 
+@section('title', 'Оповещения')
+
 @section('content')
-    <div>
-        <h1 class="text-xl sans mb-4">Оповещения</h1>
+    <x-ui.page-header title="Оповещения">
+        Баннер в шапке кабинета ученика — например, о переносе занятия.
+        <x-slot:actions>
+            <x-ui.button href="{{ route('admin.announcements.create') }}" size="xs">
+                <x-icon name="plus" class="w-4 h-4" />
+                Создать оповещение
+            </x-ui.button>
+        </x-slot:actions>
+    </x-ui.page-header>
 
-        <a href="{{route('admin.announcements.create')}}"><button class="mb-6 p-2 px-4 bg-zinc-200 hover:bg-zinc-300">Создать оповещение</button></a>
-
+    <div class="space-y-3 max-w-3xl">
         @forelse ($announcements as $announcement)
             @php
                 $isExpired = $announcement->expires_at && $announcement->expires_at->isPast();
                 $isLive = $announcement->is_active && !$isExpired;
             @endphp
-            <div class="mt-4 p-3 border {{ $isLive ? '' : 'opacity-50' }}">
-                <p class="text-zinc-900">{{ $announcement->message }}</p>
-                <p class="mt-2 text-sm text-zinc-500">
-                    {{ $announcement->all_students ? 'Все ученики' : $announcement->courses->pluck('title')->join(', ') }}
-                </p>
-                <p class="mt-1 text-sm text-zinc-500">
+            <x-ui.card :tone="$isLive ? 'white' : 'gray'">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
                     @if (!$announcement->is_active)
-                        Деактивировано
+                        <x-ui.badge>Деактивировано</x-ui.badge>
                     @elseif ($isExpired)
-                        Истекло {{ $announcement->expires_at->format('d.m.Y H:i') }}
+                        <x-ui.badge>Истекло {{ $announcement->expires_at->format('d.m.Y H:i') }}</x-ui.badge>
                     @elseif ($announcement->expires_at)
-                        Активно до {{ $announcement->expires_at->format('d.m.Y H:i') }}
+                        <x-ui.badge tone="green">Активно до {{ $announcement->expires_at->format('d.m.Y H:i') }}</x-ui.badge>
                     @else
-                        Активно, без срока
+                        <x-ui.badge tone="green">Активно, без срока</x-ui.badge>
                     @endif
-                </p>
-                <div class="mt-3 flex gap-4">
-                    @if ($isLive)
-                        <form action="{{route('admin.announcements.deactivate', $announcement)}}" method="post">
-                            @csrf
-                            @method('patch')
-                            <button type="submit" class="text-sm text-zinc-600 hover:opacity-50">Деактивировать</button>
-                        </form>
-                    @endif
-                    <form action="{{route('admin.announcements.destroy', $announcement)}}" method="post"
-                          onsubmit="return confirm('Удалить оповещение безвозвратно?')">
-                        @csrf
-                        @method('delete')
-                        <button type="submit" class="text-sm text-red-600 hover:opacity-50">Удалить</button>
-                    </form>
+                    <span class="text-xs text-zinc-500">
+                        {{ $announcement->all_students ? 'Все ученики' : $announcement->courses->pluck('title')->join(', ') }}
+                    </span>
                 </div>
-            </div>
+
+                <p class="{{ $isLive ? 'text-zinc-900' : 'text-zinc-500' }} whitespace-pre-line break-words">{{ $announcement->message }}</p>
+
+                <div class="mt-3 flex flex-wrap gap-2">
+                    @if ($isLive)
+                        <x-ui.action-form :action="route('admin.announcements.deactivate', $announcement)" method="PATCH" variant="secondary">Деактивировать</x-ui.action-form>
+                    @endif
+                    <x-ui.action-form :action="route('admin.announcements.destroy', $announcement)" confirm="Удалить оповещение безвозвратно?">
+                        <span class="text-apple-red-650">Удалить</span>
+                    </x-ui.action-form>
+                </div>
+            </x-ui.card>
         @empty
-            <p class="mt-2 text-zinc-400">Оповещений пока нет.</p>
+            <x-ui.empty>Оповещений пока нет.</x-ui.empty>
         @endforelse
     </div>
 @endsection

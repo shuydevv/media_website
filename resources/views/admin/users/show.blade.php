@@ -1,66 +1,40 @@
 @extends('admin.layouts.main')
 
+@section('title', 'Ученик')
+
 @section('content')
 @php
     $fullName = trim(($user->first_name ?? '').' '.($user->last_name ?? '')) ?: ($user->name ?: 'Пользователь #'.$user->id);
-    $card = 'bg-white rounded-2xl shadow-sm ring-1 ring-black/5 p-5';
-    $label = 'text-xs text-zinc-500 uppercase tracking-wide';
+    // Те же классы, что у x-ui.card и у роли Caption из шкалы шрифтов —
+    // переменными, потому что карточек на странице семь, а подписей три десятка.
+    $card = 'rounded-2xl border border-gray-200 bg-white p-4 sm:p-5';
+    $label = 'sans-medium text-xs uppercase tracking-wide text-zinc-400';
 @endphp
 
-<div class="flex items-start justify-between gap-3 flex-wrap mb-6">
-    <div class="min-w-0">
-        <h1 class="text-2xl font-semibold text-zinc-900">{{ $fullName }}</h1>
-        <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-zinc-500">
-            @if($user->name)
-                <a href="https://t.me/{{ ltrim($user->name, '@') }}" target="_blank" rel="noopener" class="text-blue-700 hover:underline">{{ $user->name }}</a>
-            @endif
-            @if($user->email)
-                <span>{{ $user->email }}</span>
-            @endif
-            <span>на платформе с {{ $user->created_at?->format('d.m.Y') ?: '—' }}</span>
-            @unless($user->isStudent())
-                <span class="inline-flex px-2 py-0.5 rounded-full text-xs bg-amber-50 text-amber-700">{{ \App\Models\User::getRoles()[$user->role] ?? 'Роль '.$user->role }}</span>
-            @endunless
-        </div>
-    </div>
-
-    <div class="flex gap-2 flex-wrap">
-        <a href="{{ route('admin.user.edit', $user->id) }}"
-           class="px-3 py-2 text-sm bg-zinc-900 text-white rounded-lg hover:bg-zinc-800">Изменить</a>
-
-        @if($user->isStudent())
-            <form method="POST" action="{{ route('admin.user.impersonate', $user->id) }}">
-                @csrf
-                <button class="px-3 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                    Войти как ученик
-                </button>
-            </form>
+<x-ui.page-header :title="$fullName" :back="route('admin.user.index')" back-label="Пользователи">
+    <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+        @if($user->name)
+            <a href="https://t.me/{{ ltrim($user->name, '@') }}" target="_blank" rel="noopener" class="text-apple-blue-700 hover:underline">{{ $user->name }}</a>
         @endif
-
-        <form method="POST" action="{{ route('admin.user.delete', $user->id) }}"
-              onsubmit="return confirm('Точно пометить пользователя как удалённого?');">
-            @csrf
-            @method('DELETE')
-            <button class="px-3 py-2 text-sm border border-rose-200 text-rose-700 rounded-lg hover:bg-rose-50">
-                Удалить
-            </button>
-        </form>
+        @if($user->email)
+            <span class="break-all">{{ $user->email }}</span>
+        @endif
+        <span>на платформе с {{ $user->created_at?->format('d.m.Y') ?: '—' }}</span>
+        @unless($user->isStudent())
+            <x-ui.badge tone="orange">{{ \App\Models\User::getRoles()[$user->role] ?? 'Роль '.$user->role }}</x-ui.badge>
+        @endunless
     </div>
-</div>
 
-@if(session('success'))
-    <div class="mb-4 rounded-lg bg-emerald-50 text-emerald-800 px-4 py-3 text-sm">{{ session('success') }}</div>
-@endif
-@if(session('error'))
-    <div class="mb-4 rounded-lg bg-rose-50 text-rose-800 px-4 py-3 text-sm">{{ session('error') }}</div>
-@endif
-@if($errors->any())
-    <div class="mb-4 rounded-lg bg-rose-50 text-rose-800 px-4 py-3 text-sm">
-        @foreach($errors->all() as $e)
-            <div>{{ $e }}</div>
-        @endforeach
-    </div>
-@endif
+    <x-slot:actions>
+        <x-ui.button href="{{ route('admin.user.edit', $user->id) }}" size="xs">Изменить</x-ui.button>
+        <x-ui.button href="{{ route('admin.crm.index', ['q' => $user->email ?: $fullName]) }}" variant="secondary" size="xs">Оплаты в CRM</x-ui.button>
+        @if($user->isStudent())
+            <x-ui.action-form :action="route('admin.user.impersonate', $user->id)" method="POST" variant="secondary">Войти как ученик</x-ui.action-form>
+        @endif
+        <x-ui.action-form :action="route('admin.user.delete', $user->id)" variant="danger-soft"
+                          confirm="Точно пометить пользователя как удалённого?">Удалить</x-ui.action-form>
+    </x-slot:actions>
+</x-ui.page-header>
 
 @unless($user->isStudent())
     <div class="{{ $card }} text-sm text-zinc-600">
@@ -70,9 +44,9 @@
     @php
         $activity = $report['activity'];
         $toneClasses = [
-            'good' => 'bg-emerald-500',
-            'warn' => 'bg-amber-500',
-            'bad' => 'bg-rose-500',
+            'good' => 'bg-apple-green-500',
+            'warn' => 'bg-apple-orange-500',
+            'bad' => 'bg-apple-red-500',
             'info' => 'bg-zinc-400',
         ];
         $toneLabels = ['good' => 'хорошо', 'warn' => 'внимание', 'bad' => 'проблема', 'info' => 'к сведению'];
@@ -80,7 +54,7 @@
 
     {{-- ── Коротко: о чём сказать в голосовом ─────────────────────────── --}}
     <div class="{{ $card }} mb-6">
-        <h2 class="text-lg font-medium mb-3">Коротко</h2>
+        <h2 class="sans-medium text-lg text-zinc-900 mb-3">Коротко</h2>
         <ul class="space-y-2 text-sm text-zinc-800">
             @foreach($report['headline'] as $line)
                 <li class="flex items-start gap-2">
@@ -131,25 +105,25 @@
 
     {{-- ── Журнал обратной связи ──────────────────────────────────────── --}}
     <div class="{{ $card }} mb-6">
-        <h2 class="text-lg font-medium mb-3">Обратная связь ученику</h2>
+        <h2 class="sans-medium text-lg text-zinc-900 mb-3">Обратная связь ученику</h2>
 
         <form method="POST" action="{{ route('admin.user.feedback.store', $user) }}" class="flex flex-wrap items-start gap-2 mb-4">
             @csrf
-            <select name="kind" class="border rounded-lg px-2 py-2 text-sm">
+            <select name="kind" class="ui-input w-full sm:w-auto" aria-label="Вид обратной связи">
                 @foreach(\App\Models\StudentFeedback::KINDS as $kind => $kindLabel)
                     <option value="{{ $kind }}" @selected(old('kind') === $kind)>{{ $kindLabel }}</option>
                 @endforeach
             </select>
             <textarea name="note" rows="2" maxlength="5000" placeholder="О чём сказали — пригодится в следующий раз"
-                      class="flex-1 min-w-[220px] border rounded-lg px-3 py-2 text-sm">{{ old('note') }}</textarea>
-            <button class="px-3 py-2 bg-zinc-900 text-white rounded-lg text-sm hover:bg-zinc-800">Записать</button>
+                      class="ui-input flex-1 min-w-[220px]">{{ old('note') }}</textarea>
+            <x-ui.button type="submit" size="xs" class="w-full sm:w-auto">Записать</x-ui.button>
         </form>
 
         @forelse($report['feedback'] as $item)
             <div class="flex items-start gap-3 py-2 border-t border-zinc-100 text-sm">
-                <div class="w-24 shrink-0 text-zinc-500">{{ $item->created_at->format('d.m.Y') }}</div>
+                <div class="w-20 sm:w-24 shrink-0 text-zinc-500">{{ $item->created_at->format('d.m.Y') }}</div>
                 <div class="flex-1 min-w-0">
-                    <span class="inline-flex px-2 py-0.5 rounded-full text-xs bg-zinc-100 text-zinc-700">{{ $item->kindLabel() }}</span>
+                    <x-ui.badge>{{ $item->kindLabel() }}</x-ui.badge>
                     @if($item->author)
                         <span class="text-xs text-zinc-500 ml-1">{{ trim(($item->author->first_name ?? '').' '.($item->author->last_name ?? '')) ?: $item->author->name }}</span>
                     @endif
@@ -158,10 +132,12 @@
                     @endif
                 </div>
                 <form method="POST" action="{{ route('admin.user.feedback.destroy', [$user, $item]) }}"
-                      onsubmit="return confirm('Удалить запись из журнала?');">
+                      data-confirm="Удалить запись из журнала?" class="shrink-0">
                     @csrf
                     @method('DELETE')
-                    <button class="text-xs text-zinc-400 hover:text-rose-600" title="Удалить запись">удалить</button>
+                    <button class="p-2 -m-2 text-zinc-400 hover:text-apple-red-650" title="Удалить запись" aria-label="Удалить запись">
+                        <x-icon name="x-close" class="w-4 h-4" />
+                    </button>
                 </form>
             </div>
         @empty
@@ -179,12 +155,12 @@
     {{-- ── Активность по дням ─────────────────────────────────────────── --}}
     @php
         // Один оттенок от светлого к тёмному — чем темнее, тем больше времени.
-        $levelClasses = [0 => 'bg-zinc-100', 1 => 'bg-emerald-200', 2 => 'bg-emerald-400', 3 => 'bg-emerald-600'];
+        $levelClasses = [0 => 'bg-zinc-100', 1 => 'bg-apple-green-200', 2 => 'bg-apple-green-400', 3 => 'bg-apple-green-600'];
         $leading = $activity['days'][0]['date']->dayOfWeekIso - 1;
     @endphp
     <div class="{{ $card }} mb-6">
         <div class="flex items-baseline justify-between gap-3 flex-wrap mb-3">
-            <h2 class="text-lg font-medium">Активность за {{ \App\Service\StudentReport::ACTIVITY_DAYS }} дней</h2>
+            <h2 class="sans-medium text-lg text-zinc-900">Активность за {{ \App\Service\StudentReport::ACTIVITY_DAYS }} дней</h2>
             <div class="text-sm text-zinc-500">
                 за 7 дней: {{ $activity['activeDays7'] }} дн.@if($activity['minutes7'] > 0), около {{ $activity['minutes7'] }} мин@endif
             </div>
@@ -228,17 +204,17 @@
             $pivot = $c['pivot'];
             $statusLabels = ['active' => 'активен', 'completed' => 'завершён', 'suspended' => 'заморожен', 'dropped' => 'отчислен'];
             $stateBadges = [
-                'checked' => ['Проверено', 'bg-emerald-50 text-emerald-700'],
-                'pending' => ['На проверке', 'bg-blue-50 text-blue-700'],
-                'in_progress' => ['Начал, не сдал', 'bg-amber-50 text-amber-700'],
-                'overdue' => ['Не сдано, срок вышел', 'bg-rose-50 text-rose-700'],
-                'not_started' => ['Не начато', 'bg-zinc-100 text-zinc-600'],
+                'checked' => ['Проверено', 'green'],
+                'pending' => ['На проверке', 'blue'],
+                'in_progress' => ['Начал, не сдал', 'orange'],
+                'overdue' => ['Не сдано, срок вышел', 'red'],
+                'not_started' => ['Не начато', 'gray'],
             ];
             $minutes = fn (?int $seconds) => $seconds === null ? null : max(1, (int) round($seconds / 60));
         @endphp
         <div class="{{ $card }} mb-6">
             <div class="flex items-baseline justify-between gap-3 flex-wrap mb-4">
-                <h2 class="text-lg font-medium">{{ $c['course']->title }}</h2>
+                <h2 class="sans-medium text-lg text-zinc-900">{{ $c['course']->title }}</h2>
                 <div class="text-sm text-zinc-500">
                     {{ $statusLabels[$pivot->status] ?? $pivot->status }}
                     @if($c['enrolledAt']) · на курсе с {{ $c['enrolledAt']->format('d.m.Y') }} @endif
@@ -250,42 +226,42 @@
                 @csrf
                 @method('PATCH')
                 <div>
-                    <label class="block {{ $label }} mb-1">Цель, баллов ЕГЭ</label>
-                    <input type="number" name="target_score" min="0" max="100" value="{{ $pivot->target_score }}" placeholder="—" class="border rounded-lg px-2 py-1.5 w-24">
+                    <label class="block {{ $label }} mb-1.5">Цель, баллов ЕГЭ</label>
+                    <input type="number" name="target_score" min="0" max="100" value="{{ $pivot->target_score }}" placeholder="—" class="ui-input w-24">
                 </div>
                 <div>
-                    <label class="block {{ $label }} mb-1">Входной результат</label>
-                    <input type="number" name="entry_score" min="0" max="100" value="{{ $pivot->entry_score }}" placeholder="—" class="border rounded-lg px-2 py-1.5 w-24">
+                    <label class="block {{ $label }} mb-1.5">Входной результат</label>
+                    <input type="number" name="entry_score" min="0" max="100" value="{{ $pivot->entry_score }}" placeholder="—" class="ui-input w-24">
                 </div>
-                <button class="px-3 py-1.5 border rounded-lg text-sm hover:bg-zinc-50">Сохранить</button>
+                <x-ui.button type="submit" variant="secondary" size="xs">Сохранить</x-ui.button>
             </form>
 
             {{-- Сводка по домашкам --}}
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
                 <div>
                     <div class="{{ $label }}">Сдано домашек</div>
-                    <div class="text-2xl text-zinc-900 mt-0.5">{{ $s['done'] }}<span class="text-base text-zinc-400"> / {{ $s['total'] }}</span></div>
+                    <div class="sans-medium text-2xl text-zinc-900 mt-0.5">{{ $s['done'] }}<span class="text-base text-zinc-400"> / {{ $s['total'] }}</span></div>
                     @if($s['inProgress'] > 0)
                         <div class="text-xs text-zinc-500">начато и брошено: {{ $s['inProgress'] }}</div>
                     @endif
                 </div>
                 <div>
                     <div class="{{ $label }}">Средний результат</div>
-                    <div class="text-2xl text-zinc-900 mt-0.5">{{ $s['avgPercent'] !== null ? $s['avgPercent'].'%' : '—' }}</div>
+                    <div class="sans-medium text-2xl text-zinc-900 mt-0.5">{{ $s['avgPercent'] !== null ? $s['avgPercent'].'%' : '—' }}</div>
                     @if($s['recentPercent'] !== null && $s['previousPercent'] !== null)
                         <div class="text-xs text-zinc-500">последние 3: {{ $s['recentPercent'] }}%, до них: {{ $s['previousPercent'] }}%</div>
                     @endif
                 </div>
                 <div>
                     <div class="{{ $label }}">С опозданием</div>
-                    <div class="text-2xl text-zinc-900 mt-0.5">{{ $s['late'] }}</div>
+                    <div class="sans-medium text-2xl text-zinc-900 mt-0.5">{{ $s['late'] }}</div>
                     @if($s['lastMinute'] > 0)
                         <div class="text-xs text-zinc-500">в последние 12 ч до срока: {{ $s['lastMinute'] }}</div>
                     @endif
                 </div>
                 <div>
                     <div class="{{ $label }}">Верно с первой проверки</div>
-                    <div class="text-2xl text-zinc-900 mt-0.5">{{ $s['firstTryPercent'] !== null ? $s['firstTryPercent'].'%' : '—' }}</div>
+                    <div class="sans-medium text-2xl text-zinc-900 mt-0.5">{{ $s['firstTryPercent'] !== null ? $s['firstTryPercent'].'%' : '—' }}</div>
                     @if($s['firstTryPercent'] === null)
                         <div class="text-xs text-zinc-500">данные копятся с новых работ</div>
                     @endif
@@ -294,7 +270,7 @@
 
             {{-- Слабые места по номерам --}}
             @if($c['numbers']->isNotEmpty())
-                <h3 class="text-sm font-medium text-zinc-900 mb-2">По номерам заданий ЕГЭ</h3>
+                <h3 class="sans-medium text-sm text-zinc-900 mb-2">По номерам заданий ЕГЭ</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 mb-5">
                     @foreach($c['numbers'] as $n)
                         @php $weak = $n['percent'] !== null && $n['percent'] < \App\Service\StudentReport::WEAK_PERCENT && $n['count'] >= 2; @endphp
@@ -302,10 +278,10 @@
                              title="№{{ $n['number'] }}: {{ $n['score'] }} из {{ $n['max'] }} баллов за {{ $n['count'] }} заданий{{ $n['wrong'] > 0 ? ', неверных проверок: '.$n['wrong'] : '' }}">
                             <span class="w-9 shrink-0 text-zinc-700">№{{ $n['number'] }}</span>
                             <span class="flex-1 h-2 rounded-full bg-zinc-100 overflow-hidden">
-                                <span class="block h-full rounded-full bg-blue-500" style="width: {{ $n['percent'] ?? 0 }}%"></span>
+                                <span class="block h-full rounded-full bg-apple-blue-500" style="width: {{ $n['percent'] ?? 0 }}%"></span>
                             </span>
                             <span class="w-10 shrink-0 text-right text-zinc-900">{{ $n['percent'] ?? '—' }}%</span>
-                            <span class="w-20 shrink-0 text-xs {{ $weak ? 'text-rose-700' : 'text-zinc-400' }}">
+                            <span class="w-20 shrink-0 text-xs {{ $weak ? 'text-apple-red-650' : 'text-zinc-400' }}">
                                 {{ $weak ? 'слабое место' : $n['count'].' зад.' }}
                             </span>
                         </div>
@@ -315,13 +291,13 @@
 
             {{-- По темам --}}
             @if($c['topics']->isNotEmpty())
-                <h3 class="text-sm font-medium text-zinc-900 mb-2">По темам</h3>
+                <h3 class="sans-medium text-sm text-zinc-900 mb-2">По темам</h3>
                 <div class="space-y-1.5 mb-5">
                     @foreach($c['topics'] as $t)
                         <div class="flex items-center gap-2 text-sm" title="{{ $t['score'] }} из {{ $t['max'] }} баллов за {{ $t['count'] }} заданий">
-                            <span class="w-48 shrink-0 truncate text-zinc-700">{{ $t['title'] }}</span>
+                            <span class="w-28 sm:w-48 shrink-0 truncate text-zinc-700">{{ $t['title'] }}</span>
                             <span class="flex-1 h-2 rounded-full bg-zinc-100 overflow-hidden">
-                                <span class="block h-full rounded-full bg-blue-500" style="width: {{ $t['percent'] ?? 0 }}%"></span>
+                                <span class="block h-full rounded-full bg-apple-blue-500" style="width: {{ $t['percent'] ?? 0 }}%"></span>
                             </span>
                             <span class="w-10 shrink-0 text-right text-zinc-900">{{ $t['percent'] ?? '—' }}%</span>
                             <span class="w-14 shrink-0 text-xs text-zinc-400">{{ $t['count'] }} зад.</span>
@@ -333,53 +309,55 @@
             @endif
 
             {{-- Домашки и пробники --}}
-            <h3 class="text-sm font-medium text-zinc-900 mb-2">Домашки и пробники</h3>
+            <h3 class="sans-medium text-sm text-zinc-900 mb-2">Домашки и пробники</h3>
             @if($c['rows']->isEmpty())
                 <p class="text-sm text-zinc-500 mb-5">Доступных ученику работ пока нет.</p>
             @else
-                <div class="overflow-x-auto mb-5">
-                    <table class="w-full text-sm">
+                <div class="mb-5">
+                    <table class="ui-table ui-table-flush">
                         <thead>
-                            <tr class="text-left text-xs text-zinc-500">
-                                <th class="py-1.5 pr-3 font-normal">Работа</th>
-                                <th class="py-1.5 pr-3 font-normal">Статус</th>
-                                <th class="py-1.5 pr-3 font-normal text-right">Результат</th>
-                                <th class="py-1.5 font-normal">Как решал</th>
+                            <tr>
+                                <th>Работа</th>
+                                <th>Статус</th>
+                                <th class="md:text-right">Результат</th>
+                                <th>Как решал</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($c['rows'] as $r)
-                                @php [$badgeText, $badgeClass] = $stateBadges[$r['state']]; @endphp
-                                <tr class="border-t border-zinc-100 align-top">
-                                    <td class="py-2 pr-3">
+                                @php [$badgeText, $badgeTone] = $stateBadges[$r['state']]; @endphp
+                                <tr>
+                                    <td data-primary>
                                         @if($r['final'])
                                             <a href="{{ route('mentor.review.show', $r['final']) }}" class="text-zinc-900 hover:underline">{{ $r['homework']->title }}</a>
                                         @else
                                             <span class="text-zinc-900">{{ $r['homework']->title }}</span>
                                         @endif
-                                        <div class="text-xs text-zinc-500">
+                                        <div class="text-xs font-normal text-zinc-500">
                                             {{ $r['isMock'] ? 'пробник' : 'домашка' }}
                                             @if($r['homework']->due_at) · срок {{ $r['homework']->due_at->format('d.m') }} @endif
                                         </div>
                                     </td>
-                                    <td class="py-2 pr-3">
-                                        <span class="inline-flex px-2 py-0.5 rounded-full text-xs whitespace-nowrap {{ $badgeClass }}">{{ $badgeText }}</span>
+                                    <td>
+                                        <x-ui.badge :tone="$badgeTone">{{ $badgeText }}</x-ui.badge>
                                         @if($r['submittedAt'])
                                             <div class="text-xs text-zinc-500 mt-1">
                                                 {{ $r['submittedAtExact'] ? 'сдал' : 'начал' }} {{ $r['submittedAt']->format('d.m H:i') }}
-                                                @if($r['late']) · <span class="text-rose-700">после срока</span> @endif
+                                                @if($r['late']) · <span class="text-apple-red-650">после срока</span> @endif
                                             </div>
                                         @endif
                                     </td>
-                                    <td class="py-2 pr-3 text-right whitespace-nowrap">
+                                    <td @if($r['final']) data-label="Результат" @endif class="md:text-right md:whitespace-nowrap">
+                                        <div>
                                         @if($r['final'])
                                             <div class="text-zinc-900">{{ $r['percent'] !== null ? $r['percent'].'%' : '—' }}</div>
                                             <div class="text-xs text-zinc-500">{{ $r['score'] }} из {{ $r['max'] }}@if($r['state'] === 'pending'), не итог@endif</div>
                                         @else
-                                            <span class="text-zinc-400">—</span>
+                                            <span class="text-zinc-400 hidden md:inline">—</span>
                                         @endif
+                                        </div>
                                     </td>
-                                    <td class="py-2 text-xs text-zinc-600">
+                                    <td class="text-xs text-zinc-600">
                                         @if($r['final'])
                                             <div>попытка {{ $r['attempts'] }} из {{ $r['attemptsAllowed'] }}@if($r['firstPercent'] !== null), первая — {{ $r['firstPercent'] }}%@endif</div>
                                             @if($r['seconds'])
@@ -406,16 +384,16 @@
             {{-- Уроки --}}
             @php
                 $lessonBadges = [
-                    'watched' => ['Посмотрел', 'bg-emerald-50 text-emerald-700'],
-                    'partial' => ['Частично', 'bg-amber-50 text-amber-700'],
-                    'missed' => ['Не открывал', 'bg-rose-50 text-rose-700'],
-                    'no_data' => ['Нет данных', 'bg-zinc-100 text-zinc-500'],
-                    'no_video' => ['Без видео', 'bg-zinc-100 text-zinc-500'],
+                    'watched' => ['Посмотрел', 'green'],
+                    'partial' => ['Частично', 'orange'],
+                    'missed' => ['Не открывал', 'red'],
+                    'no_data' => ['Нет данных', 'gray'],
+                    'no_video' => ['Без видео', 'gray'],
                 ];
                 $lessons = $c['lessons'];
             @endphp
             <div class="flex items-baseline justify-between gap-3 flex-wrap mb-2">
-                <h3 class="text-sm font-medium text-zinc-900">Уроки</h3>
+                <h3 class="sans-medium text-sm text-zinc-900">Уроки</h3>
                 @if($lessons['tracked'] > 0)
                     <div class="text-xs text-zinc-500">посмотрел {{ $lessons['watched'] }} из {{ $lessons['tracked'] }} (от {{ \App\Service\StudentReport::WATCHED_PERCENT }}% урока)</div>
                 @endif
@@ -423,18 +401,18 @@
             @if($lessons['rows']->isEmpty())
                 <p class="text-sm text-zinc-500 mb-5">Прошедших уроков пока нет.</p>
             @else
-                <div class="overflow-x-auto mb-5">
-                    <table class="w-full text-sm">
+                <div class="mb-5">
+                    <table class="ui-table ui-table-flush">
                         <tbody>
                             @foreach($lessons['rows'] as $index => $l)
-                                @php [$badgeText, $badgeClass] = $lessonBadges[$l['state']]; @endphp
-                                <tr class="border-t border-zinc-100 align-top" @if($index >= 10) data-lesson-extra hidden @endif>
-                                    <td class="py-2 pr-3 w-14 text-zinc-500 whitespace-nowrap">{{ $l['date']->format('d.m') }}</td>
-                                    <td class="py-2 pr-3 text-zinc-900">{{ $l['lesson']->title ?: 'Урок без названия' }}</td>
-                                    <td class="py-2 pr-3">
-                                        <span class="inline-flex px-2 py-0.5 rounded-full text-xs whitespace-nowrap {{ $badgeClass }}">{{ $badgeText }}</span>
+                                @php [$badgeText, $badgeTone] = $lessonBadges[$l['state']]; @endphp
+                                <tr @if($index >= 10) data-lesson-extra hidden @endif>
+                                    <td class="md:w-14 text-xs md:text-sm text-zinc-500 whitespace-nowrap">{{ $l['date']->format('d.m') }}</td>
+                                    <td data-primary>{{ $l['lesson']->title ?: 'Урок без названия' }}</td>
+                                    <td>
+                                        <x-ui.badge :tone="$badgeTone">{{ $badgeText }}</x-ui.badge>
                                     </td>
-                                    <td class="py-2 text-xs text-zinc-600">
+                                    <td class="text-xs text-zinc-600">
                                         @if($l['liveMinutes'] !== null)
                                             <div>эфир: {{ $l['liveMinutes'] }} мин</div>
                                         @endif
@@ -453,7 +431,7 @@
                         </tbody>
                     </table>
                     @if($lessons['rows']->count() > 10)
-                        <button type="button" class="mt-2 text-sm text-blue-700 hover:underline" data-lesson-more>
+                        <button type="button" class="mt-2 min-h-9 text-sm text-apple-blue-700 hover:underline" data-lesson-more>
                             Показать все уроки ({{ $lessons['rows']->count() }})
                         </button>
                     @endif
@@ -462,7 +440,7 @@
 
             {{-- Комментарии куратора --}}
             @if($c['comments']->isNotEmpty())
-                <h3 class="text-sm font-medium text-zinc-900 mb-2">Последние комментарии куратора</h3>
+                <h3 class="sans-medium text-sm text-zinc-900 mb-2">Последние комментарии куратора</h3>
                 <div class="space-y-3">
                     @foreach($c['comments'] as $comment)
                         <div class="text-sm border-l-2 border-zinc-200 pl-3">
@@ -491,7 +469,7 @@
         $practice = $report['practice'];
     @endphp
     <div class="{{ $card }}">
-        <h2 class="text-lg font-medium mb-3">Самостоятельная работа</h2>
+        <h2 class="sans-medium text-lg text-zinc-900 mb-3">Самостоятельная работа</h2>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
             <div>
                 <div class="{{ $label }}">Задач из банка всего</div>
@@ -525,8 +503,4 @@
     </script>
 @endunless
 
-<div class="mt-8 flex gap-4 text-sm">
-    <a href="{{ route('admin.crm.index') }}" class="text-zinc-600 hover:text-zinc-900 underline">← CRM (оплаты и доступ)</a>
-    <a href="{{ route('admin.user.index') }}" class="text-zinc-600 hover:text-zinc-900 underline">Все пользователи</a>
-</div>
 @endsection

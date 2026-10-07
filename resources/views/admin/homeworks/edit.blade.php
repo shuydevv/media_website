@@ -1,44 +1,33 @@
 @extends('admin.layouts.main')
 
+@section('title', 'Редактирование домашки')
+
 @section('content')
-<div class="max-w-5xl mx-auto p-6 bg-white rounded-xl shadow-md">
-    <h1 class="text-2xl font-semibold mb-6">Редактирование домашнего задания</h1>
-
-    @if (session('status'))
-        <div class="mb-4 text-green-600 text-sm">{{ session('status') }}</div>
-    @endif
-
-    @if ($errors->any())
-        <div class="mb-4 text-red-600 text-sm">
-            <ul class="list-disc pl-5">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+<div class="max-w-4xl">
+    <x-ui.page-header title="Редактирование домашнего задания" :back="route('admin.homeworks.show', $homework)" back-label="К домашке" />
 
     <form action="{{ route('admin.homeworks.update', $homework) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
+        <x-ui.card class="mb-6">
         {{-- Название --}}
         <div class="mb-4">
-            <label class="block text-sm font-medium">Название</label>
-            <input type="text" name="title" class="w-full border rounded px-3 py-2"
+            <label class="ui-label">Название</label>
+            <input type="text" name="title" class="ui-input"
                    value="{{ old('title', $homework->title) }}" required>
         </div>
 
         {{-- Описание --}}
         <div class="mb-4">
-            <label class="block text-sm font-medium">Описание</label>
-            <textarea name="description" class="w-full border rounded px-3 py-2">{{old('description', $homework->description)}}</textarea>
+            <label class="ui-label">Описание</label>
+            <textarea name="description" class="ui-input">{{old('description', $homework->description)}}</textarea>
         </div>
 
         {{-- Курс --}}
         <div class="mb-4">
-            <label for="course_id" class="block text-sm font-medium">Курс</label>
-            <select class="w-full border rounded px-3 py-2" name="course_id" id="course_id" required>
+            <label for="course_id" class="ui-label">Курс</label>
+            <select class="ui-input" name="course_id" id="course_id" required>
                 @foreach($courses as $course)
                     <option value="{{ $course->id }}" data-category="{{ $course->category_id }}" @selected(old('course_id', $homework->course_id) == $course->id)>{{ $course->title }}</option>
                 @endforeach
@@ -47,8 +36,8 @@
 
         {{-- Урок --}}
         <div class="mb-4">
-            <label for="lesson_id" class="block text-sm font-medium">Урок</label>
-            <select class="w-full border rounded px-3 py-2" name="lesson_id" id="lesson_id" required>
+            <label for="lesson_id" class="ui-label">Урок</label>
+            <select class="ui-input" name="lesson_id" id="lesson_id" required>
                 @foreach($lessons as $lesson)
                     <option value="{{ $lesson->id }}" @selected(old('lesson_id', $homework->lesson_id) == $lesson->id)>{{ $lesson->title ?? 'Без названия' }}</option>
                 @endforeach
@@ -57,8 +46,8 @@
 
         {{-- Тип --}}
         <div class="mb-6">
-            <label class="block text-sm font-medium">Тип</label>
-            <select name="type" class="w-full border rounded px-3 py-2" required>
+            <label class="ui-label">Тип</label>
+            <select name="type" class="ui-input" required>
                 <option value="homework" @selected(old('type', $homework->type) === 'homework')>Обычное домашнее</option>
                 <option value="mock" @selected(old('type', $homework->type) === 'mock')>Пробник</option>
             </select>
@@ -66,33 +55,37 @@
 
         {{-- Номер пробника — только для type=mock, задаётся вручную --}}
         <div class="mb-6">
-            <label class="block text-sm font-medium">Номер пробника</label>
-            <input type="number" min="1" name="mock_number" class="w-full border rounded px-3 py-2"
+            <label class="ui-label">Номер пробника</label>
+            <input type="number" min="1" name="mock_number" class="ui-input"
                 value="{{ old('mock_number', $homework->mock_number) }}" placeholder="Например, 5 — только для пробников">
         </div>
 
         {{-- Дедлайн --}}
         <div class="mb-4">
-            <label class="block text-sm font-medium">Дедлайн</label>
+            <label class="ui-label">Дедлайн</label>
             <input type="datetime-local" name="due_at"
-                class="w-full border rounded px-3 py-2"
+                class="ui-input"
                 value="{{ old('due_at', isset($homework->due_at) ? $homework->due_at->format('Y-m-d\TH:i') : '') }}">
         </div>
 
+        </x-ui.card>
+
+        <h2 class="sans-medium text-xl md:text-2xl text-zinc-900 mb-3">Задания</h2>
+
         {{-- Список заданий --}}
-        <div id="tasks-container" class="space-y-8">
+        <div id="tasks-container" class="space-y-4">
             @php $i = 0; @endphp
             @forelse($homework->tasks as $t)
             @php $isBankItem = !empty($t->task_id); @endphp
-            <div class="task-item border rounded p-4 bg-gray-50">
+            <div class="task-item rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-lg font-semibold">Задание <span class="task-item-number">{{ $i + 1 }}</span></h2>
+                    <h2 class="sans-medium text-lg text-zinc-900">Задание <span class="task-item-number">{{ $i + 1 }}</span></h2>
                     {{-- Порядок — стрелками: реальный порядок задаётся
                          положением карточки в списке, стрелки просто
                          переставляют DOM-узлы местами. --}}
                     <div class="flex items-center gap-1">
-                        <button type="button" class="task-move-up w-7 h-7 flex items-center justify-center rounded border bg-white hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed" title="Переместить вверх">↑</button>
-                        <button type="button" class="task-move-down w-7 h-7 flex items-center justify-center rounded border bg-white hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed" title="Переместить вниз">↓</button>
+                        <button type="button" class="task-move-up w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-lg border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed" title="Переместить вверх">↑</button>
+                        <button type="button" class="task-move-down w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-lg border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed" title="Переместить вниз">↓</button>
                     </div>
                 </div>
 
@@ -100,11 +93,11 @@
                 <input type="hidden" name="tasks[{{ $i }}][order]" class="task-order-input" value="{{ old("tasks.$i.order", $t->order ?? ($i + 1)) }}">
 
                 <div class="mb-4">
-                    <label class="inline-flex items-center gap-2 mr-6 text-sm font-medium">
+                    <label class="inline-flex items-center gap-2 mr-6 min-h-10 text-sm cursor-pointer">
                         <input type="radio" name="tasks[{{ $i }}][source]" value="own" class="task-source-toggle" @checked(!$isBankItem)>
                         Создать новое
                     </label>
-                    <label class="inline-flex items-center gap-2 text-sm font-medium">
+                    <label class="inline-flex items-center gap-2 min-h-10 text-sm cursor-pointer">
                         <input type="radio" name="tasks[{{ $i }}][source]" value="bank" class="task-source-toggle" @checked($isBankItem)>
                         Из банка заданий
                     </label>
@@ -117,14 +110,14 @@
                 {{-- ID вместо выпадающего списка — в банке могут быть сотни
                      заданий, тянуть и рендерить их все в <select> не годится. --}}
                 <div class="task-bank-fields {{ $isBankItem ? '' : 'hidden' }} mb-4">
-                    <label class="block text-sm font-medium mb-1">Задание из банка — ID</label>
-                    <input type="number" name="tasks[{{ $i }}][task_id]" class="task-id-input w-full border rounded px-3 py-2"
+                    <label class="ui-label">Задание из банка — ID</label>
+                    <input type="number" name="tasks[{{ $i }}][task_id]" class="task-id-input ui-input"
                            min="1" step="1" placeholder="Например, 42"
                            value="{{ old('tasks.'.$i.'.task_id', $t->task_id) }}">
                     <div class="task-id-preview text-xs mt-1"></div>
                     <div class="mt-1 text-sm">
-                        <a href="{{ route('admin.tasks.create') }}" target="_blank" class="text-blue-600 hover:underline">Создать новое в банке →</a>
-                        <a href="{{ route('admin.tasks.index') }}" target="_blank" class="text-blue-600 hover:underline ml-3">Найти ID в банке →</a>
+                        <a href="{{ route('admin.tasks.create') }}" target="_blank" class="text-apple-blue-700 hover:underline">Создать новое в банке →</a>
+                        <a href="{{ route('admin.tasks.index') }}" target="_blank" class="text-apple-blue-700 hover:underline ml-3">Найти ID в банке →</a>
                     </div>
                 </div>
 
@@ -135,17 +128,17 @@
                      каждом сохранении текущее значение по умолчанию тихо
                      "замораживалось" бы как персональное переопределение. --}}
                 <div>
-                    <label class="block text-sm font-medium">Баллы @if($isBankItem)<span class="text-gray-400 font-normal">(сейчас: {{ $t->max_score }}, по умолчанию из критериев)</span>@endif</label>
-                    <input type="number" name="tasks[{{ $i }}][max_score]" class="w-full border rounded px-3 py-2"
+                    <label class="ui-label">Баллы @if($isBankItem)<span class="ui-label-note">(сейчас: {{ $t->max_score }}, по умолчанию из критериев)</span>@endif</label>
+                    <input type="number" name="tasks[{{ $i }}][max_score]" class="ui-input"
                         min="1" step="1" value="{{ old("tasks.$i.max_score", $t->getRawOriginal('max_score')) }}">
                 </div>
 
                 <div class="mt-4 flex items-center justify-between flex-wrap gap-2">
                     <label class="task-save-to-bank-wrap inline-flex items-center gap-2 text-sm {{ $isBankItem ? 'hidden' : '' }}">
-                        <input type="checkbox" name="tasks[{{ $i }}][save_to_bank]" value="1">
+                        <input type="checkbox" class="checkbox-custom" name="tasks[{{ $i }}][save_to_bank]" value="1">
                         Также сохранить в банк заданий
                     </label>
-                    <button type="button" class="delete-task text-red-600 text-sm hover:underline">Удалить задание</button>
+                    <button type="button" class="delete-task min-h-10 px-2 -mr-2 text-apple-red-650 text-sm hover:underline">Удалить задание</button>
                 </div>
             </div>
             @php $i++; @endphp
@@ -154,17 +147,14 @@
             @endforelse
         </div>
 
-        <div class="mt-6">
-            <button type="button" id="add-task" class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">
-                Добавить задание
-            </button>
+        <div class="mt-4">
+            <x-ui.button id="add-task" variant="secondary" size="xs">+ Добавить задание</x-ui.button>
         </div>
 
-        <div class="mt-6">
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                Сохранить изменения
-            </button>
-        </div>
+        <x-ui.form-actions>
+            <x-ui.button type="submit" size="xs">Сохранить изменения</x-ui.button>
+            <x-ui.button href="{{ route('admin.homeworks.show', $homework) }}" variant="ghost" size="xs">Отмена</x-ui.button>
+        </x-ui.form-actions>
     </form>
 </div>
 

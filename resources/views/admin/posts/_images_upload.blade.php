@@ -12,19 +12,19 @@
         'key' => \App\Support\PostContent\PostImages::key($image->original_name),
     ])->values();
 @endphp
-<div class="mt-10" data-images-upload data-existing='@json($existingImageKeys)'>
-    <label class="block mb-2 text-sm font-medium text-gray-900" for="multiple_files2">Добавить изображения в пост</label>
-    <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" id="multiple_files2" name="multi_images[]" type="file" accept="image/*" multiple>
-    <p class="mt-2 text-sm text-zinc-500">
+<div data-images-upload data-existing='@json($existingImageKeys)'>
+    <label class="ui-label" for="multiple_files2">Добавить изображения в пост</label>
+    <input class="ui-input" id="multiple_files2" name="multi_images[]" type="file" accept="image/*" multiple>
+    <p class="ui-hint break-words">
         Новые файлы добавляются к уже загруженным. Файл с тем же именем, что у загруженной картинки, заменит её.
         В тексте картинка указывается по имени файла без расширения:
-        <code class="px-1 bg-zinc-100">&lt;x-img src="kalka-1" description="Подпись" /&gt;</code>
-        (так же <code class="px-1 bg-zinc-100">src</code> работает в <code class="px-1 bg-zinc-100">&lt;x-person&gt;</code> и <code class="px-1 bg-zinc-100">&lt;x-quote&gt;</code>).
+        <code class="px-1 rounded bg-zinc-100">&lt;x-img src="kalka-1" description="Подпись" /&gt;</code>
+        (так же <code class="px-1 rounded bg-zinc-100">src</code> работает в <code class="px-1 rounded bg-zinc-100">&lt;x-person&gt;</code> и <code class="px-1 rounded bg-zinc-100">&lt;x-quote&gt;</code>).
         Картинки до 5 МБ.
     </p>
 
     <div class="mt-4 hidden" data-preview-wrap>
-        <p class="mb-2 font-medium text-sm">Будут загружены при сохранении:</p>
+        <p class="ui-label">Будут загружены при сохранении:</p>
         <div class="flex gap-4 items-start flex-wrap" data-preview></div>
     </div>
 </div>
@@ -88,7 +88,7 @@
     var button = function (text, attrs) {
         var b = document.createElement('button');
         b.type = 'button';
-        b.className = 'px-2 py-1 bg-zinc-100 hover:bg-zinc-200 text-left';
+        b.className = 'px-2.5 min-h-9 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-left text-xs text-zinc-800';
         b.textContent = text;
         Object.keys(attrs).forEach(function (a) { b.setAttribute(a, attrs[a]); });
         return b;
@@ -111,7 +111,7 @@
             card.className = 'w-40 text-xs';
 
             var img = document.createElement('img');
-            img.className = 'w-40 h-28 object-cover border';
+            img.className = 'w-40 h-28 object-cover rounded-lg border border-gray-200';
             img.src = url;
             img.alt = src;
             card.appendChild(img);
@@ -122,7 +122,7 @@
             card.appendChild(name);
 
             var note = document.createElement('p');
-            note.className = item.replaces ? 'text-amber-700' : 'text-green-700';
+            note.className = item.replaces ? 'text-apple-orange-700' : 'text-apple-green-700';
             note.textContent = item.replaces ? 'заменит загруженную' : 'новая';
             card.appendChild(note);
 
@@ -131,7 +131,7 @@
             actions.appendChild(button('Скопировать тег', { 'data-copy-tag': tag }));
             actions.appendChild(button('Вставить в текст', { 'data-insert-tag': tag }));
             var remove = button('Убрать', {});
-            remove.className += ' text-red-600';
+            remove.className += ' text-apple-red-650';
             remove.addEventListener('click', function () {
                 selected.splice(index, 1);
                 syncInput();

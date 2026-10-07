@@ -1,82 +1,65 @@
-@extends('layouts.main')
+@extends('admin.layouts.main')
+
+@section('title', 'Задание #'.$task->id)
 
 @section('content')
-<div class="max-w-3xl mx-auto px-4 py-6">
-  <div class="flex items-start justify-between gap-3">
-    <h1 class="text-2xl font-semibold">Задание #{{ $task->id }}</h1>
-    <div class="flex items-center gap-2 text-sm shrink-0">
-      <a href="{{ route('admin.tasks.edit', $task) }}" class="px-3 py-1.5 rounded-lg border hover:bg-gray-50">Содержание</a>
-      <a href="{{ route('admin.tasks.criteria.edit', $task) }}" class="px-3 py-1.5 rounded-lg border hover:bg-gray-50">Критерии</a>
-      <form method="post" action="{{ route('admin.tasks.duplicate', $task) }}">
-        @csrf
-        <button type="submit" class="px-3 py-1.5 rounded-lg border hover:bg-gray-50">Дублировать</button>
-      </form>
-    </div>
-  </div>
+<div class="max-w-3xl">
+  <x-ui.page-header :title="'Задание #'.$task->id" :back="route('admin.tasks.index')" back-label="Банк заданий">
+    <x-slot:actions>
+      <x-ui.button href="{{ route('admin.tasks.edit', $task) }}" size="xs">Содержание</x-ui.button>
+      <x-ui.button href="{{ route('admin.tasks.criteria.edit', $task) }}" variant="secondary" size="xs">Критерии</x-ui.button>
+      <x-ui.action-form :action="route('admin.tasks.duplicate', $task)" method="POST" variant="secondary">Дублировать</x-ui.action-form>
+    </x-slot:actions>
+  </x-ui.page-header>
 
-  @foreach (['success'=>'green','error'=>'red'] as $k=>$c)
-    @if(session($k))
-      <div class="mt-3 rounded-xl border border-{{ $c }}-200 bg-{{ $c }}-50 text-{{ $c }}-800 px-3 py-2">
-        {{ session($k) }}
-      </div>
-    @endif
-  @endforeach
-
-  <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-    <div class="rounded-xl border bg-white p-4">
-      <div class="text-sm text-gray-600">Категория</div>
-      <div class="font-medium">{{ $task->category?->title ?? '—' }}</div>
+  <x-ui.card>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <x-ui.stat label="Категория" size="md">{{ $task->category?->title ?? '—' }}</x-ui.stat>
+      <x-ui.stat label="Номер / тип" size="md">{{ $task->number ?? '—' }} · {{ $task->type ?? '—' }}</x-ui.stat>
+      <x-ui.stat label="Баллы" size="md">
+        {{ $task->max_score }}
+        <x-slot:sub>
+          общие для № {{ $task->number ?? '—' }} ·
+          <a href="{{ route('admin.tasks.criteria.edit', $task) }}" class="text-apple-blue-700 hover:underline">изменить</a>
+        </x-slot:sub>
+      </x-ui.stat>
+      <x-ui.stat label="Публично на сайте" size="md">{{ $task->is_public ? 'Да' : 'Нет' }}</x-ui.stat>
     </div>
-    <div class="rounded-xl border bg-white p-4">
-      <div class="text-sm text-gray-600">Номер / Тип</div>
-      <div class="font-medium">{{ $task->number ?? '—' }} · {{ $task->type ?? '—' }}</div>
-    </div>
-    <div class="rounded-xl border bg-white p-4">
-      <div class="text-sm text-gray-600 flex items-center gap-2">
-        Баллы
-        <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">общие для № {{ $task->number ?? '—' }}</span>
-      </div>
-      <div class="font-medium">{{ $task->max_score }} — <a href="{{ route('admin.tasks.criteria.edit', $task) }}" class="text-blue-600 hover:underline text-sm font-normal">изменить</a></div>
-    </div>
-    <div class="rounded-xl border bg-white p-4">
-      <div class="text-sm text-gray-600">Публично на сайте</div>
-      <div class="font-medium">{{ $task->is_public ? 'Да' : 'Нет' }}</div>
-    </div>
-  </div>
+  </x-ui.card>
 
   @if($task->type)
-    <div class="mt-4">
-      <div class="text-sm text-gray-600 mb-2">Как увидит студент:</div>
-      <div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6">
+    <div class="mt-6">
+      <h2 class="sans-medium text-lg text-zinc-900 mb-2">Как увидит студент</h2>
+      <x-ui.card class="sm:p-6">
         @include('student.submissions.partials.task-prompt', ['task' => $task])
-      </div>
+      </x-ui.card>
     </div>
   @endif
 
   @php
     $criteriaRecord = $task->resolvedCriteriaRecord();
   @endphp
-  <div class="mt-4 rounded-xl border bg-white p-4">
-    <div class="text-sm text-gray-600 mb-1 flex items-center gap-2">
-      Критерии
+  <x-ui.card class="mt-6">
+    <div class="flex flex-wrap items-center gap-2 mb-2">
+      <h2 class="sans-medium text-lg text-zinc-900">Критерии</h2>
       @if($task->criteria_override)
-        <span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">уникальные для этого задания</span>
+        <x-ui.badge tone="orange">уникальные для этого задания</x-ui.badge>
       @elseif($criteriaRecord)
-        <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">общие для № {{ $task->number ?? '—' }}</span>
+        <x-ui.badge>общие для № {{ $task->number ?? '—' }}</x-ui.badge>
       @endif
     </div>
     @if($task->resolved_criteria)
-      <pre class="text-sm bg-gray-50 p-3 rounded whitespace-pre-wrap">{{ $task->resolved_criteria }}</pre>
+      <pre class="sans text-sm text-zinc-700 bg-zinc-50 p-3 rounded-lg whitespace-pre-wrap break-words">{{ $task->resolved_criteria }}</pre>
     @else
-      <div class="text-sm text-gray-400">Не заполнены — <a href="{{ route('admin.tasks.criteria.edit', $task) }}" class="text-blue-600 hover:underline">заполнить</a></div>
+      <div class="text-sm text-zinc-500">Не заполнены — <a href="{{ route('admin.tasks.criteria.edit', $task) }}" class="text-apple-blue-700 hover:underline">заполнить</a></div>
     @endif
-  </div>
+  </x-ui.card>
 
   @if($criteriaRecord?->comment)
-    <div class="mt-4 rounded-xl border bg-white p-4">
-      <div class="text-sm text-gray-600 mb-1">Комментарий</div>
-      <div class="whitespace-pre-wrap text-sm">{{ $criteriaRecord->comment }}</div>
-    </div>
+    <x-ui.card class="mt-4">
+      <h2 class="sans-medium text-lg text-zinc-900 mb-2">Комментарий</h2>
+      <div class="whitespace-pre-wrap text-sm text-zinc-700">{{ $criteriaRecord->comment }}</div>
+    </x-ui.card>
   @endif
 </div>
 @endsection

@@ -1,74 +1,63 @@
 @extends('admin.layouts.main')
 
+@section('title', 'Удаление ботов')
+
 @section('content')
-<div class="flex items-center justify-between mb-6">
-    <div>
-        <h1 class="text-2xl font-semibold">Удаление ботов</h1>
-        <p class="text-sm text-zinc-500 mt-1">
-            Критерий: без подтверждённого email/телефона, без записи на курс, без оплат,
-            без сданных домашек и попыток решения заданий. Удаление необратимо — soft delete
-            для пользователей не включён.
-        </p>
-    </div>
-    <a href="{{ route('admin.user.index') }}" class="px-4 py-2 rounded-lg text-zinc-700 hover:bg-zinc-100">Назад</a>
-</div>
+<x-ui.page-header title="Удаление ботов" :back="route('admin.user.index')" back-label="Пользователи">
+    Критерий: без подтверждённого email/телефона, без записи на курс, без оплат,
+    без сданных домашек и попыток решения заданий. Удаление необратимо — soft delete
+    для пользователей не включён.
+</x-ui.page-header>
 
 @if($totalCount === 0)
-    <div class="bg-white border rounded-2xl p-6 shadow-sm text-zinc-600">
-        Кандидатов под критерий не найдено.
-    </div>
+    <x-ui.empty>Кандидатов под критерий не найдено.</x-ui.empty>
 @else
     @if($totalCount > $candidates->count())
-        <div class="mb-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+        <x-ui.alert tone="orange" class="mb-4">
             Всего найдено {{ $totalCount }}, показаны первые {{ $candidates->count() }}. Удалите эту партию
             и откройте страницу заново, чтобы обработать остальных.
-        </div>
+        </x-ui.alert>
     @endif
 
     <form method="POST" action="{{ route('admin.user.bots.destroy') }}" id="bots-form">
         @csrf
         @method('DELETE')
 
-        <div class="flex items-center gap-3 mb-3">
-            <button type="button" id="select-all" class="text-sm text-zinc-600 hover:text-zinc-900 underline">Выбрать все</button>
-            <button type="button" id="select-none" class="text-sm text-zinc-600 hover:text-zinc-900 underline">Снять всё</button>
+        <div class="flex items-center gap-2 mb-3">
+            <x-ui.button id="select-all" variant="secondary" size="xs">Выбрать все</x-ui.button>
+            <x-ui.button id="select-none" variant="ghost" size="xs">Снять всё</x-ui.button>
         </div>
 
-        <div class="overflow-x-auto bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
-            <table class="min-w-full text-sm">
-                <thead class="bg-zinc-50 text-left text-zinc-600">
+        <x-ui.table>
+            <thead>
+            <tr>
+                <th class="w-10"></th>
+                <th>Имя</th>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Телефон</th>
+                <th>Создан</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach($candidates as $user)
                 <tr>
-                    <th class="px-4 py-3 w-10"></th>
-                    <th class="px-4 py-3 font-medium">ID</th>
-                    <th class="px-4 py-3 font-medium">Имя</th>
-                    <th class="px-4 py-3 font-medium">Email</th>
-                    <th class="px-4 py-3 font-medium">Телефон</th>
-                    <th class="px-4 py-3 font-medium">Создан</th>
+                    <td>
+                        <input type="checkbox" name="user_ids[]" value="{{ $user->id }}" checked class="bot-checkbox checkbox-custom" aria-label="Удалить пользователя #{{ $user->id }}">
+                    </td>
+                    <td data-primary>{{ $user->name ?: '—' }}</td>
+                    <td data-label="ID" class="font-mono text-xs text-zinc-500">#{{ $user->id }}</td>
+                    <td data-label="Email"><span class="break-all">{{ $user->email ?? '—' }}</span></td>
+                    <td data-label="Телефон">{{ $user->phone ?? '—' }}</td>
+                    <td data-label="Создан" class="text-xs text-zinc-500">{{ optional($user->created_at)->format('d.m.Y H:i') }}</td>
                 </tr>
-                </thead>
-                <tbody class="divide-y divide-zinc-100">
-                @foreach($candidates as $user)
-                    <tr class="hover:bg-zinc-50">
-                        <td class="px-4 py-3">
-                            <input type="checkbox" name="user_ids[]" value="{{ $user->id }}" checked class="bot-checkbox">
-                        </td>
-                        <td class="px-4 py-3 font-mono text-xs text-zinc-500">#{{ $user->id }}</td>
-                        <td class="px-4 py-3 text-zinc-900">{{ $user->name ?: '—' }}</td>
-                        <td class="px-4 py-3 text-zinc-700">{{ $user->email ?? '—' }}</td>
-                        <td class="px-4 py-3 text-zinc-700">{{ $user->phone ?? '—' }}</td>
-                        <td class="px-4 py-3 text-xs text-zinc-500">{{ optional($user->created_at)->format('d.m.Y H:i') }}</td>
-                    </tr>
-                @endforeach
-                </tbody>
-            </table>
-        </div>
+            @endforeach
+            </tbody>
+        </x-ui.table>
 
-        <div class="mt-4">
-            <button type="submit" id="destroy-btn"
-                    class="px-4 py-3 bg-rose-600 text-white rounded-lg hover:bg-rose-700 font-medium">
-                Удалить выбранных
-            </button>
-        </div>
+        <x-ui.form-actions>
+            <x-ui.button type="submit" variant="danger" size="xs" id="destroy-btn">Удалить выбранных</x-ui.button>
+        </x-ui.form-actions>
     </form>
 
     <script>

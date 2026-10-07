@@ -5,6 +5,8 @@
    чтобы страницы с Swiper (course/*, post/*, shpargalka/*, student/profile) не зависели
    от внешнего CDN вообще. */
 @import 'swiper/css/bundle';
+/* Каркас админки и классы компонентов x-ui.* для форм/таблиц — см. admin.css. */
+@import './admin.css';
 
 @tailwind base;
 @tailwind components;

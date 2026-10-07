@@ -1,53 +1,46 @@
 @extends('admin.layouts.main')
 
+@section('title', 'Новая домашка')
+
 @section('content')
-<div class="max-w-5xl mx-auto p-6 bg-white rounded-xl shadow-md">
-    <h1 class="text-2xl font-semibold mb-6">Создание домашнего задания</h1>
+<div class="max-w-4xl">
+    <x-ui.page-header title="Создание домашнего задания" :back="route('admin.homeworks.index')" back-label="Домашки" />
 
     @php($i = 0)
-
-    @if ($errors->any())
-        <div class="mb-4 text-red-600 text-sm">
-            <ul class="list-disc pl-5">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
 
     {{-- Черновик из localStorage — на случай случайной перезагрузки/закрытия
          вкладки посреди заполнения. Появляется, только если найден
          непустой черновик; ничего не подставляется в поля без явного клика
          "Восстановить" — тихая перезапись того, что человек видит на
          экране прямо сейчас, была бы хуже, чем отсутствие черновика. --}}
-    <div id="draft-banner" class="hidden mb-4 p-3 rounded-lg border border-amber-200 bg-amber-50 text-sm text-amber-800 flex items-center justify-between gap-4 flex-wrap">
+    <div id="draft-banner" class="hidden mb-4 px-4 py-3 rounded-xl border border-apple-orange-200 bg-apple-orange-50 text-sm text-apple-orange-800 flex items-center justify-between gap-x-4 gap-y-2 flex-wrap">
         <span id="draft-banner-text"></span>
         <div class="flex items-center gap-3 shrink-0">
-            <button type="button" id="draft-restore-btn" class="text-blue-600 hover:underline font-medium">Восстановить</button>
-            <button type="button" id="draft-discard-btn" class="text-gray-500 hover:underline">Удалить черновик</button>
+            <button type="button" id="draft-restore-btn" class="min-h-9 text-apple-blue-700 hover:underline font-medium">Восстановить</button>
+            <button type="button" id="draft-discard-btn" class="min-h-9 text-zinc-500 hover:underline">Удалить черновик</button>
         </div>
     </div>
 
     <form id="homework-create-form" action="{{ route('admin.homeworks.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
+        <x-ui.card class="mb-6">
         {{-- Название --}}
         <div class="mb-4">
-            <label class="block text-sm font-medium">Название</label>
-            <input type="text" name="title" class="w-full border rounded px-3 py-2" required>
+            <label class="ui-label">Название</label>
+            <input type="text" name="title" class="ui-input" required>
         </div>
 
         {{-- Описание --}}
         <div class="mb-4">
-            <label class="block text-sm font-medium">Описание</label>
-            <textarea name="description" class="w-full border rounded px-3 py-2"></textarea>
+            <label class="ui-label">Описание</label>
+            <textarea name="description" class="ui-input"></textarea>
         </div>
 
         {{-- Курс --}}
         <div class="mb-4">
-            <label class="block text-sm font-medium">Курс</label>
-            <select name="course_id" id="course_id" class="w-full border rounded px-3 py-2">
+            <label class="ui-label">Курс</label>
+            <select name="course_id" id="course_id" class="ui-input">
                 @foreach($courses as $course)
                 <option value="{{ $course->id }}" data-category="{{ $course->category_id }}">
                     {{ $course->title }}
@@ -58,15 +51,15 @@
 
         {{-- Урок --}}
         <div class="mb-4">
-            <label for="lesson_id">Урок</label>
-            <select class="w-full border rounded px-3 py-2" name="lesson_id" id="lesson_id" required></select>
+            <label for="lesson_id" class="ui-label">Урок</label>
+            <select class="ui-input" name="lesson_id" id="lesson_id" required></select>
         </div>
 
 
         {{-- Тип домашней работы --}}
         <div class="mb-6">
-            <label class="block text-sm font-medium">Тип</label>
-            <select name="type" class="w-full border rounded px-3 py-2" required>
+            <label class="ui-label">Тип</label>
+            <select name="type" class="ui-input" required>
                 <option value="homework">Обычное домашнее задание</option>
                 <option value="mock">Пробник</option>
             </select>
@@ -74,31 +67,35 @@
 
         {{-- Номер пробника — только для type=mock, задаётся вручную --}}
         <div class="mb-6">
-            <label class="block text-sm font-medium">Номер пробника</label>
-            <input type="number" min="1" name="mock_number" class="w-full border rounded px-3 py-2"
+            <label class="ui-label">Номер пробника</label>
+            <input type="number" min="1" name="mock_number" class="ui-input"
                 value="{{ old('mock_number') }}" placeholder="Например, 5 — только для пробников">
         </div>
 
         {{-- Дедлайн --}}
         <div class="mb-4">
-            <label class="block text-sm font-medium">Дедлайн</label>
+            <label class="ui-label">Дедлайн</label>
             <input type="datetime-local" name="due_at"
-                class="w-full border rounded px-3 py-2"
+                class="ui-input"
                 value="{{ old('due_at', isset($homework->due_at) ? $homework->due_at->format('Y-m-d\TH:i') : '') }}">
         </div>
 
+        </x-ui.card>
+
+        <h2 class="sans-medium text-xl md:text-2xl text-zinc-900 mb-3">Задания</h2>
+
         {{-- Список заданий --}}
-        <div id="tasks-container" class="space-y-8">
-            <div class="task-item border rounded p-4 bg-gray-50 relative">
+        <div id="tasks-container" class="space-y-4">
+            <div class="task-item rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 relative">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-lg font-semibold">Задание</h2>
+                    <h2 class="sans-medium text-lg text-zinc-900">Задание</h2>
                     {{-- Порядок — стрелками, а не вручную вводимым числом:
                          реальный порядок задаётся положением карточки в
                          списке, стрелки просто переставляют карточки
                          местами (см. task-editor скрипт ниже). --}}
                     <div class="flex items-center gap-1">
-                        <button type="button" class="task-move-up w-7 h-7 flex items-center justify-center rounded border bg-white hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed" title="Переместить вверх">↑</button>
-                        <button type="button" class="task-move-down w-7 h-7 flex items-center justify-center rounded border bg-white hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed" title="Переместить вниз">↓</button>
+                        <button type="button" class="task-move-up w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-lg border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed" title="Переместить вверх">↑</button>
+                        <button type="button" class="task-move-down w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-lg border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed" title="Переместить вниз">↓</button>
                     </div>
                 </div>
                 <input type="hidden" name="tasks[0][order]" class="task-order-input" value="1">
@@ -107,11 +104,11 @@
                      существующее в банке — переиспользуется, автоматически
                      доступно в личном кабинете и (если помечено) публично. --}}
                 <div class="mb-4">
-                    <label class="inline-flex items-center gap-2 mr-6 text-sm font-medium">
+                    <label class="inline-flex items-center gap-2 mr-6 min-h-10 text-sm cursor-pointer">
                         <input type="radio" name="tasks[0][source]" value="own" class="task-source-toggle" checked>
                         Создать новое
                     </label>
-                    <label class="inline-flex items-center gap-2 text-sm font-medium">
+                    <label class="inline-flex items-center gap-2 min-h-10 text-sm cursor-pointer">
                         <input type="radio" name="tasks[0][source]" value="bank" class="task-source-toggle">
                         Из банка заданий
                     </label>
@@ -124,13 +121,13 @@
                 {{-- ID вместо выпадающего списка — в банке могут быть сотни
                      заданий, тянуть и рендерить их все в <select> не годится. --}}
                 <div class="task-bank-fields hidden mb-4">
-                    <label class="block text-sm font-medium mb-1">Задание из банка — ID</label>
-                    <input type="number" name="tasks[0][task_id]" class="task-id-input w-full border rounded px-3 py-2"
+                    <label class="ui-label">Задание из банка — ID</label>
+                    <input type="number" name="tasks[0][task_id]" class="task-id-input ui-input"
                            min="1" step="1" placeholder="Например, 42" value="{{ old('tasks.0.task_id') }}">
                     <div class="task-id-preview text-xs mt-1"></div>
                     <div class="mt-1 text-sm">
-                        <a href="{{ route('admin.tasks.create') }}" target="_blank" class="text-blue-600 hover:underline">Создать новое в банке →</a>
-                        <a href="{{ route('admin.tasks.index') }}" target="_blank" class="text-blue-600 hover:underline ml-3">Найти ID в банке →</a>
+                        <a href="{{ route('admin.tasks.create') }}" target="_blank" class="text-apple-blue-700 hover:underline">Создать новое в банке →</a>
+                        <a href="{{ route('admin.tasks.index') }}" target="_blank" class="text-apple-blue-700 hover:underline ml-3">Найти ID в банке →</a>
                     </div>
                 </div>
 
@@ -138,27 +135,28 @@
                      критериев (общие на весь номер в ЕГЭ); это поле — редкое
                      точечное исключение именно для этой домашки. --}}
                 <div>
-                    <label class="block text-sm font-medium">Баллы <span class="text-gray-400 font-normal">(необязательно — переопределяет баллы по умолчанию из критериев только в этой домашке)</span></label>
-                    <input type="number" name="tasks[0][max_score]" class="w-full border rounded px-3 py-2" min="1" step="1">
+                    <label class="ui-label">Баллы <span class="ui-label-note">(необязательно — переопределяет баллы по умолчанию из критериев только в этой домашке)</span></label>
+                    <input type="number" name="tasks[0][max_score]" class="ui-input" min="1" step="1">
                 </div>
 
                 <div class="mt-4 flex items-center justify-between flex-wrap gap-2">
                     <label class="task-save-to-bank-wrap inline-flex items-center gap-2 text-sm">
-                        <input type="checkbox" name="tasks[0][save_to_bank]" value="1">
+                        <input type="checkbox" class="checkbox-custom" name="tasks[0][save_to_bank]" value="1">
                         Также сохранить в банк заданий
                     </label>
-                    <button type="button" class="delete-task text-red-600 text-sm hover:underline">Удалить задание</button>
+                    <button type="button" class="delete-task min-h-10 px-2 -mr-2 text-apple-red-650 text-sm hover:underline">Удалить задание</button>
                 </div>
             </div>
         </div>
 
-        <div class="mt-6">
-            <button type="button" id="add-task" class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">Добавить задание</button>
+        <div class="mt-4">
+            <x-ui.button id="add-task" variant="secondary" size="xs">+ Добавить задание</x-ui.button>
         </div>
 
-        <div class="mt-6">
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Сохранить домашнее задание</button>
-        </div>
+        <x-ui.form-actions>
+            <x-ui.button type="submit" size="xs">Сохранить домашнее задание</x-ui.button>
+            <x-ui.button href="{{ route('admin.homeworks.index') }}" variant="ghost" size="xs">Отмена</x-ui.button>
+        </x-ui.form-actions>
     </form>
 </div>
 

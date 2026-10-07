@@ -3,46 +3,60 @@
 @section('title', 'CRM')
 
 @section('content')
-    <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
-        <h1 class="sans-medium text-2xl md:text-3xl text-zinc-900">CRM</h1>
-        <a href="{{ route('admin.user.create') }}"
-           class="rounded-lg px-4 py-2 bg-zinc-900 text-white hover:bg-zinc-800 transition sans-medium text-sm">
-            + Пользователь
-        </a>
-    </div>
+    @php
+        $hasFilters = !empty($q) || !empty($status) || !empty($dateFrom) || !empty($dateTo) || ($sort ?? 'urgency') !== 'urgency' || !empty($soonOnly) || !empty($remindersOnly);
+    @endphp
+
+    <x-ui.page-header title="CRM">
+        <x-slot:actions>
+            <x-ui.button href="{{ route('admin.user.create') }}" size="xs">
+                <x-icon name="plus" class="w-4 h-4" />
+                Пользователь
+            </x-ui.button>
+        </x-slot:actions>
+    </x-ui.page-header>
+
+    <x-ui.tabs class="mb-4">
+        <x-ui.tab href="{{ route('admin.crm.index') }}" :active="true">В работе</x-ui.tab>
+        <x-ui.tab href="{{ route('admin.crm.archive') }}">Завершили / отказались</x-ui.tab>
+    </x-ui.tabs>
 
     <form method="GET" class="mb-5">
         <div class="flex flex-wrap items-center gap-2">
-            <input
-                type="text"
-                name="q"
-                value="{{ $q ?? '' }}"
-                placeholder="Поиск: имя, email, телефон…"
-                class="flex-1 min-w-[220px] border rounded-lg px-3 py-2 input-focus sans text-sm"
-            >
-            <select name="status" class="border rounded-lg px-3 py-2 input-focus sans text-sm">
+            <x-ui.input name="q" type="search" value="{{ $q ?? '' }}" placeholder="Поиск: имя, email, телефон…" wrap="flex-1 min-w-[220px]" />
+            <x-ui.button type="submit" size="xs">Искать</x-ui.button>
+        </div>
+
+        {{-- Остальные фильтры на телефоне свёрнуты под одну кнопку — иначе они
+             занимают весь первый экран; раскрыты сами, если хоть один задан. --}}
+        <button type="button" class="md:hidden inline-flex items-center gap-1.5 min-h-11 text-sm text-zinc-600"
+                data-crm-filters-toggle aria-expanded="{{ $hasFilters ? 'true' : 'false' }}"
+                onclick="var box = this.nextElementSibling; var hidden = box.classList.toggle('max-md:hidden'); this.setAttribute('aria-expanded', hidden ? 'false' : 'true');">
+            Фильтры и сортировка
+            <x-icon name="chevron-right" class="w-4 h-4 rotate-90" />
+            @if($hasFilters)<x-ui.badge tone="blue">заданы</x-ui.badge>@endif
+        </button>
+        <div class="mt-1 md:mt-2 flex flex-wrap items-center gap-2 {{ $hasFilters ? '' : 'max-md:hidden' }}" data-crm-filters>
+            <x-ui.select name="status" wrap="w-full sm:w-auto" aria-label="Статус">
                 <option value="">Все статусы</option>
                 @foreach($statusOptions as $key => $opt)
-                    <option value="{{ $key }}" {{ ($status ?? '') === $key ? 'selected' : '' }}>
+                    <option value="{{ $key }}" @selected(($status ?? '') === $key)>
                         {{ $opt['label'] }} ({{ $statusCounts[$key] ?? 0 }})
                     </option>
                 @endforeach
-            </select>
-            <select name="sort" class="border rounded-lg px-3 py-2 input-focus sans text-sm">
+            </x-ui.select>
+            <x-ui.select name="sort" wrap="w-full sm:w-auto" aria-label="Сортировка">
                 @foreach($sortOptions as $key => $label)
-                    <option value="{{ $key }}" {{ ($sort ?? 'urgency') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                    <option value="{{ $key }}" @selected(($sort ?? 'urgency') === $key)>{{ $label }}</option>
                 @endforeach
-            </select>
-            <div class="flex items-center gap-1.5 border rounded-lg px-2 py-1.5">
-                <input type="date" name="date_from" value="{{ $dateFrom ?? '' }}"
-                       class="input-focus sans text-sm border-0 p-0 w-[130px]" title="Регистрация с">
+            </x-ui.select>
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <x-ui.input type="date" name="date_from" value="{{ $dateFrom ?? '' }}" title="Регистрация с" aria-label="Регистрация с" wrap="flex-1 sm:flex-none sm:w-40" />
                 <span class="text-zinc-300">–</span>
-                <input type="date" name="date_to" value="{{ $dateTo ?? '' }}"
-                       class="input-focus sans text-sm border-0 p-0 w-[130px]" title="Регистрация по">
+                <x-ui.input type="date" name="date_to" value="{{ $dateTo ?? '' }}" title="Регистрация по" aria-label="Регистрация по" wrap="flex-1 sm:flex-none sm:w-40" />
             </div>
-            <button class="rounded-lg px-3 py-2 border sans text-sm shrink-0">Искать</button>
-            @if(!empty($q) || !empty($status) || !empty($dateFrom) || !empty($dateTo) || ($sort ?? 'urgency') !== 'urgency' || !empty($soonOnly) || !empty($remindersOnly))
-                <a href="{{ route('admin.crm.index') }}" class="rounded-lg px-3 py-2 border sans text-sm text-zinc-500 shrink-0">Сброс</a>
+            @if($hasFilters)
+                <x-ui.button href="{{ route('admin.crm.index') }}" variant="secondary" size="xs">Сброс</x-ui.button>
             @endif
         </div>
         @if($soonOnly)
@@ -53,24 +67,12 @@
         @endif
     </form>
 
-    @if(session('success'))
-        <div class="mb-4 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 sans">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    <div class="bg-white border rounded-2xl shadow-sm p-4 md:p-5 mb-5">
+    <x-ui.card class="mb-5">
         <div class="flex flex-wrap gap-x-6 sm:gap-x-8 gap-y-4">
-            <div>
-                <div class="sans text-xs text-zinc-400 uppercase tracking-wide"><span class="hidden sm:inline">Всего </span>пользователей</div>
-                <div class="sans-medium text-2xl text-zinc-900 mt-0.5">{{ $totalUsers }}</div>
-            </div>
-            <div>
-                <div class="sans text-xs text-zinc-400 uppercase tracking-wide">Доход за {{ now()->translatedFormat('F') }}</div>
-                <div class="sans-medium text-2xl text-zinc-900 mt-0.5">{{ number_format($monthlyRevenueRub, 0, ',', ' ') }} ₽</div>
-            </div>
-            <div class="flex-1 min-w-[280px]">
-                <div class="sans text-xs text-zinc-400 uppercase tracking-wide mb-2">По статусам</div>
+            <x-ui.stat label="Пользователей">{{ $totalUsers }}</x-ui.stat>
+            <x-ui.stat :label="'Доход за '.now()->translatedFormat('F')">{{ number_format($monthlyRevenueRub, 0, ',', ' ') }} ₽</x-ui.stat>
+            <div class="flex-1 min-w-[260px]">
+                <div class="sans-medium text-xs text-zinc-400 uppercase tracking-wide mb-2">По статусам</div>
                 <div class="flex flex-wrap gap-1.5">
                     @php
                         $badgeColorClasses = [
@@ -80,6 +82,7 @@
                             'emerald' => 'bg-emerald-50 text-emerald-700 border-emerald-300',
                             'rose'    => 'bg-rose-50 text-rose-700 border-rose-300',
                         ];
+                        $chipClass = 'inline-flex items-center gap-1 px-2.5 min-h-9 md:min-h-7 rounded-full border text-xs sans-medium transition';
                     @endphp
                     @foreach($statusOptions as $key => $opt)
                         @php
@@ -92,7 +95,7 @@
                             }
                         @endphp
                         <a href="{{ route('admin.crm.index', $target) }}"
-                           class="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs sans-medium transition {{ $badgeColorClasses[$opt['color']] }} {{ $isActiveBadge ? 'ring-2 ring-offset-1 ring-zinc-400' : 'opacity-80 hover:opacity-100' }}">
+                           class="{{ $chipClass }} {{ $badgeColorClasses[$opt['color']] }} {{ $isActiveBadge ? 'ring-2 ring-offset-1 ring-zinc-400' : 'opacity-80 hover:opacity-100' }}">
                             {{ $opt['label'] }}
                             <span class="opacity-70">{{ $statusCounts[$key] ?? 0 }}</span>
                         </a>
@@ -107,7 +110,7 @@
                     @endphp
                     <a href="{{ route('admin.crm.index', $soonTarget) }}"
                        title="Активный доступ, до истечения которого осталось не больше {{ \App\Models\User::CRM_SOON_THRESHOLD_DAYS }} дней"
-                       class="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs sans-medium transition {{ $badgeColorClasses['amber'] }} {{ $soonOnly ? 'ring-2 ring-offset-1 ring-zinc-400' : 'opacity-80 hover:opacity-100' }}">
+                       class="{{ $chipClass }} {{ $badgeColorClasses['amber'] }} {{ $soonOnly ? 'ring-2 ring-offset-1 ring-zinc-400' : 'opacity-80 hover:opacity-100' }}">
                         Скоро истекает
                         <span class="opacity-70">{{ $soonCount }}</span>
                     </a>
@@ -121,47 +124,24 @@
                     @endphp
                     <a href="{{ route('admin.crm.index', $remindersTarget) }}"
                        title="Наступившие напоминания, поставленные в карточках учеников"
-                       class="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs sans-medium transition {{ $badgeColorClasses['amber'] }} {{ $remindersOnly ? 'ring-2 ring-offset-1 ring-zinc-400' : 'opacity-80 hover:opacity-100' }}">
+                       class="{{ $chipClass }} {{ $badgeColorClasses['amber'] }} {{ $remindersOnly ? 'ring-2 ring-offset-1 ring-zinc-400' : 'opacity-80 hover:opacity-100' }}">
                         Уведомления
                         <span class="opacity-70">{{ $reminderCount }}</span>
                     </a>
                 </div>
             </div>
-            {{-- <div class="flex-1 min-w-[280px]">
-                <div class="sans text-xs text-zinc-400 uppercase tracking-wide mb-2">Ученики по курсам</div>
-                <div class="overflow-x-auto">
-                    <table class="text-sm sans w-full">
-                        <thead>
-                            <tr class="text-left text-zinc-400 text-xs">
-                                <th class="font-normal pr-4 pb-1">Курс</th>
-                                <th class="font-normal pb-1">Учеников</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-zinc-100">
-                            @forelse($courseStats as $courseStat)
-                                <tr>
-                                    <td class="pr-4 py-1 text-zinc-800">{{ $courseStat['title'] }}</td>
-                                    <td class="py-1 text-zinc-600">{{ $courseStat['students'] }}</td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="2" class="py-1 text-zinc-400">Курсов нет</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div> --}}
         </div>
-    </div>
+    </x-ui.card>
 
     <div class="space-y-4">
         @forelse($students as $student)
             @include('admin.crm.partials.student-card', ['student' => $student, 'number' => $student->crmNumber])
         @empty
-            <div class="bg-white border rounded-2xl shadow-sm px-5 py-10 text-center text-zinc-500 sans text-sm">Ничего не найдено</div>
+            <x-ui.empty>Ничего не найдено</x-ui.empty>
         @endforelse
     </div>
 
     <div class="mt-4">
-        {{ $students->links() }}
+        {{ $students->links('pagination.ui') }}
     </div>
 @endsection

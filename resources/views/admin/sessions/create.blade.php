@@ -1,62 +1,37 @@
 @extends('admin.layouts.main')
 
-@section('content')
-<div class="max-w-2xl mx-auto bg-white shadow-md rounded-xl p-6">
-    <h1 class="text-xl font-semibold mb-6">Создание сессии</h1>
+@section('title', 'Новая сессия')
 
-    @if ($errors->any())
-        <div class="mb-4 text-red-600">
-            <ul class="list-disc pl-5 text-sm">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+@section('content')
+<div class="max-w-2xl">
+    <x-ui.page-header title="Создание сессии" :back="route('admin.sessions.index')" back-label="Сессии" />
 
     <form method="POST" action="{{ route('admin.sessions.store') }}">
         @csrf
 
-        {{-- Курс --}}
-        <div class="mb-4">
-            <label for="course_id" class="block text-sm font-medium">Курс</label>
-            <select name="course_id" id="course_id" required class="w-full border rounded px-3 py-2">
+        <x-ui.card class="space-y-4">
+            <x-ui.select name="course_id" label="Курс" required>
                 @foreach ($courses as $course)
-                    <option value="{{ $course->id }}">{{ $course->title }}</option>
+                    <option value="{{ $course->id }}" @selected(old('course_id') == $course->id)>{{ $course->title }}</option>
                 @endforeach
-            </select>
-        </div>
+            </x-ui.select>
 
-        {{-- Дата --}}
-        <div class="mb-4">
-            <label for="date" class="block text-sm font-medium">Дата</label>
-            <input type="date" name="date" id="date" class="w-full border rounded px-3 py-2" required>
-        </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <x-ui.input type="date" name="date" label="Дата" value="{{ old('date') }}" required />
+                <x-ui.input type="time" name="start_time" label="Время начала" value="{{ old('start_time') }}" required />
+                <x-ui.input type="number" name="duration_minutes" label="Длительность, минут" value="{{ old('duration_minutes') }}" min="1" inputmode="numeric" required />
+            </div>
 
-        {{-- Время начала --}}
-        <div class="mb-4">
-            <label for="start_time" class="block text-sm font-medium">Время начала</label>
-            <input type="time" name="start_time" id="start_time" class="w-full border rounded px-3 py-2" required>
-        </div>
+            <x-ui.select name="status" label="Статус">
+                <option value="active" @selected(old('status', 'active') === 'active')>Активно</option>
+                <option value="cancelled" @selected(old('status') === 'cancelled')>Отменено</option>
+            </x-ui.select>
+        </x-ui.card>
 
-        {{-- Длительность --}}
-        <div class="mb-4">
-            <label for="duration_minutes" class="block text-sm font-medium">Длительность (минут)</label>
-            <input type="number" name="duration_minutes" id="duration_minutes" class="w-full border rounded px-3 py-2" required min="1">
-        </div>
-
-        {{-- Статус --}}
-        <div class="mb-4">
-            <label for="status" class="block text-sm font-medium">Статус</label>
-            <select name="status" id="status" class="w-full border rounded px-3 py-2">
-                <option value="active">Активно</option>
-                <option value="cancelled">Отменено</option>
-            </select>
-        </div>
-
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-            Сохранить
-        </button>
+        <x-ui.form-actions>
+            <x-ui.button type="submit" size="xs">Сохранить</x-ui.button>
+            <x-ui.button href="{{ route('admin.sessions.index') }}" variant="ghost" size="xs">Отмена</x-ui.button>
+        </x-ui.form-actions>
     </form>
 </div>
 @endsection
