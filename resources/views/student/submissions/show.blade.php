@@ -844,15 +844,6 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
     {{-- Эти три блока показываются, только если куратор реально что-то
          заполнил — пустой "—" ученику ничего не даёт, лучше не показывать
          блок вовсе, чем пустую подпись. --}}
-    {{-- ВРЕМЕННО скрыто по просьбе — блок "Образцовый ответ" для ручных
-         заданий. Чтобы вернуть, раскомментировать код ниже.
-    @if($hasScore && !$skipped && trim((string)$correctAns) !== '')
-    <div class="rounded-xl bg-apple-green-50 p-3 px-4">
-      <div class="sans text-xs text-apple-green-700 mb-2">Образцовый ответ</div>
-      <div class="sans text-sm text-zinc-700 whitespace-pre-wrap break-words">{{ $norm($correctAns) }}</div>
-    </div>
-    @endif
-    --}}
     @if($hasScore && !$skipped && trim((string)$mentorReason) !== '')
     <div class="rounded-xl border border-gray-200 p-3">
       <div class="text-xs text-zinc-500 mb-1">Обоснование баллов</div>
@@ -863,6 +854,15 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
     <div class="rounded-xl border border-gray-200 p-3 px-4">
       <div class="text-xs text-zinc-500 mb-2">Пояснение куратора</div>
       <div class="text-sm whitespace-pre-wrap break-words">{{ $norm($mentorNote) }}</div>
+    </div>
+    @endif
+    {{-- Образцовый ответ — последним, после обоснования баллов и пояснения
+         куратора: ученик сначала читает разбор своей работы, потом сверяется
+         с эталоном. Только после проверки (до неё эталон был бы подсказкой). --}}
+    @if($hasScore && !$skipped && trim((string)$correctAns) !== '')
+    <div class="rounded-xl bg-apple-green-50 p-3 px-4">
+      <div class="sans text-xs text-apple-green-700 mb-2">Образцовый ответ</div>
+      <div class="sans text-sm text-zinc-700 whitespace-pre-wrap break-words">{{ $norm($correctAns) }}</div>
     </div>
     @endif
   </div>
