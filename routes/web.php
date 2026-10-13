@@ -37,6 +37,9 @@ Route::group(['namespace' => 'App\Http\Controllers\Main'], function () {
     Route::get('/repetitor', 'RepetitorController')->name('main.repetitor');
     Route::get('/author', 'AuthorController')->name('main.author');
     // Route::get('/shpargalki', 'ShpargalkiController')->name('main.shpargalki');
+
+    // Пробные уроки — публичные, без входа (список — в самом контроллере).
+    Route::get('/trial/{slug}', 'TrialLessonController')->name('main.trial');
 });
 Route::group(['namespace' => 'App\Http\Controllers\Post', 'prefix' => 'posts'], function () {
     Route::get('/', 'IndexController')->name('post.index');
