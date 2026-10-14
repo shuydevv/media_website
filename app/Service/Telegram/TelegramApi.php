@@ -58,12 +58,15 @@ class TelegramApi
 
     public function sendMessage(int|string $chatId, string $html, array $extra = []): array
     {
-        return $this->call('sendMessage', [
+        // $extra первым: в объединении массивов побеждает левый, так шаг
+        // воронки может включить превью (link_preview_options) поверх
+        // выключенного по умолчанию.
+        return $this->call('sendMessage', $extra + [
             'chat_id' => $chatId,
             'text' => $html,
             'parse_mode' => 'HTML',
             'link_preview_options' => ['is_disabled' => true],
-        ] + $extra);
+        ]);
     }
 
     public function sendTyping(int|string $chatId): void

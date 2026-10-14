@@ -2,15 +2,21 @@
 
 namespace App\Service\Telegram;
 
+use App\Models\SiteLead;
 use App\Models\TelegramContact;
 use App\Models\TelegramMessage;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
  * Сторона админ-группы: супергруппа с темами (TELEGRAM_FUNNEL_ADMIN_CHAT_ID),
- * одна тема на человека. Туда пересылается всё, что пишет человек, и
- * копируются автосообщения бота — для контекста, без звука. Сообщение
+ * одна тема на человека. Тема заводится только когда человек впервые
+ * написал сам (forward): создание темы — служебное сообщение, о котором
+ * Telegram уведомляет всегда, и при заведении на каждый /start группа
+ * «дёргала» бы на всех, кто просто запустил бота. Что было до первого
+ * сообщения (урок, открыл ли, оценка, напоминание) — сводкой в карточке
+ * темы; после — копии автосообщений бота и события, без звука. Сообщение
  * админа в теме бот отправляет человеку от своего имени с подписью
  * Александра (relayAdminMessage).
  *
@@ -83,9 +89,17 @@ class AdminTopics
         ]));
     }
 
-    /** Служебная строка в тему: копия автосообщения, «открыл урок» и т.п. */
+    /**
+     * Служебная строка в тему: копия автосообщения, «открыл урок» и т.п.
+     * Темы ещё нет (человек не писал) — ничего не делаем: это попадёт в
+     * сводку карточки, когда тема появится.
+     */
     public function note(TelegramContact $contact, string $html, bool $silent = true): void
     {
+        if (! $contact->topic_id) {
+            return;
+        }
+
         try {
             $this->inTopic($contact, fn (int $chatId, int $topicId) => $this->api->sendMessage($chatId, $html, [
                 'message_thread_id' => $topicId,
@@ -94,6 +108,104 @@ class AdminTopics
         } catch (TelegramApiException $e) {
             Log::warning('Telegram funnel: не удалось написать в тему', ['contact' => $contact->id, 'error' => $e->getMessage()]);
         }
+    }
+
+    /**
+     * Сообщение в служебную тему группы (не тему человека): лента стартов
+     * без звука, заявки с сайта — со звуком. Тема заводится при первой
+     * записи; если её удалили руками — заводится заново.
+     *
+     * @throws TelegramApiException
+     */
+    public function postToService(string $key, string $html, bool $silent): ?array
+    {
+        $chatId = self::adminChatId();
+        if (! $chatId) {
+            throw new TelegramApiException('TELEGRAM_FUNNEL_ADMIN_CHAT_ID не задан в .env');
+        }
+
+        $send = fn (int $topicId) => $this->api->sendMessage($chatId, $html, [
+            'message_thread_id' => $topicId,
+            'disable_notification' => $silent,
+        ]);
+
+        try {
+            return $send($this->serviceTopic($key));
+        } catch (TelegramApiException $e) {
+            if (! $e->isTopicMissing()) {
+                throw $e;
+            }
+            DB::table('telegram_service_topics')->where('key', $key)->delete();
+
+            return $send($this->serviceTopic($key));
+        }
+    }
+
+    /**
+     * Человек из заявки на сайте запустил бота: заводим ему тему сразу (с
+     * уведомлением — это заявка) и отмечаем в «📝 Заявки с сайта», что с
+     * ним теперь можно говорить через бота.
+     */
+    public function openLeadTopic(TelegramContact $contact, SiteLead $lead): void
+    {
+        if (! $this->ensureTopic($contact)) {
+            return;
+        }
+
+        $details = e($lead->name).' · '.e($lead->contactLabel()).($lead->cta_label ? ' · '.e($lead->cta_label) : '');
+        $this->note($contact, "📝 <b>Пришёл из заявки с сайта</b>
+{$details}
+
+Можно отвечать прямо здесь.", false);
+
+        try {
+            $this->postToService('leads', '✅ '.e($lead->name).' ('.e($lead->contactLabel()).') запустил бота — отвечать можно в его теме', true);
+        } catch (TelegramApiException $e) {
+            Log::warning('Telegram funnel: не удалось отметить заявку', ['lead' => $lead->id, 'error' => $e->getMessage()]);
+        }
+    }
+
+    /** Строка в «📥 Старты» на каждый новый запуск бота — без звука. */
+    public function postStart(TelegramContact $contact): void
+    {
+        $line = '🆕 '.e($contact->displayName())
+            .($contact->username && ! str_starts_with($contact->displayName(), '@') ? ' @'.e($contact->username) : '')
+            .' · '.($contact->source ? '<code>'.e($contact->source).'</code>' : 'без метки')
+            .' · «'.e(FunnelLessons::title($contact->lesson)).'»';
+
+        try {
+            $this->postToService('starts', $line, true);
+        } catch (TelegramApiException $e) {
+            Log::warning('Telegram funnel: не удалось написать в ленту стартов', ['contact' => $contact->id, 'error' => $e->getMessage()]);
+        }
+    }
+
+    private function serviceTopic(string $key): int
+    {
+        $names = [
+            'starts' => '📥 Старты',
+            'leads' => '📝 Заявки с сайта',
+        ];
+
+        return Cache::lock("telegram-service-topic-{$key}", 20)->block(15, function () use ($key, $names) {
+            $id = DB::table('telegram_service_topics')->where('key', $key)->value('topic_id');
+            if ($id) {
+                return (int) $id;
+            }
+
+            $topic = $this->api->call('createForumTopic', [
+                'chat_id' => self::adminChatId(),
+                'name' => $names[$key] ?? $key,
+            ]);
+            DB::table('telegram_service_topics')->insert([
+                'key' => $key,
+                'topic_id' => $topic['message_thread_id'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            return (int) $topic['message_thread_id'];
+        });
     }
 
     /** Переименовать тему, если сменился эмодзи-статус (💬 — ждёт ответа и т.п.). */
@@ -199,18 +311,30 @@ class AdminTopics
 
     private function sendCard(TelegramContact $contact): void
     {
+        $at = fn ($time) => $time ? $time->format('d.m H:i') : null;
+        $bonus = FunnelLessons::bonusFor($contact->lesson);
+
         $lines = [
-            '🆕 <b>Новый контакт</b>',
+            '<b>Новый диалог</b>',
             '<a href="tg://user?id='.$contact->telegram_user_id.'">'.e($contact->displayName()).'</a>'
                 .($contact->username ? ' · @'.e($contact->username) : ''),
             'Метка: '.($contact->source ? '<code>'.e($contact->source).'</code>' : 'без метки'),
-            'Урок: «'.e(FunnelLessons::title($contact->lesson)).'», бонус: «'.e(FunnelLessons::title(FunnelLessons::bonusFor($contact->lesson))).'»',
             'Старт: '.$contact->started_at->format('d.m.Y H:i'),
+            '',
+            '«'.e(FunnelLessons::title($contact->lesson)).'»: '.($at($contact->opened_lesson_at) ? 'открыл '.$at($contact->opened_lesson_at) : 'не открывал'),
+            'Бонус «'.e(FunnelLessons::title($bonus)).'»: '.($at($contact->opened_bonus_at) ? 'открыл '.$at($contact->opened_bonus_at) : 'не открывал'),
+            'Оценка: '.match ($contact->rating) {
+                TelegramContact::RATING_UP => '👍 '.$at($contact->rated_at),
+                TelegramContact::RATING_DOWN => '👎 '.$at($contact->rated_at),
+                default => 'нет',
+            },
+            'Напоминание: '.($at($contact->reminder_sent_at) ? 'отправлено '.$at($contact->reminder_sent_at) : 'не отправлялось'),
             '',
             '<i>Ответ в этой теме уйдёт человеку от бота с подписью «Александр Полтавский». Сообщение, начатое с //, — заметка, не отправляется.</i>',
         ];
 
-        $this->api->sendMessage(self::adminChatId(), implode("\n", $lines), [
+        $this->api->sendMessage(self::adminChatId(), implode('
+', $lines), [
             'message_thread_id' => $contact->topic_id,
             'disable_notification' => true,
         ]);

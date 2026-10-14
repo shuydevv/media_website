@@ -49,6 +49,30 @@
     </div>
 </x-ui.card>
 
+<h2 class="sans-medium text-lg text-zinc-900 mb-2">Заявки с сайта</h2>
+@if ($leads->isEmpty())
+    <x-ui.empty class="mb-6">Заявок из формы «Записаться» пока нет</x-ui.empty>
+@else
+    <x-ui.table class="mb-6">
+        <thead>
+            <tr><th>Имя</th><th>Контакт</th><th>Кнопка</th><th>Когда</th><th>В группе</th></tr>
+        </thead>
+        <tbody>
+            @foreach ($leads as $lead)
+                <tr>
+                    <td data-primary>{{ $lead->name }}</td>
+                    <td data-label="Контакт"><a href="{{ $lead->telegramUrl() }}" target="_blank" rel="noopener" class="text-blue-600 hover:underline">{{ $lead->contactLabel() }}</a></td>
+                    <td data-label="Кнопка">{{ $lead->cta_label ?? '—' }}</td>
+                    <td data-label="Когда" class="md:whitespace-nowrap">{{ $lead->created_at->format('d.m H:i') }}</td>
+                    <td data-label="В группе">
+                        <span>@if ($lead->sent_at) <x-ui.badge tone="green">доставлена</x-ui.badge> @else <x-ui.badge tone="orange">в очереди</x-ui.badge> @endif</span>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </x-ui.table>
+@endif
+
 <h2 class="sans-medium text-lg text-zinc-900 mb-2">По меткам рекламы</h2>
 @if ($bySource->isEmpty())
     <x-ui.empty class="mb-6">Пока никто не запускал бота</x-ui.empty>

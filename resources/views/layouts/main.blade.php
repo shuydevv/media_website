@@ -7,6 +7,8 @@
 
         <title>@yield('title')</title>
         <meta name="description" content="@yield('description')" />
+        {{-- Open Graph и т.п. — превью ссылки в мессенджерах (см. main/trial-lesson). --}}
+        @stack('meta')
         <style>
 
         </style>

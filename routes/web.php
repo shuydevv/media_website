@@ -647,4 +647,10 @@ Route::post('/lead', [LeadController::class, 'store'])
     ->name('lead.store')
     ->middleware('throttle:10,1'); // необязательно, но полезно
 
+// Форма «Записаться» (имя + логин Telegram или телефон) на пробных уроках —
+// заявка уходит в админ-группу бота воронки (см. SiteLeadController).
+Route::post('/zayavka', [\App\Http\Controllers\SiteLeadController::class, 'store'])
+    ->name('site-lead.store')
+    ->middleware('throttle:10,1');
+
 Route::view('/thank-you', 'thank-you');

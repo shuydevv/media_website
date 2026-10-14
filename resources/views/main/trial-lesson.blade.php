@@ -5,6 +5,17 @@
 @section('description')
 Пробный урок «{{ $lesson['title'] }}» — подготовка к ЕГЭ по обществознанию в Школе Полтавского
 @endsection
+@push('meta')
+    <meta property="og:type" content="video.other">
+    <meta property="og:site_name" content="Школа Полтавского">
+    <meta property="og:title" content="{{ $lesson['title'] }} — бесплатный пробный урок">
+    <meta property="og:description" content="Пробный урок ЕГЭ по обществознанию с Александром Полтавским">
+    <meta property="og:url" content="{{ url()->current() }}">
+    @if (! empty($lesson['cover']))
+        <meta property="og:image" content="{{ url($lesson['cover']) }}">
+        <meta name="twitter:card" content="summary_large_image">
+    @endif
+@endpush
 @section('content')
     <div class="container mx-auto max-w-screen-lg md:mt-12 mt-8 md:mb-20 mb-12 px-3">
         <h1 class="md:text-3xl text-2xl font-medium md:mb-6 mb-4 text-start tracking-wide text-zinc-900 sans">{{ $lesson['title'] }}</h1>
@@ -17,7 +28,9 @@
         </div>
 
         <div class="text-center">
-            <a class="bg-pink-500 px-6 py-4 text-white text-lg font-semibold mt-8 inline-block rounded-xl" href="https://t.me/poltavskiy_ege?text={{ rawurlencode('Здравствуйте! Хочу записаться на курс') }}" target="_blank" rel="noopener">Записаться на курс</a>
+            <a class="bg-pink-500 px-6 py-4 text-white text-lg font-semibold mt-8 inline-block rounded-xl cursor-pointer" href="#"
+               data-open-form="trial" data-label="Пробный урок «{{ $lesson['title'] }}»">Записаться на курс</a>
         </div>
     </div>
+    @include('partials.lead-modal')
 @endsection

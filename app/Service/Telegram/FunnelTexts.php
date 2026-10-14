@@ -28,6 +28,12 @@ final class FunnelTexts
         return $texts;
     }
 
+    /** Есть ли в тексте ссылка [в скобках] — тогда отдельная кнопка урока не нужна. */
+    public static function hasLink(string $key): bool
+    {
+        return (bool) preg_match('/\[[^\]\n]+\]/u', self::all()[$key] ?? '');
+    }
+
     public static function forgetCache(): void
     {
         Cache::forget(self::CACHE_KEY);
@@ -37,7 +43,7 @@ final class FunnelTexts
      * Готовый HTML для sendMessage: экранированный текст с подстановками и,
      * для «человеческих» сообщений, подписью Александра первой строкой.
      */
-    public static function render(string $key, array $vars = []): string
+    public static function render(string $key, array $vars = [], ?string $linkUrl = null): string
     {
         $text = self::all()[$key] ?? '';
 
@@ -46,6 +52,12 @@ final class FunnelTexts
             $replace['{'.$name.'}'] = (string) $value;
         }
         $html = e(strtr($text, $replace));
+
+        // [СМОТРЕТЬ] → ссылка на урок. После экранирования: квадратные скобки
+        // e() не трогает, а адрес наш, не из текста админки.
+        if ($linkUrl !== null) {
+            $html = preg_replace('/\[([^\]\n]+)\]/u', '<a href="'.e($linkUrl).'">$1</a>', $html);
+        }
 
         if (config("telegram_funnel.texts.{$key}.human")) {
             $html = config('telegram_funnel.signature').$html;

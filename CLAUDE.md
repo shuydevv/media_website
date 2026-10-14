@@ -118,7 +118,14 @@ vendor/bin/pint                                     # форматировани
   переписка только в `telegram_messages`. Персональная ссылка `/go/{token}/{урок}` даёт
   «открыл урок» в аналитике `/admin/telegram`; тексты автосообщений — там же
   (`telegram_texts` поверх дефолтов `config/telegram_funnel.php`). Настройка сервера —
-  `deploy/README.md`, раздел 8.
+  `deploy/README.md`, раздел 8. Тема человека заводится только когда он написал сам (или
+  запустил бота из заявки) — создание темы всегда даёт уведомление; до этого — строка без
+  звука в служебной теме «📥 Старты» (`telegram_service_topics`), итог дня —
+  `telegram:digest` в 21:00. Форма «Записаться» на пробных уроках (`partials/lead-modal` →
+  `SiteLeadController` → `site_leads` → тема «📝 Заявки с сайта»): логин или телефон
+  (`LeadContact`); со страницы «Спасибо» — `?start=lead_<token>`, чтобы с человеком можно
+  было говорить через бота (бот не пишет первым). `/repetitor` — свои формы и старый
+  `LeadController`, туда `lead-modal` не подключать.
 
 **Auth** — не стандартный Breeze-флоу целиком: вход по телефону (OTP, `PhoneAuthController`,
 `Service/Sms/*`) и по email-коду/подписанной ссылке (`EmailAuthController`, `EmailOtpService`),

@@ -28,5 +28,6 @@ class Kernel extends ConsoleKernel
         $schedule->command('queue:monitor-health')->everyFiveMinutes();
         $schedule->command('sessions:prune')->dailyAt('04:30');
         $schedule->command('telegram:send-reminders')->everyMinute()->withoutOverlapping();
+        $schedule->command('telegram:digest')->dailyAt('21:00');
     }
 }

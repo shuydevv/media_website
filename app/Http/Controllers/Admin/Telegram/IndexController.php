@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Telegram;
 
 use App\Http\Controllers\Controller;
+use App\Models\SiteLead;
 use App\Models\TelegramContact;
 use App\Service\Telegram\FunnelLessons;
 use Carbon\Carbon;
@@ -45,11 +46,17 @@ class IndexController extends Controller
 
         $recent = (clone $base)->latest('started_at')->limit(30)->get();
 
+        $leads = SiteLead::query()
+            ->when($from, fn ($q) => $q->where('created_at', '>=', $from->copy()->startOfDay()))
+            ->when($to, fn ($q) => $q->where('created_at', '<=', $to->copy()->endOfDay()))
+            ->latest()->limit(50)->get();
+
         return view('admin.telegram.index', [
             'total' => $total,
             'bySource' => $bySource,
             'byLesson' => $byLesson,
             'recent' => $recent,
+            'leads' => $leads,
             'from' => $from?->format('Y-m-d'),
             'to' => $to?->format('Y-m-d'),
             'configured' => [
