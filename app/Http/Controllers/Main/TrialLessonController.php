@@ -8,8 +8,9 @@ class TrialLessonController extends Controller
 {
     // Пробные уроки — публичные страницы без входа. Их всего пара штук и
     // меняются они редко, поэтому список живёт здесь, а не в БД: slug из
-    // адреса → заголовок и id видео в Kinescope.
-    private const LESSONS = [
+    // адреса → заголовок и id видео в Kinescope. Публичная — заголовки
+    // отсюда же берёт бот воронки (App\Service\Telegram\FunnelLessons).
+    public const LESSONS = [
         'ekonomicheskiy-rost' => [
             'title' => 'Экономический рост',
             'video_id' => '0cELmsWinCGo2LybNuV3hU',

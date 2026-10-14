@@ -208,3 +208,50 @@ TELEGRAM_CHAT_ID=...
 ```bash
 cd /var/www/poltav/current && php artisan queue:retry all
 ```
+
+## 8. Telegram-бот воронки пробного урока (@poltavskiy_ege_bot)
+
+Код — `app/Service/Telegram/` (путь пользователя — в шапке `FunnelBot`),
+аналитика и тексты — `/admin/telegram`. Разово на сервере:
+
+1. **Воркер слушает очередь `telegram`.** В `poltav-queue.service` теперь
+   `--queue=telegram,default` — systemd читает свою копию юнита, поэтому
+   после первого деплоя с ботом её надо обновить:
+
+   ```bash
+   sudo cp /var/www/poltav/current/deploy/poltav-queue.service /etc/systemd/system/
+   sudo systemctl daemon-reload && sudo systemctl restart poltav-queue
+   ```
+
+   Без этого апдейты бота копятся в `jobs` необработанными (через 10 минут
+   `queue:monitor-health` пришлёт алерт о «зависшей очереди»).
+
+2. **Планировщик.** Напоминания отправляет `telegram:send-reminders` раз в
+   минуту из `schedule:run` — проверьте, что в `crontab -l` пользователя
+   www-data/deploy есть `* * * * * cd /var/www/poltav/current && php artisan schedule:run`.
+
+3. **Админ-группа.** Создать приватную группу → в настройках включить
+   «Темы» → добавить @poltavskiy_ege_bot администратором с правом
+   «Управление темами». Написать в группе `/chatid` — бот ответит id
+   (вида `-100…`; отвечает, как только установлен webhook, шаг 5).
+
+4. **`.env`** (в `shared/.env`):
+
+   ```
+   TELEGRAM_FUNNEL_BOT_TOKEN=...          # из @BotFather
+   TELEGRAM_FUNNEL_WEBHOOK_SECRET=...     # openssl rand -hex 32
+   TELEGRAM_FUNNEL_ADMIN_CHAT_ID=...      # из шага 3
+   ```
+
+   `APP_URL` должен быть боевым https-доменом — из него строятся адрес
+   webhook-а и персональные ссылки на урок `/go/…`. После правки `.env` —
+   `php artisan config:cache` и `sudo systemctl restart poltav-queue`.
+
+5. **Webhook:** `php artisan telegram:webhook` — заодно ставит описание бота над кнопкой «Запустить» (`config/telegram_funnel.php`, `profile`; после правки текста — запустить команду ещё раз). Состояние —
+   `telegram:webhook --info`, снять — `--delete`.
+
+Ссылки для рекламы: `t.me/poltavskiy_ege_bot?start=<урок>_<метка>`, где урок
+`cho` («Человек и общество») или `er` («Экономический рост»), метка — любая
+латиница/цифры/`_`/`-`, например `?start=er_vk_ad1`. Без кода урока —
+«Человек и общество».
+

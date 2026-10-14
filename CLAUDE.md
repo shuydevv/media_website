@@ -105,6 +105,21 @@ vendor/bin/pint                                     # форматировани
   более старых работ и уроков отчёт показывает «нет данных», а не ноль. Вход админа под
   учеником (`impersonator_id` в сессии) в эту аналитику не пишется.
 
+- Telegram-бот воронки пробного урока (@poltavskiy_ege_bot) — `app/Service/Telegram/`:
+  `FunnelBot` (путь пользователя — в его шапке, полностью — «TG инструкция.md» в корне
+  папки проекта), `AdminTopics` (админ-группа с темами: одна тема на человека, ответ
+  админа в теме уходит человеку от бота с подписью Александра). Webhook —
+  `routes/api.php` (не web: иначе строка в `sessions` на каждый апдейт), разбор и
+  отправки — в очереди `telegram` (`App\Jobs\Telegram\*`, по одной отправке на задачу).
+  Таймеры не удаляются из очереди: отложенный шаг сам проверяет состояние контакта
+  (`TelegramContact::automationAllowed()`); суточное напоминание — поле
+  `reminder_due_at` + `telegram:send-reminders` раз в минуту, а не delayed job (сутки в
+  `jobs` `queue:monitor-health` счёл бы зависанием). Bot API не отдаёт историю — вся
+  переписка только в `telegram_messages`. Персональная ссылка `/go/{token}/{урок}` даёт
+  «открыл урок» в аналитике `/admin/telegram`; тексты автосообщений — там же
+  (`telegram_texts` поверх дефолтов `config/telegram_funnel.php`). Настройка сервера —
+  `deploy/README.md`, раздел 8.
+
 **Auth** — не стандартный Breeze-флоу целиком: вход по телефону (OTP, `PhoneAuthController`,
 `Service/Sms/*`) и по email-коду/подписанной ссылке (`EmailAuthController`, `EmailOtpService`),
 классическая `/register` отключена (`Auth::routes(['register' => false])`) в пользу

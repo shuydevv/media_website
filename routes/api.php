@@ -17,3 +17,13 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+// Webhook бота воронки (App\Http\Controllers\Telegram\WebhookController) —
+// здесь, а не в web.php: в web-группе каждый апдейт заводил бы строку в
+// таблице sessions (SESSION_DRIVER=database). Подлинность — секрет в
+// заголовке, не CSRF. Общий лимит api (60/мин с IP) снят: все апдейты идут
+// с нескольких IP самого Telegram, и на всплеске трафика из рекламы он
+// начал бы отвечать боту 429.
+Route::post('/telegram/webhook', \App\Http\Controllers\Telegram\WebhookController::class)
+    ->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class.':api')
+    ->name('telegram.webhook');

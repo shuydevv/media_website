@@ -41,6 +41,12 @@ Route::group(['namespace' => 'App\Http\Controllers\Main'], function () {
     // Пробные уроки — публичные, без входа (список — в самом контроллере).
     Route::get('/trial/{slug}', 'TrialLessonController')->name('main.trial');
 });
+
+// Персональная ссылка на урок из бота воронки (App\Service\Telegram\FunnelBot):
+// засчитывает открытие и редиректит. Webhook самого бота — в routes/api.php.
+Route::get('/go/{token}/{lesson}', \App\Http\Controllers\Telegram\LessonLinkController::class)
+    ->where(['token' => '[A-Za-z0-9]+', 'lesson' => '[a-z]+'])
+    ->name('telegram.lesson-link');
 Route::group(['namespace' => 'App\Http\Controllers\Post', 'prefix' => 'posts'], function () {
     Route::get('/', 'IndexController')->name('post.index');
     Route::get('/{post:path}', 'ShowController')->name('post.show');
@@ -242,6 +248,12 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
 
         Route::put('/users/{user}/courses/{course}/autopay', [\App\Http\Controllers\Admin\Billing\AutopayController::class, 'update'])
             ->name('admin.billing.autopay.update');
+
+        Route::group(['namespace' => 'Telegram', 'prefix' => 'telegram'], function () {
+            Route::get('/', 'IndexController')->name('admin.telegram.index');
+            Route::get('/texts', 'Texts\EditController')->name('admin.telegram.texts.edit');
+            Route::put('/texts', 'Texts\UpdateController')->name('admin.telegram.texts.update');
+        });
 
         Route::group(['namespace' => 'Crm', 'prefix' => 'crm'], function () {
             Route::get('/', 'IndexController')->name('admin.crm.index');

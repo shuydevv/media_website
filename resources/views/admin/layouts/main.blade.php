@@ -21,6 +21,7 @@
         ],
         'Ученики' => [
             ['CRM', route('admin.crm.index'), 'admin.crm.*'],
+            ['Telegram-бот', route('admin.telegram.index'), 'admin.telegram.*'],
             ['Пользователи', route('admin.user.index'), 'admin.user.*'],
             ['Оповещения', route('admin.announcements.index'), 'admin.announcements.*'],
             ['Промокоды', route('admin.promos.index'), 'admin.promos.*'],

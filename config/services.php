@@ -36,5 +36,15 @@ return [
         'chat_id'   => env('TELEGRAM_CHAT_ID'),
     ],
 
+    // Бот воронки пробного урока (@poltavskiy_ege_bot) — отдельный от бота
+    // алертов выше. admin_chat_id — супергруппа с темами, куда бот раскладывает
+    // диалоги (см. App\Service\Telegram\AdminTopics), webhook_secret —
+    // проверка заголовка X-Telegram-Bot-Api-Secret-Token на входящих апдейтах.
+    'telegram_funnel' => [
+        'bot_token'      => env('TELEGRAM_FUNNEL_BOT_TOKEN'),
+        'admin_chat_id'  => env('TELEGRAM_FUNNEL_ADMIN_CHAT_ID'),
+        'webhook_secret' => env('TELEGRAM_FUNNEL_WEBHOOK_SECRET'),
+    ],
+
 
 ];

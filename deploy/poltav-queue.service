@@ -27,7 +27,11 @@ RestartSec=3
 # начнёт падать на каждом require случайно ещё не подгруженного класса.
 # Именно так однажды тихо легла вся отправка писем.
 WorkingDirectory=/var/www/poltav/current
-ExecStart=/usr/bin/php /var/www/poltav/current/artisan queue:work --queue=default --sleep=3 --tries=3 --timeout=120 --max-time=3600
+# --queue=telegram,default — сначала задачи бота воронки (App\Jobs\Telegram),
+# потом всё остальное: ответ человеку в боте должен уходить за секунды, а не
+# ждать, пока разойдётся пачка писем. Задачи бота короткие (один запрос к
+# Telegram), письма они почти не задерживают.
+ExecStart=/usr/bin/php /var/www/poltav/current/artisan queue:work --queue=telegram,default --sleep=3 --tries=3 --timeout=120 --max-time=3600
 
 # --max-time=3600 — воркер сам выходит раз в час, systemd (Restart=always)
 # тут же поднимает новый процесс заново резолвя симлинк current/artisan.
