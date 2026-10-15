@@ -242,12 +242,12 @@ class AdminTopics
     public function relayAdminMessage(TelegramContact $contact, array $message): void
     {
         $signature = 'Александр Полтавский:';
-        $prefix = "🙋🏼‍♂️ {$signature}\n";
+        $prefix = "💬  {$signature}\n";
         $prefixLen = self::utf16Length($prefix);
         // Курсивом — как подпись автосообщений (config telegram_funnel.signature).
         $signatureEntity = [
             'type' => 'italic',
-            'offset' => self::utf16Length('🙋🏼‍♂️ '),
+            'offset' => self::utf16Length('💬  '),
             'length' => self::utf16Length($signature),
         ];
         $shift = fn (array $entities) => array_map(fn ($en) => ['offset' => $en['offset'] + $prefixLen] + $en, $entities);
