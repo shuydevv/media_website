@@ -400,14 +400,25 @@ class FunnelBot
         foreach ($found as $id => $fallback) {
             $lines[] = e($fallback).' <code>{e:'.$id.':'.e($fallback).'}</code>';
         }
-        $lines[] = '';
-        $lines[] = 'Проверка — так их отправляет бот: '.implode(' ', array_map(
-            fn ($id, $fallback) => '<tg-emoji emoji-id="'.$id.'">'.e($fallback).'</tg-emoji>',
-            array_keys($found), $found,
-        ));
-        $lines[] = '<i>Анимированные — всё работает. Обычные — Telegram пока не даёт боту премиум-эмодзи, люди увидят обычный смайл.</i>';
+        $check = [
+            '',
+            'Проверка — так их отправляет бот: '.implode(' ', array_map(
+                fn ($id, $fallback) => '<tg-emoji emoji-id="'.$id.'">'.e($fallback).'</tg-emoji>',
+                array_keys($found), $found,
+            )),
+            '<i>Анимированные — всё работает. Обычные — Telegram пока не даёт боту премиум-эмодзи, люди увидят обычный смайл.</i>',
+        ];
 
-        $this->api->sendMessage($message['chat']['id'], implode("\n", $lines), array_filter($reply));
+        try {
+            $this->api->sendMessage($message['chat']['id'], implode("\n", array_merge($lines, $check)), array_filter($reply));
+        } catch (TelegramApiException $e) {
+            // Telegram отклонил проверочную строку с премиум-эмодзи — коды всё
+            // равно отдаём, а причину пишем в чат: без этого команда просто
+            // молчала, и было не понять, что не так.
+            $lines[] = '';
+            $lines[] = '⚠️ Эти эмодзи Telegram от бота не принял — в текстах бот заменит их обычными. Ответ Telegram: <code>'.e($e->getMessage()).'</code>';
+            $this->api->sendMessage($message['chat']['id'], implode("\n", $lines), array_filter($reply));
+        }
     }
 
     private function sendWelcome(TelegramContact $contact): void
@@ -525,7 +536,19 @@ class FunnelBot
         }
 
         try {
-            $sent = $this->api->sendMessage($contact->telegram_user_id, $html, $extra);
+            try {
+                $sent = $this->api->sendMessage($contact->telegram_user_id, $html, $extra);
+            } catch (TelegramApiException $e) {
+                // Премиум-эмодзи ({e:…} в тексте из админки), которые Telegram
+                // боту не разрешает, валят отправку целиком — человек остался
+                // бы без урока. Повторяем с обычными эмодзи-заменителями.
+                if ($e->errorCode !== 400 || ! str_contains($html, '<tg-emoji')) {
+                    throw $e;
+                }
+                Log::warning('Telegram funnel: премиум-эмодзи отклонены, отправлено с обычными', ['step' => $step, 'error' => $e->getMessage()]);
+                $html = preg_replace('~<tg-emoji emoji-id="\d+">(.*?)</tg-emoji>~su', '$1', $html);
+                $sent = $this->api->sendMessage($contact->telegram_user_id, $html, $extra);
+            }
         } catch (TelegramApiException $e) {
             if (! $e->isBlockedByUser()) {
                 throw $e;
