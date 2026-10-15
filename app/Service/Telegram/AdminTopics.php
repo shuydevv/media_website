@@ -17,8 +17,8 @@ use Illuminate\Support\Facades\Log;
  * «дёргала» бы на всех, кто просто запустил бота. Что было до первого
  * сообщения (урок, открыл ли, оценка, напоминание) — сводкой в карточке
  * темы; после — копии автосообщений бота и события, без звука. Сообщение
- * админа в теме бот отправляет человеку от своего имени с подписью
- * Александра (relayAdminMessage).
+ * админа в теме бот отправляет человеку от своего имени как есть
+ * (relayAdminMessage).
  *
  * Сбой на этой стороне (группа не настроена, Telegram недоступен) не должен
  * ронять воронку для самого человека — поэтому note()/refreshStatus() глотают
@@ -234,56 +234,23 @@ class AdminTopics
     }
 
     /**
-     * Сообщение админа в теме → человеку, от имени бота, с подписью
-     * Александра первой строкой (имя курсивом), сам текст — жирным, как у
-     * автосообщений «от Александра» (config telegram_funnel.signature).
-     * Форматирование и ссылки админа сохраняются: подпись добавляется обычным
-     * текстом с entities, а entities самого сообщения сдвигаются на её длину
-     * (в UTF-16 — так их считает Telegram).
+     * Сообщение админа в теме → человеку, от имени бота, как есть: без
+     * подписи и без своего начертания. Подпись и жирный — только у
+     * автосообщений «от Александра» (config telegram_funnel.signature): в
+     * живом диалоге человек и так понимает, кто ему пишет. copyMessage
+     * переносит текст, медиа и форматирование админа без изменений.
      */
     public function relayAdminMessage(TelegramContact $contact, array $message): void
     {
-        $signature = 'Александр Полтавский:';
-        $lead = "🙋🏼‍♂️ \u{00A0}"; // эмодзи + обычный и неразрывный пробел
-        $prefix = "{$lead}{$signature}\n";
-        $prefixLen = self::utf16Length($prefix);
-        $signatureEntity = [
-            'type' => 'italic',
-            'offset' => self::utf16Length($lead),
-            'length' => self::utf16Length($signature),
-        ];
-        $shift = fn (array $entities) => array_map(fn ($en) => ['offset' => $en['offset'] + $prefixLen] + $en, $entities);
-        // Весь текст админа — жирным; его собственное форматирование ложится поверх.
-        $bold = fn (?string $body) => $body === null || $body === '' ? [] : [['type' => 'bold', 'offset' => $prefixLen, 'length' => self::utf16Length($body)]];
-
         $mediaType = self::mediaType($message);
         $text = $message['text'] ?? $message['caption'] ?? null;
 
         try {
-            if (isset($message['text'])) {
-                $sent = $this->api->call('sendMessage', [
-                    'chat_id' => $contact->telegram_user_id,
-                    'text' => $prefix.$message['text'],
-                    'entities' => array_merge([$signatureEntity], $bold($message['text']), $shift($message['entities'] ?? [])),
-                    'link_preview_options' => ['is_disabled' => true],
-                ]);
-            } elseif (in_array($mediaType, ['photo', 'video', 'document', 'audio', 'voice', 'animation'], true)) {
-                $sent = $this->api->call('copyMessage', [
-                    'chat_id' => $contact->telegram_user_id,
-                    'from_chat_id' => $message['chat']['id'],
-                    'message_id' => $message['message_id'],
-                    'caption' => $prefix.($message['caption'] ?? ''),
-                    'caption_entities' => array_merge([$signatureEntity], $bold($message['caption'] ?? null), $shift($message['caption_entities'] ?? [])),
-                ]);
-            } else {
-                // Стикер, кружок, геопозиция — подпись к ним не прикрепить,
-                // уходят как есть.
-                $sent = $this->api->call('copyMessage', [
-                    'chat_id' => $contact->telegram_user_id,
-                    'from_chat_id' => $message['chat']['id'],
-                    'message_id' => $message['message_id'],
-                ]);
-            }
+            $sent = $this->api->call('copyMessage', [
+                'chat_id' => $contact->telegram_user_id,
+                'from_chat_id' => $message['chat']['id'],
+                'message_id' => $message['message_id'],
+            ]);
         } catch (TelegramApiException $e) {
             if ($e->isBlockedByUser()) {
                 $contact->forceFill(['blocked_at' => now()])->save();
@@ -346,7 +313,7 @@ class AdminTopics
             $slot(true),
             'Напоминание: '.($at($contact->reminder_sent_at) ? 'отправлено '.$at($contact->reminder_sent_at) : 'не отправлялось'),
             '',
-            '<i>Ответ в этой теме уйдёт человеку от бота с подписью «Александр Полтавский». Сообщение, начатое с //, — заметка, не отправляется.</i>',
+            '<i>Ответ в этой теме уйдёт человеку от бота как есть. Сообщение, начатое с //, — заметка, не отправляется.</i>',
         ];
 
         $this->api->sendMessage(self::adminChatId(), implode('
@@ -414,10 +381,5 @@ class AdminTopics
         }
 
         return null;
-    }
-
-    private static function utf16Length(string $s): int
-    {
-        return intdiv(strlen(mb_convert_encoding($s, 'UTF-16LE', 'UTF-8')), 2);
     }
 }
