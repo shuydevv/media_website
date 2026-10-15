@@ -244,8 +244,9 @@ class AdminTopics
         $signature = 'Александр Полтавский:';
         $prefix = "🙋🏼‍♂️ {$signature}\n";
         $prefixLen = self::utf16Length($prefix);
+        // Курсивом — как подпись автосообщений (config telegram_funnel.signature).
         $signatureEntity = [
-            'type' => 'bold',
+            'type' => 'italic',
             'offset' => self::utf16Length('🙋🏼‍♂️ '),
             'length' => self::utf16Length($signature),
         ];
