@@ -32,6 +32,8 @@ class IndexController extends Controller
             DB::raw('SUM(opened_bonus_at IS NOT NULL) as opened_bonus'),
             DB::raw("SUM(rating = 'up') as liked"),
             DB::raw("SUM(rating = 'down') as disliked"),
+            DB::raw("SUM(bonus_rating = 'up') as bonus_liked"),
+            DB::raw("SUM(bonus_rating = 'down') as bonus_disliked"),
             DB::raw('SUM(first_user_message_at IS NOT NULL) as wrote'),
             DB::raw('SUM(first_admin_message_at IS NOT NULL) as answered'),
             DB::raw('SUM(blocked_at IS NOT NULL) as blocked'),

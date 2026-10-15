@@ -6,6 +6,7 @@ use App\Jobs\Telegram\RunFunnelStep;
 use App\Models\SiteLead;
 use App\Models\TelegramContact;
 use App\Models\TelegramMessage;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -89,11 +90,11 @@ class FunnelBot
             'welcome' => $this->sendWelcome($contact),
             'bonus' => $this->sendBonus($contact),
             'like_auto', 'dislike_auto' => $this->sendAuto($contact, $step, FunnelTexts::render($step)),
-            'like_human' => $this->sendLikeHuman($contact),
+            'like_human' => $this->sendLikeHuman($contact, (int) ($payload['since'] ?? 0)),
             'lead_ack' => $this->sendHuman($contact, 'lead_ack'),
             'lead_topic' => ($lead = SiteLead::find($payload['lead_id'] ?? 0)) ? $this->topics->openLeadTopic($contact, $lead) : null,
             'reminder' => $this->sendReminder($contact),
-            'remove_rating_buttons' => $this->removeRatingButtons($contact),
+            'remove_rating_buttons' => $this->removeRatingButtons($contact, ($payload['bonus'] ?? false) === true),
             'topic' => $this->topics->ensureTopic($contact),
             'start_feed' => $this->topics->postStart($contact),
             'forward' => $this->topics->forward($contact, (int) $payload['message_id']),
@@ -239,42 +240,60 @@ class FunnelBot
         return $contact;
     }
 
+    /**
+     * 👍/👎 под основным уроком (rate:up) или под бонусным (rate:up:bonus) —
+     * оценки независимые, у каждой своя кнопка и своё «уже оценил». Любое
+     * нажатие отменяет суточное напоминание.
+     */
     private function handleCallback(array $callback): void
     {
         $data = $callback['data'] ?? '';
         $contact = TelegramContact::where('telegram_user_id', $callback['from']['id'] ?? 0)->first();
 
-        if (! $contact || ! in_array($data, ['rate:up', 'rate:down'], true)) {
+        if (! $contact || ! preg_match('/^rate:(up|down)(:bonus)?$/', $data, $m)) {
             $this->answerCallback($callback['id']);
 
             return;
         }
 
-        if ($contact->rating !== null) {
+        $bonus = ($m[2] ?? '') !== '';
+        [$ratingField, $ratedAtField, $messageField] = $bonus
+            ? ['bonus_rating', 'bonus_rated_at', 'bonus_rating_message_id']
+            : ['rating', 'rated_at', 'rating_message_id'];
+
+        if ($contact->{$ratingField} !== null) {
             $this->answerCallback($callback['id'], 'Оценка уже есть — спасибо!');
 
             return;
         }
 
-        $rating = $data === 'rate:up' ? TelegramContact::RATING_UP : TelegramContact::RATING_DOWN;
+        // Вопрос «что понравилось?» уже ушёл (или в пути), если раньше лайкнули другой урок.
+        $likedBefore = $contact->rating === TelegramContact::RATING_UP || $contact->bonus_rating === TelegramContact::RATING_UP;
+
+        $rating = $m[1] === 'up' ? TelegramContact::RATING_UP : TelegramContact::RATING_DOWN;
         $contact->forceFill([
-            'rating' => $rating,
-            'rated_at' => now(),
-            'rating_message_id' => $callback['message']['message_id'] ?? $contact->rating_message_id,
+            $ratingField => $rating,
+            $ratedAtField => now(),
+            $messageField => $callback['message']['message_id'] ?? $contact->{$messageField},
             'reminder_due_at' => null,
         ])->save();
 
         $this->answerCallback($callback['id']);
 
-        $this->dispatch($contact, 'remove_rating_buttons');
+        $what = $bonus
+            ? 'бонусный урок «'.e(FunnelLessons::title(FunnelLessons::bonusFor($contact->lesson))).'»'
+            : 'урок «'.e(FunnelLessons::title($contact->lesson)).'»';
+        $this->dispatch($contact, 'remove_rating_buttons', ['bonus' => $bonus]);
         $this->dispatch($contact, 'note', [
-            'html' => $rating === TelegramContact::RATING_UP ? '👍 Оценил урок' : '👎 Не понравился урок',
+            'html' => ($rating === TelegramContact::RATING_UP ? '👍 Понравился ' : '👎 Не понравился ').$what,
         ]);
         $this->dispatch($contact, 'refresh_status');
 
         if ($rating === TelegramContact::RATING_UP) {
             $this->dispatch($contact, 'like_auto');
-            $this->dispatch($contact, 'like_human', [], config('telegram_funnel.timing.like_human_delay_seconds'));
+            if (! $likedBefore) {
+                $this->dispatch($contact, 'like_human', ['since' => now()->timestamp], config('telegram_funnel.timing.like_human_delay_seconds'));
+            }
         } else {
             $this->dispatch($contact, 'dislike_auto');
         }
@@ -328,12 +347,7 @@ class FunnelBot
 
     private function sendWelcome(TelegramContact $contact): void
     {
-        $ratingRow = $contact->rating === null ? [[
-            ['text' => '👍', 'callback_data' => 'rate:up'],
-            ['text' => '👎', 'callback_data' => 'rate:down'],
-        ]] : [];
-
-        $sent = $this->sendLessonMessage($contact, 'welcome', $contact->lesson, $ratingRow);
+        $sent = $this->sendLessonMessage($contact, 'welcome', $contact->lesson, $this->ratingRow($contact->rating, ''));
 
         if ($sent && $contact->rating === null) {
             $contact->forceFill(['rating_message_id' => $sent['message_id']])->save();
@@ -342,11 +356,30 @@ class FunnelBot
 
     private function sendBonus(TelegramContact $contact): void
     {
-        // Какой текст — зависит от того, «сложнее» бонус или «проще»: первый
-        // урок в config/telegram_funnel.lessons — лёгкий.
-        $key = $contact->lesson === FunnelLessons::codes()[0] ? 'bonus_harder' : 'bonus_easier';
+        $sent = $this->sendLessonMessage($contact, $this->bonusKey($contact), FunnelLessons::bonusFor($contact->lesson),
+            $this->ratingRow($contact->bonus_rating, ':bonus'));
 
-        $this->sendLessonMessage($contact, $key, FunnelLessons::bonusFor($contact->lesson));
+        if ($sent && $contact->bonus_rating === null) {
+            $contact->forceFill(['bonus_rating_message_id' => $sent['message_id']])->save();
+        }
+    }
+
+    /** Кнопки 👍 👎, пока этот урок не оценён. */
+    private function ratingRow(?string $rating, string $suffix): array
+    {
+        return $rating === null ? [[
+            ['text' => '👍', 'callback_data' => 'rate:up'.$suffix],
+            ['text' => '👎', 'callback_data' => 'rate:down'.$suffix],
+        ]] : [];
+    }
+
+    /**
+     * Текст бонуса зависит от того, «сложнее» он основного или «проще»:
+     * первый урок в config/telegram_funnel.lessons — лёгкий.
+     */
+    private function bonusKey(TelegramContact $contact): string
+    {
+        return $contact->lesson === FunnelLessons::codes()[0] ? 'bonus_harder' : 'bonus_easier';
     }
 
     /**
@@ -374,13 +407,17 @@ class FunnelBot
         return $this->sendAuto($contact, $key, FunnelTexts::render($key, $this->vars($contact), $url), $extra);
     }
 
-    private function sendLikeHuman(TelegramContact $contact): void
+    private function sendLikeHuman(TelegramContact $contact, int $since): void
     {
         // Если за эти ~20 секунд человек уже сам что-то написал или ему
-        // ответил админ — вопрос «что понравилось?» был бы невпопад.
-        $repliedSince = fn ($at) => $at !== null && $contact->rated_at !== null && $at->gte($contact->rated_at);
-        if ($contact->blocked_at || $contact->rating !== TelegramContact::RATING_UP
-            || $repliedSince($contact->last_user_message_at) || $repliedSince($contact->last_admin_message_at)) {
+        // ответил админ — вопрос «что понравилось?» был бы невпопад. Один
+        // раз на человека, даже если лайкнул оба урока.
+        $sinceAt = $since > 0 ? Carbon::createFromTimestamp($since) : ($contact->rated_at ?? $contact->bonus_rated_at);
+        $repliedSince = fn ($at) => $at !== null && $sinceAt !== null && $at->gte($sinceAt);
+        $liked = $contact->rating === TelegramContact::RATING_UP || $contact->bonus_rating === TelegramContact::RATING_UP;
+        if ($contact->blocked_at || ! $liked
+            || $repliedSince($contact->last_user_message_at) || $repliedSince($contact->last_admin_message_at)
+            || $contact->messages()->where('step', 'like_human')->exists()) {
             return;
         }
 
@@ -451,18 +488,22 @@ class FunnelBot
         return $sent;
     }
 
-    /** Убрать из-под приветствия кнопки оценки (кнопку урока, если она была, — оставить). */
-    private function removeRatingButtons(TelegramContact $contact): void
+    /** Убрать кнопки оценки из-под оценённого урока (кнопку урока, если она была, — оставить). */
+    private function removeRatingButtons(TelegramContact $contact, bool $bonus): void
     {
-        if (! $contact->rating_message_id) {
+        $messageId = $bonus ? $contact->bonus_rating_message_id : $contact->rating_message_id;
+        if (! $messageId) {
             return;
         }
+
+        $key = $bonus ? $this->bonusKey($contact) : 'welcome';
+        $lesson = $bonus ? FunnelLessons::bonusFor($contact->lesson) : $contact->lesson;
 
         try {
             $this->api->call('editMessageReplyMarkup', [
                 'chat_id' => $contact->telegram_user_id,
-                'message_id' => $contact->rating_message_id,
-                'reply_markup' => ['inline_keyboard' => FunnelTexts::hasLink('welcome') ? [] : [[$this->lessonButton($contact, $contact->lesson)]]],
+                'message_id' => $messageId,
+                'reply_markup' => ['inline_keyboard' => FunnelTexts::hasLink($key) ? [] : [[$this->lessonButton($contact, $lesson)]]],
             ]);
         } catch (TelegramApiException $e) {
             // Сообщение старше 48 ч или уже без кнопок — не критично.

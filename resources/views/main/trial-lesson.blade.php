@@ -2,14 +2,14 @@
 @section('title')
 {{ $lesson['title'] }} — пробный урок. Школа Полтавского
 @endsection
-@section('description')
-Пробный урок «{{ $lesson['title'] }}» — подготовка к ЕГЭ по обществознанию в Школе Полтавского
-@endsection
+@section('description', '')
 @push('meta')
     <meta property="og:type" content="video.other">
     <meta property="og:site_name" content="Школа Полтавского">
-    <meta property="og:title" content="{{ $lesson['title'] }} — бесплатный пробный урок">
-    <meta property="og:description" content="Пробный урок ЕГЭ по обществознанию с Александром Полтавским">
+    {{-- В карточке превью — только название урока, без описания: без
+         og:description Telegram подставил бы <meta name="description">,
+         поэтому оно у этих страниц тоже пустое (см. section description). --}}
+    <meta property="og:title" content="{{ $lesson['title'] }}">
     <meta property="og:url" content="{{ url()->current() }}">
     @if (! empty($lesson['cover']))
         <meta property="og:image" content="{{ url($lesson['cover']) }}">

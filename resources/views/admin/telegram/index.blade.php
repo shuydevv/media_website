@@ -40,7 +40,7 @@
         </x-ui.stat>
         <x-ui.stat label="Оценили 👍">
             {{ $pctTotal($total->liked) }}
-            <x-slot:sub>{{ (int) $total->liked }} чел., 👎 {{ (int) $total->disliked }}</x-slot:sub>
+            <x-slot:sub>{{ (int) $total->liked }} чел., 👎 {{ (int) $total->disliked }} · бонус 👍 {{ (int) $total->bonus_liked }} 👎 {{ (int) $total->bonus_disliked }}</x-slot:sub>
         </x-ui.stat>
         <x-ui.stat label="Написали в диалог">
             {{ $pctTotal($total->wrote) }}
@@ -80,7 +80,7 @@
     <x-ui.table class="mb-6">
         <thead>
             <tr>
-                <th>Метка</th><th>Старты</th><th>Открыли урок</th><th>Открыли бонус</th><th>👍</th><th>👎</th><th>Написали</th><th>Заблокировали</th>
+                <th>Метка</th><th>Старты</th><th>Открыли урок</th><th>Открыли бонус</th><th>👍</th><th>👎</th><th>Бонус 👍 / 👎</th><th>Написали</th><th>Заблокировали</th>
             </tr>
         </thead>
         <tbody>
@@ -97,7 +97,7 @@
     <x-ui.table class="mb-6">
         <thead>
             <tr>
-                <th>Основной урок</th><th>Старты</th><th>Открыли урок</th><th>Открыли бонус</th><th>👍</th><th>👎</th><th>Написали</th><th>Заблокировали</th>
+                <th>Основной урок</th><th>Старты</th><th>Открыли урок</th><th>Открыли бонус</th><th>👍</th><th>👎</th><th>Бонус 👍 / 👎</th><th>Написали</th><th>Заблокировали</th>
             </tr>
         </thead>
         <tbody>

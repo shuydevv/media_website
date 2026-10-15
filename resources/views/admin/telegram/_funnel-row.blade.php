@@ -9,6 +9,7 @@
     <td data-label="Открыли бонус" class="tabular-nums">{{ (int) $row->opened_bonus }} <span class="text-zinc-400">· {{ $pct($row->opened_bonus) }}</span></td>
     <td data-label="👍" class="tabular-nums">{{ (int) $row->liked }} <span class="text-zinc-400">· {{ $pct($row->liked) }}</span></td>
     <td data-label="👎" class="tabular-nums">{{ (int) $row->disliked }} <span class="text-zinc-400">· {{ $pct($row->disliked) }}</span></td>
+    <td data-label="Бонус 👍 / 👎" class="tabular-nums">{{ (int) $row->bonus_liked }} / {{ (int) $row->bonus_disliked }}</td>
     <td data-label="Написали" class="tabular-nums">{{ (int) $row->wrote }} <span class="text-zinc-400">· {{ $pct($row->wrote) }}</span></td>
     <td data-label="Заблокировали" class="tabular-nums">{{ (int) $row->blocked }}</td>
 </tr>

@@ -313,6 +313,11 @@ class AdminTopics
     {
         $at = fn ($time) => $time ? $time->format('d.m H:i') : null;
         $bonus = FunnelLessons::bonusFor($contact->lesson);
+        $rated = fn (?string $rating, $time) => match ($rating) {
+            TelegramContact::RATING_UP => '👍 '.$at($time),
+            TelegramContact::RATING_DOWN => '👎 '.$at($time),
+            default => 'нет',
+        };
 
         $lines = [
             '<b>Новый диалог</b>',
@@ -322,12 +327,9 @@ class AdminTopics
             'Старт: '.$contact->started_at->format('d.m.Y H:i'),
             '',
             '«'.e(FunnelLessons::title($contact->lesson)).'»: '.($at($contact->opened_lesson_at) ? 'открыл '.$at($contact->opened_lesson_at) : 'не открывал'),
+            'Оценка: '.$rated($contact->rating, $contact->rated_at),
             'Бонус «'.e(FunnelLessons::title($bonus)).'»: '.($at($contact->opened_bonus_at) ? 'открыл '.$at($contact->opened_bonus_at) : 'не открывал'),
-            'Оценка: '.match ($contact->rating) {
-                TelegramContact::RATING_UP => '👍 '.$at($contact->rated_at),
-                TelegramContact::RATING_DOWN => '👎 '.$at($contact->rated_at),
-                default => 'нет',
-            },
+            'Оценка бонуса: '.$rated($contact->bonus_rating, $contact->bonus_rated_at),
             'Напоминание: '.($at($contact->reminder_sent_at) ? 'отправлено '.$at($contact->reminder_sent_at) : 'не отправлялось'),
             '',
             '<i>Ответ в этой теме уйдёт человеку от бота с подписью «Александр Полтавский». Сообщение, начатое с //, — заметка, не отправляется.</i>',

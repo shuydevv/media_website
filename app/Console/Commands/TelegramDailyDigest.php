@@ -40,6 +40,8 @@ class TelegramDailyDigest extends Command
             DB::raw('SUM(opened_lesson_at IS NOT NULL) as opened'),
             DB::raw("SUM(rating = 'up') as liked"),
             DB::raw("SUM(rating = 'down') as disliked"),
+            DB::raw("SUM(bonus_rating = 'up') as bonus_liked"),
+            DB::raw("SUM(bonus_rating = 'down') as bonus_disliked"),
             DB::raw('SUM(first_user_message_at IS NOT NULL) as wrote'),
         ])->first();
 
@@ -52,7 +54,8 @@ class TelegramDailyDigest extends Command
 
         if ($t->starts > 0) {
             $lines[] = 'Открыли урок: '.(int) $t->opened.$pct($t->opened);
-            $lines[] = 'Оценки: 👍 '.(int) $t->liked.' · 👎 '.(int) $t->disliked;
+            $lines[] = 'Оценки: 👍 '.(int) $t->liked.' · 👎 '.(int) $t->disliked
+                .' (бонус: 👍 '.(int) $t->bonus_liked.' · 👎 '.(int) $t->bonus_disliked.')';
             $lines[] = 'Написали в диалог: '.(int) $t->wrote.$pct($t->wrote);
 
             $bySource = (clone $today)->select('source', DB::raw('COUNT(*) as c'))

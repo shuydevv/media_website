@@ -20,6 +20,7 @@ class TelegramContact extends Model
         'source', 'lesson', 'link_token',
         'topic_id', 'topic_status',
         'rating', 'rated_at', 'rating_message_id',
+        'bonus_rating', 'bonus_rated_at', 'bonus_rating_message_id',
         'opened_lesson_at', 'opened_bonus_at',
         'reminder_due_at', 'reminder_sent_at',
         'first_user_message_at', 'last_user_message_at', 'user_messages_count',
@@ -29,6 +30,7 @@ class TelegramContact extends Model
 
     protected $casts = [
         'rated_at' => 'datetime',
+        'bonus_rated_at' => 'datetime',
         'opened_lesson_at' => 'datetime',
         'opened_bonus_at' => 'datetime',
         'reminder_due_at' => 'datetime',
@@ -49,7 +51,7 @@ class TelegramContact extends Model
 
     /**
      * Можно ли ещё слать автосообщения воронки (напоминание). Как только
-     * человек нажал кнопку, написал сам или ему ответил админ — дальше
+     * человек нажал кнопку (под любым из двух уроков), написал сам или ему ответил админ — дальше
      * ведёт живой человек, таймеры молча не срабатывают. После 👎 — стоп
      * навсегда (rating уже не null).
      */
@@ -57,6 +59,7 @@ class TelegramContact extends Model
     {
         return $this->blocked_at === null
             && $this->rating === null
+            && $this->bonus_rating === null
             && $this->first_user_message_at === null
             && $this->first_admin_message_at === null;
     }
@@ -77,8 +80,8 @@ class TelegramContact extends Model
         return match (true) {
             $this->blocked_at !== null => '⛔',
             $this->awaitingReply() => '💬',
-            $this->rating === self::RATING_UP => '👍',
-            $this->rating === self::RATING_DOWN => '👎',
+            ($this->rating ?? $this->bonus_rating) === self::RATING_UP => '👍',
+            ($this->rating ?? $this->bonus_rating) === self::RATING_DOWN => '👎',
             $this->opened_lesson_at !== null || $this->opened_bonus_at !== null => '👀',
             default => '🆕',
         };
