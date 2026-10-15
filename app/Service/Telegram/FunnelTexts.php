@@ -59,6 +59,11 @@ final class FunnelTexts
             $html = preg_replace('/\[([^\]\n]+)\]/u', '<a href="'.e($linkUrl).'">$1</a>', $html);
         }
 
+        // {e:<id>:<эмодзи>} → премиум-эмодзи (коды — командой /emoji в
+        // админ-группе). Эмодзи после двоеточия — заменитель: его видят, если
+        // боту премиум-эмодзи недоступны.
+        $html = preg_replace('/\{e:(\d{5,25}):([^}\n]{1,16})\}/u', '<tg-emoji emoji-id="$1">$2</tg-emoji>', $html);
+
         if (config("telegram_funnel.texts.{$key}.human")) {
             $html = config('telegram_funnel.signature').$html;
         }

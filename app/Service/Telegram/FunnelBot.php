@@ -325,6 +325,13 @@ class FunnelBot
         $threadId = $message['message_thread_id'] ?? null;
         $from = $message['from'] ?? [];
 
+        // /emoji — до пересылки: в теме человека это команда боту, а не ответ.
+        if (! ($from['is_bot'] ?? false) && preg_match('~^/emoji(@\w+)?(\s|$)~', $message['text'] ?? '')) {
+            $this->replyCustomEmojiIds($message);
+
+            return;
+        }
+
         // Только обычные сообщения людей внутри темы: служебные (тема
         // создана/переименована), «General» и свои сообщения бота — мимо.
         if (! $threadId || ! ($message['is_topic_message'] ?? false) || ($from['is_bot'] ?? false)
@@ -343,6 +350,49 @@ class FunnelBot
         }
 
         $this->dispatch($contact, 'admin_reply', ['message' => $message]);
+    }
+
+    /**
+     * /emoji с премиум-эмодзи в том же сообщении → бот отвечает записями
+     * {e:<id>:<эмодзи>} для текстов в админке (id иначе не узнать: в браузер
+     * копируется только обычный эмодзи-заменитель) и тут же шлёт эти эмодзи
+     * своим сообщением. Анимированные — боту можно их слать; стали обычными —
+     * Telegram ему пока не разрешает (нужен username с Fragment), и в текстах
+     * человек увидит заменитель.
+     */
+    private function replyCustomEmojiIds(array $message): void
+    {
+        $text = $message['text'];
+        $utf16 = mb_convert_encoding($text, 'UTF-16LE', 'UTF-8');
+
+        $found = [];
+        foreach ($message['entities'] ?? [] as $entity) {
+            if (($entity['type'] ?? '') !== 'custom_emoji') {
+                continue;
+            }
+            $fallback = mb_convert_encoding(substr($utf16, $entity['offset'] * 2, $entity['length'] * 2), 'UTF-8', 'UTF-16LE');
+            $found[$entity['custom_emoji_id']] = $fallback;
+        }
+
+        $reply = ['message_thread_id' => $message['message_thread_id'] ?? null];
+        if ($found === []) {
+            $this->api->sendMessage($message['chat']['id'], 'Отправьте <code>/emoji</code> и в том же сообщении премиум-эмодзи — пришлю их коды для текстов бота.', array_filter($reply));
+
+            return;
+        }
+
+        $lines = ['Коды для текстов в админке (нажмите, чтобы скопировать):', ''];
+        foreach ($found as $id => $fallback) {
+            $lines[] = e($fallback).' <code>{e:'.$id.':'.e($fallback).'}</code>';
+        }
+        $lines[] = '';
+        $lines[] = 'Проверка — так их отправляет бот: '.implode(' ', array_map(
+            fn ($id, $fallback) => '<tg-emoji emoji-id="'.$id.'">'.e($fallback).'</tg-emoji>',
+            array_keys($found), $found,
+        ));
+        $lines[] = '<i>Анимированные — всё работает. Обычные — Telegram пока не даёт боту премиум-эмодзи, люди увидят обычный смайл.</i>';
+
+        $this->api->sendMessage($message['chat']['id'], implode("\n", $lines), array_filter($reply));
     }
 
     private function sendWelcome(TelegramContact $contact): void
