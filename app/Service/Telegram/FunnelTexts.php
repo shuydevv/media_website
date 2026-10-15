@@ -28,6 +28,23 @@ final class FunnelTexts
         return $texts;
     }
 
+    /**
+     * Подпись кнопки (btn_*): как есть, без экранирования — это не HTML.
+     * Премиум-эмодзи на кнопке не бывают — {e:…} превращаем в заменитель.
+     */
+    public static function plain(string $key): string
+    {
+        $text = self::all()[$key] ?? '';
+
+        return trim(preg_replace('/\{e:\d{5,25}:([^}\n]{1,16})\}/u', '$1', $text));
+    }
+
+    /** Подпись оценки (great / good / bad) — та же, что на кнопке. */
+    public static function ratingLabel(?string $rating): string
+    {
+        return $rating ? self::plain('btn_'.$rating) : '—';
+    }
+
     /** Есть ли в тексте ссылка [в скобках] — тогда отдельная кнопка урока не нужна. */
     public static function hasLink(string $key): bool
     {

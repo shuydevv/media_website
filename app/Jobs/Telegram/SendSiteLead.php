@@ -5,6 +5,7 @@ namespace App\Jobs\Telegram;
 use App\Models\SiteLead;
 use App\Models\TelegramContact;
 use App\Service\Telegram\AdminTopics;
+use App\Service\Telegram\FunnelTexts;
 use App\Service\Telegram\TelegramApi;
 use App\Service\Telegram\TelegramApiException;
 use Illuminate\Bus\Queueable;
@@ -65,7 +66,7 @@ class SendSiteLead implements ShouldQueue
             $lines[] = '🤖 Уже в боте с '.$contact->started_at->format('d.m')
                 .($contact->source ? ', метка <code>'.e($contact->source).'</code>' : '')
                 .($contact->opened_lesson_at ? ', урок открывал' : ', урок не открывал')
-                .($contact->rating ? ', оценка '.($contact->rating === TelegramContact::RATING_UP ? '👍' : '👎') : '');
+                .($contact->rating ? ', оценка '.e(FunnelTexts::ratingLabel($contact->rating)) : '');
         }
 
         try {

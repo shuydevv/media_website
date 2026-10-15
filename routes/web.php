@@ -47,6 +47,14 @@ Route::group(['namespace' => 'App\Http\Controllers\Main'], function () {
 Route::get('/go/{token}/{lesson}', \App\Http\Controllers\Telegram\LessonLinkController::class)
     ->where(['token' => '[A-Za-z0-9]+', 'lesson' => '[a-z]+'])
     ->name('telegram.lesson-link');
+// Оценка под видео и отметки плеера на странице пробного урока — только
+// для пришедших из бота (cookie персональной ссылки).
+Route::post('/trial/{slug}/rate', [\App\Http\Controllers\Telegram\TrialFeedbackController::class, 'rate'])
+    ->middleware('throttle:30,1')
+    ->name('telegram.trial.rate');
+Route::post('/trial/{slug}/progress', [\App\Http\Controllers\Telegram\TrialFeedbackController::class, 'progress'])
+    ->middleware('throttle:20,1')
+    ->name('telegram.trial.progress');
 Route::group(['namespace' => 'App\Http\Controllers\Post', 'prefix' => 'posts'], function () {
     Route::get('/', 'IndexController')->name('post.index');
     Route::get('/{post:path}', 'ShowController')->name('post.show');

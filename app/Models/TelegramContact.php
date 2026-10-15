@@ -6,27 +6,24 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Человек, запустивший бота воронки. См. миграцию
- * create_telegram_funnel_tables и App\Service\Telegram\FunnelBot.
+ * Человек, запустивший бота воронки. См. миграции create_telegram_funnel_tables,
+ * add_watch_and_three_level_rating_to_telegram_contacts и App\Service\Telegram\FunnelBot.
+ *
+ * У контакта два урока — «слота»: основной (lesson, на который пришёл из
+ * рекламы) и бонусный. У каждого своя оценка и свой учёт просмотра; имена
+ * полей слота — slotFields().
  */
 class TelegramContact extends Model
 {
-    public const RATING_UP = 'up';
+    public const RATING_GREAT = 'great';
 
-    public const RATING_DOWN = 'down';
+    public const RATING_GOOD = 'good';
 
-    protected $fillable = [
-        'telegram_user_id', 'username', 'first_name', 'last_name',
-        'source', 'lesson', 'link_token',
-        'topic_id', 'topic_status',
-        'rating', 'rated_at', 'rating_message_id',
-        'bonus_rating', 'bonus_rated_at', 'bonus_rating_message_id',
-        'opened_lesson_at', 'opened_bonus_at',
-        'reminder_due_at', 'reminder_sent_at',
-        'first_user_message_at', 'last_user_message_at', 'user_messages_count',
-        'first_admin_message_at', 'last_admin_message_at',
-        'blocked_at', 'started_at', 'last_start_at',
-    ];
+    public const RATING_BAD = 'bad';
+
+    public const RATINGS = [self::RATING_GREAT, self::RATING_GOOD, self::RATING_BAD];
+
+    protected $guarded = ['id'];
 
     protected $casts = [
         'rated_at' => 'datetime',
@@ -42,6 +39,18 @@ class TelegramContact extends Model
         'blocked_at' => 'datetime',
         'started_at' => 'datetime',
         'last_start_at' => 'datetime',
+        'lesson_last_watch_at' => 'datetime',
+        'bonus_last_watch_at' => 'datetime',
+        'lesson_watched_at' => 'datetime',
+        'bonus_watched_at' => 'datetime',
+        'lesson_ask_due_at' => 'datetime',
+        'bonus_ask_due_at' => 'datetime',
+        'lesson_ask_sent_at' => 'datetime',
+        'bonus_ask_sent_at' => 'datetime',
+        'nudge_due_at' => 'datetime',
+        'nudge_sent_at' => 'datetime',
+        'question_due_at' => 'datetime',
+        'question_sent_at' => 'datetime',
     ];
 
     public function messages(): HasMany
@@ -50,16 +59,61 @@ class TelegramContact extends Model
     }
 
     /**
-     * Можно ли ещё слать автосообщения воронки (напоминание). Как только
-     * человек нажал кнопку (под любым из двух уроков), написал сам или ему ответил админ — дальше
-     * ведёт живой человек, таймеры молча не срабатывают. После 👎 — стоп
-     * навсегда (rating уже не null).
+     * Имена полей слота: основной урок ($bonus = false) или бонусный.
+     *
+     * @return array<string, string>
+     */
+    public static function slotFields(bool $bonus): array
+    {
+        $p = $bonus ? 'bonus' : 'lesson';
+
+        return [
+            'rating' => $bonus ? 'bonus_rating' : 'rating',
+            'rated_at' => $bonus ? 'bonus_rated_at' : 'rated_at',
+            'rating_source' => $bonus ? 'bonus_rating_source' : 'rating_source',
+            'message_id' => $bonus ? 'bonus_rating_message_id' : 'rating_message_id',
+            'opened_at' => $bonus ? 'opened_bonus_at' : 'opened_lesson_at',
+            'watch_seconds' => "{$p}_watch_seconds",
+            'duration' => "{$p}_duration",
+            'position' => "{$p}_position",
+            'progress' => "{$p}_progress",
+            'last_watch_at' => "{$p}_last_watch_at",
+            'watched_at' => "{$p}_watched_at",
+            'ask_due_at' => "{$p}_ask_due_at",
+            'ask_sent_at' => "{$p}_ask_sent_at",
+        ];
+    }
+
+    public function slot(bool $bonus, string $field): mixed
+    {
+        return $this->{self::slotFields($bonus)[$field]};
+    }
+
+    public static function isGoodRating(?string $rating): bool
+    {
+        return $rating === self::RATING_GREAT || $rating === self::RATING_GOOD;
+    }
+
+    /** Хотя бы один урок досмотрен до порога — для нас это полноценный просмотр. */
+    public function watchedAny(): bool
+    {
+        return $this->lesson_watched_at !== null || $this->bonus_watched_at !== null;
+    }
+
+    public function ratedAny(): bool
+    {
+        return $this->rating !== null || $this->bonus_rating !== null;
+    }
+
+    /**
+     * Можно ли слать автосообщения-напоминания. Как только человек оценил
+     * любой урок, написал сам или ему ответил админ — дальше ведёт живой
+     * человек, таймеры молча не срабатывают.
      */
     public function automationAllowed(): bool
     {
         return $this->blocked_at === null
-            && $this->rating === null
-            && $this->bonus_rating === null
+            && ! $this->ratedAny()
             && $this->first_user_message_at === null
             && $this->first_admin_message_at === null;
     }
@@ -80,8 +134,9 @@ class TelegramContact extends Model
         return match (true) {
             $this->blocked_at !== null => '⛔',
             $this->awaitingReply() => '💬',
-            ($this->rating ?? $this->bonus_rating) === self::RATING_UP => '👍',
-            ($this->rating ?? $this->bonus_rating) === self::RATING_DOWN => '👎',
+            self::isGoodRating($this->rating) || self::isGoodRating($this->bonus_rating) => '👍',
+            $this->ratedAny() => '👎',
+            $this->watchedAny() => '▶️',
             $this->opened_lesson_at !== null || $this->opened_bonus_at !== null => '👀',
             default => '🆕',
         };

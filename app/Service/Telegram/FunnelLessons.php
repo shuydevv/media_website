@@ -45,8 +45,21 @@ final class FunnelLessons
     }
 
     /** Персональная ссылка: открытие засчитывается в LessonLinkController. */
-    public static function trackedUrl(TelegramContact $contact, string $code): string
+    public static function trackedUrl(TelegramContact $contact, string $code, int $startAt = 0): string
     {
-        return route('telegram.lesson-link', ['token' => $contact->link_token, 'lesson' => $code]);
+        $params = ['token' => $contact->link_token, 'lesson' => $code];
+        if ($startAt > 0) {
+            $params['t'] = $startAt; // продолжить с этой секунды (см. main/trial-lesson)
+        }
+
+        return route('telegram.lesson-link', $params);
+    }
+
+    /** Код урока по slug страницы /trial/{slug} — или null, если в воронке такого нет. */
+    public static function codeForSlug(string $slug): ?string
+    {
+        $code = array_search($slug, config('telegram_funnel.lessons'), true);
+
+        return $code === false ? null : $code;
     }
 }

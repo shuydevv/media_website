@@ -4,36 +4,55 @@ namespace App\Console\Commands;
 
 use App\Jobs\Telegram\RunFunnelStep;
 use App\Models\TelegramContact;
+use App\Service\Telegram\FunnelBot;
 use Illuminate\Console\Command;
 
 /**
- * Напоминания «Получилось посмотреть урок?» (бот воронки). Время каждому
- * назначается при старте (ReminderSchedule, 22–26 ч в окне 10–21 МСК) и
- * лежит в telegram_contacts.reminder_due_at — не отложенной задачей в
- * очереди: сутки в `jobs` выглядели бы для queue:monitor-health как
- * зависшая очередь, а отменить напоминание — это просто обнулить поле.
+ * Отложенные сообщения бота воронки: напоминания, «Как вам урок?» после
+ * досмотра, вопрос от Александра после оценки (поля *_due_at, см.
+ * FunnelBot::DUE_STEPS). Не delayed job в очереди: часы и сутки в `jobs`
+ * выглядели бы для queue:monitor-health как зависшая очередь, а отменить
+ * сообщение — это просто не выполнить условие в момент отправки.
+ *
+ * Запуск раз в минуту; всё, что наступит в ближайшую минуту, ставится в
+ * очередь с задержкой до точной секунды — паузы «3–5 минут, случайно в
+ * секундах» не округляются до минуты.
  */
 class SendTelegramReminders extends Command
 {
     protected $signature = 'telegram:send-reminders';
 
-    protected $description = 'Поставить в очередь напоминания бота воронки, время которых наступило';
+    protected $description = 'Поставить в очередь отложенные сообщения бота воронки, время которых наступает';
 
     public function handle(): int
     {
+        $horizon = now()->addMinute();
+        $fields = array_keys(FunnelBot::DUE_STEPS);
+
         $due = TelegramContact::query()
-            ->whereNotNull('reminder_due_at')
-            ->where('reminder_due_at', '<=', now())
+            ->where(function ($q) use ($fields, $horizon) {
+                foreach ($fields as $field) {
+                    $q->orWhere($field, '<=', $horizon);
+                }
+            })
             ->get();
 
         foreach ($due as $contact) {
-            // Обнуляем сразу, чтобы следующий прогон через минуту не поставил
-            // его второй раз; условия (не нажал, не писал) проверит сам шаг.
-            $contact->forceFill(['reminder_due_at' => null])->save();
+            foreach (FunnelBot::DUE_STEPS as $field => [$step, $payload]) {
+                $at = $contact->{$field};
+                if ($at === null || $at->gt($horizon)) {
+                    continue;
+                }
 
-            if ($contact->automationAllowed()) {
-                RunFunnelStep::dispatch($contact->id, 'reminder')->onQueue(config('telegram_funnel.queue'));
+                // Обнуляем сразу, чтобы следующий прогон не поставил второй раз;
+                // условия (не оценил, не писал…) проверит сам шаг.
+                $contact->{$field} = null;
+                $job = RunFunnelStep::dispatch($contact->id, $step, $payload)->onQueue(config('telegram_funnel.queue'));
+                if ($at->isFuture()) {
+                    $job->delay($at);
+                }
             }
+            $contact->save();
         }
 
         return self::SUCCESS;

@@ -312,11 +312,22 @@ class AdminTopics
     private function sendCard(TelegramContact $contact): void
     {
         $at = fn ($time) => $time ? $time->format('d.m H:i') : null;
-        $bonus = FunnelLessons::bonusFor($contact->lesson);
-        $rated = fn (?string $rating, $time) => match ($rating) {
-            TelegramContact::RATING_UP => '👍 '.$at($time),
-            TelegramContact::RATING_DOWN => '👎 '.$at($time),
-            default => 'нет',
+        // Строка урока: открыл ли, сколько посмотрел, оценка и где поставлена.
+        $slot = function (bool $bonus) use ($contact, $at) {
+            $code = $bonus ? FunnelLessons::bonusFor($contact->lesson) : $contact->lesson;
+            $line = ($bonus ? 'Бонус «' : '«').e(FunnelLessons::title($code)).'»: ';
+            if ($contact->slot($bonus, 'opened_at') === null) {
+                return $line.'не открывал';
+            }
+            $line .= 'открыл '.$at($contact->slot($bonus, 'opened_at'));
+            if ((int) $contact->slot($bonus, 'progress') > 0) {
+                $line .= ' · посмотрел '.(int) $contact->slot($bonus, 'progress').'%';
+            }
+            if ($rating = $contact->slot($bonus, 'rating')) {
+                $line .= ' · '.e(FunnelTexts::ratingLabel($rating)).($contact->slot($bonus, 'rating_source') === 'site' ? ' (на сайте)' : '');
+            }
+
+            return $line;
         };
 
         $lines = [
@@ -326,10 +337,8 @@ class AdminTopics
             'Метка: '.($contact->source ? '<code>'.e($contact->source).'</code>' : 'без метки'),
             'Старт: '.$contact->started_at->format('d.m.Y H:i'),
             '',
-            '«'.e(FunnelLessons::title($contact->lesson)).'»: '.($at($contact->opened_lesson_at) ? 'открыл '.$at($contact->opened_lesson_at) : 'не открывал'),
-            'Оценка: '.$rated($contact->rating, $contact->rated_at),
-            'Бонус «'.e(FunnelLessons::title($bonus)).'»: '.($at($contact->opened_bonus_at) ? 'открыл '.$at($contact->opened_bonus_at) : 'не открывал'),
-            'Оценка бонуса: '.$rated($contact->bonus_rating, $contact->bonus_rated_at),
+            $slot(false),
+            $slot(true),
             'Напоминание: '.($at($contact->reminder_sent_at) ? 'отправлено '.$at($contact->reminder_sent_at) : 'не отправлялось'),
             '',
             '<i>Ответ в этой теме уйдёт человеку от бота с подписью «Александр Полтавский». Сообщение, начатое с //, — заметка, не отправляется.</i>',

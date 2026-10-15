@@ -38,9 +38,9 @@
             {{ $pctTotal($total->opened) }}
             <x-slot:sub>{{ (int) $total->opened }} чел.</x-slot:sub>
         </x-ui.stat>
-        <x-ui.stat label="Оценили 👍">
-            {{ $pctTotal($total->liked) }}
-            <x-slot:sub>{{ (int) $total->liked }} чел., 👎 {{ (int) $total->disliked }} · бонус 👍 {{ (int) $total->bonus_liked }} 👎 {{ (int) $total->bonus_disliked }}</x-slot:sub>
+        <x-ui.stat label="Досмотрели / оценили">
+            {{ $pctTotal($total->watched) }} / {{ $pctTotal($total->rated) }}
+            <x-slot:sub>оценок: 🔥 {{ (int) $total->great }} · 👍 {{ (int) $total->good }} · 👎 {{ (int) $total->bad }}, на сайте — {{ (int) $total->rated_on_site }}</x-slot:sub>
         </x-ui.stat>
         <x-ui.stat label="Написали в диалог">
             {{ $pctTotal($total->wrote) }}
@@ -80,7 +80,7 @@
     <x-ui.table class="mb-6">
         <thead>
             <tr>
-                <th>Метка</th><th>Старты</th><th>Открыли урок</th><th>Открыли бонус</th><th>👍</th><th>👎</th><th>Бонус 👍 / 👎</th><th>Написали</th><th>Заблокировали</th>
+                <th>Метка</th><th>Старты</th><th>Открыли урок</th><th>Открыли бонус</th><th>Досмотрели</th><th>Оценили</th><th>🔥 / 👍 / 👎</th><th>Написали</th><th>Заблокировали</th>
             </tr>
         </thead>
         <tbody>
@@ -97,7 +97,7 @@
     <x-ui.table class="mb-6">
         <thead>
             <tr>
-                <th>Основной урок</th><th>Старты</th><th>Открыли урок</th><th>Открыли бонус</th><th>👍</th><th>👎</th><th>Бонус 👍 / 👎</th><th>Написали</th><th>Заблокировали</th>
+                <th>Основной урок</th><th>Старты</th><th>Открыли урок</th><th>Открыли бонус</th><th>Досмотрели</th><th>Оценили</th><th>🔥 / 👍 / 👎</th><th>Написали</th><th>Заблокировали</th>
             </tr>
         </thead>
         <tbody>
@@ -129,7 +129,7 @@
                             @if ($c->opened_bonus_at) <x-ui.badge tone="blue">+ бонус</x-ui.badge> @endif
                         </span>
                     </td>
-                    <td data-label="Оценка">{{ ['up' => '👍', 'down' => '👎'][$c->rating] ?? '—' }}</td>
+                    <td data-label="Оценка">{{ $c->rating || $c->bonus_rating ? collect([$c->rating, $c->bonus_rating])->filter()->map(fn ($r) => \App\Service\Telegram\FunnelTexts::ratingLabel($r))->implode(' · ') : '—' }}</td>
                     <td data-label="Диалог">
                         <span>
                             @if ($c->blocked_at)

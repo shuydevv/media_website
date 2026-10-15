@@ -25,8 +25,17 @@ final class ReminderSchedule
         int $windowStartHour = 10,
         int $windowEndHour = 21,
     ): CarbonImmutable {
-        $at = CarbonImmutable::instance($startedAt)->addMinutes($delayMinutes);
+        return self::fitWindow(CarbonImmutable::instance($startedAt)->addMinutes($delayMinutes), $morningJitterMinutes, $windowStartHour, $windowEndHour);
+    }
 
+    /** Время как есть, если оно в окне; иначе — ближайшее утро + разброс. */
+    public static function fitWindow(
+        CarbonInterface $at,
+        int $morningJitterMinutes,
+        int $windowStartHour = 10,
+        int $windowEndHour = 21,
+    ): CarbonImmutable {
+        $at = CarbonImmutable::instance($at);
         $windowStart = $at->setTime($windowStartHour, 0);
         $windowEnd = $at->setTime($windowEndHour, 0);
 
@@ -39,6 +48,14 @@ final class ReminderSchedule
         }
 
         return $at;
+    }
+
+    /** fitWindow() с окном и разбросом из конфига. */
+    public static function inWindow(CarbonInterface $at): CarbonImmutable
+    {
+        $t = config('telegram_funnel.timing');
+
+        return self::fitWindow($at, random_int(0, 30), $t['window_start_hour'], $t['window_end_hour']);
     }
 
     /** То же со случайными значениями из конфига — для боевого кода. */
