@@ -42,7 +42,7 @@ class TelegramWebhook extends Command
                 $api->call('setWebhook', [
                     'url' => $url,
                     'secret_token' => $secret,
-                    'allowed_updates' => ['message', 'callback_query', 'my_chat_member'],
+                    'allowed_updates' => ['message', 'edited_message', 'callback_query', 'my_chat_member'],
                     'max_connections' => 10,
                 ]);
                 $this->info("Webhook установлен: {$url}");

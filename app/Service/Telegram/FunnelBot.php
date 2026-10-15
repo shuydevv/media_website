@@ -56,9 +56,20 @@ class FunnelBot
             return;
         }
 
+        // Правку сообщения разбираем только для /emoji в админ-группе:
+        // «отправил /emoji, потом дописал эмодзи» — частый случай. Остальные
+        // правки (человека или своего ответа) пока не обрабатываем.
+        $edited = $update['edited_message'] ?? null;
+        if ($edited && isset($edited['chat']['id']) && AdminTopics::isAdminChat($edited['chat']['id'])
+            && preg_match('~^/emoji(?:@\w+)?(?![A-Za-z0-9_])~', $edited['text'] ?? '')) {
+            $this->replyCustomEmojiIds($edited);
+
+            return;
+        }
+
         $message = $update['message'] ?? null;
         if (! $message || ! isset($message['chat']['id'])) {
-            return; // edited_message и прочее пока не обрабатываем
+            return;
         }
 
         if (($message['chat']['type'] ?? null) === 'private') {
@@ -326,7 +337,7 @@ class FunnelBot
         $from = $message['from'] ?? [];
 
         // /emoji — до пересылки: в теме человека это команда боту, а не ответ.
-        if (! ($from['is_bot'] ?? false) && preg_match('~^/emoji(@\w+)?(\s|$)~', $message['text'] ?? '')) {
+        if (! ($from['is_bot'] ?? false) && preg_match('~^/emoji(?:@\w+)?(?![A-Za-z0-9_])~', $message['text'] ?? '')) {
             $this->replyCustomEmojiIds($message);
 
             return;
@@ -339,9 +350,13 @@ class FunnelBot
             return;
         }
 
-        $body = $message['text'] ?? $message['caption'] ?? '';
-        if (str_starts_with(ltrim($body), '//')) {
+        $body = ltrim($message['text'] ?? $message['caption'] ?? '');
+        if (str_starts_with($body, '//')) {
             return; // заметка для себя
+        }
+        // /команда — для бота (или опечатка в ней), человеку её слать нельзя.
+        if (preg_match('~^/[A-Za-z]~', $body)) {
+            return;
         }
 
         $contact = TelegramContact::where('topic_id', $threadId)->first();
