@@ -18,7 +18,7 @@
       <form action="{{ route('site-lead.store') }}" method="POST" class="p-6 space-y-4" novalidate>
         @csrf
         <p id="lead-modal-title" class="text-gray-900 font-semibold text-lg">
-          Оставь контакт — я напишу тебе в Telegram и расскажу про курс
+          Оставьте контакт — я напишу вам в Telegram и расскажу про курс
         </p>
 
         <input type="hidden" name="cta" value="{{ old('cta') }}">
