@@ -82,7 +82,8 @@ final class FunnelTexts
         $html = preg_replace('/\{e:(\d{5,25}):([^}\n]{1,16})\}/u', '<tg-emoji emoji-id="$1">$2</tg-emoji>', $html);
 
         if (config("telegram_funnel.texts.{$key}.human")) {
-            $html = config('telegram_funnel.signature').$html;
+            // Текст «от Александра» — жирным, как его ответы из темы.
+            $html = config('telegram_funnel.signature').'<b>'.$html.'</b>';
         }
 
         return $html;
