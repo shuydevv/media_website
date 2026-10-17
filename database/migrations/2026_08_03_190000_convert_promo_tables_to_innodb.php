@@ -21,6 +21,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // ENGINE/MODIFY — синтаксис MySQL. Тесты гоняются на SQLite (phpunit.xml),
+        // там это не нужно.
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         DB::statement('ALTER TABLE `promo_codes` ENGINE = InnoDB');
         DB::statement('ALTER TABLE `promo_redemptions` ENGINE = InnoDB');
         DB::statement('ALTER TABLE `course_user` ENGINE = InnoDB');

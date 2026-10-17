@@ -261,6 +261,18 @@ class SubmissionReviewController extends Controller
         // на одной работе одновременно — Policy пускает обоих, лок это не
         // проверяет для админа).
         $lockKey = 'submission_finalize_' . $submission->id;
+
+        // GET_LOCK — функция MySQL; тесты идут на SQLite (phpunit.xml), там
+        // тот же смысл даёт Cache::lock.
+        if (DB::getDriverName() !== 'mysql') {
+            \Illuminate\Support\Facades\Cache::lock($lockKey, 10)->block(5, function () use ($request, $submission) {
+                $submission->refresh();
+                $this->finalizeSubmissionLocked($request, $submission);
+            });
+
+            return;
+        }
+
         $gotLock = (int) (DB::selectOne('SELECT GET_LOCK(?, 5) AS got', [$lockKey])->got ?? 0);
 
         if (!$gotLock) {

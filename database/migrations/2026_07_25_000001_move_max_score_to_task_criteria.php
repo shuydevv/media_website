@@ -54,7 +54,11 @@ return new class extends Migration
                 }
             }
 
-            DB::statement('ALTER TABLE tasks DROP COLUMN max_score');
+            if (DB::getDriverName() !== 'mysql') {
+                Schema::table('tasks', fn (Blueprint $table) => $table->dropColumn('max_score'));
+            } else {
+                DB::statement('ALTER TABLE tasks DROP COLUMN max_score');
+            }
         }
     }
 

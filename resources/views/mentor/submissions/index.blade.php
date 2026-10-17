@@ -90,6 +90,11 @@
           <div class="text-sm text-gray-600">
             Ученик: {{ $s->user->name ?? ('ID '.$s->user_id) }}
           </div>
+          @if(($retrying[$s->user_id.':'.$s->homework_id] ?? 0) > $s->id)
+            <div class="mt-1 inline-flex rounded-full bg-yellow-50 border border-yellow-200 px-2 py-0.5 text-xs text-yellow-800">
+              Ученик перерешивает — новая попытка ещё не отправлена
+            </div>
+          @endif
         </div>
         <div class="text-sm text-gray-500">Статус: {{ $s->status }}</div>
       </div>

@@ -51,6 +51,14 @@
                         <span class="inline-flex px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap shrink-0 {{ $badge['class'] }}">{{ $badge['label'] }}</span>
                     </div>
 
+                    @if($row['retryInProgress'] ?? null)
+                        {{-- Карточка показывает сданную попытку; новая — только начата
+                             (продолжить/отменить — на странице результата). --}}
+                        <div class="-mt-3 mb-3 text-xs text-blue-700 bg-blue-50 rounded-lg px-2.5 py-1.5">
+                            Начата попытка № {{ $row['retryInProgress']->attempt_no }} — не отправлена
+                        </div>
+                    @endif
+
                     <div class="flex flex-col items-center gap-5 py-3">
                         <div class="mock-chart-wrap">
                             <canvas

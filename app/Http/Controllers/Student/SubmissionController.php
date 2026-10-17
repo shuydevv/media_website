@@ -8,6 +8,7 @@ use App\Models\HomeworkTask;
 use App\Models\Submission;
 use App\Service\FishFoodService;
 use App\Service\Homework\AutoGrader;
+use App\Service\Homework\MistakesRetry;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -38,7 +39,13 @@ class SubmissionController extends Controller
             ->latest('id')
             ->first();
 
+        // Истёкший пробник закрываем здесь же, а не после редиректа в визард:
+        // пустая попытка при этом удаляется, и ученик сразу начинает новую.
         if ($inProgress) {
+            $this->autoFinishIfExpired($inProgress);
+        }
+
+        if ($inProgress && $inProgress->exists && $inProgress->status === 'in_progress') {
             return $this->redirectToNextQuestion($inProgress);
         }
 
@@ -92,6 +99,28 @@ class SubmissionController extends Controller
             'status' => 'in_progress',
         ];
 
+        // «Перерешать ошибки» — верно решённые задания прошлой попытки
+        // переносятся в новую сразу, визард откроется на первой ошибке.
+        if ($retry && $request->query('mode') === 'mistakes' && $homework->type !== 'mock') {
+            $previous = Submission::where('user_id', $user->id)
+                ->where('homework_id', $homework->id)
+                ->where('status', '!=', 'in_progress')
+                ->latest('id')
+                ->first();
+
+            if ($previous) {
+                $plan = app(MistakesRetry::class)->plan($previous, $tasks);
+
+                if ($plan['redo'] === []) {
+                    return redirect()->route('student.submissions.show', $previous)
+                        ->withErrors(['attempts' => 'В прошлой попытке нет ошибок — перерешивать нечего.']);
+                }
+
+                $attrs['answers'] = $plan['answers'];
+                $attrs['per_task_results'] = $plan['per_task'];
+            }
+        }
+
         // Пробник — фиксированный таймер на прохождение (3ч30м, см.
         // Homework::MOCK_TIME_LIMIT_MINUTES). Проверяется реактивно, см.
         // autoFinishIfExpired().
@@ -124,7 +153,66 @@ class SubmissionController extends Controller
             throw $e;
         }
 
-        return redirect()->route('student.submissions.question', [$submission, 1]);
+        return $this->redirectToNextQuestion($submission);
+    }
+
+    /**
+     * Отменить незаконченную попытку: удаляет её целиком, как будто её не
+     * начинали. Когда можно — см. Submission::canBeCancelled().
+     */
+    public function cancel(Request $request, Submission $submission)
+    {
+        $this->assertOwner($request, $submission);
+        if ($redirect = $this->ensureInProgress($request, $submission)) {
+            return $redirect;
+        }
+
+        abort_unless($submission->canBeCancelled(), 403);
+
+        $homework = Homework::find($submission->homework_id);
+
+        try {
+            // Тот же лок, что у сохранения ответа (persistAnswerAndAdvance()):
+            // не удаляем попытку посреди записи ответа в неё.
+            Cache::lock("submission-answer:{$submission->id}", 10)->block(5, function () use ($submission) {
+                $submission->refresh();
+
+                // Пока ждали лок, в пробник мог сохраниться первый ответ.
+                abort_unless($submission->canBeCancelled(), 403);
+
+                DB::transaction(function () use ($submission) {
+                    // Атомарно по статусу — если попытка успела завершиться
+                    // (авто-финиш пробника по таймеру), удалять уже нечего.
+                    $deleted = Submission::where('id', $submission->id)
+                        ->where('status', 'in_progress')
+                        ->delete();
+
+                    if ($deleted) {
+                        app(FishFoodService::class)->revokeSubmissionCorm($submission->user, $submission);
+                    }
+                });
+            });
+        } catch (LockTimeoutException $e) {
+            abort(423, 'Не удалось отменить попытку — попробуйте ещё раз через несколько секунд.');
+        }
+
+        $previous = Submission::where('user_id', $submission->user_id)
+            ->where('homework_id', $submission->homework_id)
+            ->where('status', '!=', 'in_progress')
+            ->latest('id')
+            ->first();
+
+        $target = match (true) {
+            $previous !== null => route('student.submissions.show', $previous),
+            ($homework->type ?? null) === 'mock' => route('student.mocks.index'),
+            default => route('student.homeworks.index'),
+        };
+
+        if ($this->isHtmx($request)) {
+            return response('')->header('HX-Redirect', $target);
+        }
+
+        return redirect($target)->with('success', 'Попытка отменена.');
     }
 
     /**
@@ -256,6 +344,12 @@ class SubmissionController extends Controller
             abort(404);
         }
 
+        // Перенесённое из прошлой попытки задание («Перерешать ошибки») в этой
+        // попытке не меняется.
+        if ($submission->isTaskCarried($task->id)) {
+            return $this->respondNext($request, $submission);
+        }
+
         $data = $request->validate(['answer' => 'nullable|string']);
         $answer = $data['answer'] ?? null;
 
@@ -305,6 +399,10 @@ class SubmissionController extends Controller
         }
 
         [, $task] = $this->resolvePosition($submission, $position);
+
+        if ($submission->isTaskCarried($task->id)) {
+            return $this->respondNext($request, $submission);
+        }
 
         $data = $request->validate(['answer' => 'nullable|string']);
         $answer = $data['answer'] ?? null;
@@ -490,10 +588,24 @@ class SubmissionController extends Controller
 
         $tasks = $this->orderedTasks($submission->homework_id);
         $answers = $submission->answers ?? [];
+        $before = $submission->per_task_results ?? [];
 
         $grade = app(AutoGrader::class)->gradeWithTasks($tasks, $answers);
         $perTask = $grade['per_task'] ?? [];
         $autoScore = (int) ($grade['score'] ?? 0);
+
+        // «Перерешать ошибки»: перенесённые задания сохраняют флаг carried и
+        // начисленный за них корм, а ручные — ещё и оценку куратора из прошлой
+        // попытки (gradeWithTasks() строит ручные строки с нуля, без оценки).
+        foreach ($before as $tid => $row) {
+            if (! is_array($row) || empty($row['carried']) || ! isset($perTask[$tid])) {
+                continue;
+            }
+
+            $perTask[$tid] = array_merge($perTask[$tid], array_intersect_key($row, array_flip(
+                ['carried', 'fish_awarded', 'score', 'reason', 'comment', 'reviewed_by', 'reviewed_at']
+            )));
+        }
 
         // Пустой ответ на ручное задание (или вопрос вовсе оставлен без
         // ответа — теперь так можно, см. finishSubmit()) сразу закрывается
@@ -511,6 +623,13 @@ class SubmissionController extends Controller
 
             $tid = $t->id;
             $answer = $answers[$tid] ?? null;
+
+            if (! empty($perTask[$tid]['carried']) && array_key_exists('score', $perTask[$tid])) {
+                // Уже проверено куратором в прошлой попытке.
+                $manualScore += (int) $perTask[$tid]['score'];
+
+                continue;
+            }
 
             if (trim((string) $answer) === '') {
                 $perTask[$tid]['score'] = 0;
@@ -570,6 +689,26 @@ class SubmissionController extends Controller
             return;
         }
 
+        // Пробник открыли и не ответили ни на один вопрос — зашли посмотреть
+        // или случайно. Такая попытка не засчитывается: просто удаляем её,
+        // иначе лимит попыток сгорал бы от одного просмотра.
+        if (($submission->answers ?? []) === []) {
+            $deleted = Submission::where('id', $submission->id)
+                ->where('status', 'in_progress')
+                ->delete();
+
+            if ($deleted) {
+                $submission->exists = false;
+
+                return;
+            }
+
+            $submission->refresh();
+            if ($submission->status !== 'in_progress') {
+                return;
+            }
+        }
+
         $homework = Homework::find($submission->homework_id);
         $this->finalize($submission, $homework);
     }
@@ -605,10 +744,28 @@ class SubmissionController extends Controller
         $attempts = Submission::where('user_id', $submission->user_id)
             ->where('homework_id', $submission->homework_id)
             ->where('status', '!=', 'in_progress')
-            ->orderByDesc('created_at')
+            // По id, а не created_at: две попытки, сданные в одну секунду,
+            // иначе шли бы в случайном порядке, и «последняя» определялась бы неверно.
+            ->orderByDesc('id')
             ->get(['id', 'attempt_no', 'autocheck_score', 'total_score', 'status', 'created_at']);
 
-        return view('student.submissions.show', compact('submission', 'homework', 'attempts'));
+        // Начатая, но не сданная следующая попытка — на странице результата
+        // плашка «Продолжить / Отменить», а сама домашка по-прежнему считается
+        // сданной по этой попытке.
+        $retryInProgress = Submission::where('user_id', $submission->user_id)
+            ->where('homework_id', $submission->homework_id)
+            ->where('status', 'in_progress')
+            ->latest('id')
+            ->first();
+
+        // «Перерешать ошибки» — только от последней сданной попытки и не для
+        // пробника (см. MistakesRetry).
+        $isLatest = $attempts->first()?->id === $submission->id;
+        $redoCount = ($isLatest && ($hwRow->type ?? null) !== 'mock')
+            ? app(MistakesRetry::class)->redoCount($submission, $this->orderedTasks($submission->homework_id))
+            : 0;
+
+        return view('student.submissions.show', compact('submission', 'homework', 'attempts', 'retryInProgress', 'redoCount'));
     }
 
     /**
@@ -653,6 +810,8 @@ class SubmissionController extends Controller
             'checkAnswer' => $checkAnswer,
             'fishLevel' => app(FishFoodService::class)->levelFor((int) $request->user()->fish_total_fed),
             'expiresAt' => $submission->expires_at?->toIso8601String(),
+            'isCarried' => $submission->isTaskCarried($task->id),
+            'canCancel' => $submission->canBeCancelled(),
         ];
     }
 
@@ -766,6 +925,15 @@ class SubmissionController extends Controller
     private function ensureInProgress(Request $request, Submission $submission)
     {
         $this->autoFinishIfExpired($submission);
+
+        if (! $submission->exists) {
+            // Пустая попытка пробника истекла и удалена (см. autoFinishIfExpired()).
+            $target = route('student.mocks.index');
+
+            return $this->isHtmx($request)
+                ? response('')->header('HX-Redirect', $target)
+                : redirect($target);
+        }
 
         if ($submission->status !== 'in_progress') {
             if ($this->isHtmx($request)) {

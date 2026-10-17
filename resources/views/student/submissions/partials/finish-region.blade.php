@@ -56,8 +56,14 @@
   @endif
 
   <div class="rounded-2xl border border-gray-200 bg-white divide-y">
+    @php $carriedCount = 0; @endphp
     @foreach($tasks as $i => $t)
-      @php $st = $statusOf($t); @endphp
+      @php
+        // «Перерешать ошибки»: перенесённые задания не перечисляем — их не
+        // решали в этой попытке, достаточно сводной строки ниже.
+        if (!empty($perTask[$t->id]['carried'])) { $carriedCount++; continue; }
+        $st = $statusOf($t);
+      @endphp
       <a href="{{ route('student.submissions.question', [$submission, $i + 1]) }}"
          hx-get="{{ route('student.submissions.question', [$submission, $i + 1]) }}"
          hx-target="#wizard-app"
@@ -77,6 +83,11 @@
         </span>
       </a>
     @endforeach
+    @if($carriedCount > 0)
+      <div class="px-4 py-3 text-sm text-zinc-500">
+        Ещё {{ \App\Support\Text::plural($carriedCount, ['задание', 'задания', 'заданий']) }} — засчитаны из прошлой попытки.
+      </div>
+    @endif
   </div>
 
   <div class="mt-8">

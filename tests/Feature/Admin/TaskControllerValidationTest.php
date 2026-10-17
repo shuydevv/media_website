@@ -33,14 +33,15 @@ class TaskControllerValidationTest extends TestCase
 
     private function admin(): User
     {
-        $admin = User::where('role', User::ROLE_ADMIN)->first();
+        $admin = User::where('role', User::ROLE_ADMIN)->first()
+            ?? User::factory()->create(['role' => User::ROLE_ADMIN]);
         $this->assertNotNull($admin, 'В БД нет ни одного администратора — тест не может авторизоваться.');
         return $admin;
     }
 
     private function category(): Category
     {
-        $category = Category::first();
+        $category = Category::first() ?? Category::create(['title' => 'Тестовая категория']);
         $this->assertNotNull($category, 'В БД нет ни одной категории — тест не может создать задание.');
         return $category;
     }

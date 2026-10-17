@@ -145,8 +145,34 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
   // в SubmissionController::create().
   $attempts_allowed = (int) $homework->attempts_allowed;
   $attemptNo   = (int)($submission->attempt_no ?? 1);
-  $attemptsLeft = max(0, $attempts_allowed - $attemptNo);
+  // По числу реально сданных попыток, а не по номеру открытой: со страницы
+  // первой попытки при уже сданной второй кнопка не должна обещать ещё одну.
+  $attemptsLeft = max(0, $attempts_allowed - max($attemptNo, $attempts->count()));
+  $redoCount = $redoCount ?? 0;
+  $retryInProgress = $retryInProgress ?? null;
 @endphp
+
+  @if($errors->has('attempts'))
+    <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800 px-3 py-2 text-sm">
+      {{ $errors->first('attempts') }}
+    </div>
+  @endif
+
+  @if($retryInProgress)
+    <div class="mb-6 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="sans text-sm text-blue-900">
+        Попытка № {{ $retryInProgress->attempt_no }} начата, но ещё не отправлена. Пока её не отправишь, в зачёте остаётся эта.
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <x-ui.button href="{{ route('student.submissions.create', $homework) }}" variant="accent" class="!bg-apple-blue-500 hover:!bg-apple-blue-600 sm:!px-4 sm:!py-2 sm:!text-sm">
+          Продолжить
+        </x-ui.button>
+        @if($retryInProgress->canBeCancelled())
+          @include('student.submissions.partials.cancel-attempt', ['submission' => $retryInProgress, 'isMock' => ($homework->type ?? null) === 'mock'])
+        @endif
+      </div>
+    </div>
+  @endif
 
   {{-- Заголовок (левая половина на ПК) + итог/действие (правая половина, по правому краю) --}}
   <div class="mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
@@ -160,14 +186,21 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
       </div>
     </div>
 
-    <div class="flex flex-col sm:flex-row sm:items-stretch sm:justify-end gap-2 shrink-0 sm:w-1/2">
+    <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-stretch sm:justify-end gap-2 shrink-0 sm:w-1/2">
       <div class="rounded-xl sm:h-full border border-zinc-200 bg-zinc-50 px-4 py-2.5 flex items-center justify-center sm:justify-start">
         <span class="sans-medium text-base sm:text-sm text-zinc-900 whitespace-nowrap">{{ $totalScore }} / {{ $totalMax }} баллов</span>
       </div>
 
-      @if($attemptsLeft > 0)
-        <x-ui.button href="{{ route('student.submissions.create', $homework) }}?retry=1" variant="accent" class="w-full sm:w-auto justify-center !bg-apple-blue-500 hover:!bg-apple-blue-600 sm:!px-4 sm:!py-2 sm:!text-sm">
-          Перерешать работу
+      @if($retryInProgress)
+        {{-- Продолжить/отменить — в плашке над результатом. --}}
+      @elseif($attemptsLeft > 0)
+        @if($redoCount > 0)
+          <x-ui.button href="{{ route('student.submissions.create', $homework) }}?retry=1&mode=mistakes" variant="accent" class="w-full sm:w-auto justify-center !bg-apple-blue-500 hover:!bg-apple-blue-600 sm:!px-4 sm:!py-2 sm:!text-sm" title="Верно решённые задания перенесутся в новую попытку">
+            Перерешать ошибки ({{ $redoCount }})
+          </x-ui.button>
+        @endif
+        <x-ui.button href="{{ route('student.submissions.create', $homework) }}?retry=1" variant="{{ $redoCount > 0 ? 'outline' : 'accent' }}" class="w-full sm:w-auto justify-center {{ $redoCount > 0 ? '' : '!bg-apple-blue-500 hover:!bg-apple-blue-600' }} sm:!px-4 sm:!py-2 sm:!text-sm">
+          {{ $redoCount > 0 ? 'Перерешать всю работу' : 'Перерешать работу' }}
         </x-ui.button>
         {{-- <div class="sans text-xs text-zinc-400 text-right">
           У тебя есть еще одна попытка
@@ -179,6 +212,25 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
       @endif
     </div>
   </div>
+
+  {{-- Переключатель между сданными попытками — сравнить, что изменилось. --}}
+  @if($attempts->count() > 1)
+    <div class="mb-6 flex flex-wrap items-center gap-2">
+      <span class="sans text-sm text-zinc-500 mr-1">Попытки:</span>
+      @foreach($attempts->sortBy('id') as $att)
+        @php $isCurrent = $att->id === $submission->id; @endphp
+        <a href="{{ route('student.submissions.show', $att) }}"
+           @if($isCurrent) aria-current="page" @endif
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm {{ $isCurrent ? 'border-apple-blue-500 bg-apple-blue-50 text-apple-blue-700 sans-medium' : 'border-zinc-200 text-zinc-600 hover:bg-zinc-50' }}">
+          № {{ $att->attempt_no ?? $loop->iteration }}
+          <span class="{{ $isCurrent ? 'text-apple-blue-600' : 'text-zinc-400' }}">· {{ $att->status === 'checked' ? (int) $att->total_score . ' б.' : 'на проверке' }}</span>
+        </a>
+      @endforeach
+      @if($attempts->first()->id !== $submission->id)
+        <span class="sans text-xs text-zinc-400 ml-1">В зачёте последняя попытка</span>
+      @endif
+    </div>
+  @endif
 
   {{-- Две колонки --}}
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

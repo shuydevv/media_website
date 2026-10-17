@@ -39,6 +39,13 @@
   // Данные попытки
   $answers      = $submission->answers ?? [];
   $perTaskRes   = $submission->per_task_results ?? [];
+
+  // Прошлая сданная попытка — показать рядом с ответом, что ученику
+  // ставили раньше; и начатая, но не сданная новая — предупреждение.
+  $prevAttempt  = $submission->previousFinished();
+  $prevAnswers  = $prevAttempt?->answers ?? [];
+  $prevPerTask  = $prevAttempt?->per_task_results ?? [];
+  $newerRetry   = $submission->newerInProgress();
   $aiDrafts     = $submission->ai_drafts ?? [];
   $aiFrozenHash = $submission->ai_frozen_hash ?? [];
 
@@ -89,6 +96,19 @@
         <span class="mx-2">•</span>
         Попытка № {{ $submission->attempt_no ?? 1 }}
       </div>
+
+      @if($newerRetry)
+        <div class="mt-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800 px-3 py-2 text-sm">
+          Ученик сейчас перерешивает эту работу (попытка № {{ $newerRetry->attempt_no }}, начата {{ $newerRetry->created_at?->format('d.m H:i') }}, ещё не отправлена).
+          Если он её отправит, проверять эту попытку будет не нужно — итог считается по последней.
+        </div>
+      @endif
+
+      @if($submission->isSuperseded())
+        <div class="mt-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800 px-3 py-2 text-sm">
+          Ученик уже сдал более новую попытку по этой работе — эту проверять не нужно, итог считается по последней.
+        </div>
+      @endif
 
       @foreach (['success'=>'green','error'=>'red','warning'=>'yellow','info'=>'blue'] as $k=>$clr)
         @if (session($k))
@@ -263,6 +283,13 @@
                 Пропущено
               </span>
             @endif
+            @if(!empty($perTaskRes[$tid]['carried']))
+              {{-- «Перерешать ошибки»: ученик не решал это задание заново, ответ
+                   (и оценка, если она уже была) перенесены из прошлой попытки. --}}
+              <span class="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-600">
+                Из прошлой попытки
+              </span>
+            @endif
           </div>
         </div>
 
@@ -319,6 +346,45 @@
           {{ $studentAns !== '' ? $studentAns : '—' }}
         </div>
       </div>
+
+      @php
+        $prevRow = $prevPerTask[$tid] ?? null;
+        $prevAns = (string) ($prevAnswers[$tid] ?? '');
+        $showPrev = $prevAttempt && empty($perTaskRes[$tid]['carried']) && ($prevAns !== '' || is_array($prevRow));
+      @endphp
+      @if($showPrev)
+        <details class="mb-4 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm">
+          <summary class="cursor-pointer select-none text-gray-700">
+            Прошлая попытка № {{ $prevAttempt->attempt_no ?? '—' }}:
+            @if(is_array($prevRow) && array_key_exists('score', $prevRow) && empty($prevRow['skipped']))
+              <b>{{ (int) $prevRow['score'] }} / {{ $t->max_score ?? ($prevRow['max'] ?? '—') }}</b>
+              @if($prevAttempt->status !== 'checked')
+                <span class="text-gray-400">(проверка не была завершена)</span>
+              @endif
+            @else
+              <span class="text-gray-400">без оценки</span>
+            @endif
+          </summary>
+          <div class="mt-2 space-y-2">
+            <div>
+              <div class="text-xs text-gray-500 mb-1">Ответ тогда</div>
+              <div class="whitespace-pre-wrap rounded-lg bg-gray-50 px-3 py-2">{{ $prevAns !== '' ? $prevAns : '—' }}</div>
+            </div>
+            @if(filled($prevRow['reason'] ?? null))
+              <div>
+                <div class="text-xs text-gray-500 mb-1">Обоснование</div>
+                <div class="whitespace-pre-wrap">{{ $prevRow['reason'] }}</div>
+              </div>
+            @endif
+            @if(filled($prevRow['comment'] ?? null))
+              <div>
+                <div class="text-xs text-gray-500 mb-1">Комментарий ученику</div>
+                <div class="whitespace-pre-wrap">{{ $prevRow['comment'] }}</div>
+              </div>
+            @endif
+          </div>
+        </details>
+      @endif
 
       <form
         action="{{ route('mentor.review.task.save', [$submission, $tid]) }}"

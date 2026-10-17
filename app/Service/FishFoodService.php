@@ -79,6 +79,29 @@ class FishFoodService
     }
 
     /**
+     * Ученик отменил незаконченную попытку — забираем корм, начисленный за
+     * задания внутри неё (syncTaskCorm() при ответах в визарде). Иначе
+     * «начал → ответил верно → отменил → начал заново» давал бы корм за одни
+     * и те же задания сколько угодно раз. Перенесённые из прошлой попытки
+     * задания (carried) не трогаем — их корм заработан в той попытке.
+     */
+    public function revokeSubmissionCorm(User $user, Submission $submission): void
+    {
+        $total = collect($submission->per_task_results ?? [])
+            ->filter(fn ($row) => is_array($row) && empty($row['carried']))
+            ->sum(fn ($row) => max(0, (int) ($row['fish_awarded'] ?? 0)));
+
+        if ($total <= 0) {
+            return;
+        }
+
+        $this->withLockedUser($user, function (User $locked) use ($total) {
+            $locked->fish_corm_balance = max(0, (int) $locked->fish_corm_balance - $total);
+            $locked->save();
+        });
+    }
+
+    /**
      * Единая точка начисления бонуса за завершённую домашку (сверх корма за
      * отдельные задания, см. syncTaskCorm()) — вызывается ровно один раз на
      * сабмишен (см. SubmissionController::finishSubmit(), там это

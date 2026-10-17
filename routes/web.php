@@ -468,6 +468,8 @@ Route::middleware(['auth', 'billing.current'])
             ->name('submissions.finish');
         Route::post('/submissions/{submission}/finish', [StudentSubmissionController::class, 'finishSubmit'])
             ->name('submissions.finish.submit');
+        Route::post('/submissions/{submission}/cancel', [StudentSubmissionController::class, 'cancel'])
+            ->name('submissions.cancel');
     });
 
 // Самостоятельное прорешивание банка заданий в личном кабинете — один вопрос

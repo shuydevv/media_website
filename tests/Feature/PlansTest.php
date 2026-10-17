@@ -58,7 +58,7 @@ class PlansTest extends TestCase
 
     private function makePost(string $title, bool $plan, ?Topic $topic = null): Post
     {
-        $category = Category::first();
+        $category = Category::first() ?? Category::create(['title' => 'Тестовая категория']);
         $this->assertNotNull($category, 'В БД нет ни одной категории.');
 
         $post = Post::create([
@@ -145,7 +145,8 @@ class PlansTest extends TestCase
     /** @test */
     public function admin_can_set_topic_on_a_post()
     {
-        $admin = User::where('role', User::ROLE_ADMIN)->first();
+        $admin = User::where('role', User::ROLE_ADMIN)->first()
+            ?? User::factory()->create(['role' => User::ROLE_ADMIN]);
         $this->assertNotNull($admin, 'В БД нет ни одного администратора.');
         $topic = $this->topic('ТестРаздел Социальная сфера', 'ТестТема Семья');
         $plan = $this->makePost('ТестПлан Семья', true);

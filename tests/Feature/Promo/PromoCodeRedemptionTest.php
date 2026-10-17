@@ -209,6 +209,12 @@ class PromoCodeRedemptionTest extends TestCase
     /** @test */
     public function the_promo_code_row_lock_actually_blocks_a_concurrent_connection()
     {
+        // Проверяет именно row-lock InnoDB через второе соединение с MySQL —
+        // на SQLite в памяти (phpunit.xml) воспроизвести это нечем.
+        if (DB::getDriverName() !== 'mysql') {
+            $this->markTestSkipped('Нужен MySQL/InnoDB: тест проверяет блокировку строки вторым соединением.');
+        }
+
         $promo = $this->makeAccessPromo();
 
         config(['database.connections.promo_lock_probe' => config('database.connections.mysql')]);

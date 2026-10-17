@@ -43,6 +43,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // ENGINE/MODIFY — синтаксис MySQL. Тесты гоняются на SQLite (phpunit.xml),
+        // там это не нужно.
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         foreach ($this->myIsamTables() as $table) {
             DB::statement("ALTER TABLE `{$table}` ENGINE = InnoDB");
         }

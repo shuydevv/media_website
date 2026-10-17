@@ -44,16 +44,21 @@ class HomeworkController extends Controller
             ->reject(fn (Homework $hw) => $hw->isLessonUpcoming() || $hw->isLessonBeforeEnrollment($user))
             ->values();
 
-        $latestSubmissionByHomework = Submission::query()
+        // Статус домашки — по последней СДАННОЙ попытке: начатая, но не
+        // отправленная повторная попытка не делает уже сданную домашку
+        // «не выполненной». in_progress берём, только если сданных нет.
+        $submissionsByHomework = Submission::query()
             ->where('user_id', $user->id)
             ->whereIn('homework_id', $homeworks->pluck('id'))
             ->orderByDesc('id')
             ->get()
-            ->groupBy('homework_id')
-            ->map(fn ($group) => $group->first());
+            ->groupBy('homework_id');
 
-        $rows = $homeworks->map(function (Homework $hw) use ($latestSubmissionByHomework, $user) {
-            $submission = $latestSubmissionByHomework->get($hw->id);
+        $rows = $homeworks->map(function (Homework $hw) use ($submissionsByHomework, $user) {
+            $group = $submissionsByHomework->get($hw->id) ?? collect();
+            $finished = $group->firstWhere('status', '!=', 'in_progress');
+            $inProgress = $group->firstWhere('status', 'in_progress');
+            $submission = $finished ?? $inProgress;
             $isPastDue = $hw->isOverdueFor($user);
 
             if (!$submission) {
@@ -84,6 +89,7 @@ class HomeworkController extends Controller
                 'status' => $status,
                 'score' => $submission?->total_score,
                 'max_score' => $hw->tasks->sum('max_score'),
+                'retry_in_progress' => $finished && $inProgress ? $inProgress : null,
             ];
         });
 

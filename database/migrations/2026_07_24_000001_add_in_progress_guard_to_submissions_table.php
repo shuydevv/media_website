@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -24,6 +25,16 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Тесты на SQLite (phpunit.xml): вычисляемой колонки с IF() там нет,
+        // а индекс по несуществующей колонке SQLite молча превращает в
+        // уникальность (homework_id, user_id) — вторая попытка падала бы.
+        // То же правило — частичным уникальным индексом.
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement("CREATE UNIQUE INDEX IF NOT EXISTS submissions_one_in_progress_unique ON submissions (homework_id, user_id) WHERE status = 'in_progress'");
+
+            return;
+        }
+
         if (Schema::hasTable('submissions') && !Schema::hasColumn('submissions', 'in_progress_slot')) {
             Schema::table('submissions', function (Blueprint $table) {
                 $table->unsignedTinyInteger('in_progress_slot')

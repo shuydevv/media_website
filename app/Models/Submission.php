@@ -126,7 +126,7 @@ class Submission extends Model
      */
     public static function pendingReviewQueue(): \Illuminate\Support\Collection
     {
-        return static::query()
+        $queue = static::query()
             ->with(['user', 'homework.tasks'])
             ->where(function (Builder $q) {
                 $q->whereNull('locked_by')
@@ -141,6 +141,113 @@ class Submission extends Model
             ->map->last()
             ->sortBy('created_at')
             ->values();
+
+        return static::withoutSuperseded($queue);
+    }
+
+    /**
+     * Убирает попытки, после которых ученик уже сдал более новую. Дедуп в
+     * pendingReviewQueue() видит только попытки, которые сами ещё ждут
+     * проверки: как только куратор закрывал вторую попытку (она уходила в
+     * checked), первая — всё ещё pending — оставалась в группе одна и снова
+     * всплывала в очереди. Проверять её незачем: итог по домашке считается
+     * по последней сданной попытке. Незаконченная (in_progress) новая
+     * попытка старую не перекрывает — ученик может её отменить.
+     */
+    public static function withoutSuperseded(\Illuminate\Support\Collection $submissions): \Illuminate\Support\Collection
+    {
+        if ($submissions->isEmpty()) {
+            return $submissions;
+        }
+
+        $latestFinished = static::query()
+            ->whereIn('user_id', $submissions->pluck('user_id')->unique())
+            ->whereIn('homework_id', $submissions->pluck('homework_id')->unique())
+            ->where('status', '!=', 'in_progress')
+            ->groupBy('user_id', 'homework_id')
+            ->selectRaw('user_id, homework_id, MAX(id) AS max_id')
+            ->get()
+            ->mapWithKeys(fn ($r) => [$r->user_id . ':' . $r->homework_id => (int) $r->max_id]);
+
+        return $submissions
+            ->reject(fn (Submission $s) => ($latestFinished[$s->user_id . ':' . $s->homework_id] ?? 0) > $s->id)
+            ->values();
+    }
+
+    /**
+     * Можно ли ученику отменить эту незаконченную попытку (Student\SubmissionController::cancel()):
+     *  - повторную попытку домашки — да: передумал перерешивать, в зачёте
+     *    остаётся прошлая. Первую — нет: незаконченная она ни на что не
+     *    влияет, а при отмене пропали бы ответы;
+     *  - пробник — только пока не дан ни один ответ (зашёл посмотреть или
+     *    случайно). Иначе можно было бы просмотреть все задания, отменить и
+     *    начать заново с полным таймером.
+     */
+    public function canBeCancelled(): bool
+    {
+        if ($this->status !== 'in_progress') {
+            return false;
+        }
+
+        if (Homework::whereKey($this->homework_id)->value('type') === 'mock') {
+            return ($this->answers ?? []) === [];
+        }
+
+        return static::query()
+            ->where('user_id', $this->user_id)
+            ->where('homework_id', $this->homework_id)
+            ->where('status', '!=', 'in_progress')
+            ->where('id', '<', $this->id)
+            ->exists();
+    }
+
+    /** Предыдущая сданная попытка ученика по этой домашке (для сравнения у куратора). */
+    public function previousFinished(): ?self
+    {
+        return static::query()
+            ->where('user_id', $this->user_id)
+            ->where('homework_id', $this->homework_id)
+            ->where('status', '!=', 'in_progress')
+            ->where('id', '<', $this->id)
+            ->latest('id')
+            ->first();
+    }
+
+    /**
+     * Начатая после этой, но ещё не сданная попытка. Куратору — повод
+     * подождать: если ученик её отправит, эта попытка уйдёт из очереди и
+     * проверять её будет незачем (см. withoutSuperseded()).
+     */
+    public function newerInProgress(): ?self
+    {
+        return static::query()
+            ->where('user_id', $this->user_id)
+            ->where('homework_id', $this->homework_id)
+            ->where('status', 'in_progress')
+            ->where('id', '>', $this->id)
+            ->latest('id')
+            ->first();
+    }
+
+    /** Есть ли у ученика более новая сданная попытка по этой же домашке. */
+    public function isSuperseded(): bool
+    {
+        return static::query()
+            ->where('user_id', $this->user_id)
+            ->where('homework_id', $this->homework_id)
+            ->where('status', '!=', 'in_progress')
+            ->where('id', '>', $this->id)
+            ->exists();
+    }
+
+    /**
+     * Строка per_task_results перенесена из прошлой попытки при «Перерешать
+     * ошибки» — задание в этой попытке не решалось заново (см.
+     * App\Service\Homework\MistakesRetry).
+     */
+    public function isTaskCarried($taskId): bool
+    {
+        return ! empty(($this->per_task_results ?? [])[$taskId]['carried']);
     }
 
     /*

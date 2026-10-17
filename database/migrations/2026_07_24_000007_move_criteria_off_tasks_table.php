@@ -51,7 +51,11 @@ return new class extends Migration
 
         foreach (['criteria', 'ai_rationale_template', 'comment', 'created_by', 'updated_by'] as $column) {
             if (Schema::hasColumn('tasks', $column)) {
-                DB::statement("ALTER TABLE tasks DROP COLUMN {$column}");
+                if (DB::getDriverName() !== 'mysql') {
+                    Schema::table('tasks', fn (Blueprint $table) => $table->dropColumn($column));
+                } else {
+                    DB::statement("ALTER TABLE tasks DROP COLUMN {$column}");
+                }
             }
         }
     }

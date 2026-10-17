@@ -103,7 +103,8 @@ class EnrollmentServiceTest extends TestCase
         $user = $this->makeUser();
         $course = $this->makeCourse();
 
-        $originalEnrolledAt = now()->subMonths(3);
+        // startOfSecond — в БД дата хранится без микросекунд.
+        $originalEnrolledAt = now()->subMonths(3)->startOfSecond();
 
         // Как при первичном редиме промокода (см. RedeemController::redeem()).
         $this->enroll->enrollUser($user, $course, [

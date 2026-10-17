@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
@@ -16,6 +17,16 @@ return new class extends Migration
     public function up(): void
     {
         if (!Schema::hasTable('homework_tasks')) {
+            return;
+        }
+
+        if (DB::getDriverName() !== 'mysql') {
+            // Тесты на SQLite (phpunit.xml): MODIFY — синтаксис MySQL.
+            Schema::table('homework_tasks', function (Blueprint $table) {
+                $table->string('type', 191)->nullable()->change();
+                $table->text('answer')->nullable()->change();
+            });
+
             return;
         }
 

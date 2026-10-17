@@ -108,6 +108,9 @@
                             <div class="flex items-center gap-2 flex-wrap min-w-0">
                                 <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium {{ $badge['class'] }}">{{ $badge['label'] }}</span>
                                 <span class="text-xs text-zinc-400 truncate">{{ $row['course_title'] }}</span>
+                                @if($row['retry_in_progress'])
+                                    <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">Начата попытка № {{ $row['retry_in_progress']->attempt_no }}</span>
+                                @endif
                             </div>
                             <span class="shrink-0 text-sm font-medium text-amber-700 whitespace-nowrap">{{ $actionLabel }} →</span>
                         </div>

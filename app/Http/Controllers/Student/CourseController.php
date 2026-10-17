@@ -33,7 +33,7 @@ class CourseController extends Controller
                 // Только сабмишены ЭТОГО ученика, последний — первым (см.
                 // homeworkBadgeColor(): та же логика выбора "актуального"
                 // сабмишена, что и в LessonController/HomeworkController —
-                // latest('id'), без разбора по статусу.
+                // последняя сданная, in_progress — только если сданных нет).
                 'lesson.homework.submissions' => function ($q) use ($user) {
                     $q->where('user_id', $user->id)->orderByDesc('id');
                 },
@@ -147,7 +147,10 @@ class CourseController extends Controller
             return null;
         }
 
-        $submission = $hw->submissions->first();
+        // Последняя сданная попытка; начатая повторная (in_progress) значок
+        // не перекрашивает — домашка уже сдана.
+        $submission = $hw->submissions->firstWhere('status', '!=', 'in_progress')
+            ?? $hw->submissions->first();
 
         if (!$submission) {
             return $hw->isOverdueFor($user) ? 'red' : 'gray';

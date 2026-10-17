@@ -7,6 +7,12 @@ class ChangeAnswerColumnToTextInHomeworkTasksTable extends Migration
 {
     public function up(): void
     {
+        // ENGINE/MODIFY — синтаксис MySQL. Тесты гоняются на SQLite (phpunit.xml),
+        // там это не нужно.
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         DB::statement('ALTER TABLE homework_tasks MODIFY answer TEXT NOT NULL');
     }
 

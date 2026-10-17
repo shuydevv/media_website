@@ -31,6 +31,15 @@ class SubmissionController extends Controller
         // Submission::pendingReviewQueue().
         $queue = Submission::pendingReviewQueue();
 
+        // Ученики, которые сейчас перерешивают работу из очереди (новая
+        // попытка начата, но не сдана) — пометка в списке, см. index.blade.
+        $retrying = $queue->isEmpty() ? collect() : Submission::query()
+            ->where('status', 'in_progress')
+            ->whereIn('user_id', $queue->pluck('user_id')->unique())
+            ->whereIn('homework_id', $queue->pluck('homework_id')->unique())
+            ->get(['id', 'user_id', 'homework_id'])
+            ->mapWithKeys(fn ($s) => [$s->user_id . ':' . $s->homework_id => $s->id]);
+
         // ⚠️ Работы с пропущенными заданиями (для админа)
         $skipped = Submission::with(['user','homework'])
         ->whereNotIn('status', ['checked','finished','done']) // не финальные
@@ -43,10 +52,11 @@ class SubmissionController extends Controller
             return false;
         })
         ->values();
+        $skipped = Submission::withoutSuperseded($skipped);
 
 
         $subs = Submission::with(['user','homework'])->latest()->paginate(20);
-        return view('mentor.submissions.index', ['submissions' => $subs, 'mine' => $mine, 'queue' => $queue, 'skipped' => $skipped], );
+        return view('mentor.submissions.index', ['submissions' => $subs, 'mine' => $mine, 'queue' => $queue, 'retrying' => $retrying, 'skipped' => $skipped], );
     }
 
     public function show(Submission $submission)

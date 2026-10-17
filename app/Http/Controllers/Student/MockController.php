@@ -65,10 +65,11 @@ class MockController extends Controller
             $submission = $latestFinishedByHomework->get($hw->id);
             $inProgress = $inProgressByHomework->get($hw->id);
 
-            if ($inProgress) {
-                $status = 'in_progress';
-            } elseif (!$submission) {
-                $status = 'not_started';
+            // Как и у домашек (HomeworkController::index()): статус — по
+            // последней сданной попытке. Начатая повторная его не перекрывает,
+            // о ней — отдельная пометка на карточке ('retryInProgress').
+            if (!$submission) {
+                $status = $inProgress ? 'in_progress' : 'not_started';
             } elseif ($submission->status === 'checked') {
                 $status = 'checked';
             } else {
@@ -84,7 +85,7 @@ class MockController extends Controller
             // $autoPct/$manualPct), а не "отвечено/не отвечено": иначе
             // полностью сданная, но плохо решённая работа показывала бы
             // 100%, что и есть тот самый "нереальный" процент.
-            $progressSubmission = $inProgress ?? $submission;
+            $progressSubmission = $submission ?? $inProgress;
             $perTaskResults = $progressSubmission?->per_task_results ?? [];
 
             $autoTasks = $hw->tasks->filter(fn ($t) => $t->isAutoGradable());
@@ -140,6 +141,7 @@ class MockController extends Controller
                 'submission'   => $submission,
                 'submittedAt'  => $submission?->updated_at,
                 'attemptsLeft' => $attemptsLeft,
+                'retryInProgress' => $submission && $inProgress ? $inProgress : null,
                 'autoScaled'   => $autoScaled,
                 'manualScaled' => $manualScaled,
                 'autoPct'      => $autoPct,

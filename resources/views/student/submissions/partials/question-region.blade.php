@@ -36,14 +36,28 @@
   // даже если он уже был верным — поэтому здесь никогда не блокируем.
   $isLockedCorrect = !$isMock && $savedResult && ($savedResult['status'] ?? null) === 'ok';
 
+  // «Перерешать ошибки»: навигация и прогресс — только по заданиям, которые
+  // решаются заново; перенесённые из прошлой попытки (carried) в них не
+  // участвуют, иначе полоса стартовала бы, например, с 70%.
+  $isCarriedTask = fn ($t) => !empty($perTask[$t->id]['carried']);
+  $navTasks = collect($tasks)->map(fn ($t, $i) => ['task' => $t, 'pos' => $i + 1])
+      ->reject(fn ($row) => $isCarriedTask($row['task']))
+      ->values();
+  $isMistakesRetry = $navTasks->count() < collect($tasks)->count();
+
   // Прогресс прохождения домашки — для полосы над навигацией по вопросам.
-  $answeredCount = collect($tasks)->filter(fn ($t) => array_key_exists($t->id, $answers))->count();
-  $progressPercent = $total > 0 ? round($answeredCount / $total * 100) : 0;
+  $answeredCount = $navTasks->filter(fn ($row) => array_key_exists($row['task']->id, $answers))->count();
+  $progressTotal = $navTasks->count();
+  $progressPercent = $progressTotal > 0 ? round($answeredCount / $progressTotal * 100) : 0;
 
   // Нормализуем один раз: и для проверки "есть ли подсказка" (иначе строка
   // из одних пробелов/переносов считалась бы непустой и рисовала пустую
   // кнопку/плашку), и для самого рендера через white-space:pre-wrap.
   $hintText = \App\Support\Text::normalize($task->hint ?? null);
+
+  // «Перерешать ошибки»: задание перенесено из прошлой попытки — только просмотр.
+  $isCarried = $isCarried ?? false;
+  $canCancel = $canCancel ?? false;
 @endphp
 
 <div class="max-w-3xl mx-auto px-3 sm:px-4 py-5 sm:py-6">
@@ -53,6 +67,9 @@
     <div class="flex items-center gap-2 sm:gap-3">
       @if(!empty($expiresAt))
         @include('components.mock-timer', ['expiresAt' => $expiresAt])
+      @endif
+      @if($canCancel)
+        @include('student.submissions.partials.cancel-attempt', ['submission' => $submission, 'isMock' => $isMock])
       @endif
       <a href="{{ route('student.submissions.finish', $submission) }}"
          hx-get="{{ route('student.submissions.finish', $submission) }}"
@@ -73,6 +90,13 @@
     </div>
   </div>
 
+  @if($isMistakesRetry)
+    <div class="mb-2 text-sm text-zinc-600">
+      Перерешиваем ошибки: исправлено {{ $answeredCount }} из {{ $progressTotal }}.
+      <span class="text-zinc-400">Остальные задания засчитаны из прошлой попытки.</span>
+    </div>
+  @endif
+
   {{-- Прогресс прохождения домашки --}}
   <div class="mb-4">
     <div class="h-2 rounded-full bg-gray-100 overflow-hidden">
@@ -82,16 +106,18 @@
 
   {{-- Навигация по вопросам --}}
   <div class="flex flex-wrap gap-2 mb-6">
-    @foreach($tasks as $i => $t)
-      @php $st = $statusOf($t); @endphp
-      <a href="{{ route('student.submissions.question', [$submission, $i + 1]) }}"
-         hx-get="{{ route('student.submissions.question', [$submission, $i + 1]) }}"
+    {{-- Номер на пилюле — позиция задания в работе (как на странице
+         результата), даже если перенесённые задания скрыты. --}}
+    @foreach($navTasks as $navRow)
+      @php $t = $navRow['task']; $pos = $navRow['pos']; $st = $statusOf($t); @endphp
+      <a href="{{ route('student.submissions.question', [$submission, $pos]) }}"
+         hx-get="{{ route('student.submissions.question', [$submission, $pos]) }}"
          hx-target="#wizard-app"
          hx-swap="innerHTML"
          hx-push-url="true"
          hx-disabled-elt="this"
-         class="pill-nav-item inline-flex items-center justify-center w-9 h-9 rounded-lg border text-sm font-medium {{ $pillClasses[$st] }} {{ ($i + 1) === $position ? 'ring-2 ring-blue-500' : '' }}">
-        {{ $i + 1 }}
+         class="pill-nav-item inline-flex items-center justify-center w-9 h-9 rounded-lg border text-sm font-medium {{ $pillClasses[$st] }} {{ $pos === $position ? 'ring-2 ring-blue-500' : '' }}">
+        {{ $pos }}
       </a>
     @endforeach
   </div>
@@ -141,7 +167,19 @@
 
     @include('student.submissions.partials.task-prompt', ['task' => $task])
 
-    @if($savedResult && $isMock)
+    @if($isCarried)
+      <div class="mb-4 p-3 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-700">
+        @if(isset($savedResult['score']))
+          Засчитано из прошлой попытки: {{ $savedResult['score'] }} / {{ $savedResult['max'] ?? $task->max_score }} баллов. В этой попытке задание не перерешивается.
+        @else
+          Ответ перенесён из прошлой попытки и ждёт проверки куратором. В этой попытке задание не перерешивается.
+        @endif
+      </div>
+      @if($savedAnswer !== null && $savedAnswer !== '')
+        <div class="text-xs sm:text-sm text-zinc-500 mb-1">Ваш ответ</div>
+        <div class="p-3 rounded-xl border border-zinc-200 text-sm text-zinc-800 whitespace-pre-wrap">{{ $savedAnswer }}</div>
+      @endif
+    @elseif($savedResult && $isMock)
       {{-- Пробник: ответ сохранён, но результат проверки не показываем до отправки работы. --}}
       <div class="mb-4 p-3 rounded-xl border border-blue-200 bg-blue-50 text-sm text-blue-800 inline-block">
         Ответ сохранён. Можно изменить его ниже.
@@ -164,7 +202,9 @@
       </div>
     @endif
 
-    @if($isManual)
+    @if($isCarried)
+      {{-- перенесённое задание — без формы ответа --}}
+    @elseif($isManual)
       <form method="POST" action="{{ route('student.submissions.question.save', [$submission, $position]) }}"
             hx-post="{{ route('student.submissions.question.save', [$submission, $position]) }}"
             hx-target="#wizard-app"
