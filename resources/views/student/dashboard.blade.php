@@ -170,6 +170,35 @@
             border-right: 8px solid transparent;
         }
 
+        /* Высоту строки сетки задаёт соседняя карточка «Ближайшие события»
+           (настоящие урок и домашка выше пустых). Квадрат с рыбой растёт до
+           этой высоты и остаётся квадратом, блок с кнопками — той же высоты.
+           Как: карточка с рыбой — size-контейнер (container-type: size), её
+           содержимое не влияет на высоту строки, а квадрат берёт размер от
+           высоты карточки (100cqh). Без этого рост квадрата зацикливался:
+           квадрат выше → строка выше → квадрат ещё выше. min-height держит
+           карточку не ниже квадрата 14rem, когда соседняя карточка низкая.
+           Потолок — 20rem и половина ширины карточки, чтобы блоку с
+           кнопками хватало места. На телефоне (≤480px) рыба над блоком. */
+        @media (min-width: 481px) {
+            .dashboard-mascot-row {
+                container-type: size;
+                min-height: 16.5rem;
+                align-items: center;
+            }
+            .dashboard-mascot-row .fish-stage,
+            .dashboard-mascot-row #fish-card {
+                --fish-side: max(14rem, min(100cqh, 50cqw, 20rem));
+            }
+            .dashboard-mascot-row .fish-stage {
+                width: var(--fish-side);
+                align-self: center;
+            }
+            .dashboard-mascot-row #fish-card {
+                height: var(--fish-side);
+            }
+        }
+
         /* Планшет: между квадратом с рыбой и блоком с кнопками — пошире,
            иначе они слипаются (md:gap-6 включается только с 768px, а до
            1280px и там тесновато). */

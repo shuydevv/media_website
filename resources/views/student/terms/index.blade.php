@@ -41,7 +41,7 @@
         default => $nextReview
             ? 'Повторять пока нечего. Откроется '.($nextReview['date']->isTomorrow() ? 'завтра' : $nextReview['date']->translatedFormat('j F'))
                 .' ('.$plural($nextReview['count'], $termWord).')'
-            : 'Здесь будут термины, которые ты выучишь. Вернём их в нужный момент, чтобы не забылись',
+            : 'Здесь будут термины, которые ты выучишь. Повторим их в нужный момент, чтобы не забылись',
       },
       'button' => ['available' => 'Повторить', 'in_progress' => 'Продолжить'][$review['status']] ?? null,
     ],
