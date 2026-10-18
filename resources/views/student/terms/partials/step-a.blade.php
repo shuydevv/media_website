@@ -37,7 +37,12 @@
     <input type="hidden" name="typed" id="term-a-typed" value="">
 
     {{-- Клетки — просто отображение; печатает ученик в прозрачное поле
-         поверх них (так на телефоне тап по клеткам открывает клавиатуру). --}}
+         поверх них (так на телефоне тап по клеткам открывает клавиатуру).
+         Поле — редактируемый блок, а не <input>: над клавиатурой Android
+         Chrome показывает у <input> панель автозаполнения (пароли, карты,
+         адреса), autocomplete="off" её не убирает. type="password" — хуже:
+         Chrome предлагает пароли, а часть клавиатур переключается на
+         латиницу. Текст читает скрипт в session.blade.php. --}}
     <div class="relative">
       <div id="term-a-cells" class="flex flex-wrap gap-1.5" data-locked="{{ count($revealed) }}">
         @for($i = 0; $i < $cellCount; $i++)
@@ -45,9 +50,11 @@
                        {{ isset($revealed[$i]) ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-white border-zinc-300 text-zinc-900' }}">{{ $revealed[$i] ?? '' }}</span>
         @endfor
       </div>
-      <input id="term-a-input" type="text" inputmode="text" enterkeyhint="done" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
-             aria-label="Название термина"
-             class="absolute inset-0 w-full h-full opacity-0 cursor-text" style="font-size:16px;">
+      <div id="term-a-input" contenteditable="true" role="textbox" inputmode="text" enterkeyhint="done"
+           autocapitalize="off" autocorrect="off" spellcheck="false" translate="no"
+           aria-label="Название термина"
+           class="absolute inset-0 w-full h-full opacity-0 cursor-text overflow-hidden whitespace-nowrap outline-none"
+           style="font-size:16px; caret-color:transparent;"></div>
     </div>
 
     <div class="mt-5">

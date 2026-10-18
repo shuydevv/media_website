@@ -61,31 +61,39 @@
   /* ---------- способ А: ввод в квадратики ---------- */
 
   // Квадратики не должны прятаться под экранной клавиатурой: после её
-  // появления страница докручивается так, чтобы клетки были над ней (и над
-  // полосой прогресса внизу, если она встала над клавиатурой), но не ушли
-  // под рыбу-подсказку сверху. visualViewport — видимая часть страницы без
-  // клавиатуры; есть во всех современных мобильных браузерах.
+  // появления страница докручивается так, чтобы клетки (а если влезает — и
+  // кнопка подсказки под ними) были над ней и над полосой прогресса внизу,
+  // но не ушли под рыбу-подсказку сверху. visualViewport — видимая часть
+  // страницы без клавиатуры; есть во всех современных мобильных браузерах.
+  // Прокрутка мгновенная и до точного места: функция зовётся несколько раз,
+  // пока клавиатура выезжает, и плавная прокрутка от устаревших координат
+  // накапливалась — экран уезжал слишком низко.
   var KEYBOARD_GAP = 16;
-  function keepCellsAboveKeyboard() {
-    var input = $('term-a-input');
-    var cellsBox = $('term-a-cells');
-    var vv = window.visualViewport;
-    if (!input || !cellsBox || !vv || document.activeElement !== input) return;
-
-    // Под содержимым — место высотой с клавиатуру: иначе, если клетки у
-    // самого низа страницы, прокручивать было бы некуда.
+  function keyboardSpacer() {
     var spacer = $('term-keyboard-spacer');
     if (!spacer) {
       spacer = document.createElement('div');
       spacer.id = 'term-keyboard-spacer';
       app.parentNode.insertBefore(spacer, app.nextSibling);
     }
-    spacer.style.height = Math.max(0, window.innerHeight - vv.height) + 'px';
+    return spacer;
+  }
+  function dropKeyboardSpacer() {
+    var spacer = $('term-keyboard-spacer');
+    if (spacer) spacer.style.height = '0px';
+  }
+  function keepCellsAboveKeyboard() {
+    var input = $('term-a-input');
+    var cellsBox = $('term-a-cells');
+    var form = $('term-a-form');
+    var vv = window.visualViewport;
+    if (!input || !cellsBox || !vv || document.activeElement !== input) return;
 
-    var cells = cellsBox.getBoundingClientRect();
+    // Клавиатура закрылась (на Android — кнопкой «назад», фокус остался).
+    if (window.innerHeight - vv.height < 80) { dropKeyboardSpacer(); return; }
+
     var bottom = vv.offsetTop + vv.height;
     var top = vv.offsetTop;
-
     var strip = $('term-bottom-strip');
     if (strip && strip.offsetParent !== null) {
       var stripTop = strip.getBoundingClientRect().top;
@@ -96,11 +104,27 @@
       top = Math.max(top, hud.getBoundingClientRect().bottom);
     }
 
+    var cells = cellsBox.getBoundingClientRect();
+    var area = bottom - top - 2 * KEYBOARD_GAP;
+    var formBox = form ? form.getBoundingClientRect() : cells;
+    // Целимся в низ всей формы (клетки + «Открыть букву»), если она
+    // помещается целиком, иначе — в низ клеток.
+    var target = formBox.bottom - cells.top <= area ? formBox.bottom : cells.bottom;
+
     var shift = 0;
-    if (cells.bottom > bottom - KEYBOARD_GAP) shift = cells.bottom - (bottom - KEYBOARD_GAP);
-    // Не уводим клетки верхом под рыбу/за край.
+    if (target > bottom - KEYBOARD_GAP) shift = target - (bottom - KEYBOARD_GAP);
     if (cells.top - shift < top + KEYBOARD_GAP) shift = cells.top - (top + KEYBOARD_GAP);
-    if (Math.abs(shift) > 1) window.scrollBy({ top: shift, behavior: 'smooth' });
+    if (Math.abs(shift) < 2) return;
+
+    // Прокрутить вниз некуда (клетки у самого низа страницы) — добавляем
+    // под содержимым ровно недостающее место.
+    var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    var lack = window.scrollY + shift - maxScroll;
+    if (shift > 0 && lack > 0) {
+      var spacer = keyboardSpacer();
+      spacer.style.height = ((parseFloat(spacer.style.height) || 0) + Math.ceil(lack)) + 'px';
+    }
+    window.scrollTo({ top: window.scrollY + shift, behavior: 'instant' });
   }
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', keepCellsAboveKeyboard);
@@ -118,12 +142,30 @@
     var room = cells.length - locked;
     var sent = false;
     var shown = 0;
+    var composing = false;
+
+    // Поле — contenteditable (см. step-a.blade.php), текст — textContent.
+    function caretToEnd() {
+      if (document.activeElement !== input) return;
+      var range = document.createRange();
+      range.selectNodeContents(input);
+      range.collapse(false);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
 
     function render() {
       // Только буквы и цифры: пробелы и дефисы в клетки не вводятся.
-      var letters = Array.from(input.value).filter(function (ch) { return /[\p{L}\p{N}]/u.test(ch); }).slice(0, room);
-      input.value = letters.join('');
-      hidden.value = input.value;
+      var letters = Array.from(input.textContent).filter(function (ch) { return /[\p{L}\p{N}]/u.test(ch); }).slice(0, room);
+      var text = letters.join('');
+      // Пока клавиатура «собирает» слово (composition), DOM не трогаем —
+      // иначе на Android буквы задваиваются. Лишнее срежем после.
+      if (!composing && input.textContent !== text) {
+        input.textContent = text;
+        caretToEnd();
+      }
+      hidden.value = text;
 
       var focused = document.activeElement === input;
       var cursor = Math.min(letters.length, room - 1);
@@ -146,29 +188,47 @@
     function send() {
       if (sent || hidden.value === '') return;
       sent = true;
-      input.readOnly = true;
+      input.setAttribute('contenteditable', 'false');
       htmx.trigger(form, 'submit');
     }
 
     input.addEventListener('input', function () {
       // Последняя клетка заполнена — отправляем без кнопки.
+      if (render() === room && room > 0 && !composing) send();
+    });
+    input.addEventListener('compositionstart', function () { composing = true; });
+    input.addEventListener('compositionend', function () {
+      composing = false;
       if (render() === room && room > 0) send();
+    });
+    // Перенос строки в редактируемом блоке — это отправка ответа (клавиша
+    // «Готово» на телефоне шлёт его без keydown Enter).
+    input.addEventListener('beforeinput', function (evt) {
+      if (evt.inputType === 'insertParagraph' || evt.inputType === 'insertLineBreak') {
+        evt.preventDefault();
+        send();
+      }
+    });
+    // Вставка — только текстом, без разметки.
+    input.addEventListener('paste', function (evt) {
+      evt.preventDefault();
+      var text = (evt.clipboardData || window.clipboardData).getData('text');
+      document.execCommand('insertText', false, text);
     });
     input.addEventListener('focus', function () {
       render();
+      caretToEnd();
       // Клавиатура выезжает не сразу — подстраховываемся, пока она едет
-      // (основная подстройка — по resize у visualViewport ниже).
+      // (основная подстройка — по resize у visualViewport выше).
       [150, 400, 800].forEach(function (ms) { setTimeout(keepCellsAboveKeyboard, ms); });
     });
     input.addEventListener('blur', function () {
       render();
-      var spacer = $('term-keyboard-spacer');
-      if (spacer) spacer.style.height = '0px';
+      dropKeyboardSpacer();
     });
     input.addEventListener('keydown', function (evt) {
       // Enter — для коротких «других названий» (ВВП), которые клетки не
-      // заполняют. Нативную отправку формы гасим: send() не пускает пустой
-      // и повторный ответ.
+      // заполняют. send() не пускает пустой и повторный ответ.
       if (evt.key === 'Enter') {
         evt.preventDefault();
         send();
