@@ -257,6 +257,21 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
         Route::put('/users/{user}/courses/{course}/autopay', [\App\Http\Controllers\Admin\Billing\AutopayController::class, 'update'])
             ->name('admin.billing.autopay.update');
 
+        // Тренажёр терминов: фото к терминам (см. App\Service\Terms\TermPhotoStore).
+        Route::group(['namespace' => 'Terms', 'prefix' => 'terms'], function () {
+            Route::get('/photos', 'Photos\IndexController')->name('admin.terms.photos.index');
+            Route::post('/photos', 'Photos\StoreController')->name('admin.terms.photos.store');
+
+            Route::get('/access', 'AccessController@index')->name('admin.terms.access.index');
+            Route::post('/access/courses', 'AccessController@storeCourse')->name('admin.terms.access.courses.store');
+            Route::delete('/access/courses/{course}', 'AccessController@destroyCourse')->name('admin.terms.access.courses.destroy');
+            Route::post('/access/users', 'AccessController@storeUser')->name('admin.terms.access.users.store');
+            Route::delete('/access/users/{user}', 'AccessController@destroyUser')->name('admin.terms.access.users.destroy');
+
+            Route::get('/reports', 'ReportController@index')->name('admin.terms.reports.index');
+            Route::patch('/reports/{termReport}', 'ReportController@update')->name('admin.terms.reports.update');
+        });
+
         Route::group(['namespace' => 'Telegram', 'prefix' => 'telegram'], function () {
             Route::get('/', 'IndexController')->name('admin.telegram.index');
             Route::get('/texts', 'Texts\EditController')->name('admin.telegram.texts.edit');
@@ -483,6 +498,33 @@ Route::middleware(['auth'])
         Route::get('/', [TaskPracticeController::class, 'index'])->name('index');
         Route::get('/{task}', [TaskPracticeController::class, 'show'])->name('show');
         Route::post('/{task}/check', [TaskPracticeController::class, 'check'])->name('check');
+    });
+
+// Тренажёр терминов (задание 18). Вместо billing.current — свой terms.access:
+// тренажёр не привязан к одному курсу в URL, доступ считается по всем курсам
+// ученика сразу (см. App\Service\Terms\TermAccess).
+use App\Http\Controllers\Student\TermTrainerController;
+
+Route::middleware(['auth', 'terms.access'])
+    ->prefix('student/terms')
+    ->name('student.terms.')
+    ->group(function () {
+        Route::get('/', [TermTrainerController::class, 'index'])->name('index');
+        Route::post('/start/{kind}', [TermTrainerController::class, 'start'])
+            ->whereIn('kind', ['learn', 'review', 'free'])
+            ->name('start');
+
+        Route::get('/sessions/{termSession}', [TermTrainerController::class, 'show'])->name('session');
+        Route::post('/sessions/{termSession}/card', [TermTrainerController::class, 'card'])->name('session.card');
+        Route::post('/sessions/{termSession}/hint', [TermTrainerController::class, 'hint'])->name('session.hint');
+        Route::post('/sessions/{termSession}/answer', [TermTrainerController::class, 'answer'])->name('session.answer');
+        Route::post('/sessions/{termSession}/choose', [TermTrainerController::class, 'choose'])->name('session.choose');
+        Route::post('/sessions/{termSession}/next', [TermTrainerController::class, 'next'])->name('session.next');
+        Route::post('/sessions/{termSession}/report', [TermTrainerController::class, 'report'])
+            ->middleware('throttle:20,1')
+            ->name('session.report');
+
+        Route::get('/{term}', [TermTrainerController::class, 'term'])->whereNumber('term')->name('show');
     });
 
 // Проверка домашних ментором

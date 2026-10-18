@@ -10,13 +10,18 @@
      без sm: работают, но ни один sm:-вариант визуально не срабатывал, hard
      refresh не помог).
 
-     JS по window.innerWidth здесь всё ещё нужен, но только для одной вещи:
-     на странице выполнения домашки (student.submissions.question) на ПК
-     меню изначально скрыто — вместо него в правом нижнем углу кнопка
-     "Раскрыть меню", по клику меню появляется на обычном месте. На
-     мобилке для этой же страницы — без изменений, меню как везде. --}}
+     На страницах, где ученик решает задания, — выполнение домашки
+     (student.submissions.question) и сессия тренажёра терминов
+     (student.terms.session) — меню изначально свёрнуто, на любой ширине:
+     случайный тап по нему посреди задания уводил бы со страницы. Вместо
+     меню в правом нижнем углу кнопка "Раскрыть меню". Когда меню раскрыто,
+     на том же месте та же кнопка — "Скрыть меню": сворачивает обратно.
+     Исключение — тренажёр на телефоне и планшете: там на месте меню полоска
+     прогресса, и меню вместе с кнопкой скрыты совсем (см. <style> в
+     student/terms/session.blade.php). --}}
 @php
-    $isHomeworkSolvingPage = request()->routeIs('student.submissions.question');
+    $isHomeworkSolvingPage = request()->routeIs('student.submissions.question')
+        || request()->routeIs('student.terms.session');
 @endphp
 <style>
     /* Одна и та же "стеклянная таблетка" на мобилке и на ПК — раньше
@@ -128,8 +133,8 @@
         white-space: nowrap;
     }
 
-    /* Скрытое по умолчанию состояние на странице выполнения домашки (ПК) —
-       переключается JS через .is-collapsed. */
+    /* Свёрнутое состояние на страницах решения заданий — переключается JS
+       через .is-collapsed. */
     #student-bottom-nav.is-collapsed {
         display: none;
     }
@@ -164,6 +169,13 @@
     }
     #student-bottom-nav-reveal.is-visible {
         display: block;
+    }
+    /* Раскрытое меню на узком экране тянется почти во всю ширину и
+       перекрыло бы кнопку в углу — поднимаем кнопку («Скрыть меню») над ним. */
+    @media (max-width: 899px) {
+        #student-bottom-nav-reveal.is-open {
+            bottom: calc(96px + env(safe-area-inset-bottom));
+        }
     }
 </style>
 
@@ -203,33 +215,31 @@ document.addEventListener('DOMContentLoaded', function () {
     var collapsible = nav.dataset.collapsible === '1';
     var revealed = false;
 
+    function gsapOk() { return typeof window.gsap !== 'undefined'; }
+
     function applyLayout() {
-        // Визуально меню теперь одинаковое на любой ширине — isDesktop
-        // нужен только для того, чтобы решить, скрывать ли его по
-        // умолчанию на странице выполнения домашки (см. ниже).
-        var isDesktop = window.innerWidth >= 640;
+        // Свёрнуто на страницах решения заданий, пока ученик сам не раскрыл
+        // меню. На любой ширине: на телефоне случайный тап по меню посреди
+        // задания так же уводит со страницы, как и на ПК.
+        nav.classList.toggle('is-collapsed', collapsible && !revealed);
 
-        // Скрыто по умолчанию только на ПК, только на странице выполнения
-        // домашки, и только пока пользователь сам не нажал "Раскрыть меню".
-        // На мобилке (isDesktop === false) — всегда как обычно.
-        var shouldCollapse = collapsible && isDesktop && !revealed;
-        nav.classList.toggle('is-collapsed', shouldCollapse);
-
+        // Одна кнопка на одном месте: «Раскрыть меню» / «Скрыть меню».
         if (revealBtn) {
-            revealBtn.classList.toggle('is-visible', shouldCollapse);
+            revealBtn.classList.toggle('is-visible', collapsible);
+            revealBtn.textContent = revealed ? 'Скрыть меню' : 'Раскрыть меню';
+            revealBtn.setAttribute('aria-expanded', revealed ? 'true' : 'false');
+            revealBtn.classList.toggle('is-open', revealed);
         }
     }
 
     function revealWithAnimation() {
-        var gsapOk = typeof window.gsap !== 'undefined';
-
         // У <nav> уже есть свой CSS-transform (translateX(-50%) для
         // центрирования таблетки, см. #student-bottom-nav). Если дать GSAP крутить
         // y/scale прямо на ней, он перечитает и подменит этот transform —
         // центрирование может съехать. Поэтому autoAlpha (не трогает
         // transform) — на <nav>, а пружинистые y/scale — на вложенном
         // #student-bottom-nav-inner, у которого своего transform нет.
-        if (!gsapOk) {
+        if (!gsapOk()) {
             nav.classList.remove('is-collapsed');
             return;
         }
@@ -248,25 +258,42 @@ document.addEventListener('DOMContentLoaded', function () {
             );
     }
 
+    // Обратное движение: меню уходит вниз.
+    function collapseWithAnimation() {
+        function done() {
+            nav.classList.add('is-collapsed');
+            if (gsapOk()) gsap.set([nav, inner], { clearProps: 'all' });
+        }
+
+        if (!gsapOk()) {
+            done();
+            return;
+        }
+
+        gsap.timeline({ onComplete: done })
+            .to(inner, { y: 26, scale: 0.85, transformOrigin: '50% 100%', duration: 0.3, ease: 'power2.in' })
+            .to(nav, { autoAlpha: 0, duration: 0.25, ease: 'power1.in' }, '<0.05');
+    }
+
     if (revealBtn) {
         revealBtn.addEventListener('click', function () {
-            if (revealed) return;
-            revealed = true;
+            revealed = !revealed;
 
-            var gsapOk = typeof window.gsap !== 'undefined';
-            if (gsapOk) {
-                gsap.to(revealBtn, {
-                    scale: 0.7,
-                    autoAlpha: 0,
-                    duration: 0.22,
-                    ease: 'power2.in',
-                    onComplete: function () { revealBtn.classList.remove('is-visible'); },
-                });
+            // Надпись на кнопке меняется в «моргании» — кнопка на миг
+            // сжимается и возвращается с новым текстом.
+            if (gsapOk()) {
+                gsap.timeline()
+                    .to(revealBtn, { scale: 0.85, autoAlpha: 0.4, duration: 0.12, ease: 'power2.in', onComplete: applyLayout })
+                    .to(revealBtn, { scale: 1, autoAlpha: 1, duration: 0.25, ease: 'back.out(2.5)', clearProps: 'transform,opacity,visibility' });
             } else {
-                revealBtn.classList.remove('is-visible');
+                applyLayout();
             }
 
-            revealWithAnimation();
+            if (revealed) {
+                revealWithAnimation();
+            } else {
+                collapseWithAnimation();
+            }
         });
     }
 

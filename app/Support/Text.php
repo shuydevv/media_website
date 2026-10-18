@@ -26,4 +26,25 @@ class Text
 
         return $s === '' ? null : $s;
     }
+
+    /**
+     * Русское склонение после числа: plural(5, ['термин', 'термина', 'терминов'])
+     * → «5 терминов». Формы — для 1, 2–4 и 5+.
+     *
+     * @param array{0: string, 1: string, 2: string} $forms
+     */
+    public static function plural(int $n, array $forms, bool $withNumber = true): string
+    {
+        $abs = abs($n) % 100;
+        $last = $abs % 10;
+
+        $form = match (true) {
+            $abs >= 11 && $abs <= 14 => $forms[2],
+            $last === 1 => $forms[0],
+            $last >= 2 && $last <= 4 => $forms[1],
+            default => $forms[2],
+        };
+
+        return $withNumber ? "{$n} {$form}" : $form;
+    }
 }

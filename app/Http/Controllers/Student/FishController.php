@@ -12,6 +12,10 @@ class FishController extends Controller
     {
         $user = $request->user();
         $result = $fish->feed($user);
+        if ($result['fed'] > 0) {
+            // Рыба сегодня сыта — реплики «покорми меня» до завтра не будет.
+            app(\App\Service\Trainers\FishSpeech::class)->markFed($user);
+        }
 
         $fishLevel = $fish->levelFor((int) $user->fish_total_fed);
         $fishProgress = $fish->progressFor((int) $user->fish_total_fed);

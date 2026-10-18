@@ -127,6 +127,24 @@ class FishFoodService
     }
 
     /**
+     * Корм за законченную сессию тренажёра терминов. Сумму (0–3) считает
+     * App\Service\Terms\SessionReward, one-shot гарантирует вызывающий код:
+     * TermTrainer начисляет под блокировкой строки сессии и сразу пишет
+     * term_sessions.corm_awarded.
+     */
+    public function awardTermSession(User $user, int $corm): void
+    {
+        if ($corm <= 0) {
+            return;
+        }
+
+        $this->withLockedUser($user, function (User $locked) use ($corm) {
+            $locked->fish_corm_balance = (int) $locked->fish_corm_balance + $corm;
+            $locked->save();
+        });
+    }
+
+    /**
      * Начисляет бонус за визит не чаще раза в календарный день.
      */
     public function awardDailyVisit(User $user): bool
@@ -265,24 +283,23 @@ class FishFoodService
      *
      * @return array<string, string> slug => подпись
      */
-    public function availableBackgrounds(): array
+    public function availableBackgrounds(?User $user = null): array
     {
         $labels = config('fish.background_labels', []);
         $files = glob(public_path('img/mascot/background/*.jpg')) ?: [];
         $free = config('fish.free_backgrounds', []);
         $default = config('fish.default_background');
-        $seasonal = config('fish.seasonal_backgrounds', []);
-        $currentMonth = (int) now()->format('n');
+        $purchased = $user?->fish_unlocked_backgrounds ?? [];
 
         $backgrounds = [];
         foreach ($files as $file) {
             $slug = pathinfo($file, PATHINFO_FILENAME);
 
-            // Сезонный фон (например "Новый год") — не просто заблокирован,
-            // а вообще не показывается в выборе за пределами своих месяцев
-            // (config('fish.seasonal_backgrounds')), даже если файл уже
-            // лежит на диске.
-            if (isset($seasonal[$slug]) && !in_array($currentMonth, $seasonal[$slug], true)) {
+            // Сезонный фон вне своего периода не показывается вообще (не
+            // просто заблокирован) — кроме тех, кто его уже купил: купленное
+            // остаётся навсегда. Без $user (проверка покупки) — только в
+            // сезон: купить вне сезона нельзя.
+            if (!$this->isBackgroundInSeason($slug) && !in_array($slug, $purchased, true)) {
                 continue;
             }
 
@@ -312,6 +329,25 @@ class FishFoodService
         });
 
         return $backgrounds;
+    }
+
+    /**
+     * Не сезонный фон — всегда; сезонный — только в свой период
+     * (config('fish.seasonal_backgrounds'), даты 'мм-дд' включительно;
+     * период может переходить через Новый год).
+     */
+    public function isBackgroundInSeason(string $slug): bool
+    {
+        $season = config("fish.seasonal_backgrounds.{$slug}");
+        if (!$season) {
+            return true;
+        }
+
+        $today = now()->format('m-d');
+
+        return $season['from'] <= $season['to']
+            ? $today >= $season['from'] && $today <= $season['to']
+            : $today >= $season['from'] || $today <= $season['to'];
     }
 
     /**

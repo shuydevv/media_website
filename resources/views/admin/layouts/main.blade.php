@@ -32,6 +32,7 @@
             ['Уроки', route('admin.lessons.index'), 'admin.lessons.*'],
             ['Домашки', route('admin.homeworks.index'), 'admin.homeworks.*'],
             ['Банк заданий', route('admin.tasks.index'), 'admin.tasks.*'],
+            ['Термины', route('admin.terms.photos.index'), 'admin.terms.*'],
             ['Проверка работ', route('mentor.submissions.index'), 'mentor.*'],
         ],
         'Сайт' => [

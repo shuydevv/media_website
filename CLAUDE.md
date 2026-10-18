@@ -102,6 +102,25 @@ row-lock промокодов на SQLite пропускается. Старые
   (`POST /student/fish/feed`), настройки уровней в `config/fish.php`. Косметика, намеренно
   не завязана на billing-статус (см. комментарий у роута в `web.php`).
 
+- Тренажёр терминов (задание 18) — `/student/terms`, интервальное повторение 190 понятий
+  обществознания. Правила целиком в `docs/terms/Механика тренажёра терминов задание 18.md` —
+  читай её перед правкой, почти у каждого числа там есть причина. База терминов —
+  `docs/terms/egkh_terms_18.json`, заливается `php artisan terms:import` (`TermImporter`):
+  руками в таблицах `terms`/`term_features` ничего не правится, тексты признаков без
+  согласования автора не переписываются (правила — в спеке, «Формулировки признаков»). Код — `app/Service/Terms/`: чистая логика
+  без БД (`TermSchedule`, `AnswerMatcher`, `SessionReward`, `DistractorPicker`, тесты в
+  `tests/Unit/Service/Terms` — на `PHPUnit\Framework\TestCase`, базу не трогают) и
+  `TermTrainer` — сессии и запись прогресса (`user_terms`, `term_sessions`). Доступ —
+  `TermAccess` + middleware `terms.access`, не `billing.current`. Корм за сессию идёт через
+  `FishFoodService::awardTermSession()`. Проверить «следующий день» — `php artisan terms:shift`.
+  Админка «Термины» (`/admin/terms/*`): фото, доступ (доп. курсы и отдельные ученики),
+  жалобы учеников из квиза.
+- Тренажёры на дашборде — в блоке с рыбой: кнопка «Тренажёры» и реплика рыбы в облачке.
+  Тренажёр регистрируется в `config/trainers.php` (класс с интерфейсом
+  `App\Service\Trainers\Trainer`: сообщает ситуацию и свои слова). Что говорит рыба —
+  `FishSpeech` + `config/fish_speech.php` (фразы согласованы с автором, не переписывать).
+  Закрытые крестиком реплики помнит браузер; вернуть — `/student/dashboard?fish=reset`.
+
 - Отчёт по ученику — `/admin/users/{id}` (`Admin\User\ShowController` → `Service\StudentReport`,
   только читает). Данные для него собираются в других местах: просмотр уроков —
   `lesson_views` (скрипт плеера Kinescope `student/lessons/partials/watch-tracker.blade.php` →

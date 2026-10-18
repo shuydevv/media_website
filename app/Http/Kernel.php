@@ -68,5 +68,6 @@ class Kernel extends HttpKernel
         'admin' => AdminMiddleware::class,
         'mentor' => \App\Http\Middleware\MentorMiddleware::class,
         'billing.current' => \App\Http\Middleware\EnsureCourseBillingCurrent::class,
+        'terms.access' => \App\Http\Middleware\EnsureTermTrainerAccess::class,
     ];
 }

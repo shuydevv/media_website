@@ -24,7 +24,8 @@ class ProfileController extends Controller
 
         $fishLevel = $fish->levelFor((int) $user->fish_total_fed);
 
-        $fishBackgrounds = $fish->availableBackgrounds();
+        // С $user — чтобы купленный сезонный фон был виден и вне сезона.
+        $fishBackgrounds = $fish->availableBackgrounds($user);
         $fishAccessories = $fish->availableAccessories();
 
         return view('student.profile.show', [

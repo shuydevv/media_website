@@ -1,0 +1,5900 @@
+[
+  {
+    "id": 1,
+    "slug": "chelovek-kak-biosocialnoe-suschestvo",
+    "title": "Человек как биосоциальное существо",
+    "image": "chelovek-kak-biosocialnoe-suschestvo.jpg",
+    "code": "1.1",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "chelovek-kak-biosocialnoe-suschestvo__f1",
+        "text": "обладает сознанием, мышлением и членораздельной речью",
+        "group": null
+      },
+      {
+        "id": "chelovek-kak-biosocialnoe-suschestvo__f2",
+        "text": "обладает способностью создавать сложные орудия труда",
+        "group": null
+      },
+      {
+        "id": "chelovek-kak-biosocialnoe-suschestvo__f3",
+        "text": "обладает способностью к целенаправленной, в том числе творческой деятельности",
+        "group": null
+      },
+      {
+        "id": "chelovek-kak-biosocialnoe-suschestvo__f4",
+        "text": "наличие духовных потребностей",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "slug": "lichnost",
+    "title": "Личность",
+    "image": "lichnost.jpg",
+    "code": "1.1",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "lichnost__f1",
+        "text": "совокупность социально значимых качеств человека",
+        "group": null
+      },
+      {
+        "id": "lichnost__f2",
+        "text": "формируется в процессе усвоения социальных норм и образцов, культуры данного общества",
+        "group": null
+      },
+      {
+        "id": "lichnost__f3",
+        "text": "формируется и развивается на протяжении всей жизни человека",
+        "group": null
+      },
+      {
+        "id": "lichnost__f4",
+        "text": "субъект социальных отношений и сознательной деятельности",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "slug": "soznanie",
+    "title": "Сознание",
+    "image": "soznanie.jpg",
+    "code": "1.1",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "soznanie__f1",
+        "text": "свойственно только людям",
+        "group": null
+      },
+      {
+        "id": "soznanie__f2",
+        "text": "связано с речью и деятельностью",
+        "group": null
+      },
+      {
+        "id": "soznanie__f3",
+        "text": "заключается в осмыслении человеком объективного мира и своих действий, в обобщенном отражении действительности",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "slug": "sposobnosti-cheloveka",
+    "title": "Способности человека",
+    "image": "sposobnosti-cheloveka.jpg",
+    "code": "1.1",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "sposobnosti-cheloveka__f1",
+        "text": "качества, обеспечивающие успешность выполнения индивидом определённого рода деятельности",
+        "group": null
+      },
+      {
+        "id": "sposobnosti-cheloveka__f2",
+        "text": "основаны на генетически предопределенных задатках",
+        "group": null
+      },
+      {
+        "id": "sposobnosti-cheloveka__f3",
+        "text": "развиваются постепенно в процессе обучения и освоения соответствующей деятельности",
+        "group": null
+      },
+      {
+        "id": "sposobnosti-cheloveka__f4",
+        "text": "их развитие зависит от активности и целеустремленности самого человека",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "slug": "potrebnost",
+    "title": "Потребность",
+    "image": "potrebnost.jpg",
+    "code": "1.1",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "potrebnost__f1",
+        "text": "нужда в чём-либо необходимом для существования и развития человека",
+        "group": null
+      },
+      {
+        "id": "potrebnost__f2",
+        "text": "безграничность",
+        "group": null
+      },
+      {
+        "id": "potrebnost__f3",
+        "text": "переживается и осознается человеком",
+        "group": null
+      },
+      {
+        "id": "potrebnost__f4",
+        "text": "лежит в основе мотивов поведения человека (побуждает к деятельности)",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "slug": "mirovozzrenie",
+    "title": "Мировоззрение",
+    "image": "mirovozzrenie.jpg",
+    "code": "1.2",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "mirovozzrenie__f1",
+        "text": "система взглядов, оценок, норм и установок, ценностей, чувств, убеждений",
+        "group": null
+      },
+      {
+        "id": "mirovozzrenie__f2",
+        "text": "определяет отношение человека к природе, обществу и самому себе",
+        "group": null
+      },
+      {
+        "id": "mirovozzrenie__f3",
+        "text": "создает определенную картину мира для человека",
+        "group": null
+      },
+      {
+        "id": "mirovozzrenie__f4",
+        "text": "является ориентиром для жизни и деятельности человека",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "slug": "obschenie-kak-vid-deyatelnosti",
+    "title": "Общение как вид деятельности",
+    "image": "obschenie-kak-vid-deyatelnosti.jpg",
+    "code": "1.3",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "obschenie-kak-vid-deyatelnosti__f1",
+        "text": "обмен информацией, мыслями, чувствами между людьми",
+        "group": null
+      },
+      {
+        "id": "obschenie-kak-vid-deyatelnosti__f2",
+        "text": "установление и развитие взаимных отношений, контактов между людьми",
+        "group": null
+      },
+      {
+        "id": "obschenie-kak-vid-deyatelnosti__f3",
+        "text": "предполагает наличие партнёра",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "slug": "uchenie-kak-vid-deyatelnosti",
+    "title": "Учение (как вид деятельности)",
+    "image": "uchenie-kak-vid-deyatelnosti.jpg",
+    "code": "1.3",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "uchenie-kak-vid-deyatelnosti__f1",
+        "text": "направленность на получение знаний, умений и навыков",
+        "group": null
+      },
+      {
+        "id": "uchenie-kak-vid-deyatelnosti__f2",
+        "text": "требует наличия специальных средств - учебников и специальных лиц - преподавателей",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "slug": "igra-kak-vid-deyatelnosti",
+    "title": "Игра как вид деятельности",
+    "image": "igra-kak-vid-deyatelnosti.jpg",
+    "code": "1.3",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "igra-kak-vid-deyatelnosti__f1",
+        "text": "направленность на получение удовлетворения от самого процесса",
+        "group": null
+      },
+      {
+        "id": "igra-kak-vid-deyatelnosti__f2",
+        "text": "совершается по определенным правилам",
+        "group": null
+      },
+      {
+        "id": "igra-kak-vid-deyatelnosti__f3",
+        "text": "происходит в условной воображаемой ситуации",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "slug": "deyatelnost",
+    "title": "Деятельность",
+    "image": "deyatelnost.jpg",
+    "code": "1.3",
+    "priority": 1,
+    "confusable_with": [
+      "trud-kak-faktor-proizvodstva"
+    ],
+    "features": [
+      {
+        "id": "deyatelnost__f1",
+        "text": "целенаправленность (целевой характер)",
+        "group": null
+      },
+      {
+        "id": "deyatelnost__f2",
+        "text": "осознанность (осознанный характер)",
+        "group": null
+      },
+      {
+        "id": "deyatelnost__f3",
+        "text": "преобразующий характер",
+        "group": null
+      },
+      {
+        "id": "deyatelnost__f4",
+        "text": "продуктивный характер",
+        "group": null
+      },
+      {
+        "id": "deyatelnost__f5",
+        "text": "осуществляется в обществе (общественный характер)",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "slug": "svoboda-svoboda-cheloveka",
+    "title": "Свобода (свобода человека)",
+    "image": "svoboda-svoboda-cheloveka.jpg",
+    "code": "1.3",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "svoboda-svoboda-cheloveka__f1",
+        "text": "подразумевает возможность выбора",
+        "group": null
+      },
+      {
+        "id": "svoboda-svoboda-cheloveka__f2",
+        "text": "ограничена объективными рамками законов природы и общества",
+        "group": null
+      },
+      {
+        "id": "svoboda-svoboda-cheloveka__f3",
+        "text": "подразумевает ответственность личности за результаты своего выбора",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "slug": "otvetstvennost",
+    "title": "Ответственность",
+    "image": "otvetstvennost.jpg",
+    "code": "1.3",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "otvetstvennost__f1",
+        "text": "осознание и учет возможных последствий своих действий",
+        "group": null
+      },
+      {
+        "id": "otvetstvennost__f2",
+        "text": "готовность следовать нормам и принимать санкции за их нарушение",
+        "group": null
+      },
+      {
+        "id": "otvetstvennost__f3",
+        "text": "подразумевает выполнение своего нравственного долга",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "slug": "socialnoe-poznanie",
+    "title": "Социальное познание",
+    "image": "socialnoe-poznanie.jpg",
+    "code": "1.4",
+    "priority": 2,
+    "confusable_with": [
+      "myshlenie",
+      "nauchnoe-poznanie-nauka",
+      "poznanie"
+    ],
+    "features": [
+      {
+        "id": "socialnoe-poznanie__f1",
+        "text": "связано с развитием и приобретением знания о человеке и обществе",
+        "group": null
+      },
+      {
+        "id": "socialnoe-poznanie__f2",
+        "text": "субъект и объект познания совпадают",
+        "group": null
+      },
+      {
+        "id": "socialnoe-poznanie__f3",
+        "text": "получаемое социальное знание всегда связано с интересами субъектов познания, имеет ценностный характер",
+        "group": null
+      },
+      {
+        "id": "socialnoe-poznanie__f4",
+        "text": "ограниченная возможность применения такого метода научного познания как эксперимент",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "slug": "myshlenie",
+    "title": "Мышление",
+    "image": "myshlenie.jpg",
+    "code": "1.4",
+    "priority": 1,
+    "confusable_with": [
+      "nauchnoe-poznanie-nauka",
+      "poznanie",
+      "socialnoe-poznanie"
+    ],
+    "features": [
+      {
+        "id": "myshlenie__f1",
+        "text": "обладает опосредованным характером, т. е. познающий человек с помощью мышления проникает в скрытые свойства, связи предметов",
+        "group": null
+      },
+      {
+        "id": "myshlenie__f2",
+        "text": "обобщённо отражает действительность, т.к. сосредотачивается на общих и отличных, а также существенных элементах различных предметов и явлений",
+        "group": null
+      },
+      {
+        "id": "myshlenie__f3",
+        "text": "тесно связано с языком",
+        "group": null
+      },
+      {
+        "id": "myshlenie__f4",
+        "text": "результаты работы мышления закрепляются в форме понятий, суждений, умозаключений",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "slug": "istina",
+    "title": "Истина",
+    "image": "istina.jpg",
+    "code": "1.5",
+    "priority": 2,
+    "confusable_with": [
+      "absolyutnaya-istina",
+      "otnositelnaya-istina"
+    ],
+    "features": [
+      {
+        "id": "istina__f1",
+        "text": "соответствие действительности, свойствам познаваемого предмета",
+        "group": null
+      },
+      {
+        "id": "istina__f2",
+        "text": "объективность",
+        "group": null
+      },
+      {
+        "id": "istina__f3",
+        "text": "конкретность",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 16,
+    "slug": "absolyutnaya-istina",
+    "title": "Абсолютная истина",
+    "image": "absolyutnaya-istina.jpg",
+    "code": "1.5",
+    "priority": 2,
+    "confusable_with": [
+      "istina",
+      "otnositelnaya-istina"
+    ],
+    "features": [
+      {
+        "id": "absolyutnaya-istina__f1",
+        "text": "знание, которое не меняется в процессе познания (знание, которое не может быть опровергнуто)",
+        "group": null
+      },
+      {
+        "id": "absolyutnaya-istina__f2",
+        "text": "полнота, точность, исчерпывающий характер",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 17,
+    "slug": "otnositelnaya-istina",
+    "title": "Относительная истина",
+    "image": "otnositelnaya-istina.jpg",
+    "code": "1.5",
+    "priority": 2,
+    "confusable_with": [
+      "absolyutnaya-istina",
+      "istina"
+    ],
+    "features": [
+      {
+        "id": "otnositelnaya-istina__f1",
+        "text": "зависимость от условий познания и инструментов познания (от уровня развития познания)",
+        "group": null
+      },
+      {
+        "id": "otnositelnaya-istina__f2",
+        "text": "ограниченно верное, недостаточно полное знание",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 18,
+    "slug": "obschestvo-kak-sistema",
+    "title": "Общество (как система)",
+    "image": "obschestvo-kak-sistema.jpg",
+    "code": "1.6",
+    "priority": 1,
+    "confusable_with": [
+      "obschestvo-kak-chast-materialnogo-mira"
+    ],
+    "features": [
+      {
+        "id": "obschestvo-kak-sistema__f1",
+        "text": "сложность (наличие сложной структуры)",
+        "group": null
+      },
+      {
+        "id": "obschestvo-kak-sistema__f2",
+        "text": "динамичность",
+        "group": null
+      },
+      {
+        "id": "obschestvo-kak-sistema__f3",
+        "text": "самоорганизованность",
+        "group": null
+      },
+      {
+        "id": "obschestvo-kak-sistema__f4",
+        "text": "воспроизводит себя",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 19,
+    "slug": "obschestvo-kak-chast-materialnogo-mira",
+    "title": "Общество (как часть материального мира)",
+    "image": "obschestvo-kak-chast-materialnogo-mira.jpg",
+    "code": "1.6",
+    "priority": 1,
+    "confusable_with": [
+      "obschestvo-kak-sistema"
+    ],
+    "features": [
+      {
+        "id": "obschestvo-kak-chast-materialnogo-mira__f1",
+        "text": "обособленность от природы",
+        "group": null
+      },
+      {
+        "id": "obschestvo-kak-chast-materialnogo-mira__f2",
+        "text": "тесная связь с природой",
+        "group": null
+      },
+      {
+        "id": "obschestvo-kak-chast-materialnogo-mira__f3",
+        "text": "включает способы взаимодействия и формы объединения людей",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 20,
+    "slug": "socialnyi-institut",
+    "title": "Социальный институт",
+    "image": "socialnyi-institut.jpg",
+    "code": "1.7",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "socialnyi-institut__f1",
+        "text": "направленность на удовлетворение базовых потребностей человека и общества",
+        "group": null
+      },
+      {
+        "id": "socialnyi-institut__f2",
+        "text": "содержит установки и образцы поведения",
+        "group": null
+      },
+      {
+        "id": "socialnyi-institut__f3",
+        "text": "определяет функции, регулирует поведение участников социального взаимодействия",
+        "group": null
+      },
+      {
+        "id": "socialnyi-institut__f4",
+        "text": "наличие культурных символов и знаков, выражающих сущность социального института",
+        "group": null
+      },
+      {
+        "id": "socialnyi-institut__f5",
+        "text": "наличие системы учреждений и неформальных структур, обеспеченных определенными средствами для осуществления деятельности",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 21,
+    "slug": "industrialnoe-obschestvo",
+    "title": "Индустриальное общество",
+    "image": "industrialnoe-obschestvo.jpg",
+    "code": "1.8",
+    "priority": 2,
+    "confusable_with": [
+      "postindustrialnoe-informacionnoe-obschestvo",
+      "tradicionnoe-agrarnoe-obschestvo"
+    ],
+    "features": [
+      {
+        "id": "industrialnoe-obschestvo__f1",
+        "text": "основной фактор производства - капитал",
+        "group": null
+      },
+      {
+        "id": "industrialnoe-obschestvo__f2",
+        "text": "массовое промышленное производство",
+        "group": null
+      },
+      {
+        "id": "industrialnoe-obschestvo__f3",
+        "text": "появление массовой культуры",
+        "group": null
+      },
+      {
+        "id": "industrialnoe-obschestvo__f4",
+        "text": "механизация и автоматизация производства и управления",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 22,
+    "slug": "postindustrialnoe-informacionnoe-obschestvo",
+    "title": "Постиндустриальное (информационное) общество",
+    "image": "postindustrialnoe-informacionnoe-obschestvo.jpg",
+    "code": "1.8",
+    "priority": 2,
+    "confusable_with": [
+      "industrialnoe-obschestvo",
+      "tradicionnoe-agrarnoe-obschestvo"
+    ],
+    "features": [
+      {
+        "id": "postindustrialnoe-informacionnoe-obschestvo__f1",
+        "text": "основной фактор производства - информация (знания)",
+        "group": null
+      },
+      {
+        "id": "postindustrialnoe-informacionnoe-obschestvo__f2",
+        "text": "развитие наукоёмких производств и средств коммуникации",
+        "group": null
+      },
+      {
+        "id": "postindustrialnoe-informacionnoe-obschestvo__f3",
+        "text": "выдвижение на первый план сферы услуг",
+        "group": null
+      },
+      {
+        "id": "postindustrialnoe-informacionnoe-obschestvo__f4",
+        "text": "ведущая роль науки",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 23,
+    "slug": "tradicionnoe-agrarnoe-obschestvo",
+    "title": "Традиционное (аграрное) общество",
+    "image": "tradicionnoe-agrarnoe-obschestvo.jpg",
+    "code": "1.8",
+    "priority": 2,
+    "confusable_with": [
+      "industrialnoe-obschestvo",
+      "postindustrialnoe-informacionnoe-obschestvo"
+    ],
+    "features": [
+      {
+        "id": "tradicionnoe-agrarnoe-obschestvo__f1",
+        "text": "основной фактор производства - земля",
+        "group": null
+      },
+      {
+        "id": "tradicionnoe-agrarnoe-obschestvo__f2",
+        "text": "господство натурального хозяйства",
+        "group": null
+      },
+      {
+        "id": "tradicionnoe-agrarnoe-obschestvo__f3",
+        "text": "широкое использование ручных орудий труда",
+        "group": null
+      },
+      {
+        "id": "tradicionnoe-agrarnoe-obschestvo__f4",
+        "text": "сословная иерархия и привилегии",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 24,
+    "slug": "reforma-evolyucionnye-izmeneniya",
+    "title": "Реформа (эволюционные изменения)",
+    "image": "reforma-evolyucionnye-izmeneniya.jpg",
+    "code": "1.9",
+    "priority": 2,
+    "confusable_with": [
+      "revolyuciya-revolyucionnye-izmeneniya"
+    ],
+    "features": [
+      {
+        "id": "reforma-evolyucionnye-izmeneniya__f1",
+        "text": "целенаправленность преобразований",
+        "group": null
+      },
+      {
+        "id": "reforma-evolyucionnye-izmeneniya__f2",
+        "text": "постепенность",
+        "group": null
+      },
+      {
+        "id": "reforma-evolyucionnye-izmeneniya__f3",
+        "text": "не уничтожает основ существующего социального строя",
+        "group": null
+      },
+      {
+        "id": "reforma-evolyucionnye-izmeneniya__f4",
+        "text": "проводится государством",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 25,
+    "slug": "revolyuciya-revolyucionnye-izmeneniya",
+    "title": "Революция (революционные изменения)",
+    "image": "revolyuciya-revolyucionnye-izmeneniya.jpg",
+    "code": "1.9",
+    "priority": 2,
+    "confusable_with": [
+      "reforma-evolyucionnye-izmeneniya"
+    ],
+    "features": [
+      {
+        "id": "revolyuciya-revolyucionnye-izmeneniya__f1",
+        "text": "полное изменение общественной жизни (затрагивает все сферы общества), построение нового порядка/строя",
+        "group": null
+      },
+      {
+        "id": "revolyuciya-revolyucionnye-izmeneniya__f2",
+        "text": "резкие качественные изменения",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 26,
+    "slug": "globalizaciya",
+    "title": "Глобализация",
+    "image": "globalizaciya.jpg",
+    "code": "1.9",
+    "priority": 2,
+    "confusable_with": [
+      "mirovaya-ekonomika-v-shirokom-smysle",
+      "mirovaya-mezhdunarodnaya-torgovlya"
+    ],
+    "features": [
+      {
+        "id": "globalizaciya__f1",
+        "text": "процесс сближения народов и государств",
+        "group": null
+      },
+      {
+        "id": "globalizaciya__f2",
+        "text": "охватывает все сферы общественной жизни",
+        "group": "g15"
+      },
+      {
+        "id": "globalizaciya__f3",
+        "text": "противоречивый характер (положительные и отрицательные последствия)",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 27,
+    "slug": "globalnye-problemy-ugrozy",
+    "title": "Глобальные проблемы (угрозы)",
+    "image": "globalnye-problemy-ugrozy.jpg",
+    "code": "1.9",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "globalnye-problemy-ugrozy__f1",
+        "text": "угрожают всему человечеству",
+        "group": null
+      },
+      {
+        "id": "globalnye-problemy-ugrozy__f2",
+        "text": "проявляются в мировом масштабе",
+        "group": null
+      },
+      {
+        "id": "globalnye-problemy-ugrozy__f3",
+        "text": "их решение требует совместных усилий всего человечества",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 28,
+    "slug": "socialnye-cennosti-duhovnye-cennosti",
+    "title": "Социальные ценности / духовные ценности",
+    "image": "socialnye-cennosti-duhovnye-cennosti.jpg",
+    "code": "1.10",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "socialnye-cennosti-duhovnye-cennosti__f1",
+        "text": "значимы для большинства людей и одобряются ими",
+        "group": null
+      },
+      {
+        "id": "socialnye-cennosti-duhovnye-cennosti__f2",
+        "text": "формируют мировоззрение",
+        "group": null
+      },
+      {
+        "id": "socialnye-cennosti-duhovnye-cennosti__f3",
+        "text": "выполняют функцию оценки явлений окружающего мира / предотвращения социальных конфликтов / укрепляют единство общества",
+        "group": null
+      },
+      {
+        "id": "socialnye-cennosti-duhovnye-cennosti__f4",
+        "text": "выражают представления о добре, зле, справедливости, любви, дружбе, хорошем и плохом",
+        "group": null
+      },
+      {
+        "id": "socialnye-cennosti-duhovnye-cennosti__f5",
+        "text": "служат основой для формирования социальных норм",
+        "group": null
+      },
+      {
+        "id": "socialnye-cennosti-duhovnye-cennosti__f6",
+        "text": "носят исторический и устойчивый характер",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 29,
+    "slug": "tradicionnye-cennosti-rossiiskogo-obschestva",
+    "title": "Традиционные ценности российского общества",
+    "image": "tradicionnye-cennosti-rossiiskogo-obschestva.jpg",
+    "code": "1.10",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "tradicionnye-cennosti-rossiiskogo-obschestva__f1",
+        "text": "являются нравственными ориентирами",
+        "group": null
+      },
+      {
+        "id": "tradicionnye-cennosti-rossiiskogo-obschestva__f2",
+        "text": "формируют мировоззрение граждан России",
+        "group": null
+      },
+      {
+        "id": "tradicionnye-cennosti-rossiiskogo-obschestva__f3",
+        "text": "укрепляют гражданское единство",
+        "group": null
+      },
+      {
+        "id": "tradicionnye-cennosti-rossiiskogo-obschestva__f4",
+        "text": "лежат в основе общероссийской гражданской идентичности и единого культурного пространства страны",
+        "group": null
+      },
+      {
+        "id": "tradicionnye-cennosti-rossiiskogo-obschestva__f5",
+        "text": "проявляются в духовном, историческом и культурном развитии многонационального народа России",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 30,
+    "slug": "narodnaya-kultura",
+    "title": "Народная культура",
+    "image": "narodnaya-kultura.jpg",
+    "code": "1.10",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "narodnaya-kultura__f1",
+        "text": "создаётся не профессионалами, а коллективной творческой деятельностью народа",
+        "group": null
+      },
+      {
+        "id": "narodnaya-kultura__f2",
+        "text": "имеет анонимный характер",
+        "group": null
+      },
+      {
+        "id": "narodnaya-kultura__f3",
+        "text": "как правило распространяется без записи, в устной форме",
+        "group": null
+      },
+      {
+        "id": "narodnaya-kultura__f4",
+        "text": "установка на следование образцу, который перенимается от предшествующих поколений",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 31,
+    "slug": "massovaya-kultura",
+    "title": "Массовая культура",
+    "image": "massovaya-kultura.jpg",
+    "code": "1.10",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "massovaya-kultura__f1",
+        "text": "ориентация на вкусы и запросы массового потребителя",
+        "group": null
+      },
+      {
+        "id": "massovaya-kultura__f2",
+        "text": "носит преимущественно развлекательный (занимательный) характер",
+        "group": null
+      },
+      {
+        "id": "massovaya-kultura__f3",
+        "text": "носит коммерческий характер (целью создания продукта является получение прибыли)",
+        "group": null
+      },
+      {
+        "id": "massovaya-kultura__f4",
+        "text": "серийность, тиражируемость",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 32,
+    "slug": "elitarnaya-kultura",
+    "title": "Элитарная культура",
+    "image": "elitarnaya-kultura.jpg",
+    "code": "1.10",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "elitarnaya-kultura__f1",
+        "text": "предназначена для узкого круга ценителей, знатоков",
+        "group": null
+      },
+      {
+        "id": "elitarnaya-kultura__f2",
+        "text": "высокий уровень сложности, трудна для понимания неподготовленным человеком",
+        "group": null
+      },
+      {
+        "id": "elitarnaya-kultura__f3",
+        "text": "получение прибыли не является главным стимулом",
+        "group": null
+      },
+      {
+        "id": "elitarnaya-kultura__f4",
+        "text": "новаторство",
+        "group": null
+      },
+      {
+        "id": "elitarnaya-kultura__f5",
+        "text": "стремление к авторскому самовыражению",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 33,
+    "slug": "nauchnoe-poznanie-nauka",
+    "title": "Научное познание (наука)",
+    "image": "nauchnoe-poznanie-nauka.jpg",
+    "code": "1.12",
+    "priority": 1,
+    "confusable_with": [
+      "myshlenie",
+      "poznanie",
+      "socialnoe-poznanie"
+    ],
+    "features": [
+      {
+        "id": "nauchnoe-poznanie-nauka__f1",
+        "text": "объективность получаемого знания",
+        "group": null
+      },
+      {
+        "id": "nauchnoe-poznanie-nauka__f2",
+        "text": "проверяемость и воспроизводимость знаний",
+        "group": null
+      },
+      {
+        "id": "nauchnoe-poznanie-nauka__f3",
+        "text": "доказательность (обоснованность)",
+        "group": null
+      },
+      {
+        "id": "nauchnoe-poznanie-nauka__f4",
+        "text": "системность",
+        "group": null
+      },
+      {
+        "id": "nauchnoe-poznanie-nauka__f5",
+        "text": "рациональность",
+        "group": null
+      },
+      {
+        "id": "nauchnoe-poznanie-nauka__f6",
+        "text": "использование особого языка науки",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 34,
+    "slug": "obrazovanie",
+    "title": "Образование",
+    "image": "obrazovanie.jpg",
+    "code": "1.13",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "obrazovanie__f1",
+        "text": "направлено на получение знаний, навыков или умений",
+        "group": null
+      },
+      {
+        "id": "obrazovanie__f2",
+        "text": "осуществляется в интересах человека, общества и государства",
+        "group": null
+      },
+      {
+        "id": "obrazovanie__f3",
+        "text": "носит организованный и системный характер",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 35,
+    "slug": "mirovye-religii",
+    "title": "Мировые религии",
+    "image": "mirovye-religii.jpg",
+    "code": "1.14",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "mirovye-religii__f1",
+        "text": "большое число последователей по всему миру",
+        "group": null
+      },
+      {
+        "id": "mirovye-religii__f2",
+        "text": "стремятся широко распространить своё учение",
+        "group": null
+      },
+      {
+        "id": "mirovye-religii__f3",
+        "text": "выходят за пределы этносов и государств",
+        "group": null
+      },
+      {
+        "id": "mirovye-religii__f4",
+        "text": "эгалитаризм",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 36,
+    "slug": "religiya",
+    "title": "Религия",
+    "image": "religiya.jpg",
+    "code": "1.14",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "religiya__f1",
+        "text": "вера в существование сверхъестественного и поклонение ему",
+        "group": null
+      },
+      {
+        "id": "religiya__f2",
+        "text": "наличие религиозных обрядов, ритуалов, действий - культов",
+        "group": null
+      },
+      {
+        "id": "religiya__f3",
+        "text": "наличие организаций, форм объединений верующих",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 37,
+    "slug": "iskusstvo-kak-oblast-duhovnoi-kultury",
+    "title": "Искусство (как область духовной культуры)",
+    "image": "iskusstvo-kak-oblast-duhovnoi-kultury.jpg",
+    "code": "1.15",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "iskusstvo-kak-oblast-duhovnoi-kultury__f1",
+        "text": "способ познания мира посредством художественных образов",
+        "group": null
+      },
+      {
+        "id": "iskusstvo-kak-oblast-duhovnoi-kultury__f2",
+        "text": "наглядность",
+        "group": null
+      },
+      {
+        "id": "iskusstvo-kak-oblast-duhovnoi-kultury__f3",
+        "text": "основано на чувственном восприятии окружающего мира",
+        "group": null
+      },
+      {
+        "id": "iskusstvo-kak-oblast-duhovnoi-kultury__f4",
+        "text": "носит субъективный характер",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 38,
+    "slug": "ekonomika-kak-nauka",
+    "title": "Экономика (как наука)",
+    "image": "ekonomika-kak-nauka.jpg",
+    "code": "2.1",
+    "priority": 2,
+    "confusable_with": [
+      "ekonomicheskaya-sistema",
+      "ekonomika-kak-hozyaistvo",
+      "rynochnaya-ekonomika"
+    ],
+    "features": [
+      {
+        "id": "ekonomika-kak-nauka__f1",
+        "text": "предметом науки являются экономические отношения (по поводу производства, обмена, распределения и потребления благ)",
+        "group": null
+      },
+      {
+        "id": "ekonomika-kak-nauka__f2",
+        "text": "изучает, как с помощью ограниченных ресурсов наиболее полно удовлетворить неограниченные потребности людей",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 39,
+    "slug": "ekonomika-kak-hozyaistvo",
+    "title": "Экономика (как хозяйство)",
+    "image": "ekonomika-kak-hozyaistvo.jpg",
+    "code": "2.1",
+    "priority": 2,
+    "confusable_with": [
+      "ekonomicheskaya-sistema",
+      "ekonomika-kak-nauka",
+      "rynochnaya-ekonomika"
+    ],
+    "features": [
+      {
+        "id": "ekonomika-kak-hozyaistvo__f1",
+        "text": "включает производство, обмен, распределение и потребление необходимых жизненных благ",
+        "group": null
+      },
+      {
+        "id": "ekonomika-kak-hozyaistvo__f2",
+        "text": "обеспечивает удовлетворение потребностей человека и общества",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 40,
+    "slug": "ekonomicheskie-blaga",
+    "title": "Экономические блага",
+    "image": "ekonomicheskie-blaga.jpg",
+    "code": "2.1",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "ekonomicheskie-blaga__f1",
+        "text": "имеются в ограниченном количестве",
+        "group": "g1"
+      },
+      {
+        "id": "ekonomicheskie-blaga__f2",
+        "text": "служат для удовлетворения потребностей человека и общества",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 41,
+    "slug": "rynochnaya-ekonomika",
+    "title": "Рыночная экономика",
+    "image": "rynochnaya-ekonomika.jpg",
+    "code": "2.3",
+    "priority": 1,
+    "confusable_with": [
+      "ekonomicheskaya-sistema",
+      "ekonomika-kak-hozyaistvo",
+      "ekonomika-kak-nauka"
+    ],
+    "features": [
+      {
+        "id": "rynochnaya-ekonomika__f1",
+        "text": "свобода предпринимательской деятельности",
+        "group": null
+      },
+      {
+        "id": "rynochnaya-ekonomika__f2",
+        "text": "признается многообразие форм собственности, но преобладает частная",
+        "group": null
+      },
+      {
+        "id": "rynochnaya-ekonomika__f3",
+        "text": "свободное рыночное ценообразование",
+        "group": null
+      },
+      {
+        "id": "rynochnaya-ekonomika__f4",
+        "text": "конкуренция",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 42,
+    "slug": "ekonomicheskaya-sistema",
+    "title": "Экономическая система",
+    "image": "ekonomicheskaya-sistema.jpg",
+    "code": "2.3",
+    "priority": 1,
+    "confusable_with": [
+      "ekonomika-kak-hozyaistvo",
+      "ekonomika-kak-nauka",
+      "rynochnaya-ekonomika"
+    ],
+    "features": [
+      {
+        "id": "ekonomicheskaya-sistema__f1",
+        "text": "способ организации совместной хозяйственной деятельности людей в обществе",
+        "group": null
+      },
+      {
+        "id": "ekonomicheskaya-sistema__f2",
+        "text": "решение вопросов: что, как и для кого производить",
+        "group": null
+      },
+      {
+        "id": "ekonomicheskaya-sistema__f3",
+        "text": "включает механизмы и принципы производства, распределения, обмена и потребления ограниченных экономических благ",
+        "group": null
+      },
+      {
+        "id": "ekonomicheskaya-sistema__f4",
+        "text": "основная задача: достижение максимально эффективного использования ограниченных ресурсов для удовлетворения безграничных потребностей",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 43,
+    "slug": "proizvodstvo",
+    "title": "Производство",
+    "image": "proizvodstvo.jpg",
+    "code": "2.4",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "proizvodstvo__f1",
+        "text": "процесс создания экономических благ и услуг",
+        "group": null
+      },
+      {
+        "id": "proizvodstvo__f2",
+        "text": "создание продукта для удовлетворения потребностей людей",
+        "group": null
+      },
+      {
+        "id": "proizvodstvo__f3",
+        "text": "осуществляется с помощью факторов производства: труда, земли, капитала и т.д.",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 44,
+    "slug": "tovar-kak-produkt-truda",
+    "title": "Товар (как продукт труда)",
+    "image": "tovar-kak-produkt-truda.jpg",
+    "code": "2.4",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "tovar-kak-produkt-truda__f1",
+        "text": "является предметом, вещью",
+        "group": null
+      },
+      {
+        "id": "tovar-kak-produkt-truda__f2",
+        "text": "имеет ценность / может приносить пользу / удовлетворяет потребности",
+        "group": null
+      },
+      {
+        "id": "tovar-kak-produkt-truda__f3",
+        "text": "предназначен для продажи.",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 45,
+    "slug": "potrebitel",
+    "title": "Потребитель",
+    "image": "potrebitel.jpg",
+    "code": "2.4",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "potrebitel__f1",
+        "text": "лицо, которое покупает товар (услуги) для личных нужд",
+        "group": null
+      },
+      {
+        "id": "potrebitel__f2",
+        "text": "не нацелен на получение прибыли",
+        "group": null
+      },
+      {
+        "id": "potrebitel__f3",
+        "text": "нацелен на извлечение максимальной полезности от потребления товаров и услуг",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 46,
+    "slug": "predprinimatelstvo-kak-forma-ekonomicheskoi-deyatelnosti",
+    "title": "Предпринимательство (как форма экономической деятельности)",
+    "image": "predprinimatelstvo-kak-forma-ekonomicheskoi-deyatelnosti.jpg",
+    "code": "2.4",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "predprinimatelstvo-kak-forma-ekonomicheskoi-deyatelnosti__f1",
+        "text": "наличие риска",
+        "group": null
+      },
+      {
+        "id": "predprinimatelstvo-kak-forma-ekonomicheskoi-deyatelnosti__f2",
+        "text": "направленность на систематическое получение прибыли",
+        "group": "g14"
+      },
+      {
+        "id": "predprinimatelstvo-kak-forma-ekonomicheskoi-deyatelnosti__f3",
+        "text": "является инициативной и самостоятельной деятельностью",
+        "group": null
+      },
+      {
+        "id": "predprinimatelstvo-kak-forma-ekonomicheskoi-deyatelnosti__f4",
+        "text": "связана с производством и продажей товаров и услуг",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 47,
+    "slug": "racionalnoe-ekonomicheskoe-povedenie",
+    "title": "Рациональное экономическое поведение",
+    "image": "racionalnoe-ekonomicheskoe-povedenie.jpg",
+    "code": "2.4",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "racionalnoe-ekonomicheskoe-povedenie__f1",
+        "text": "подразумевает сопоставление затрат и результата",
+        "group": null
+      },
+      {
+        "id": "racionalnoe-ekonomicheskoe-povedenie__f2",
+        "text": "заключается в разумном выборе товара при прочих равных условиях",
+        "group": null
+      },
+      {
+        "id": "racionalnoe-ekonomicheskoe-povedenie__f3",
+        "text": "подразумевает умение правильно размещать сбережения",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 48,
+    "slug": "konkurenciya-rynochnaya-konkurenciya",
+    "title": "Конкуренция (рыночная конкуренция)",
+    "image": "konkurenciya-rynochnaya-konkurenciya.jpg",
+    "code": "2.6",
+    "priority": 2,
+    "confusable_with": [
+      "monopolisticheskaya-konkurenciya",
+      "monopoliya",
+      "oligopoliya",
+      "rynok-chistoi-sovershennoi-konkurencii"
+    ],
+    "features": [
+      {
+        "id": "konkurenciya-rynochnaya-konkurenciya__f1",
+        "text": "подразумевает соперничество, борьбу за наиболее выгодные условия производства, продажи и покупки товаров и услуг",
+        "group": null
+      },
+      {
+        "id": "konkurenciya-rynochnaya-konkurenciya__f2",
+        "text": "происходит между участниками экономической деятельности (производителями, продавцами, покупателями и т.д.)",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 49,
+    "slug": "monopoliya",
+    "title": "Монополия",
+    "image": "monopoliya.jpg",
+    "code": "2.6",
+    "priority": 1,
+    "confusable_with": [
+      "konkurenciya-rynochnaya-konkurenciya",
+      "monopolisticheskaya-konkurenciya",
+      "oligopoliya",
+      "rynok-chistoi-sovershennoi-konkurencii"
+    ],
+    "features": [
+      {
+        "id": "monopoliya__f1",
+        "text": "на рынке присутствует только один производитель",
+        "group": null
+      },
+      {
+        "id": "monopoliya__f2",
+        "text": "наличие уникального товара или услуги",
+        "group": null
+      },
+      {
+        "id": "monopoliya__f3",
+        "text": "производитель имеет возможность самостоятельно устанавливать цену",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 50,
+    "slug": "monopolisticheskaya-konkurenciya",
+    "title": "Монополистическая конкуренция",
+    "image": "monopolisticheskaya-konkurenciya.jpg",
+    "code": "2.6",
+    "priority": 1,
+    "confusable_with": [
+      "konkurenciya-rynochnaya-konkurenciya",
+      "monopoliya",
+      "oligopoliya",
+      "rynok-chistoi-sovershennoi-konkurencii"
+    ],
+    "features": [
+      {
+        "id": "monopolisticheskaya-konkurenciya__f1",
+        "text": "на рынке продаются различающиеся, но взаимозаменяемые товары (дифференцированные товары)",
+        "group": null
+      },
+      {
+        "id": "monopolisticheskaya-konkurenciya__f2",
+        "text": "фирмы имеют возможность отчасти контролировать цены на продукцию",
+        "group": null
+      },
+      {
+        "id": "monopolisticheskaya-konkurenciya__f3",
+        "text": "на рынке преобладают неценовые способы конкуренции: создание уникального дизайна внедрение ноу-хау, реклама, дополнительный сервис и т.д.",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 51,
+    "slug": "oligopoliya",
+    "title": "Олигополия",
+    "image": "oligopoliya.jpg",
+    "code": "2.6",
+    "priority": 1,
+    "confusable_with": [
+      "konkurenciya-rynochnaya-konkurenciya",
+      "monopolisticheskaya-konkurenciya",
+      "monopoliya",
+      "rynok-chistoi-sovershennoi-konkurencii"
+    ],
+    "features": [
+      {
+        "id": "oligopoliya__f1",
+        "text": "схожие товары производятся небольшим количеством фирм",
+        "group": null
+      },
+      {
+        "id": "oligopoliya__f2",
+        "text": "барьеры для входа на рынок трудно преодолимы",
+        "group": null
+      },
+      {
+        "id": "oligopoliya__f3",
+        "text": "цены на товары устанавливаются по принципу ценового лидерства: признанный лидер данной отрасли устанавливает свои цены, остальные фирмы им следуют",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 52,
+    "slug": "rynok-chistoi-sovershennoi-konkurencii",
+    "title": "Рынок чистой (совершенной) конкуренции",
+    "image": "rynok-chistoi-sovershennoi-konkurencii.jpg",
+    "code": "2.6",
+    "priority": 1,
+    "confusable_with": [
+      "konkurenciya-rynochnaya-konkurenciya",
+      "monopolisticheskaya-konkurenciya",
+      "monopoliya",
+      "oligopoliya"
+    ],
+    "features": [
+      {
+        "id": "rynok-chistoi-sovershennoi-konkurencii__f1",
+        "text": "отсутствие барьеров на вход и выход с рынка",
+        "group": null
+      },
+      {
+        "id": "rynok-chistoi-sovershennoi-konkurencii__f2",
+        "text": "на рынке присутствует только однородная продукция",
+        "group": null
+      },
+      {
+        "id": "rynok-chistoi-sovershennoi-konkurencii__f3",
+        "text": "фирмы не имеют возможности влиять на цены (отсутствует рыночная власть)",
+        "group": null
+      },
+      {
+        "id": "rynok-chistoi-sovershennoi-konkurencii__f4",
+        "text": "никто из участников не располагает информацией, большей по сравнению с другими",
+        "group": null
+      },
+      {
+        "id": "rynok-chistoi-sovershennoi-konkurencii__f5",
+        "text": "наличие на рынке большого количества фирм",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 53,
+    "slug": "zanyatost",
+    "title": "Занятость",
+    "image": "zanyatost.jpg",
+    "code": "2.7",
+    "priority": 2,
+    "confusable_with": [
+      "bezrabotica",
+      "bezrabotnyi"
+    ],
+    "features": [
+      {
+        "id": "zanyatost__f1",
+        "text": "трудовая деятельность и иная деятельность граждан, осуществляемая ими в целях производства товаров, выполнения работ или оказания услуг",
+        "group": null
+      },
+      {
+        "id": "zanyatost__f2",
+        "text": "подразумевает получение дохода",
+        "group": null
+      },
+      {
+        "id": "zanyatost__f3",
+        "text": "не противоречит закону. (Согласно закону “О занятости”)",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 54,
+    "slug": "bezrabotica",
+    "title": "Безработица",
+    "image": "bezrabotica.jpg",
+    "code": "2.7",
+    "priority": 1,
+    "confusable_with": [
+      "bezrabotnyi",
+      "zanyatost"
+    ],
+    "features": [
+      {
+        "id": "bezrabotica__f1",
+        "text": "часть населения имеет возможность трудиться, желание трудиться по найму при сложившемся уровне оплаты труда, но не может найти работу",
+        "group": null
+      },
+      {
+        "id": "bezrabotica__f2",
+        "text": "на рынке труда предложение превышает спрос",
+        "group": null
+      },
+      {
+        "id": "bezrabotica__f3",
+        "text": "учитывается государством / используется в качестве макроэкономического показателя",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 55,
+    "slug": "rynok-truda",
+    "title": "Рынок труда",
+    "image": "rynok-truda.jpg",
+    "code": "2.7",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "rynok-truda__f1",
+        "text": "предложение на рынке труда формируют работники; спрос – работодатели",
+        "group": null
+      },
+      {
+        "id": "rynok-truda__f2",
+        "text": "рынок производного спроса (спрос на трудовые услуги определяется спросом на товарных рынках)",
+        "group": null
+      },
+      {
+        "id": "rynok-truda__f3",
+        "text": "продаются трудовые услуги, которые не существуют отдельно от людей, оказывающих эти услуги",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 56,
+    "slug": "professiya",
+    "title": "Профессия",
+    "image": "professiya.jpg",
+    "code": "2.7",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "professiya__f1",
+        "text": "служит источником дохода человека",
+        "group": null
+      },
+      {
+        "id": "professiya__f2",
+        "text": "требует владения теоретическими знаниями и практическими навыками, приобретаемыми в ходе специальной подготовки или получения специального образования",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 57,
+    "slug": "profsoyuz",
+    "title": "Профсоюз",
+    "image": "profsoyuz.jpg",
+    "code": "2.7",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "profsoyuz__f1",
+        "text": "добровольное общественное объединение граждан по роду их деятельности",
+        "group": null
+      },
+      {
+        "id": "profsoyuz__f2",
+        "text": "создается в целях представительства и защиты социально-трудовых прав и интересов",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 58,
+    "slug": "zarabotnaya-plata",
+    "title": "Заработная плата",
+    "image": "zarabotnaya-plata.jpg",
+    "code": "2.7",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "zarabotnaya-plata__f1",
+        "text": "форма материального вознаграждения за труд",
+        "group": null
+      },
+      {
+        "id": "zarabotnaya-plata__f2",
+        "text": "основана на заранее установленных тарифах и расценках",
+        "group": null
+      },
+      {
+        "id": "zarabotnaya-plata__f3",
+        "text": "зависит от количества, сложности и качества выполненной работы",
+        "group": null
+      },
+      {
+        "id": "zarabotnaya-plata__f4",
+        "text": "выплачивается в денежной форме",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 59,
+    "slug": "bezrabotnyi",
+    "title": "Безработный",
+    "image": "bezrabotnyi.jpg",
+    "code": "2.7",
+    "priority": 1,
+    "confusable_with": [
+      "bezrabotica",
+      "zanyatost"
+    ],
+    "features": [
+      {
+        "id": "bezrabotnyi__f1",
+        "text": "человек трудоспособного возраста",
+        "group": null
+      },
+      {
+        "id": "bezrabotnyi__f2",
+        "text": "у него нет постоянного заработка",
+        "group": null
+      },
+      {
+        "id": "bezrabotnyi__f3",
+        "text": "доказано его стремление найти работу (обращался в службу занятости)",
+        "group": null
+      },
+      {
+        "id": "bezrabotnyi__f4",
+        "text": "готов приступить к работе немедленно",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 60,
+    "slug": "faktory-proizvodstva-ekonomicheskie-resursy",
+    "title": "Факторы производства (экономические ресурсы)",
+    "image": "faktory-proizvodstva-ekonomicheskie-resursy.jpg",
+    "code": "2.8",
+    "priority": 1,
+    "confusable_with": [
+      "informaciya-kak-faktor-proizvodstva",
+      "kapital-kak-faktor-proizvodstva",
+      "predprinimatelskie-sposobnosti-kak-faktor-proizvodstva",
+      "trud-kak-faktor-proizvodstva",
+      "zemlya-kak-faktor-proizvodstva"
+    ],
+    "features": [
+      {
+        "id": "faktory-proizvodstva-ekonomicheskie-resursy__f1",
+        "text": "используются для производства необходимых экономических благ",
+        "group": null
+      },
+      {
+        "id": "faktory-proizvodstva-ekonomicheskie-resursy__f2",
+        "text": "имеются в ограниченном количестве",
+        "group": "g1"
+      },
+      {
+        "id": "faktory-proizvodstva-ekonomicheskie-resursy__f3",
+        "text": "предполагают получение факторного дохода",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 61,
+    "slug": "zemlya-kak-faktor-proizvodstva",
+    "title": "Земля как фактор производства",
+    "image": "zemlya-kak-faktor-proizvodstva.jpg",
+    "code": "2.8",
+    "priority": 2,
+    "confusable_with": [
+      "faktory-proizvodstva-ekonomicheskie-resursy",
+      "informaciya-kak-faktor-proizvodstva",
+      "kapital-kak-faktor-proizvodstva",
+      "predprinimatelskie-sposobnosti-kak-faktor-proizvodstva",
+      "trud-kak-faktor-proizvodstva"
+    ],
+    "features": [
+      {
+        "id": "zemlya-kak-faktor-proizvodstva__f1",
+        "text": "все виды природных ресурсов, имеющихся на планете и пригодных для производства экономических благ (почва, минеральные ресурсы, водные ресурсы и др.);",
+        "group": null
+      },
+      {
+        "id": "zemlya-kak-faktor-proizvodstva__f2",
+        "text": "ограничена рельефом, размерами планеты и т.д.;",
+        "group": null
+      },
+      {
+        "id": "zemlya-kak-faktor-proizvodstva__f3",
+        "text": "факторным доходом является рента;",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 62,
+    "slug": "trud-kak-faktor-proizvodstva",
+    "title": "Труд как фактор производства",
+    "image": "trud-kak-faktor-proizvodstva.jpg",
+    "code": "2.8",
+    "priority": 2,
+    "confusable_with": [
+      "deyatelnost",
+      "faktory-proizvodstva-ekonomicheskie-resursy",
+      "informaciya-kak-faktor-proizvodstva",
+      "kapital-kak-faktor-proizvodstva",
+      "predprinimatelskie-sposobnosti-kak-faktor-proizvodstva",
+      "zemlya-kak-faktor-proizvodstva"
+    ],
+    "features": [
+      {
+        "id": "trud-kak-faktor-proizvodstva__f1",
+        "text": "физические и умственные усилия, способности и умения, здоровье и квалификация работников;",
+        "group": null
+      },
+      {
+        "id": "trud-kak-faktor-proizvodstva__f2",
+        "text": "деятельность наемных работников по производству товаров и услуг;",
+        "group": null
+      },
+      {
+        "id": "trud-kak-faktor-proizvodstva__f3",
+        "text": "факторным доходом является заработная плата;",
+        "group": null
+      },
+      {
+        "id": "trud-kak-faktor-proizvodstva__f4",
+        "text": "ограничен численностью трудоспособного населения, уровнем квалификации и т.д.",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 63,
+    "slug": "kapital-kak-faktor-proizvodstva",
+    "title": "Капитал как фактор производства",
+    "image": "kapital-kak-faktor-proizvodstva.jpg",
+    "code": "2.8",
+    "priority": 2,
+    "confusable_with": [
+      "faktory-proizvodstva-ekonomicheskie-resursy",
+      "informaciya-kak-faktor-proizvodstva",
+      "predprinimatelskie-sposobnosti-kak-faktor-proizvodstva",
+      "trud-kak-faktor-proizvodstva",
+      "zemlya-kak-faktor-proizvodstva"
+    ],
+    "features": [
+      {
+        "id": "kapital-kak-faktor-proizvodstva__f1",
+        "text": "имущество, способное приносить доход;",
+        "group": null
+      },
+      {
+        "id": "kapital-kak-faktor-proizvodstva__f2",
+        "text": "включает созданные людьми средства производства (здания и сооружения, машины и инструменты, оборудование); / включает деньги и ценные бумаги;",
+        "group": null
+      },
+      {
+        "id": "kapital-kak-faktor-proizvodstva__f3",
+        "text": "факторным доходом является процент.",
+        "group": null
+      },
+      {
+        "id": "kapital-kak-faktor-proizvodstva__f4",
+        "text": "ограничен физическим и моральным износом, объёмом денежной массы в обращении.",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 64,
+    "slug": "predprinimatelskie-sposobnosti-kak-faktor-proizvodstva",
+    "title": "Предпринимательские способности как фактор производства",
+    "image": "predprinimatelskie-sposobnosti-kak-faktor-proizvodstva.jpg",
+    "code": "2.8",
+    "priority": 2,
+    "confusable_with": [
+      "faktory-proizvodstva-ekonomicheskie-resursy",
+      "informaciya-kak-faktor-proizvodstva",
+      "kapital-kak-faktor-proizvodstva",
+      "trud-kak-faktor-proizvodstva",
+      "zemlya-kak-faktor-proizvodstva"
+    ],
+    "features": [
+      {
+        "id": "predprinimatelskie-sposobnosti-kak-faktor-proizvodstva__f1",
+        "text": "связывает воедино остальные ресурсы производства;",
+        "group": null
+      },
+      {
+        "id": "predprinimatelskie-sposobnosti-kak-faktor-proizvodstva__f2",
+        "text": "включают инициативность, новаторство, умение рисковать;",
+        "group": null
+      },
+      {
+        "id": "predprinimatelskie-sposobnosti-kak-faktor-proizvodstva__f3",
+        "text": "факторным доходом является прибыль;",
+        "group": null
+      },
+      {
+        "id": "predprinimatelskie-sposobnosti-kak-faktor-proizvodstva__f4",
+        "text": "ограничены индивидуальными особенностями людей, редкостью таланта.",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 65,
+    "slug": "informaciya-kak-faktor-proizvodstva",
+    "title": "Информация как фактор производства",
+    "image": "informaciya-kak-faktor-proizvodstva.jpg",
+    "code": "2.8",
+    "priority": 1,
+    "confusable_with": [
+      "faktory-proizvodstva-ekonomicheskie-resursy",
+      "kapital-kak-faktor-proizvodstva",
+      "predprinimatelskie-sposobnosti-kak-faktor-proizvodstva",
+      "trud-kak-faktor-proizvodstva",
+      "zemlya-kak-faktor-proizvodstva"
+    ],
+    "features": [
+      {
+        "id": "informaciya-kak-faktor-proizvodstva__f1",
+        "text": "включает знания и сведения, которые необходимы для экономической деятельности",
+        "group": null
+      },
+      {
+        "id": "informaciya-kak-faktor-proizvodstva__f2",
+        "text": "особо востребована при принятии экономических решений",
+        "group": null
+      },
+      {
+        "id": "informaciya-kak-faktor-proizvodstva__f3",
+        "text": "является продуктом интеллектуальной деятельности / тесно связана с развитием науки",
+        "group": null
+      },
+      {
+        "id": "informaciya-kak-faktor-proizvodstva__f4",
+        "text": "собственник информации получает факторных доход – роялти.",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 66,
+    "slug": "predpriyatie-firma-kak-subekt-ekonomiki",
+    "title": "Предприятие (фирма) как субъект экономики",
+    "image": "predpriyatie-firma-kak-subekt-ekonomiki.jpg",
+    "code": "2.8",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "predpriyatie-firma-kak-subekt-ekonomiki__f1",
+        "text": "соединяет факторы производства для создания экономических благ (товаров и услуг)",
+        "group": null
+      },
+      {
+        "id": "predpriyatie-firma-kak-subekt-ekonomiki__f2",
+        "text": "направленность на получение прибыли",
+        "group": "g14"
+      },
+      {
+        "id": "predpriyatie-firma-kak-subekt-ekonomiki__f3",
+        "text": "имеет организационно-правовую форму",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 67,
+    "slug": "kommercheskii-bank",
+    "title": "Коммерческий банк",
+    "image": "kommercheskii-bank.jpg",
+    "code": "2.10",
+    "priority": 2,
+    "confusable_with": [
+      "bankovskaya-sistema",
+      "centralnyi-bank-rf-bank-rossii",
+      "finansovye-instituty"
+    ],
+    "features": [
+      {
+        "id": "kommercheskii-bank__f1",
+        "text": "выступает посредником между владельцами сбережений и заёмщиками",
+        "group": null
+      },
+      {
+        "id": "kommercheskii-bank__f2",
+        "text": "осуществляет привлечение свободных денег во вклады (на депозиты) и последующее их предоставление в кредит",
+        "group": null
+      },
+      {
+        "id": "kommercheskii-bank__f3",
+        "text": "открывает и ведет банковские счёта физических и юридических лиц",
+        "group": null
+      },
+      {
+        "id": "kommercheskii-bank__f4",
+        "text": "осуществляет расчетно-кассовое обслуживание клиентов",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 68,
+    "slug": "finansovye-instituty",
+    "title": "Финансовые институты",
+    "image": "finansovye-instituty.jpg",
+    "code": "2.10",
+    "priority": 2,
+    "confusable_with": [
+      "bankovskaya-sistema",
+      "centralnyi-bank-rf-bank-rossii",
+      "kommercheskii-bank"
+    ],
+    "features": [
+      {
+        "id": "finansovye-instituty__f1",
+        "text": "учреждения, занимающееся операциями по передаче, кредитованию, инвестированию и заимствованию денежных средств",
+        "group": null
+      },
+      {
+        "id": "finansovye-instituty__f2",
+        "text": "выполняют функцию финансовых посредников",
+        "group": null
+      },
+      {
+        "id": "finansovye-instituty__f3",
+        "text": "используют различные финансовые инструменты",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 69,
+    "slug": "bankovskaya-sistema",
+    "title": "Банковская система",
+    "image": "bankovskaya-sistema.jpg",
+    "code": "2.10",
+    "priority": 2,
+    "confusable_with": [
+      "centralnyi-bank-rf-bank-rossii",
+      "finansovye-instituty",
+      "kommercheskii-bank"
+    ],
+    "features": [
+      {
+        "id": "bankovskaya-sistema__f1",
+        "text": "совокупность действующих в стране банков и других кредитных учреждений и организаций",
+        "group": null
+      },
+      {
+        "id": "bankovskaya-sistema__f2",
+        "text": "двухуровневая структура: центральный банк и коммерческие банки",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 70,
+    "slug": "centralnyi-bank-rf-bank-rossii",
+    "title": "Центральный банк РФ (Банк России)",
+    "image": "centralnyi-bank-rf-bank-rossii.jpg",
+    "code": "2.10",
+    "priority": 1,
+    "confusable_with": [
+      "bankovskaya-sistema",
+      "finansovye-instituty",
+      "kommercheskii-bank"
+    ],
+    "features": [
+      {
+        "id": "centralnyi-bank-rf-bank-rossii__f1",
+        "text": "ОТЛИЧИТЕЛЬНЫМИ ПРИЗНАКАМИ БУДУТ ЯВЛЯТЬСЯ УНИКАЛЬНЫЕ ФУНКЦИИ",
+        "group": null
+      },
+      {
+        "id": "centralnyi-bank-rf-bank-rossii__f2",
+        "text": "имеет исключительное (монопольное) право эмиссии денег",
+        "group": null
+      },
+      {
+        "id": "centralnyi-bank-rf-bank-rossii__f3",
+        "text": "устанавливает ключевую ставку процента",
+        "group": null
+      },
+      {
+        "id": "centralnyi-bank-rf-bank-rossii__f4",
+        "text": "устанавливает для коммерческих банков нормы обязательных резервов",
+        "group": null
+      },
+      {
+        "id": "centralnyi-bank-rf-bank-rossii__f5",
+        "text": "формирует и хранит золотовалютные резервы государства",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 71,
+    "slug": "dengi-kak-osobyi-tovar",
+    "title": "Деньги (как особый товар)",
+    "image": "dengi-kak-osobyi-tovar.jpg",
+    "code": "2.10",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "dengi-kak-osobyi-tovar__f1",
+        "text": "всеобщий эквивалент",
+        "group": null
+      },
+      {
+        "id": "dengi-kak-osobyi-tovar__f2",
+        "text": "обладают наиболее высокой ликвидностью среди всех товаров",
+        "group": null
+      },
+      {
+        "id": "dengi-kak-osobyi-tovar__f3",
+        "text": "удобны для рассчёта",
+        "group": null
+      },
+      {
+        "id": "dengi-kak-osobyi-tovar__f4",
+        "text": "выполняют функции меры стоимости, средства платежа, средства накопления, средства обращения, мировых денег",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 72,
+    "slug": "akciya",
+    "title": "Акция",
+    "image": "akciya.jpg",
+    "code": "2.10",
+    "priority": 1,
+    "confusable_with": [
+      "obyknovennaya-akciya",
+      "privilegirovannaya-akciya"
+    ],
+    "features": [
+      {
+        "id": "akciya__f1",
+        "text": "долевая ценная бумага",
+        "group": null
+      },
+      {
+        "id": "akciya__f2",
+        "text": "удостоверяет долю в уставном капитале фирмы",
+        "group": null
+      },
+      {
+        "id": "akciya__f3",
+        "text": "дает владельцу право на получение части прибыли предприятия (дивидендов)",
+        "group": null
+      },
+      {
+        "id": "akciya__f4",
+        "text": "не имеет установленного срока обращения",
+        "group": null
+      },
+      {
+        "id": "akciya__f5",
+        "text": "выпускается только акционерными обществами",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 73,
+    "slug": "obyknovennaya-akciya",
+    "title": "Обыкновенная акция",
+    "image": "obyknovennaya-akciya.jpg",
+    "code": "2.10",
+    "priority": 1,
+    "confusable_with": [
+      "akciya",
+      "privilegirovannaya-akciya"
+    ],
+    "features": [
+      {
+        "id": "obyknovennaya-akciya__f1",
+        "text": "даёт право на участие в управлении фирмой",
+        "group": null
+      },
+      {
+        "id": "obyknovennaya-akciya__f2",
+        "text": "размер дивидендов нефиксированный (зависит от прибыли акционерного общества)",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 74,
+    "slug": "obligaciya",
+    "title": "Облигация",
+    "image": "obligaciya.jpg",
+    "code": "2.10",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "obligaciya__f1",
+        "text": "удостоверяет долг эмитента облигации перед держателем облигации",
+        "group": null
+      },
+      {
+        "id": "obligaciya__f2",
+        "text": "приносит владельцу доход в виде процента",
+        "group": null
+      },
+      {
+        "id": "obligaciya__f3",
+        "text": "гарантирует кредитору выплату номинальной стоимости по истечении определённого срока",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 75,
+    "slug": "dokumentarnaya-cennaya-bumaga",
+    "title": "Документарная ценная бумага",
+    "image": "dokumentarnaya-cennaya-bumaga.jpg",
+    "code": "2.10",
+    "priority": 1,
+    "confusable_with": [
+      "bezdokumentarnaya-cennaya-bumaga"
+    ],
+    "features": [
+      {
+        "id": "dokumentarnaya-cennaya-bumaga__f1",
+        "text": "материальный носитель информации",
+        "group": null
+      },
+      {
+        "id": "dokumentarnaya-cennaya-bumaga__f2",
+        "text": "документ, при составлении которого соблюдены все требования закона к его форме и реквизитам",
+        "group": null
+      },
+      {
+        "id": "dokumentarnaya-cennaya-bumaga__f3",
+        "text": "фиксация какого-либо субъективного гражданского права",
+        "group": "g2"
+      },
+      {
+        "id": "dokumentarnaya-cennaya-bumaga__f4",
+        "text": "право, выраженное в ценной бумаге, может быть реализовано не иначе, как по предъявлении этого документа и др.",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 76,
+    "slug": "bezdokumentarnaya-cennaya-bumaga",
+    "title": "Бездокументарная ценная бумага",
+    "image": "bezdokumentarnaya-cennaya-bumaga.jpg",
+    "code": "2.10",
+    "priority": 1,
+    "confusable_with": [
+      "dokumentarnaya-cennaya-bumaga"
+    ],
+    "features": [
+      {
+        "id": "bezdokumentarnaya-cennaya-bumaga__f1",
+        "text": "не имеет бумажной формы",
+        "group": null
+      },
+      {
+        "id": "bezdokumentarnaya-cennaya-bumaga__f2",
+        "text": "фиксация какого-либо субъективного гражданского права",
+        "group": "g2"
+      },
+      {
+        "id": "bezdokumentarnaya-cennaya-bumaga__f3",
+        "text": "выпущена в соответствии с требованиями закона",
+        "group": null
+      },
+      {
+        "id": "bezdokumentarnaya-cennaya-bumaga__f4",
+        "text": "право, выраженное в ценной бумаге, может быть реализовано только с соблюдением правил учета этих прав в соответствии с ГК РФ",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 77,
+    "slug": "kredit",
+    "title": "Кредит",
+    "image": "kredit.jpg",
+    "code": "2.11",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "kredit__f1",
+        "text": "возвратность (должен быть погашен в течении срока кредитного договора)",
+        "group": null
+      },
+      {
+        "id": "kredit__f2",
+        "text": "срочность (предоставляется на определенный срок)",
+        "group": null
+      },
+      {
+        "id": "kredit__f3",
+        "text": "платность (наличие процента по кредиту)",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 78,
+    "slug": "inflyaciya-proyavleniya",
+    "title": "Инфляция (проявления)",
+    "image": "inflyaciya-proyavleniya.jpg",
+    "code": "2.12",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "inflyaciya-proyavleniya__f1",
+        "text": "снижение покупательной способности денег (обесценивание денег по отношению к имеющимся товарам и услугам)",
+        "group": null
+      },
+      {
+        "id": "inflyaciya-proyavleniya__f2",
+        "text": "устойчивая тенденция к повышению среднего (общего) уровня цен без изменения качества товаров и услуг",
+        "group": null
+      },
+      {
+        "id": "inflyaciya-proyavleniya__f3",
+        "text": "превышение темпов роста денежной массы над темпами роста товарной массы",
+        "group": null
+      },
+      {
+        "id": "inflyaciya-proyavleniya__f4",
+        "text": "снижение реальной заработной платы",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 79,
+    "slug": "obschestvennye-blaga",
+    "title": "Общественные блага",
+    "image": "obschestvennye-blaga.jpg",
+    "code": "2.13",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "obschestvennye-blaga__f1",
+        "text": "неконкурентность",
+        "group": null
+      },
+      {
+        "id": "obschestvennye-blaga__f2",
+        "text": "неделимость",
+        "group": null
+      },
+      {
+        "id": "obschestvennye-blaga__f3",
+        "text": "неисключаемость",
+        "group": null
+      },
+      {
+        "id": "obschestvennye-blaga__f4",
+        "text": "обычно создаются при участии государства",
+        "group": null
+      },
+      {
+        "id": "obschestvennye-blaga__f5",
+        "text": "совместное использование",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 80,
+    "slug": "byudzhetnaya-politika-gosudarstva",
+    "title": "Бюджетная политика государства",
+    "image": "byudzhetnaya-politika-gosudarstva.jpg",
+    "code": "2.13",
+    "priority": 2,
+    "confusable_with": [
+      "gosudarstvennyi-byudzhet",
+      "gosudarstvennyi-dolg",
+      "monetarnaya-denezhno-kreditnaya-politika",
+      "nalogi"
+    ],
+    "features": [
+      {
+        "id": "byudzhetnaya-politika-gosudarstva__f1",
+        "text": "направленность на обеспечение экономического роста, полной занятости и стабильности цен",
+        "group": null
+      },
+      {
+        "id": "byudzhetnaya-politika-gosudarstva__f2",
+        "text": "содержанием является формирование доходов и расходов государственного бюджета",
+        "group": null
+      },
+      {
+        "id": "byudzhetnaya-politika-gosudarstva__f3",
+        "text": "в качестве инструментов используются изменение государственных расходов и изменение ставок налогообложения",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 81,
+    "slug": "monetarnaya-denezhno-kreditnaya-politika",
+    "title": "Монетарная (денежно-кредитная) политика",
+    "image": "monetarnaya-denezhno-kreditnaya-politika.jpg",
+    "code": "2.13",
+    "priority": 2,
+    "confusable_with": [
+      "byudzhetnaya-politika-gosudarstva",
+      "gosudarstvennyi-byudzhet",
+      "gosudarstvennyi-dolg",
+      "nalogi"
+    ],
+    "features": [
+      {
+        "id": "monetarnaya-denezhno-kreditnaya-politika__f1",
+        "text": "влияет на количество денег в экономике",
+        "group": null
+      },
+      {
+        "id": "monetarnaya-denezhno-kreditnaya-politika__f2",
+        "text": "направлена на поддержание ценовой стабильности и обеспечение устойчивого экономического роста",
+        "group": null
+      },
+      {
+        "id": "monetarnaya-denezhno-kreditnaya-politika__f3",
+        "text": "проводится путем изменения ключевой ставки, нормы обязательного резервирования, эмиссии денег, операций на открытом рынке",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 82,
+    "slug": "gosudarstvennyi-byudzhet",
+    "title": "Государственный бюджет",
+    "image": "gosudarstvennyi-byudzhet.jpg",
+    "code": "2.14",
+    "priority": 1,
+    "confusable_with": [
+      "byudzhetnaya-politika-gosudarstva",
+      "gosudarstvennyi-dolg",
+      "monetarnaya-denezhno-kreditnaya-politika",
+      "nalogi"
+    ],
+    "features": [
+      {
+        "id": "gosudarstvennyi-byudzhet__f1",
+        "text": "смета доходов и расходов государства",
+        "group": null
+      },
+      {
+        "id": "gosudarstvennyi-byudzhet__f2",
+        "text": "принимается на определенный период времени (1-3 года)",
+        "group": null
+      },
+      {
+        "id": "gosudarstvennyi-byudzhet__f3",
+        "text": "является механизмом регулирования государственных расходов (предназначен для финансового обеспечения задач и функций государства и местного самоуправления)",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 83,
+    "slug": "nalogi",
+    "title": "Налоги",
+    "image": "nalogi.jpg",
+    "code": "2.15",
+    "priority": 1,
+    "confusable_with": [
+      "byudzhetnaya-politika-gosudarstva",
+      "gosudarstvennyi-byudzhet",
+      "gosudarstvennyi-dolg",
+      "monetarnaya-denezhno-kreditnaya-politika"
+    ],
+    "features": [
+      {
+        "id": "nalogi__f1",
+        "text": "установлены законом",
+        "group": null
+      },
+      {
+        "id": "nalogi__f2",
+        "text": "безвозмездность",
+        "group": null
+      },
+      {
+        "id": "nalogi__f3",
+        "text": "направленность на обеспечение государственных нужд /взымаются в пользу государства или муниципалитетов",
+        "group": null
+      },
+      {
+        "id": "nalogi__f4",
+        "text": "обязательность",
+        "group": null
+      },
+      {
+        "id": "nalogi__f5",
+        "text": "взимается с физических и юридических лиц",
+        "group": null
+      },
+      {
+        "id": "nalogi__f6",
+        "text": "взымаются в денежной форме",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 84,
+    "slug": "chelovecheskii-kapital",
+    "title": "Человеческий капитал",
+    "image": "chelovecheskii-kapital.jpg",
+    "code": "2.16",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "chelovecheskii-kapital__f1",
+        "text": "набор индивидуальных характеристик человека (знания, умения, способности), которые позволяют ему получать доход, быть успешным в экономическом и социальном смысле",
+        "group": null
+      },
+      {
+        "id": "chelovecheskii-kapital__f2",
+        "text": "приобретается благодаря образованию и опыту работы",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 85,
+    "slug": "ekonomicheskii-rost",
+    "title": "Экономический рост",
+    "image": "ekonomicheskii-rost.jpg",
+    "code": "2.16",
+    "priority": 1,
+    "confusable_with": [
+      "ekonomicheskii-cikl",
+      "ekonomicheskoe-razvitie"
+    ],
+    "features": [
+      {
+        "id": "ekonomicheskii-rost__f1",
+        "text": "выражается в увеличении объемов производства товаров и услуг",
+        "group": null
+      },
+      {
+        "id": "ekonomicheskii-rost__f2",
+        "text": "носит долгосрочный характер (подсчитывается за определённый период)",
+        "group": null
+      },
+      {
+        "id": "ekonomicheskii-rost__f3",
+        "text": "предполагает увеличение реального ВВП",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 86,
+    "slug": "ekonomicheskoe-razvitie",
+    "title": "Экономическое развитие",
+    "image": "ekonomicheskoe-razvitie.jpg",
+    "code": "2.16",
+    "priority": 2,
+    "confusable_with": [
+      "ekonomicheskii-cikl",
+      "ekonomicheskii-rost"
+    ],
+    "features": [
+      {
+        "id": "ekonomicheskoe-razvitie__f1",
+        "text": "включает экономический рост",
+        "group": null
+      },
+      {
+        "id": "ekonomicheskoe-razvitie__f2",
+        "text": "количественные и качественные изменения в экономике",
+        "group": null
+      },
+      {
+        "id": "ekonomicheskoe-razvitie__f3",
+        "text": "выражается в повышении качества и уровня жизни",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 87,
+    "slug": "valovoi-vnutrennii-produkt-vvp",
+    "title": "Валовой внутренний продукт (ВВП)",
+    "image": "valovoi-vnutrennii-produkt-vvp.jpg",
+    "code": "2.16",
+    "priority": 1,
+    "confusable_with": [
+      "valovoi-nacionalnyi-produkt-vnp"
+    ],
+    "features": [
+      {
+        "id": "valovoi-vnutrennii-produkt-vvp__f1",
+        "text": "включается стоимость только тех товаров и услуг, которые предназначены для продажи (учитывается только рыночная стоимость этих продуктов)",
+        "group": "g3"
+      },
+      {
+        "id": "valovoi-vnutrennii-produkt-vvp__f2",
+        "text": "учитывает только конечные товары и услуги",
+        "group": "g4"
+      },
+      {
+        "id": "valovoi-vnutrennii-produkt-vvp__f3",
+        "text": "учитывается продукт, созданный на территории страны, независимо от государственной принадлежности производителя",
+        "group": null
+      },
+      {
+        "id": "valovoi-vnutrennii-produkt-vvp__f4",
+        "text": "обычно, подсчитывается в годовом выражении",
+        "group": "g5"
+      }
+    ]
+  },
+  {
+    "id": 88,
+    "slug": "valovoi-nacionalnyi-produkt-vnp",
+    "title": "Валовой национальный продукт (ВНП)",
+    "image": "valovoi-nacionalnyi-produkt-vnp.jpg",
+    "code": "2.16",
+    "priority": 1,
+    "confusable_with": [
+      "valovoi-vnutrennii-produkt-vvp"
+    ],
+    "features": [
+      {
+        "id": "valovoi-nacionalnyi-produkt-vnp__f1",
+        "text": "включается стоимость только тех товаров и услуг, которые предназначены для продажи (учитывается только рыночная стоимость этих продуктов)",
+        "group": "g3"
+      },
+      {
+        "id": "valovoi-nacionalnyi-produkt-vnp__f2",
+        "text": "учитывает только конечные товары и услуги",
+        "group": "g4"
+      },
+      {
+        "id": "valovoi-nacionalnyi-produkt-vnp__f3",
+        "text": "учитывается продукт, созданный национальным производителем, независимо от того, на какой территории он произведен",
+        "group": null
+      },
+      {
+        "id": "valovoi-nacionalnyi-produkt-vnp__f4",
+        "text": "обычно, подсчитывается в годовом выражении",
+        "group": "g5"
+      }
+    ]
+  },
+  {
+    "id": 89,
+    "slug": "mirovaya-mezhdunarodnaya-torgovlya",
+    "title": "Мировая (международная) торговля",
+    "image": "mirovaya-mezhdunarodnaya-torgovlya.jpg",
+    "code": "2.18",
+    "priority": 2,
+    "confusable_with": [
+      "globalizaciya",
+      "mirovaya-ekonomika-v-shirokom-smysle"
+    ],
+    "features": [
+      {
+        "id": "mirovaya-mezhdunarodnaya-torgovlya__f1",
+        "text": "обмен товарами и услугами между разными странами",
+        "group": null
+      },
+      {
+        "id": "mirovaya-mezhdunarodnaya-torgovlya__f2",
+        "text": "основана на международном разделении труда",
+        "group": "g6"
+      },
+      {
+        "id": "mirovaya-mezhdunarodnaya-torgovlya__f3",
+        "text": "возникает вследствие неравного распределения природных ресурсов между странами и взаимных выгод торгующих стран",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 90,
+    "slug": "mirovaya-ekonomika-v-shirokom-smysle",
+    "title": "Мировая экономика (в широком смысле)",
+    "image": "mirovaya-ekonomika-v-shirokom-smysle.jpg",
+    "code": "2.18",
+    "priority": 2,
+    "confusable_with": [
+      "globalizaciya",
+      "mirovaya-mezhdunarodnaya-torgovlya"
+    ],
+    "features": [
+      {
+        "id": "mirovaya-ekonomika-v-shirokom-smysle__f1",
+        "text": "субъекты связаны между собой системой международных экономических отношений",
+        "group": null
+      },
+      {
+        "id": "mirovaya-ekonomika-v-shirokom-smysle__f2",
+        "text": "субъектами выступают национальные хозяйства, экономические союзы, международные корпорации",
+        "group": null
+      },
+      {
+        "id": "mirovaya-ekonomika-v-shirokom-smysle__f3",
+        "text": "основана на международном разделении труда",
+        "group": "g6"
+      }
+    ]
+  },
+  {
+    "id": 91,
+    "slug": "socialnaya-stratifikaciya",
+    "title": "Социальная стратификация",
+    "image": "socialnaya-stratifikaciya.jpg",
+    "code": "3.1",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "socialnaya-stratifikaciya__f1",
+        "text": "критерии: уровень дохода (богатство), объем власти, уровень образования, престиж профессии",
+        "group": null
+      },
+      {
+        "id": "socialnaya-stratifikaciya__f2",
+        "text": "деление общества на страты (слои), расположенные по вертикали, иерархически",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 92,
+    "slug": "malaya-gruppa",
+    "title": "Малая группа",
+    "image": "malaya-gruppa.jpg",
+    "code": "3.1",
+    "priority": 2,
+    "confusable_with": [
+      "molodezh-kak-socialnaya-gruppa",
+      "semya-kak-malaya-gruppa",
+      "socialnaya-gruppa"
+    ],
+    "features": [
+      {
+        "id": "malaya-gruppa__f1",
+        "text": "небольшое количество участников",
+        "group": null
+      },
+      {
+        "id": "malaya-gruppa__f2",
+        "text": "эмоциональные отношения между членами группы",
+        "group": null
+      },
+      {
+        "id": "malaya-gruppa__f3",
+        "text": "непосредственное общение участников друг с другом",
+        "group": null
+      },
+      {
+        "id": "malaya-gruppa__f4",
+        "text": "участники объединены общей деятельностью",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 93,
+    "slug": "socialnaya-gruppa",
+    "title": "Социальная группа",
+    "image": "socialnaya-gruppa.jpg",
+    "code": "3.1",
+    "priority": 1,
+    "confusable_with": [
+      "malaya-gruppa",
+      "molodezh-kak-socialnaya-gruppa",
+      "semya-kak-malaya-gruppa"
+    ],
+    "features": [
+      {
+        "id": "socialnaya-gruppa__f1",
+        "text": "её члены обладают общими социально-значимыми признаками",
+        "group": null
+      },
+      {
+        "id": "socialnaya-gruppa__f2",
+        "text": "осознание людьми своей принадлежности к данной группе и признание этого другими",
+        "group": null
+      },
+      {
+        "id": "socialnaya-gruppa__f3",
+        "text": "регулирование отношений определенными правилами, ожидание от членов группы соответствующего ролевого поведения",
+        "group": null
+      },
+      {
+        "id": "socialnaya-gruppa__f4",
+        "text": "общая (групповая) цель деятельности",
+        "group": null
+      },
+      {
+        "id": "socialnaya-gruppa__f5",
+        "text": "наличие образцов (моделей) групповой деятельности",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 94,
+    "slug": "etnicheskaya-obschnost-etnos",
+    "title": "Этническая общность (этнос)",
+    "image": "etnicheskaya-obschnost-etnos.jpg",
+    "code": "3.2",
+    "priority": 1,
+    "confusable_with": [
+      "etnosocialnyi-mezhnacionalnyi-konflikt",
+      "mezhnacionalnye-mezhetnicheskie-otnosheniya",
+      "naciya-kak-etnicheskaya-etnosocialnaya-obschnost"
+    ],
+    "features": [
+      {
+        "id": "etnicheskaya-obschnost-etnos__f1",
+        "text": "общая культура и язык",
+        "group": "g7"
+      },
+      {
+        "id": "etnicheskaya-obschnost-etnos__f2",
+        "text": "общность самосознания",
+        "group": "g8"
+      },
+      {
+        "id": "etnicheskaya-obschnost-etnos__f3",
+        "text": "общность обычаев и традиций",
+        "group": null
+      },
+      {
+        "id": "etnicheskaya-obschnost-etnos__f4",
+        "text": "осознание своего единства и отличия от других подобных образований",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 95,
+    "slug": "naciya-kak-etnicheskaya-etnosocialnaya-obschnost",
+    "title": "Нация (как этническая / этносоциальная общность)",
+    "image": "naciya-kak-etnicheskaya-etnosocialnaya-obschnost.jpg",
+    "code": "3.2",
+    "priority": 1,
+    "confusable_with": [
+      "etnicheskaya-obschnost-etnos",
+      "etnosocialnyi-mezhnacionalnyi-konflikt",
+      "mezhnacionalnye-mezhetnicheskie-otnosheniya"
+    ],
+    "features": [
+      {
+        "id": "naciya-kak-etnicheskaya-etnosocialnaya-obschnost__f1",
+        "text": "общая культура и язык",
+        "group": "g7"
+      },
+      {
+        "id": "naciya-kak-etnicheskaya-etnosocialnaya-obschnost__f2",
+        "text": "общность самосознания",
+        "group": "g8"
+      },
+      {
+        "id": "naciya-kak-etnicheskaya-etnosocialnaya-obschnost__f3",
+        "text": "общность (единство) территории",
+        "group": null
+      },
+      {
+        "id": "naciya-kak-etnicheskaya-etnosocialnaya-obschnost__f4",
+        "text": "общность исторической судьбы (исторической памяти)",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 96,
+    "slug": "mezhnacionalnye-mezhetnicheskie-otnosheniya",
+    "title": "Межнациональные (межэтнические) отношения",
+    "image": "mezhnacionalnye-mezhetnicheskie-otnosheniya.jpg",
+    "code": "3.2",
+    "priority": 2,
+    "confusable_with": [
+      "etnicheskaya-obschnost-etnos",
+      "etnosocialnyi-mezhnacionalnyi-konflikt",
+      "naciya-kak-etnicheskaya-etnosocialnaya-obschnost"
+    ],
+    "features": [
+      {
+        "id": "mezhnacionalnye-mezhetnicheskie-otnosheniya__f1",
+        "text": "взаимодействия представителей различных этнических групп",
+        "group": null
+      },
+      {
+        "id": "mezhnacionalnye-mezhetnicheskie-otnosheniya__f2",
+        "text": "охватывают все сферы общественной жизни",
+        "group": "g15"
+      },
+      {
+        "id": "mezhnacionalnye-mezhetnicheskie-otnosheniya__f3",
+        "text": "проявляются как на уровне формальных, так и бытовых отношений",
+        "group": null
+      },
+      {
+        "id": "mezhnacionalnye-mezhetnicheskie-otnosheniya__f4",
+        "text": "проявляются как в форме мирного сотрудничества, так и в форме межнациональных конфликтов",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 97,
+    "slug": "etnosocialnyi-mezhnacionalnyi-konflikt",
+    "title": "Этносоциальный (межнациональный) конфликт",
+    "image": "etnosocialnyi-mezhnacionalnyi-konflikt.jpg",
+    "code": "3.2",
+    "priority": 2,
+    "confusable_with": [
+      "etnicheskaya-obschnost-etnos",
+      "mezhnacionalnye-mezhetnicheskie-otnosheniya",
+      "naciya-kak-etnicheskaya-etnosocialnaya-obschnost"
+    ],
+    "features": [
+      {
+        "id": "etnosocialnyi-mezhnacionalnyi-konflikt__f1",
+        "text": "взаимные претензии этнических групп",
+        "group": null
+      },
+      {
+        "id": "etnosocialnyi-mezhnacionalnyi-konflikt__f2",
+        "text": "открытое противостояние этнических групп",
+        "group": null
+      },
+      {
+        "id": "etnosocialnyi-mezhnacionalnyi-konflikt__f3",
+        "text": "имеет тенденцию к нарастанию противоречий вплоть до вооруженных столкновений",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 98,
+    "slug": "molodezh-kak-socialnaya-gruppa",
+    "title": "Молодёжь (как социальная группа)",
+    "image": "molodezh-kak-socialnaya-gruppa.jpg",
+    "code": "3.3",
+    "priority": 1,
+    "confusable_with": [
+      "malaya-gruppa",
+      "semya-kak-malaya-gruppa",
+      "socialnaya-gruppa"
+    ],
+    "features": [
+      {
+        "id": "molodezh-kak-socialnaya-gruppa__f1",
+        "text": "критерием выделения является возраст",
+        "group": null
+      },
+      {
+        "id": "molodezh-kak-socialnaya-gruppa__f2",
+        "text": "высокий уровень социальной мобильности",
+        "group": null
+      },
+      {
+        "id": "molodezh-kak-socialnaya-gruppa__f3",
+        "text": "освоение новых социальных ролей",
+        "group": null
+      },
+      {
+        "id": "molodezh-kak-socialnaya-gruppa__f4",
+        "text": "неустойчивость социального положения",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 99,
+    "slug": "socialnaya-rol",
+    "title": "Социальная роль",
+    "image": "socialnaya-rol.jpg",
+    "code": "3.4",
+    "priority": 2,
+    "confusable_with": [
+      "socialnyi-status"
+    ],
+    "features": [
+      {
+        "id": "socialnaya-rol__f1",
+        "text": "обусловлена социальным статусом человека",
+        "group": null
+      },
+      {
+        "id": "socialnaya-rol__f2",
+        "text": "связана с реализацией прав и выполнением обязанностей",
+        "group": null
+      },
+      {
+        "id": "socialnaya-rol__f3",
+        "text": "отражает поведение, ожидаемое от человека данного социального статуса",
+        "group": null
+      },
+      {
+        "id": "socialnaya-rol__f4",
+        "text": "ее исполнение носит индивидуальных характер (имеет личностную окраску)",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 100,
+    "slug": "semya-kak-socialnyi-institut",
+    "title": "Семья (как социальный институт)",
+    "image": "semya-kak-socialnyi-institut.jpg",
+    "code": "3.5",
+    "priority": 1,
+    "confusable_with": [
+      "semya-kak-malaya-gruppa"
+    ],
+    "features": [
+      {
+        "id": "semya-kak-socialnyi-institut__f1",
+        "text": "удовлетворяет потребность общества в физическом и духовном воспроизводстве",
+        "group": null
+      },
+      {
+        "id": "semya-kak-socialnyi-institut__f2",
+        "text": "содержит множество социальных ролей (супружеские, родительские, детские, родственные, межпоколенные и т.д.)",
+        "group": null
+      },
+      {
+        "id": "semya-kak-socialnyi-institut__f3",
+        "text": "содержит нормы и образцы семейного поведения",
+        "group": null
+      },
+      {
+        "id": "semya-kak-socialnyi-institut__f4",
+        "text": "юридическое оформление",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 101,
+    "slug": "semya-kak-malaya-gruppa",
+    "title": "Семья (как малая группа)",
+    "image": "semya-kak-malaya-gruppa.jpg",
+    "code": "3.5",
+    "priority": 1,
+    "confusable_with": [
+      "malaya-gruppa",
+      "molodezh-kak-socialnaya-gruppa",
+      "semya-kak-socialnyi-institut",
+      "socialnaya-gruppa"
+    ],
+    "features": [
+      {
+        "id": "semya-kak-malaya-gruppa__f1",
+        "text": "общность быта и бюджета",
+        "group": null
+      },
+      {
+        "id": "semya-kak-malaya-gruppa__f2",
+        "text": "брачные или родственные связи между ее членами",
+        "group": null
+      },
+      {
+        "id": "semya-kak-malaya-gruppa__f3",
+        "text": "моральная и правовая ответственность супругов",
+        "group": null
+      },
+      {
+        "id": "semya-kak-malaya-gruppa__f4",
+        "text": "взаимная поддержка членами семьи друг друга, оказание моральной и финансовой поддержки",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 102,
+    "slug": "socializaciya",
+    "title": "Социализация",
+    "image": "socializaciya.jpg",
+    "code": "3.6",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "socializaciya__f1",
+        "text": "предполагает освоение индивидом социальных норм, ценностей и ролей",
+        "group": null
+      },
+      {
+        "id": "socializaciya__f2",
+        "text": "осуществляется на протяжении всей жизни человека",
+        "group": null
+      },
+      {
+        "id": "socializaciya__f3",
+        "text": "возможна только в обществе в процессе социальных взаимодействий",
+        "group": null
+      },
+      {
+        "id": "socializaciya__f4",
+        "text": "результатом является формирование личности",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 103,
+    "slug": "moral-kak-vid-socialnyh-norm",
+    "title": "Мораль (как вид социальных норм)",
+    "image": "moral-kak-vid-socialnyh-norm.jpg",
+    "code": "3.7",
+    "priority": 2,
+    "confusable_with": [
+      "norma-prava-kak-vid-socialnyh-norm",
+      "socialnaya-norma"
+    ],
+    "features": [
+      {
+        "id": "moral-kak-vid-socialnyh-norm__f1",
+        "text": "основана на представлениях о добре и зле",
+        "group": null
+      },
+      {
+        "id": "moral-kak-vid-socialnyh-norm__f2",
+        "text": "гарантом соблюдения являются совесть индивида и общественное мнение",
+        "group": null
+      },
+      {
+        "id": "moral-kak-vid-socialnyh-norm__f3",
+        "text": "возникает стихийно",
+        "group": null
+      },
+      {
+        "id": "moral-kak-vid-socialnyh-norm__f4",
+        "text": "имеет неписаный характер",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 104,
+    "slug": "socialnaya-norma",
+    "title": "Социальная норма",
+    "image": "socialnaya-norma.jpg",
+    "code": "3.7",
+    "priority": 1,
+    "confusable_with": [
+      "moral-kak-vid-socialnyh-norm",
+      "norma-prava-kak-vid-socialnyh-norm"
+    ],
+    "features": [
+      {
+        "id": "socialnaya-norma__f1",
+        "text": "мера допустимого поведения (образец поведения)",
+        "group": null
+      },
+      {
+        "id": "socialnaya-norma__f2",
+        "text": "рассчитана на многократное применение",
+        "group": null
+      },
+      {
+        "id": "socialnaya-norma__f3",
+        "text": "выражается в предписаниях, дозволениях, запретах",
+        "group": null
+      },
+      {
+        "id": "socialnaya-norma__f4",
+        "text": "содержание соответствует типу общества и уровню развития культуры (конкретно-исторический характер)",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 105,
+    "slug": "socialnyi-kontrol",
+    "title": "Социальный контроль",
+    "image": "socialnyi-kontrol.jpg",
+    "code": "3.7",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "socialnyi-kontrol__f1",
+        "text": "нацелен на поддержание общественного порядка, предотвращение отклоняющегося поведения",
+        "group": null
+      },
+      {
+        "id": "socialnyi-kontrol__f2",
+        "text": "опирается на властные полномочия, общественное мнение, внутренние установки индивида",
+        "group": null
+      },
+      {
+        "id": "socialnyi-kontrol__f3",
+        "text": "подразумевает действие социальных норм и применение социальных санкций",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 106,
+    "slug": "otklonyayuscheesya-deviantnoe-povedenie",
+    "title": "Отклоняющееся (девиантное) поведение",
+    "image": "otklonyayuscheesya-deviantnoe-povedenie.jpg",
+    "code": "3.7",
+    "priority": 2,
+    "confusable_with": [
+      "antisocialnoe-povedenie",
+      "pravonarushenie-kak-deyanie"
+    ],
+    "features": [
+      {
+        "id": "otklonyayuscheesya-deviantnoe-povedenie__f1",
+        "text": "противоречит общепринятым социальным нормам",
+        "group": "g11"
+      },
+      {
+        "id": "otklonyayuscheesya-deviantnoe-povedenie__f2",
+        "text": "влечет применение социальных санкций (позитивных и негативных)",
+        "group": "g10"
+      },
+      {
+        "id": "otklonyayuscheesya-deviantnoe-povedenie__f3",
+        "text": "может быть вызвано как индивидуальными особенностями личности, так и социальной средой",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 107,
+    "slug": "antisocialnoe-povedenie",
+    "title": "Антисоциальное поведение",
+    "image": "antisocialnoe-povedenie.jpg",
+    "code": "3.7",
+    "priority": 1,
+    "confusable_with": [
+      "otklonyayuscheesya-deviantnoe-povedenie",
+      "pravonarushenie-kak-deyanie"
+    ],
+    "features": [
+      {
+        "id": "antisocialnoe-povedenie__f1",
+        "text": "угрожает социальному порядку и благополучию окружающих",
+        "group": null
+      },
+      {
+        "id": "antisocialnoe-povedenie__f2",
+        "text": "противоречит правовым нормам",
+        "group": "g11"
+      },
+      {
+        "id": "antisocialnoe-povedenie__f3",
+        "text": "носит явный и намеренный характер (является умышленным)",
+        "group": null
+      },
+      {
+        "id": "antisocialnoe-povedenie__f4",
+        "text": "влечет применение негативных социальных санкций",
+        "group": "g10"
+      }
+    ]
+  },
+  {
+    "id": 108,
+    "slug": "socialnyi-konflikt",
+    "title": "Социальный конфликт",
+    "image": "socialnyi-konflikt.jpg",
+    "code": "3.8",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "socialnyi-konflikt__f1",
+        "text": "противоборство, столкновение двух или более сторон",
+        "group": null
+      },
+      {
+        "id": "socialnyi-konflikt__f2",
+        "text": "несовпадение интересов, потребностей, ценностей, целей и т.п.",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 109,
+    "slug": "vlast",
+    "title": "Власть",
+    "image": "vlast.jpg",
+    "code": "4.1",
+    "priority": 2,
+    "confusable_with": [
+      "politicheskaya-gosudarstvennaya-vlast",
+      "politicheskaya-vlast"
+    ],
+    "features": [
+      {
+        "id": "vlast__f1",
+        "text": "оказание воздействия на поведение объекта власти",
+        "group": null
+      },
+      {
+        "id": "vlast__f2",
+        "text": "использование права, авторитета, принуждения",
+        "group": null
+      },
+      {
+        "id": "vlast__f3",
+        "text": "возможность навязывать свою волю или решения другим людям независимо от их желания",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 110,
+    "slug": "politicheskaya-vlast",
+    "title": "Политическая власть",
+    "image": "politicheskaya-vlast.jpg",
+    "code": "4.1",
+    "priority": 1,
+    "confusable_with": [
+      "politicheskaya-gosudarstvennaya-vlast",
+      "vlast"
+    ],
+    "features": [
+      {
+        "id": "politicheskaya-vlast__f1",
+        "text": "способность политических субъектов проводить свою волю, повелевать и управлять другими",
+        "group": null
+      },
+      {
+        "id": "politicheskaya-vlast__f2",
+        "text": "направлена на достижение общезначимых целей",
+        "group": null
+      },
+      {
+        "id": "politicheskaya-vlast__f3",
+        "text": "субъектами являются государство, политические партии и движения, политические лидеры",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 111,
+    "slug": "politicheskaya-gosudarstvennaya-vlast",
+    "title": "Политическая (государственная) власть",
+    "image": "politicheskaya-gosudarstvennaya-vlast.jpg",
+    "code": "4.1",
+    "priority": 1,
+    "confusable_with": [
+      "politicheskaya-vlast",
+      "vlast"
+    ],
+    "features": [
+      {
+        "id": "politicheskaya-gosudarstvennaya-vlast__f1",
+        "text": "верховенство, обязательность ее решений для всего общества",
+        "group": null
+      },
+      {
+        "id": "politicheskaya-gosudarstvennaya-vlast__f2",
+        "text": "публичность (действует на основе права от имени всего общества)",
+        "group": null
+      },
+      {
+        "id": "politicheskaya-gosudarstvennaya-vlast__f3",
+        "text": "легальность в использовании силы для принуждения",
+        "group": null
+      },
+      {
+        "id": "politicheskaya-gosudarstvennaya-vlast__f4",
+        "text": "моноцентричность, т.е. существование общегосударственного центра принятия политических решений",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 112,
+    "slug": "politicheskaya-sistema-obschestva",
+    "title": "Политическая система общества",
+    "image": "politicheskaya-sistema-obschestva.jpg",
+    "code": "4.2",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "politicheskaya-sistema-obschestva__f1",
+        "text": "совокупность общественных отношений, связанных с осуществлением политической власти / сложный механизм формирования и функционирования власти в обществе",
+        "group": null
+      },
+      {
+        "id": "politicheskaya-sistema-obschestva__f2",
+        "text": "устойчивая взаимосвязь элементов политической жизни",
+        "group": null
+      },
+      {
+        "id": "politicheskaya-sistema-obschestva__f3",
+        "text": "включает в себя подсистемы / включает в себя политические институты и формы их взаимодействия",
+        "group": null
+      },
+      {
+        "id": "politicheskaya-sistema-obschestva__f4",
+        "text": "организованность на единой нормативно-ценностной основе",
+        "group": null
+      },
+      {
+        "id": "politicheskaya-sistema-obschestva__f5",
+        "text": "обеспечивает определение целей общественного развития и управления общественными делами",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 113,
+    "slug": "politicheskii-institut",
+    "title": "Политический институт",
+    "image": "politicheskii-institut.jpg",
+    "code": "4.2",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "politicheskii-institut__f1",
+        "text": "связь с осуществлением политической власти / наличие властных полномочий",
+        "group": null
+      },
+      {
+        "id": "politicheskii-institut__f2",
+        "text": "нормативность (действует в строгих рамках законов и политических традиций)",
+        "group": null
+      },
+      {
+        "id": "politicheskii-institut__f3",
+        "text": "содержит установки и образцы политического поведения",
+        "group": null
+      },
+      {
+        "id": "politicheskii-institut__f4",
+        "text": "определяет функции, регулирует деятельность субъектов политики",
+        "group": null
+      },
+      {
+        "id": "politicheskii-institut__f5",
+        "text": "наличие политических учреждений, организаций",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 114,
+    "slug": "gosudarstvo",
+    "title": "Государство",
+    "image": "gosudarstvo.jpg",
+    "code": "4.3",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "gosudarstvo__f1",
+        "text": "суверенитет",
+        "group": null
+      },
+      {
+        "id": "gosudarstvo__f2",
+        "text": "публичная власть",
+        "group": null
+      },
+      {
+        "id": "gosudarstvo__f3",
+        "text": "монопольное право на легальное применение силы",
+        "group": null
+      },
+      {
+        "id": "gosudarstvo__f4",
+        "text": "исключительно право устанавливать налоги и сборы",
+        "group": null
+      },
+      {
+        "id": "gosudarstvo__f5",
+        "text": "наличие территории",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 115,
+    "slug": "suverenitet-gosudarstva",
+    "title": "Суверенитет государства",
+    "image": "suverenitet-gosudarstva.jpg",
+    "code": "4.3",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "suverenitet-gosudarstva__f1",
+        "text": "независимость государства во внешних делах",
+        "group": null
+      },
+      {
+        "id": "suverenitet-gosudarstva__f2",
+        "text": "верховенство государственной власти во внутренних делах",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 116,
+    "slug": "federaciya",
+    "title": "Федерация",
+    "image": "federaciya.jpg",
+    "code": "4.4",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "federaciya__f1",
+        "text": "определённая политическая самостоятельность субъектов",
+        "group": null
+      },
+      {
+        "id": "federaciya__f2",
+        "text": "субъекты имеют право принимать собственные конституции (уставы) / существует региональное законодательство",
+        "group": null
+      },
+      {
+        "id": "federaciya__f3",
+        "text": "наличие у регионов собственных законодательных и исполнительных органов власти / два уровня государственной власти",
+        "group": null
+      },
+      {
+        "id": "federaciya__f4",
+        "text": "разграничение полномочий между центром и регионами",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 117,
+    "slug": "forma-gosudarstvennogo-territorialnogo-ustroistva",
+    "title": "Форма государственного (территориального) устройства",
+    "image": "forma-gosudarstvennogo-territorialnogo-ustroistva.jpg",
+    "code": "4.4",
+    "priority": 2,
+    "confusable_with": [
+      "forma-gosudarstva",
+      "forma-pravleniya"
+    ],
+    "features": [
+      {
+        "id": "forma-gosudarstvennogo-territorialnogo-ustroistva__f1",
+        "text": "отражает административно-территориальное строение государства (деление государства на составные части)",
+        "group": null
+      },
+      {
+        "id": "forma-gosudarstvennogo-territorialnogo-ustroistva__f2",
+        "text": "отражает характер взаимодействия центральных и региональных органов власти",
+        "group": null
+      },
+      {
+        "id": "forma-gosudarstvennogo-territorialnogo-ustroistva__f3",
+        "text": "отражает распределение объема полномочий между центром и регионами",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 118,
+    "slug": "forma-gosudarstva",
+    "title": "Форма государства",
+    "image": "forma-gosudarstva.jpg",
+    "code": "4.4",
+    "priority": 1,
+    "confusable_with": [
+      "forma-gosudarstvennogo-territorialnogo-ustroistva",
+      "forma-pravleniya"
+    ],
+    "features": [
+      {
+        "id": "forma-gosudarstva__f1",
+        "text": "включает способы и формы организации государственной власти (форма правления)",
+        "group": null
+      },
+      {
+        "id": "forma-gosudarstva__f2",
+        "text": "включает способы и формы государственно-территориального устройства",
+        "group": null
+      },
+      {
+        "id": "forma-gosudarstva__f3",
+        "text": "включает совокупность методов и способов осуществления государственной власти (политический режим)",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 119,
+    "slug": "forma-pravleniya",
+    "title": "Форма правления",
+    "image": "forma-pravleniya.jpg",
+    "code": "4.4",
+    "priority": 1,
+    "confusable_with": [
+      "forma-gosudarstva",
+      "forma-gosudarstvennogo-territorialnogo-ustroistva"
+    ],
+    "features": [
+      {
+        "id": "forma-pravleniya__f1",
+        "text": "определение способа формирования государственной власти",
+        "group": null
+      },
+      {
+        "id": "forma-pravleniya__f2",
+        "text": "определение принципов взаимоотношений органов государственной власти",
+        "group": null
+      },
+      {
+        "id": "forma-pravleniya__f3",
+        "text": "определение степени участия населения в формировании органов государственной власти",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 120,
+    "slug": "totalitarnoe-obschestvo-rezhim",
+    "title": "Тоталитарное общество (режим)",
+    "image": "totalitarnoe-obschestvo-rezhim.jpg",
+    "code": "4.4",
+    "priority": 1,
+    "confusable_with": [
+      "avtoritarnyi-rezhim",
+      "demokratiya",
+      "politicheskii-rezhim"
+    ],
+    "features": [
+      {
+        "id": "totalitarnoe-obschestvo-rezhim__f1",
+        "text": "установлен полный контроль государства над всеми сферами жизни общества и человека",
+        "group": null
+      },
+      {
+        "id": "totalitarnoe-obschestvo-rezhim__f2",
+        "text": "существует единая обязательная политическая идеология",
+        "group": null
+      },
+      {
+        "id": "totalitarnoe-obschestvo-rezhim__f3",
+        "text": "государством проводятся массовые репрессии и террор",
+        "group": null
+      },
+      {
+        "id": "totalitarnoe-obschestvo-rezhim__f4",
+        "text": "создаётся культ личности вождя",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 121,
+    "slug": "politicheskii-rezhim",
+    "title": "Политический режим",
+    "image": "politicheskii-rezhim.jpg",
+    "code": "4.4",
+    "priority": 1,
+    "confusable_with": [
+      "avtoritarnyi-rezhim",
+      "demokratiya",
+      "totalitarnoe-obschestvo-rezhim"
+    ],
+    "features": [
+      {
+        "id": "politicheskii-rezhim__f1",
+        "text": "характеризует способ функционирования политической системы",
+        "group": "g16"
+      },
+      {
+        "id": "politicheskii-rezhim__f2",
+        "text": "характеризует способы, средства, методы и формы осуществления политической власти",
+        "group": null
+      },
+      {
+        "id": "politicheskii-rezhim__f3",
+        "text": "характеризует отношения между властью и обществом",
+        "group": null
+      },
+      {
+        "id": "politicheskii-rezhim__f4",
+        "text": "характеризует уровень политических прав и свобод",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 122,
+    "slug": "demokratiya",
+    "title": "Демократия",
+    "image": "demokratiya.jpg",
+    "code": "4.4",
+    "priority": 2,
+    "confusable_with": [
+      "avtoritarnyi-rezhim",
+      "politicheskii-plyuralizm",
+      "politicheskii-rezhim",
+      "totalitarnoe-obschestvo-rezhim"
+    ],
+    "features": [
+      {
+        "id": "demokratiya__f1",
+        "text": "основана на участии граждан в формировании и осуществлении государственной власти (народовластие)",
+        "group": null
+      },
+      {
+        "id": "demokratiya__f2",
+        "text": "принятие политических решений большинством при уважении интересов и прав меньшинства",
+        "group": null
+      },
+      {
+        "id": "demokratiya__f3",
+        "text": "политический плюрализм (многопартийность)",
+        "group": null
+      },
+      {
+        "id": "demokratiya__f4",
+        "text": "гарантии прав и свобод граждан",
+        "group": null
+      },
+      {
+        "id": "demokratiya__f5",
+        "text": "существует легальная оппозиция",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 123,
+    "slug": "pravovoe-gosudarstvo",
+    "title": "Правовое государство",
+    "image": "pravovoe-gosudarstvo.jpg",
+    "code": "4.4",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "pravovoe-gosudarstvo__f1",
+        "text": "верховенство права",
+        "group": null
+      },
+      {
+        "id": "pravovoe-gosudarstvo__f2",
+        "text": "государство гарантирует соблюдение прав и свобод человека, они являются высшей ценностью",
+        "group": null
+      },
+      {
+        "id": "pravovoe-gosudarstvo__f3",
+        "text": "реализован принцип разделения властей",
+        "group": null
+      },
+      {
+        "id": "pravovoe-gosudarstvo__f4",
+        "text": "взаимная ответственность гражданина и государства",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 124,
+    "slug": "grazhdanskoe-obschestvo",
+    "title": "Гражданское общество",
+    "image": "grazhdanskoe-obschestvo.jpg",
+    "code": "4.4",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "grazhdanskoe-obschestvo__f1",
+        "text": "направлено на реализацию частных интересов и удовлетворение потребностей свободных граждан",
+        "group": null
+      },
+      {
+        "id": "grazhdanskoe-obschestvo__f2",
+        "text": "основано на самостоятельности и социальной активности / инициативности граждан",
+        "group": null
+      },
+      {
+        "id": "grazhdanskoe-obschestvo__f3",
+        "text": "подразумевает добровольность участия и самоуправления граждан / совокупность негосударственных отношений и институтов",
+        "group": null
+      },
+      {
+        "id": "grazhdanskoe-obschestvo__f4",
+        "text": "основано на горизонтальных связях между гражданами",
+        "group": null
+      },
+      {
+        "id": "grazhdanskoe-obschestvo__f5",
+        "text": "деятельность общественных объединений, созданных гражданами для совместного решения возникающих проблем",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 125,
+    "slug": "obschestvenno-politicheskie-dvizheniya",
+    "title": "Общественно-политические движения",
+    "image": "obschestvenno-politicheskie-dvizheniya.jpg",
+    "code": "4.8",
+    "priority": 2,
+    "confusable_with": [
+      "politicheskaya-partiya-kak-obschestvennoe-obedinenie"
+    ],
+    "features": [
+      {
+        "id": "obschestvenno-politicheskie-dvizheniya__f1",
+        "text": "стремятся не к достижению власти, а к воздействию на власть",
+        "group": null
+      },
+      {
+        "id": "obschestvenno-politicheskie-dvizheniya__f2",
+        "text": "объединяют граждан с общими интересами, но не требуют идеологического единства",
+        "group": null
+      },
+      {
+        "id": "obschestvenno-politicheskie-dvizheniya__f3",
+        "text": "направлены на достижение какой-либо значимой политической цели",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 126,
+    "slug": "demokraticheskie-vybory",
+    "title": "Демократические выборы",
+    "image": "demokraticheskie-vybory.jpg",
+    "code": "4.8",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "demokraticheskie-vybory__f1",
+        "text": "обеспечиваются посредством тайного голосования",
+        "group": null
+      },
+      {
+        "id": "demokraticheskie-vybory__f2",
+        "text": "прямые (граждане голосуют непосредственно за кандидата или партию, а не за «выборщиков»)",
+        "group": null
+      },
+      {
+        "id": "demokraticheskie-vybory__f3",
+        "text": "равные (один человек – один голос)",
+        "group": null
+      },
+      {
+        "id": "demokraticheskie-vybory__f4",
+        "text": "всеобщие (право голосовать есть у всех совершеннолетних дееспособных граждан)",
+        "group": null
+      },
+      {
+        "id": "demokraticheskie-vybory__f5",
+        "text": "альтернативные",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 127,
+    "slug": "referendum",
+    "title": "Референдум",
+    "image": "referendum.jpg",
+    "code": "4.8",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "referendum__f1",
+        "text": "устраивается по наиболее значимым вопросам государственной и общественной жизни",
+        "group": null
+      },
+      {
+        "id": "referendum__f2",
+        "text": "всенародное голосование",
+        "group": null
+      },
+      {
+        "id": "referendum__f3",
+        "text": "прямое голосование",
+        "group": null
+      },
+      {
+        "id": "referendum__f4",
+        "text": "проводится на определённой территории",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 128,
+    "slug": "politicheskii-process",
+    "title": "Политический процесс",
+    "image": "politicheskii-process.jpg",
+    "code": "4.8",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "politicheskii-process__f1",
+        "text": "форма функционирования политической системы",
+        "group": "g16"
+      },
+      {
+        "id": "politicheskii-process__f2",
+        "text": "совокупная деятельность субъектов политики (совокупность политических событий)",
+        "group": null
+      },
+      {
+        "id": "politicheskii-process__f3",
+        "text": "заключается в принятии и реализации политических решений",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 129,
+    "slug": "politicheskoe-uchastie",
+    "title": "Политическое участие",
+    "image": "politicheskoe-uchastie.jpg",
+    "code": "4.8",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "politicheskoe-uchastie__f1",
+        "text": "проводится с целью влияния на разработку, принятие и реализацию государственных решений, выбор представителей в институты власти",
+        "group": null
+      },
+      {
+        "id": "politicheskoe-uchastie__f2",
+        "text": "осуществляется гражданами (подразумевает вовлеченность граждан в политические процессы)",
+        "group": null
+      },
+      {
+        "id": "politicheskoe-uchastie__f3",
+        "text": "индивидуальный или групповой характер действий",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 130,
+    "slug": "politicheskaya-ideologiya",
+    "title": "Политическая идеология",
+    "image": "politicheskaya-ideologiya.jpg",
+    "code": "4.9",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "politicheskaya-ideologiya__f1",
+        "text": "системный характер",
+        "group": null
+      },
+      {
+        "id": "politicheskaya-ideologiya__f2",
+        "text": "оправдывает притязания на власть",
+        "group": null
+      },
+      {
+        "id": "politicheskaya-ideologiya__f3",
+        "text": "содержит ценности, идеи и взгляды на ход политического развития страны",
+        "group": null
+      },
+      {
+        "id": "politicheskaya-ideologiya__f4",
+        "text": "выражает интересы различных политических групп и организаций",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 131,
+    "slug": "politicheskaya-partiya-kak-obschestvennoe-obedinenie",
+    "title": "Политическая партия (как общественное объединение)",
+    "image": "politicheskaya-partiya-kak-obschestvennoe-obedinenie.jpg",
+    "code": "4.9",
+    "priority": 1,
+    "confusable_with": [
+      "obschestvenno-politicheskie-dvizheniya"
+    ],
+    "features": [
+      {
+        "id": "politicheskaya-partiya-kak-obschestvennoe-obedinenie__f1",
+        "text": "стремление к завоеванию государственной власти (или к участию в её осуществлении)",
+        "group": null
+      },
+      {
+        "id": "politicheskaya-partiya-kak-obschestvennoe-obedinenie__f2",
+        "text": "организованность, наличие программы, устава (устойчивость, наличие организационной структуры)",
+        "group": null
+      },
+      {
+        "id": "politicheskaya-partiya-kak-obschestvennoe-obedinenie__f3",
+        "text": "идейная общность участников",
+        "group": null
+      },
+      {
+        "id": "politicheskaya-partiya-kak-obschestvennoe-obedinenie__f4",
+        "text": "выражение интересов, целей и ценностей определенных социальных групп и слоев",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 132,
+    "slug": "izbiratelnaya-sistema",
+    "title": "Избирательная система",
+    "image": "izbiratelnaya-sistema.jpg",
+    "code": "4.10",
+    "priority": 2,
+    "confusable_with": [
+      "mazhoritarnaya-izbiratelnaya-sistema",
+      "proporcionalnaya-izbiratelnaya-sistema"
+    ],
+    "features": [
+      {
+        "id": "izbiratelnaya-sistema__f1",
+        "text": "порядок организации и проведения выборов, определения их результатов",
+        "group": null
+      },
+      {
+        "id": "izbiratelnaya-sistema__f2",
+        "text": "включает избирательное право и избирательный процесс",
+        "group": null
+      },
+      {
+        "id": "izbiratelnaya-sistema__f3",
+        "text": "создаётся с целью формирования органов власти с помощью выборов",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 133,
+    "slug": "mazhoritarnaya-izbiratelnaya-sistema",
+    "title": "Мажоритарная избирательная система",
+    "image": "mazhoritarnaya-izbiratelnaya-sistema.jpg",
+    "code": "4.10",
+    "priority": 2,
+    "confusable_with": [
+      "izbiratelnaya-sistema",
+      "proporcionalnaya-izbiratelnaya-sistema"
+    ],
+    "features": [
+      {
+        "id": "mazhoritarnaya-izbiratelnaya-sistema__f1",
+        "text": "избиратели голосуют за конкретного кандидата",
+        "group": null
+      },
+      {
+        "id": "mazhoritarnaya-izbiratelnaya-sistema__f2",
+        "text": "возможно голосование в один или два тура",
+        "group": null
+      },
+      {
+        "id": "mazhoritarnaya-izbiratelnaya-sistema__f3",
+        "text": "территория разбивается на одномандатные избирательные округа",
+        "group": null
+      },
+      {
+        "id": "mazhoritarnaya-izbiratelnaya-sistema__f4",
+        "text": "избранным считается кандидат, получивший по данному округу большинство голосов",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 134,
+    "slug": "proporcionalnaya-izbiratelnaya-sistema",
+    "title": "Пропорциональная избирательная система",
+    "image": "proporcionalnaya-izbiratelnaya-sistema.jpg",
+    "code": "4.10",
+    "priority": 2,
+    "confusable_with": [
+      "izbiratelnaya-sistema",
+      "mazhoritarnaya-izbiratelnaya-sistema"
+    ],
+    "features": [
+      {
+        "id": "proporcionalnaya-izbiratelnaya-sistema__f1",
+        "text": "партии получают в представительных органах число мест пропорционально числу отданных за них голосов",
+        "group": null
+      },
+      {
+        "id": "proporcionalnaya-izbiratelnaya-sistema__f2",
+        "text": "голосование осуществляется по единому избирательному округу",
+        "group": null
+      },
+      {
+        "id": "proporcionalnaya-izbiratelnaya-sistema__f3",
+        "text": "присутствует избирательный барьер",
+        "group": null
+      },
+      {
+        "id": "proporcionalnaya-izbiratelnaya-sistema__f4",
+        "text": "голосование не за личность, а за партию (партийный список)",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 135,
+    "slug": "politicheskaya-elita",
+    "title": "Политическая элита",
+    "image": "politicheskaya-elita.jpg",
+    "code": "4.11",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "politicheskaya-elita__f1",
+        "text": "непосредственное участие в осуществлении власти или воздействие на неё",
+        "group": null
+      },
+      {
+        "id": "politicheskaya-elita__f2",
+        "text": "небольшая численность",
+        "group": null
+      },
+      {
+        "id": "politicheskaya-elita__f3",
+        "text": "высокий социальный статус",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 136,
+    "slug": "politicheskii-lider",
+    "title": "Политический лидер",
+    "image": "politicheskii-lider.jpg",
+    "code": "4.11",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "politicheskii-lider__f1",
+        "text": "его влияние охватывает всё общество или большие группы людей",
+        "group": null
+      },
+      {
+        "id": "politicheskii-lider__f2",
+        "text": "способен выражать и отстаивать интересы определенной социальной группы",
+        "group": null
+      },
+      {
+        "id": "politicheskii-lider__f3",
+        "text": "обладает личным авторитетом / ораторскими способностями / популярностью / особыми чертами характера (сильной волей, настойчивостью и т.д.) / способен вести за собой последователей",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 137,
+    "slug": "sredstva-massovoi-informacii-smi",
+    "title": "Средства массовой информации (СМИ)",
+    "image": "sredstva-massovoi-informacii-smi.jpg",
+    "code": "4.12",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "sredstva-massovoi-informacii-smi__f1",
+        "text": "публичность",
+        "group": null
+      },
+      {
+        "id": "sredstva-massovoi-informacii-smi__f2",
+        "text": "передача информации как основная функция",
+        "group": null
+      },
+      {
+        "id": "sredstva-massovoi-informacii-smi__f3",
+        "text": "наличие специальных технических приборов, аппаратуры",
+        "group": null
+      },
+      {
+        "id": "sredstva-massovoi-informacii-smi__f4",
+        "text": "периодичность",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 138,
+    "slug": "pravosoznanie",
+    "title": "Правосознание",
+    "image": "pravosoznanie.jpg",
+    "code": "5.1",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "pravosoznanie__f1",
+        "text": "содержит отношение людей к праву и юридической практике",
+        "group": null
+      },
+      {
+        "id": "pravosoznanie__f2",
+        "text": "определяет оценку правомерности тех или иных действий",
+        "group": null
+      },
+      {
+        "id": "pravosoznanie__f3",
+        "text": "складывается из знания права, правовой идеологии, правовой психологии и т.д.",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 139,
+    "slug": "zakon",
+    "title": "Закон",
+    "image": "zakon.jpg",
+    "code": "5.1",
+    "priority": 1,
+    "confusable_with": [
+      "normativnyi-pravovoi-akt-npa",
+      "podzakonnyi-akt"
+    ],
+    "features": [
+      {
+        "id": "zakon__f1",
+        "text": "принимается в особом порядке органами законодательной власти или референдумом",
+        "group": null
+      },
+      {
+        "id": "zakon__f2",
+        "text": "обладает высшей юридической силой по отношению к подзаконным актам",
+        "group": null
+      },
+      {
+        "id": "zakon__f3",
+        "text": "регулирует наиболее значимые общественные отношения",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 140,
+    "slug": "pravo",
+    "title": "Право",
+    "image": "pravo.jpg",
+    "code": "5.1",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "pravo__f1",
+        "text": "носит общеобязательный характер",
+        "group": null
+      },
+      {
+        "id": "pravo__f2",
+        "text": "обеспечиваются силой государственного принуждения",
+        "group": "g9"
+      },
+      {
+        "id": "pravo__f3",
+        "text": "обладает формальной определённостью (носит формализованный характер)",
+        "group": null
+      },
+      {
+        "id": "pravo__f4",
+        "text": "устанавливается или санкционируется государством",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 141,
+    "slug": "norma-prava-kak-vid-socialnyh-norm",
+    "title": "Норма права (как вид социальных норм)",
+    "image": "norma-prava-kak-vid-socialnyh-norm.jpg",
+    "code": "5.1",
+    "priority": 1,
+    "confusable_with": [
+      "moral-kak-vid-socialnyh-norm",
+      "socialnaya-norma"
+    ],
+    "features": [
+      {
+        "id": "norma-prava-kak-vid-socialnyh-norm__f1",
+        "text": "общеобязательность",
+        "group": null
+      },
+      {
+        "id": "norma-prava-kak-vid-socialnyh-norm__f2",
+        "text": "обеспечиваются силой государственного принуждения",
+        "group": "g9"
+      },
+      {
+        "id": "norma-prava-kak-vid-socialnyh-norm__f3",
+        "text": "формальная определённость",
+        "group": null
+      },
+      {
+        "id": "norma-prava-kak-vid-socialnyh-norm__f4",
+        "text": "устанавливаются или санкционируются государством",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 142,
+    "slug": "formy-istochniki-prava",
+    "title": "Формы (источники) права",
+    "image": "formy-istochniki-prava.jpg",
+    "code": "5.2",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "formy-istochniki-prava__f1",
+        "text": "придают нормам права общеобязательное значение",
+        "group": null
+      },
+      {
+        "id": "formy-istochniki-prava__f2",
+        "text": "установлены или санкционированы государством",
+        "group": null
+      },
+      {
+        "id": "formy-istochniki-prava__f3",
+        "text": "является формой внешнего выражения норм права",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 143,
+    "slug": "normativnyi-pravovoi-akt-npa",
+    "title": "Нормативный правовой акт (НПА)",
+    "image": "normativnyi-pravovoi-akt-npa.jpg",
+    "code": "5.2",
+    "priority": 2,
+    "confusable_with": [
+      "podzakonnyi-akt",
+      "zakon"
+    ],
+    "features": [
+      {
+        "id": "normativnyi-pravovoi-akt-npa__f1",
+        "text": "официальный характер",
+        "group": null
+      },
+      {
+        "id": "normativnyi-pravovoi-akt-npa__f2",
+        "text": "существует в письменной форме",
+        "group": null
+      },
+      {
+        "id": "normativnyi-pravovoi-akt-npa__f3",
+        "text": "издаётся компетентным государственным органом или принимается путём референдума",
+        "group": null
+      },
+      {
+        "id": "normativnyi-pravovoi-akt-npa__f4",
+        "text": "содержит нормы права",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 144,
+    "slug": "administrativnoe-pravo",
+    "title": "Административное право",
+    "image": "administrativnoe-pravo.jpg",
+    "code": "5.3",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "administrativnoe-pravo__f1",
+        "text": "регулирует общественные отношения в сфере государственного управления",
+        "group": null
+      },
+      {
+        "id": "administrativnoe-pravo__f2",
+        "text": "устанавливает ответственность за административные правонарушения",
+        "group": null
+      },
+      {
+        "id": "administrativnoe-pravo__f3",
+        "text": "юридическое неравенство сторон (одним из субъектов правоотношений всегда является государство)",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 145,
+    "slug": "grazhdanskoe-pravo",
+    "title": "Гражданское право",
+    "image": "grazhdanskoe-pravo.jpg",
+    "code": "5.3",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "grazhdanskoe-pravo__f1",
+        "text": "регулирует имущественные и личные неимущественные отношения,",
+        "group": null
+      },
+      {
+        "id": "grazhdanskoe-pravo__f2",
+        "text": "основано на юридическом равенстве сторон",
+        "group": null
+      },
+      {
+        "id": "grazhdanskoe-pravo__f3",
+        "text": "основано на имущественной самостоятельности сторон",
+        "group": null
+      },
+      {
+        "id": "grazhdanskoe-pravo__f4",
+        "text": "основано на свободе договора",
+        "group": null
+      },
+      {
+        "id": "grazhdanskoe-pravo__f5",
+        "text": "основным источником является Гражданский кодекс РФ",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 146,
+    "slug": "otrasl-prava",
+    "title": "Отрасль права",
+    "image": "otrasl-prava.jpg",
+    "code": "5.3",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "otrasl-prava__f1",
+        "text": "состоит из правовых норм, которые обособлены в рамках системы права",
+        "group": null
+      },
+      {
+        "id": "otrasl-prava__f2",
+        "text": "имеет предмет и метод правового регулирования",
+        "group": null
+      },
+      {
+        "id": "otrasl-prava__f3",
+        "text": "регулирует однородную сферу общественных отношений",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 147,
+    "slug": "sistema-prava",
+    "title": "Система права",
+    "image": "sistema-prava.jpg",
+    "code": "5.3",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "sistema-prava__f1",
+        "text": "объективность (обусловленность системой общественных отношений)",
+        "group": null
+      },
+      {
+        "id": "sistema-prava__f2",
+        "text": "единство и взаимосвязь норм, её составляющих",
+        "group": null
+      },
+      {
+        "id": "sistema-prava__f3",
+        "text": "наличие структурных элементов (норм, отраслей, институтов)",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 148,
+    "slug": "pravootnoshenie",
+    "title": "Правоотношение",
+    "image": "pravootnoshenie.jpg",
+    "code": "5.4",
+    "priority": 1,
+    "confusable_with": [
+      "pravomernoe-povedenie",
+      "pravonarushenie-kak-deyanie"
+    ],
+    "features": [
+      {
+        "id": "pravootnoshenie__f1",
+        "text": "складываются на основе норм права",
+        "group": null
+      },
+      {
+        "id": "pravootnoshenie__f2",
+        "text": "участники правоотношений имеют субъективные права и юридические обязанности",
+        "group": null
+      },
+      {
+        "id": "pravootnoshenie__f3",
+        "text": "правоотношения носят волевой и сознательный характер",
+        "group": null
+      },
+      {
+        "id": "pravootnoshenie__f4",
+        "text": "правоотношения гарантируются государством и охраняются в необходимых случаях его принудительной силой",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 149,
+    "slug": "subekty-pravootnoshenii-grazhdanin-kak-subekt-pravootnosheni",
+    "title": "Субъекты правоотношений (гражданин как субъект правоотношений / субъект права)",
+    "image": "subekty-pravootnoshenii-grazhdanin-kak-subekt-pravootnosheni.jpg",
+    "code": "5.4",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "subekty-pravootnoshenii-grazhdanin-kak-subekt-pravootnosheni__f1",
+        "text": "возможность иметь и права и нести обязанности (правоспособность)",
+        "group": "g12"
+      },
+      {
+        "id": "subekty-pravootnoshenii-grazhdanin-kak-subekt-pravootnosheni__f2",
+        "text": "возможность своими действиями приобретать и реализовывать права и обязанности (дееспособность)",
+        "group": "g13"
+      },
+      {
+        "id": "subekty-pravootnoshenii-grazhdanin-kak-subekt-pravootnosheni__f3",
+        "text": "способность нести самостоятельную юридическую ответственность за совершенные правонарушения (деликтоспособность)",
+        "group": null
+      },
+      {
+        "id": "subekty-pravootnoshenii-grazhdanin-kak-subekt-pravootnosheni__f4",
+        "text": "имя и возраст (только для физического лица / гражданина)",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 150,
+    "slug": "pravomernoe-povedenie",
+    "title": "Правомерное поведение",
+    "image": "pravomernoe-povedenie.jpg",
+    "code": "5.5",
+    "priority": 1,
+    "confusable_with": [
+      "pravonarushenie-kak-deyanie",
+      "pravootnoshenie"
+    ],
+    "features": [
+      {
+        "id": "pravomernoe-povedenie__f1",
+        "text": "соответствует нормам права",
+        "group": null
+      },
+      {
+        "id": "pravomernoe-povedenie__f2",
+        "text": "полезно для общества, оно не противоречит его интересам и целям",
+        "group": null
+      },
+      {
+        "id": "pravomernoe-povedenie__f3",
+        "text": "осуществляется добровольно и осознанно",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 151,
+    "slug": "administrativnaya-otvetstvennost",
+    "title": "Административная ответственность",
+    "image": "administrativnaya-otvetstvennost.jpg",
+    "code": "5.5",
+    "priority": 2,
+    "confusable_with": [
+      "grazhdansko-pravovaya-otvetstvennost",
+      "pravonarushenie-kak-deyanie",
+      "prestuplenie-kak-deyanie",
+      "ugolovnaya-otvetstvennost",
+      "yuridicheskaya-otvetstvennost"
+    ],
+    "features": [
+      {
+        "id": "administrativnaya-otvetstvennost__f1",
+        "text": "налагается за совершенный административный проступок",
+        "group": null
+      },
+      {
+        "id": "administrativnaya-otvetstvennost__f2",
+        "text": "наказания определяются Кодексом РФ об административных правонарушениях РФ",
+        "group": null
+      },
+      {
+        "id": "administrativnaya-otvetstvennost__f3",
+        "text": "налагается не только судом, но и государственными органами исполнительной власти и (или) должностными лицами",
+        "group": null
+      },
+      {
+        "id": "administrativnaya-otvetstvennost__f4",
+        "text": "налагается на физические, должностные и юридические лица",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 152,
+    "slug": "grazhdansko-pravovaya-otvetstvennost",
+    "title": "Гражданско-правовая ответственность",
+    "image": "grazhdansko-pravovaya-otvetstvennost.jpg",
+    "code": "5.5",
+    "priority": 2,
+    "confusable_with": [
+      "administrativnaya-otvetstvennost",
+      "pravonarushenie-kak-deyanie",
+      "prestuplenie-kak-deyanie",
+      "ugolovnaya-otvetstvennost",
+      "yuridicheskaya-otvetstvennost"
+    ],
+    "features": [
+      {
+        "id": "grazhdansko-pravovaya-otvetstvennost__f1",
+        "text": "налагается за невыполнение обязательств по договору или внедоговорное причинение вреда",
+        "group": null
+      },
+      {
+        "id": "grazhdansko-pravovaya-otvetstvennost__f2",
+        "text": "наступает вследствие гражданских правонарушений и регламентируется Гражданским кодексом РФ",
+        "group": null
+      },
+      {
+        "id": "grazhdansko-pravovaya-otvetstvennost__f3",
+        "text": "основана на возмещении ущерба",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 153,
+    "slug": "ugolovnaya-otvetstvennost",
+    "title": "Уголовная ответственность",
+    "image": "ugolovnaya-otvetstvennost.jpg",
+    "code": "5.5",
+    "priority": 2,
+    "confusable_with": [
+      "administrativnaya-otvetstvennost",
+      "grazhdansko-pravovaya-otvetstvennost",
+      "pravonarushenie-kak-deyanie",
+      "prestuplenie-kak-deyanie",
+      "yuridicheskaya-otvetstvennost"
+    ],
+    "features": [
+      {
+        "id": "ugolovnaya-otvetstvennost__f1",
+        "text": "влечет судимость",
+        "group": null
+      },
+      {
+        "id": "ugolovnaya-otvetstvennost__f2",
+        "text": "налагается за совершение преступления, предусмотренного нормами уголовного права",
+        "group": null
+      },
+      {
+        "id": "ugolovnaya-otvetstvennost__f3",
+        "text": "всегда носит личный характер (не может накладываться на юридическое лицо)",
+        "group": null
+      },
+      {
+        "id": "ugolovnaya-otvetstvennost__f4",
+        "text": "к уголовной ответственности привлекает только суд",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 154,
+    "slug": "prestuplenie-kak-deyanie",
+    "title": "Преступление (как деяние)",
+    "image": "prestuplenie-kak-deyanie.jpg",
+    "code": "5.5",
+    "priority": 1,
+    "confusable_with": [
+      "administrativnaya-otvetstvennost",
+      "grazhdansko-pravovaya-otvetstvennost",
+      "pravonarushenie-kak-deyanie",
+      "ugolovnaya-otvetstvennost",
+      "yuridicheskaya-otvetstvennost"
+    ],
+    "features": [
+      {
+        "id": "prestuplenie-kak-deyanie__f1",
+        "text": "запрещено уголовным законодательством",
+        "group": null
+      },
+      {
+        "id": "prestuplenie-kak-deyanie__f2",
+        "text": "наказуемость (влечет уголовную ответственность)",
+        "group": null
+      },
+      {
+        "id": "prestuplenie-kak-deyanie__f3",
+        "text": "виновность",
+        "group": "g17"
+      },
+      {
+        "id": "prestuplenie-kak-deyanie__f4",
+        "text": "общественная опасность (наибольшая из всех правонарушений)",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 155,
+    "slug": "yuridicheskaya-otvetstvennost",
+    "title": "Юридическая ответственность",
+    "image": "yuridicheskaya-otvetstvennost.jpg",
+    "code": "5.5",
+    "priority": 1,
+    "confusable_with": [
+      "administrativnaya-otvetstvennost",
+      "grazhdansko-pravovaya-otvetstvennost",
+      "pravonarushenie-kak-deyanie",
+      "prestuplenie-kak-deyanie",
+      "ugolovnaya-otvetstvennost"
+    ],
+    "features": [
+      {
+        "id": "yuridicheskaya-otvetstvennost__f1",
+        "text": "наступает только за совершённое правонарушение",
+        "group": null
+      },
+      {
+        "id": "yuridicheskaya-otvetstvennost__f2",
+        "text": "неразрывно связана с государственным принуждением",
+        "group": null
+      },
+      {
+        "id": "yuridicheskaya-otvetstvennost__f3",
+        "text": "характеризуется определёнными лишениями, которые виновный обязан претерпеть",
+        "group": null
+      },
+      {
+        "id": "yuridicheskaya-otvetstvennost__f4",
+        "text": "осуществляется в строгом соответствии с нормами права",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 156,
+    "slug": "pravonarushenie-kak-deyanie",
+    "title": "Правонарушение (как деяние)",
+    "image": "pravonarushenie-kak-deyanie.jpg",
+    "code": "5.5",
+    "priority": 1,
+    "confusable_with": [
+      "administrativnaya-otvetstvennost",
+      "antisocialnoe-povedenie",
+      "grazhdansko-pravovaya-otvetstvennost",
+      "otklonyayuscheesya-deviantnoe-povedenie",
+      "pravomernoe-povedenie",
+      "pravootnoshenie",
+      "prestuplenie-kak-deyanie",
+      "ugolovnaya-otvetstvennost",
+      "yuridicheskaya-otvetstvennost"
+    ],
+    "features": [
+      {
+        "id": "pravonarushenie-kak-deyanie__f1",
+        "text": "противоправность",
+        "group": null
+      },
+      {
+        "id": "pravonarushenie-kak-deyanie__f2",
+        "text": "наличие вины (виновность)",
+        "group": "g17"
+      },
+      {
+        "id": "pravonarushenie-kak-deyanie__f3",
+        "text": "общественный вред",
+        "group": null
+      },
+      {
+        "id": "pravonarushenie-kak-deyanie__f4",
+        "text": "влечёт юридическую ответственность",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 157,
+    "slug": "konstitucionnyi-stroi",
+    "title": "Конституционный строй",
+    "image": "konstitucionnyi-stroi.jpg",
+    "code": "5.6",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "konstitucionnyi-stroi__f1",
+        "text": "устанавливается и охраняется Конституцией",
+        "group": null
+      },
+      {
+        "id": "konstitucionnyi-stroi__f2",
+        "text": "включает основополагающие базовые общественные отношения",
+        "group": null
+      },
+      {
+        "id": "konstitucionnyi-stroi__f3",
+        "text": "определяет устройство государства",
+        "group": null
+      },
+      {
+        "id": "konstitucionnyi-stroi__f4",
+        "text": "устанавливает правовой статус государства",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 158,
+    "slug": "konstituciya-rf",
+    "title": "Конституция РФ",
+    "image": "konstituciya-rf.jpg",
+    "code": "5.6",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "konstituciya-rf__f1",
+        "text": "основной закон государства",
+        "group": null
+      },
+      {
+        "id": "konstituciya-rf__f2",
+        "text": "является документом прямого действия",
+        "group": null
+      },
+      {
+        "id": "konstituciya-rf__f3",
+        "text": "обладает наивысшей юридической силой",
+        "group": null
+      },
+      {
+        "id": "konstituciya-rf__f4",
+        "text": "устанавливает важнейшие принципы государственного и общественного строя России и закрепляет правовой статус личности",
+        "group": null
+      },
+      {
+        "id": "konstituciya-rf__f5",
+        "text": "принята на всенародном голосовании",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 159,
+    "slug": "svetskoe-gosudarstvo",
+    "title": "Светское государство",
+    "image": "svetskoe-gosudarstvo.jpg",
+    "code": "5.6",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "svetskoe-gosudarstvo__f1",
+        "text": "никакая религия не может устанавливаться в качестве государственной или обязательной",
+        "group": null
+      },
+      {
+        "id": "svetskoe-gosudarstvo__f2",
+        "text": "религиозные объединения отделены от государства и равны перед законом",
+        "group": null
+      },
+      {
+        "id": "svetskoe-gosudarstvo__f3",
+        "text": "гражданам гарантирована свобода совести",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 160,
+    "slug": "grazhdanstvo",
+    "title": "Гражданство",
+    "image": "grazhdanstvo.jpg",
+    "code": "5.6",
+    "priority": 1,
+    "confusable_with": [
+      "grazhdanstvennost",
+      "patriotizm"
+    ],
+    "features": [
+      {
+        "id": "grazhdanstvo__f1",
+        "text": "гражданство является правовым состоянием (оформлено законодательством)",
+        "group": null
+      },
+      {
+        "id": "grazhdanstvo__f2",
+        "text": "устойчивость гражданства как правоотношения (означает, что оно существует постоянно)",
+        "group": null
+      },
+      {
+        "id": "grazhdanstvo__f3",
+        "text": "взаимные права и обязанности гражданина и государства",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 161,
+    "slug": "voinskaya-obyazannost",
+    "title": "Воинская обязанность",
+    "image": "voinskaya-obyazannost.jpg",
+    "code": "5.7",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "voinskaya-obyazannost__f1",
+        "text": "подразумевает несение службы в рядах Вооруженных сил РФ и выполнение других обязанностей, связанных с обороной страны",
+        "group": null
+      },
+      {
+        "id": "voinskaya-obyazannost__f2",
+        "text": "устанавливается законом",
+        "group": null
+      },
+      {
+        "id": "voinskaya-obyazannost__f3",
+        "text": "распространяется на граждан РФ",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 162,
+    "slug": "voennaya-sluzhba-po-kontraktu",
+    "title": "Военная служба по контракту",
+    "image": "voennaya-sluzhba-po-kontraktu.jpg",
+    "code": "5.7",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "voennaya-sluzhba-po-kontraktu__f1",
+        "text": "осуществляется в вооруженных силах РФ осуществляется в сроки, указанные в контракте",
+        "group": null
+      },
+      {
+        "id": "voennaya-sluzhba-po-kontraktu__f2",
+        "text": "носит добровольный характер",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 163,
+    "slug": "alternativnaya-grazhdanskaya-sluzhba",
+    "title": "Альтернативная гражданская служба",
+    "image": "alternativnaya-grazhdanskaya-sluzhba.jpg",
+    "code": "5.7",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "alternativnaya-grazhdanskaya-sluzhba__f1",
+        "text": "осуществляется гражданами взамен военной службы по призыву",
+        "group": null
+      },
+      {
+        "id": "alternativnaya-grazhdanskaya-sluzhba__f2",
+        "text": "является особым видом трудовой деятельности в интересах общества и государства",
+        "group": null
+      },
+      {
+        "id": "alternativnaya-grazhdanskaya-sluzhba__f3",
+        "text": "срок прохождения альтернативной гражданской службы обычно составляет 21 месяц, а в организациях Вооружённых сил РФ — 18 месяцев",
+        "group": null
+      },
+      {
+        "id": "alternativnaya-grazhdanskaya-sluzhba__f4",
+        "text": "с гражданином, проходящим альтернативную гражданскую службу, заключается трудовой договор",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 164,
+    "slug": "subekty-grazhdanskih-pravootnoshenii",
+    "title": "Субъекты гражданских правоотношений",
+    "image": "subekty-grazhdanskih-pravootnoshenii.jpg",
+    "code": "5.8",
+    "priority": 2,
+    "confusable_with": [
+      "fizicheskoe-lico",
+      "yuridicheskoe-lico"
+    ],
+    "features": [
+      {
+        "id": "subekty-grazhdanskih-pravootnoshenii__f1",
+        "text": "наличие гражданской правоспособности и дееспособности",
+        "group": null
+      },
+      {
+        "id": "subekty-grazhdanskih-pravootnoshenii__f2",
+        "text": "участник гражданско-правовых отношений",
+        "group": null
+      },
+      {
+        "id": "subekty-grazhdanskih-pravootnoshenii__f3",
+        "text": "приобретают и осуществляют свои гражданские права своей волей и в своем интересе",
+        "group": null
+      },
+      {
+        "id": "subekty-grazhdanskih-pravootnoshenii__f4",
+        "text": "представлены физическими лицами, юридическими лицами, публично-правовыми образованиями",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 165,
+    "slug": "yuridicheskoe-lico",
+    "title": "Юридическое лицо",
+    "image": "yuridicheskoe-lico.jpg",
+    "code": "5.8",
+    "priority": 1,
+    "confusable_with": [
+      "fizicheskoe-lico",
+      "subekty-grazhdanskih-pravootnoshenii"
+    ],
+    "features": [
+      {
+        "id": "yuridicheskoe-lico__f1",
+        "text": "зарегистрировано в установленном законом порядке",
+        "group": null
+      },
+      {
+        "id": "yuridicheskoe-lico__f2",
+        "text": "имеет в собственности или управлении обособленное имущество",
+        "group": null
+      },
+      {
+        "id": "yuridicheskoe-lico__f3",
+        "text": "может от своего имени вступать в гражданские правоотношения",
+        "group": null
+      },
+      {
+        "id": "yuridicheskoe-lico__f4",
+        "text": "может быть истцом и ответчиком в суде",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 166,
+    "slug": "fizicheskoe-lico",
+    "title": "Физическое лицо",
+    "image": "fizicheskoe-lico.jpg",
+    "code": "5.8",
+    "priority": 2,
+    "confusable_with": [
+      "subekty-grazhdanskih-pravootnoshenii",
+      "yuridicheskoe-lico"
+    ],
+    "features": [
+      {
+        "id": "fizicheskoe-lico__f1",
+        "text": "гражданская правоспособность",
+        "group": "g12"
+      },
+      {
+        "id": "fizicheskoe-lico__f2",
+        "text": "гражданская дееспособность",
+        "group": "g13"
+      }
+    ]
+  },
+  {
+    "id": 167,
+    "slug": "deesposobnost-subekta-prava",
+    "title": "Дееспособность субъекта права",
+    "image": "deesposobnost-subekta-prava.jpg",
+    "code": "5.8",
+    "priority": 1,
+    "confusable_with": [
+      "pravosposobnost"
+    ],
+    "features": [
+      {
+        "id": "deesposobnost-subekta-prava__f1",
+        "text": "возможность своими действиями приобретать и реализовывать права",
+        "group": "g13"
+      },
+      {
+        "id": "deesposobnost-subekta-prava__f2",
+        "text": "возможность создавать для себя юридические обязанности и исполнять их",
+        "group": null
+      },
+      {
+        "id": "deesposobnost-subekta-prava__f3",
+        "text": "приобретается физическим лицом постепенно",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 168,
+    "slug": "sobstvennost-pravo-sobstvennosti",
+    "title": "Собственность (право собственности)",
+    "image": "sobstvennost-pravo-sobstvennosti.jpg",
+    "code": "5.8",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "sobstvennost-pravo-sobstvennosti__f1",
+        "text": "владение (нахождение вещи в хозяйстве собственника)",
+        "group": null
+      },
+      {
+        "id": "sobstvennost-pravo-sobstvennosti__f2",
+        "text": "пользование (право использовать полезные свойства вещи)",
+        "group": null
+      },
+      {
+        "id": "sobstvennost-pravo-sobstvennosti__f3",
+        "text": "распоряжение (право поступать с вещью по своему усмотрению / определять юридическую судьбу вещи)",
+        "group": null
+      },
+      {
+        "id": "sobstvennost-pravo-sobstvennosti__f4",
+        "text": "предусматривает необходимость (обязанность) нести бремя содержания имущества, риск его утраты и ответственность за причинение им вреда жизни, здоровью или имуществу других лиц",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 169,
+    "slug": "brachnyi-dogovor",
+    "title": "Брачный договор",
+    "image": "brachnyi-dogovor.jpg",
+    "code": "5.9",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "brachnyi-dogovor__f1",
+        "text": "составляется в письменной форме",
+        "group": null
+      },
+      {
+        "id": "brachnyi-dogovor__f2",
+        "text": "подлежит нотариальному удостоверению",
+        "group": null
+      },
+      {
+        "id": "brachnyi-dogovor__f3",
+        "text": "определяет имущественные права и обязанности супругов в браке и в случае его расторжения",
+        "group": null
+      },
+      {
+        "id": "brachnyi-dogovor__f4",
+        "text": "не может регулировать личные неимущественные права супругов",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 170,
+    "slug": "brak-v-prave",
+    "title": "Брак (в праве)",
+    "image": "brak-v-prave.jpg",
+    "code": "5.9",
+    "priority": 1,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "brak-v-prave__f1",
+        "text": "юридически оформленный союз мужчины и женщины",
+        "group": null
+      },
+      {
+        "id": "brak-v-prave__f2",
+        "text": "предполагает взаимное согласие, добровольный характер",
+        "group": null
+      },
+      {
+        "id": "brak-v-prave__f3",
+        "text": "подразумевает равенство супругов в решении семейных вопросов",
+        "group": null
+      },
+      {
+        "id": "brak-v-prave__f4",
+        "text": "заключается с целью создания семьи",
+        "group": null
+      },
+      {
+        "id": "brak-v-prave__f5",
+        "text": "порождает взаимные личные, а также имущественные права и обязанности супругов",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 171,
+    "slug": "trudovoi-dogovor",
+    "title": "Трудовой договор",
+    "image": "trudovoi-dogovor.jpg",
+    "code": "5.10",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "trudovoi-dogovor__f1",
+        "text": "определяет взаимные права и обязанности работника и работодателя",
+        "group": null
+      },
+      {
+        "id": "trudovoi-dogovor__f2",
+        "text": "заключается в письменной форме в двух экземплярах",
+        "group": null
+      },
+      {
+        "id": "trudovoi-dogovor__f3",
+        "text": "является основой возникновения трудовых отношений",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 172,
+    "slug": "grazhdanskii-process-grazhdanskoe-sudoproizvodstvo",
+    "title": "Гражданский процесс (гражданское судопроизводство)",
+    "image": "grazhdanskii-process-grazhdanskoe-sudoproizvodstvo.jpg",
+    "code": "5.16",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "grazhdanskii-process-grazhdanskoe-sudoproizvodstvo__f1",
+        "text": "регулирует рассмотрение гражданских дел в суде",
+        "group": null
+      },
+      {
+        "id": "grazhdanskii-process-grazhdanskoe-sudoproizvodstvo__f2",
+        "text": "регулируется нормами гражданско-процессуального права",
+        "group": null
+      },
+      {
+        "id": "grazhdanskii-process-grazhdanskoe-sudoproizvodstvo__f3",
+        "text": "представляет собой совокупность процессуальных действий (подача иска и т.д.)",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 173,
+    "slug": "ugolovnyi-process",
+    "title": "Уголовный процесс",
+    "image": "ugolovnyi-process.jpg",
+    "code": "5.18",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "ugolovnyi-process__f1",
+        "text": "проводится органами предварительного следствия и дознания, органами прокуратуры и суда при участии иных организаций, должностных лиц и граждан",
+        "group": null
+      },
+      {
+        "id": "ugolovnyi-process__f2",
+        "text": "включает в себя порядок возбуждения, расследования, судебного рассмотрения и разрешения уголовных дел",
+        "group": null
+      },
+      {
+        "id": "ugolovnyi-process__f3",
+        "text": "основан на нормах уголовно-процессуального права",
+        "group": null
+      },
+      {
+        "id": "ugolovnyi-process__f4",
+        "text": "включает в себя стадию досудебного производства",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 174,
+    "slug": "pravoohranitelnye-organy",
+    "title": "Правоохранительные органы",
+    "image": "pravoohranitelnye-organy.jpg",
+    "code": "5.20",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "pravoohranitelnye-organy__f1",
+        "text": "преимущественно государственные органы",
+        "group": null
+      },
+      {
+        "id": "pravoohranitelnye-organy__f2",
+        "text": "осуществляют защиту прав и свобод граждан",
+        "group": null
+      },
+      {
+        "id": "pravoohranitelnye-organy__f3",
+        "text": "осуществляют свою деятельность в рамках, установленных законом",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 175,
+    "slug": "avtoritarnyi-rezhim",
+    "title": "Авторитарный режим",
+    "image": "avtoritarnyi-rezhim.jpg",
+    "code": "4.4",
+    "priority": 2,
+    "confusable_with": [
+      "demokratiya",
+      "politicheskii-rezhim",
+      "totalitarnoe-obschestvo-rezhim"
+    ],
+    "features": [
+      {
+        "id": "avtoritarnyi-rezhim__f1",
+        "text": "ограничение политических прав и свобод при сохранении части экономических и личных",
+        "group": null
+      },
+      {
+        "id": "avtoritarnyi-rezhim__f2",
+        "text": "отсутствие реальной политической оппозиции и конкуренции",
+        "group": null
+      },
+      {
+        "id": "avtoritarnyi-rezhim__f3",
+        "text": "доминирование одной идеологии без её полного монопольного насаждения",
+        "group": null
+      },
+      {
+        "id": "avtoritarnyi-rezhim__f4",
+        "text": "сохранение отдельных негосударственных сфер жизни общества",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 176,
+    "slug": "gosudarstvennyi-dolg",
+    "title": "Государственный долг",
+    "image": "gosudarstvennyi-dolg.jpg",
+    "code": "2.13",
+    "priority": 2,
+    "confusable_with": [
+      "byudzhetnaya-politika-gosudarstva",
+      "gosudarstvennyi-byudzhet",
+      "monetarnaya-denezhno-kreditnaya-politika",
+      "nalogi"
+    ],
+    "features": [
+      {
+        "id": "gosudarstvennyi-dolg__f1",
+        "text": "долговые обязательства государства перед физлицами, юрлицами, иностранными государствами",
+        "group": null
+      },
+      {
+        "id": "gosudarstvennyi-dolg__f2",
+        "text": "сумма непогашенных государственных займов с учётом процентов",
+        "group": null
+      },
+      {
+        "id": "gosudarstvennyi-dolg__f3",
+        "text": "возникает вследствие дефицита государственного бюджета",
+        "group": null
+      },
+      {
+        "id": "gosudarstvennyi-dolg__f4",
+        "text": "бывает внутренним и внешним",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 177,
+    "slug": "grazhdanstvennost",
+    "title": "Гражданственность",
+    "image": "grazhdanstvennost.jpg",
+    "code": "5.7",
+    "priority": 2,
+    "confusable_with": [
+      "grazhdanstvo",
+      "patriotizm"
+    ],
+    "features": [
+      {
+        "id": "grazhdanstvennost__f1",
+        "text": "нравственно-психологическое качество личности",
+        "group": null
+      },
+      {
+        "id": "grazhdanstvennost__f2",
+        "text": "чувство ответственности перед обществом и государством",
+        "group": null
+      },
+      {
+        "id": "grazhdanstvennost__f3",
+        "text": "уважение прав и свобод других граждан",
+        "group": null
+      },
+      {
+        "id": "grazhdanstvennost__f4",
+        "text": "готовность к активному участию в жизни общества",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 178,
+    "slug": "korrupciya",
+    "title": "Коррупция",
+    "image": "korrupciya.jpg",
+    "code": "4.3",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "korrupciya__f1",
+        "text": "злоупотребление должностным положением в личных целях",
+        "group": null
+      },
+      {
+        "id": "korrupciya__f2",
+        "text": "использование публичной власти вопреки интересам общества",
+        "group": null
+      },
+      {
+        "id": "korrupciya__f3",
+        "text": "формы: взяточничество, протекционизм, незаконное присвоение ресурсов",
+        "group": null
+      },
+      {
+        "id": "korrupciya__f4",
+        "text": "подрывает доверие к институтам власти",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 179,
+    "slug": "mestnoe-samoupravlenie",
+    "title": "Местное самоуправление",
+    "image": "mestnoe-samoupravlenie.jpg",
+    "code": "4.4",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "mestnoe-samoupravlenie__f1",
+        "text": "самостоятельное решение населением вопросов местного значения",
+        "group": null
+      },
+      {
+        "id": "mestnoe-samoupravlenie__f2",
+        "text": "осуществляется под свою ответственность, исходя из интересов населения",
+        "group": null
+      },
+      {
+        "id": "mestnoe-samoupravlenie__f3",
+        "text": "реализуется через выборные органы и формы прямого волеизъявления (референдум, сход)",
+        "group": null
+      },
+      {
+        "id": "mestnoe-samoupravlenie__f4",
+        "text": "не входит в систему органов государственной власти",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 180,
+    "slug": "patriotizm",
+    "title": "Патриотизм",
+    "image": "patriotizm.jpg",
+    "code": "5.7",
+    "priority": 2,
+    "confusable_with": [
+      "grazhdanstvennost",
+      "grazhdanstvo"
+    ],
+    "features": [
+      {
+        "id": "patriotizm__f1",
+        "text": "ценностное отношение к своему Отечеству",
+        "group": null
+      },
+      {
+        "id": "patriotizm__f2",
+        "text": "любовь к родине, стремление к её благополучию",
+        "group": null
+      },
+      {
+        "id": "patriotizm__f3",
+        "text": "уважение к историческому прошлому, культуре и традициям народа",
+        "group": null
+      },
+      {
+        "id": "patriotizm__f4",
+        "text": "готовность защищать интересы страны",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 181,
+    "slug": "podzakonnyi-akt",
+    "title": "Подзаконный акт",
+    "image": "podzakonnyi-akt.jpg",
+    "code": "5.2",
+    "priority": 2,
+    "confusable_with": [
+      "normativnyi-pravovoi-akt-npa",
+      "zakon"
+    ],
+    "features": [
+      {
+        "id": "podzakonnyi-akt__f1",
+        "text": "принимается на основе и во исполнение закона",
+        "group": null
+      },
+      {
+        "id": "podzakonnyi-akt__f2",
+        "text": "не может противоречить закону",
+        "group": null
+      },
+      {
+        "id": "podzakonnyi-akt__f3",
+        "text": "конкретизирует и детализирует нормы закона",
+        "group": null
+      },
+      {
+        "id": "podzakonnyi-akt__f4",
+        "text": "издаётся органами исполнительной власти",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 182,
+    "slug": "socialnoe-obespechenie",
+    "title": "Социальное обеспечение",
+    "image": "socialnoe-obespechenie.jpg",
+    "code": "3.9",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "socialnoe-obespechenie__f1",
+        "text": "поддержка социально незащищённых слоёв населения",
+        "group": null
+      },
+      {
+        "id": "socialnoe-obespechenie__f2",
+        "text": "финансируется государством и специальными фондами",
+        "group": null
+      },
+      {
+        "id": "socialnoe-obespechenie__f3",
+        "text": "включает пенсии, пособия, льготы",
+        "group": null
+      },
+      {
+        "id": "socialnoe-obespechenie__f4",
+        "text": "гарантируется государством",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 183,
+    "slug": "ekonomicheskaya-kultura-lichnosti",
+    "title": "Экономическая культура личности",
+    "image": "ekonomicheskaya-kultura-lichnosti.jpg",
+    "code": "2.1",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "ekonomicheskaya-kultura-lichnosti__f1",
+        "text": "сочетание экономических знаний и практических умений",
+        "group": null
+      },
+      {
+        "id": "ekonomicheskaya-kultura-lichnosti__f2",
+        "text": "нравственно-правовая ответственность в экономической деятельности",
+        "group": null
+      },
+      {
+        "id": "ekonomicheskaya-kultura-lichnosti__f3",
+        "text": "определяет направленность экономической активности человека",
+        "group": null
+      },
+      {
+        "id": "ekonomicheskaya-kultura-lichnosti__f4",
+        "text": "влияет на экономическое поведение личности",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 184,
+    "slug": "ekonomicheskii-cikl",
+    "title": "Экономический цикл",
+    "image": "ekonomicheskii-cikl.jpg",
+    "code": "2.16",
+    "priority": 2,
+    "confusable_with": [
+      "ekonomicheskii-rost",
+      "ekonomicheskoe-razvitie"
+    ],
+    "features": [
+      {
+        "id": "ekonomicheskii-cikl__f1",
+        "text": "периодические колебания деловой активности",
+        "group": null
+      },
+      {
+        "id": "ekonomicheskii-cikl__f2",
+        "text": "фазы: подъём, пик, спад, кризис",
+        "group": null
+      },
+      {
+        "id": "ekonomicheskii-cikl__f3",
+        "text": "повторяющаяся последовательность состояний экономики",
+        "group": null
+      },
+      {
+        "id": "ekonomicheskii-cikl__f4",
+        "text": "влияет на производство, занятость, доходы",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 185,
+    "slug": "politicheskii-plyuralizm",
+    "title": "Политический плюрализм",
+    "image": "politicheskii-plyuralizm.jpg",
+    "code": "4.4",
+    "priority": 2,
+    "confusable_with": [
+      "demokratiya"
+    ],
+    "features": [
+      {
+        "id": "politicheskii-plyuralizm__f1",
+        "text": "многообразие политических партий, идеологий, движений",
+        "group": null
+      },
+      {
+        "id": "politicheskii-plyuralizm__f2",
+        "text": "наличие легальной политической оппозиции",
+        "group": null
+      },
+      {
+        "id": "politicheskii-plyuralizm__f3",
+        "text": "свободная конкуренция политических сил за власть",
+        "group": null
+      },
+      {
+        "id": "politicheskii-plyuralizm__f4",
+        "text": "гарантированность политических прав и свобод",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 186,
+    "slug": "pravosposobnost",
+    "title": "Правоспособность",
+    "image": "pravosposobnost.jpg",
+    "code": "5.4",
+    "priority": 2,
+    "confusable_with": [
+      "deesposobnost-subekta-prava"
+    ],
+    "features": [
+      {
+        "id": "pravosposobnost__f1",
+        "text": "способность иметь права и нести обязанности",
+        "group": "g12"
+      },
+      {
+        "id": "pravosposobnost__f2",
+        "text": "возникает с момента рождения (у физлиц)",
+        "group": null
+      },
+      {
+        "id": "pravosposobnost__f3",
+        "text": "не зависит от возраста и состояния здоровья, в отличие от дееспособности",
+        "group": null
+      },
+      {
+        "id": "pravosposobnost__f4",
+        "text": "у юрлиц возникает с момента регистрации",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 187,
+    "slug": "socialnyi-status",
+    "title": "Социальный статус",
+    "image": "socialnyi-status.jpg",
+    "code": "3.4",
+    "priority": 2,
+    "confusable_with": [
+      "socialnaya-rol"
+    ],
+    "features": [
+      {
+        "id": "socialnyi-status__f1",
+        "text": "положение человека в обществе/группе",
+        "group": null
+      },
+      {
+        "id": "socialnyi-status__f2",
+        "text": "определяется профессией, доходом, образованием, происхождением",
+        "group": null
+      },
+      {
+        "id": "socialnyi-status__f3",
+        "text": "бывает предписанным (прирождённым) или достигаемым",
+        "group": null
+      },
+      {
+        "id": "socialnyi-status__f4",
+        "text": "определяет объём прав и обязанностей, связанных с этим положением",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 188,
+    "slug": "privilegirovannaya-akciya",
+    "title": "Привилегированная акция",
+    "image": "privilegirovannaya-akciya.jpg",
+    "code": "2.10",
+    "priority": 2,
+    "confusable_with": [
+      "akciya",
+      "obyknovennaya-akciya"
+    ],
+    "features": [
+      {
+        "id": "privilegirovannaya-akciya__f1",
+        "text": "не даёт права участвовать в управлении обществом",
+        "group": null
+      },
+      {
+        "id": "privilegirovannaya-akciya__f2",
+        "text": "фиксированный размер дивиденда",
+        "group": null
+      },
+      {
+        "id": "privilegirovannaya-akciya__f3",
+        "text": "первоочередное право на получение дивидендов и доли имущества при ликвидации акционерного общества",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 189,
+    "slug": "poznanie",
+    "title": "Познание",
+    "image": "poznanie.jpg",
+    "code": "1.4",
+    "priority": 2,
+    "confusable_with": [
+      "myshlenie",
+      "nauchnoe-poznanie-nauka",
+      "socialnoe-poznanie"
+    ],
+    "features": [
+      {
+        "id": "poznanie__f1",
+        "text": "целенаправленный процесс получения человеком знаний об окружающем мире и самом себе",
+        "group": null
+      },
+      {
+        "id": "poznanie__f2",
+        "text": "включает чувственное (ощущение, восприятие, представление) и рациональное (понятие, суждение, умозаключение) познание",
+        "group": null
+      },
+      {
+        "id": "poznanie__f3",
+        "text": "осуществляется в разных формах: обыденное, научное, художественное, религиозное",
+        "group": null
+      },
+      {
+        "id": "poznanie__f4",
+        "text": "результатом является знание",
+        "group": null
+      }
+    ]
+  },
+  {
+    "id": 190,
+    "slug": "trud",
+    "title": "Труд",
+    "image": "trud.jpg",
+    "code": "1.3",
+    "priority": 2,
+    "confusable_with": [],
+    "features": [
+      {
+        "id": "trud__f1",
+        "text": "целенаправленная деятельность человека по созданию материальных и духовных благ",
+        "group": null
+      },
+      {
+        "id": "trud__f2",
+        "text": "требует применения знаний, умений, навыков",
+        "group": null
+      },
+      {
+        "id": "trud__f3",
+        "text": "связана с преобразованием предметов природы для удовлетворения потребностей",
+        "group": null
+      },
+      {
+        "id": "trud__f4",
+        "text": "является источником дохода и социального статуса человека",
+        "group": null
+      }
+    ]
+  }
+]

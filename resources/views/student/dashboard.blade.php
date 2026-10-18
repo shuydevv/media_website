@@ -41,6 +41,17 @@
            с кнопкой) целиком пересоздаётся при каждом htmx-свапе, поэтому
            обработчик клика навешан через делегирование на document, а не на
            саму кнопку. */
+        /* .fish-stage — квадрат маскота фиксированной ширины (не w-1/2 от
+           карточки — иначе aspect-square тянул бы высоту вслед за шириной).
+           align-self: flex-start — иначе, когда блок справа выше квадрата,
+           flex растягивает его по высоте и квадрат перестаёт быть квадратом. */
+        .fish-stage {
+            position: relative;
+            width: 14rem;
+            max-width: 100%;
+            flex-shrink: 0;
+            align-self: flex-start;
+        }
         #greeting-mascot {
             position: relative;
             overflow: hidden;
@@ -95,6 +106,137 @@
             color: #fbbf24;
         }
 
+        /* Реплика рыбы — белое облачко как в мультике: слева от рыбы,
+           поверх угла картинки и чуть за её краем, хвостик смотрит на рыбу.
+           Место чередуется (выбирается случайно при заходе): .is-top —
+           сверху слева, хвостик вниз-вправо; .is-bottom — снизу слева,
+           хвостик вверх-вправо. drop-shadow, а не box-shadow, — чтобы тень была и
+           у хвостика. Тихая реплика (дел в тренажёрах нет) — без стрелки и
+           приглушённым текстом. */
+        .fish-bubble {
+            position: absolute;
+            z-index: 5;
+            right: 52%;
+            width: max-content;
+            max-width: 170px;
+            border-radius: 16px;
+            background: #fff;
+            color: #18181b;
+            font-size: 13px;
+            line-height: 1.35;
+            font-weight: 500;
+            filter: drop-shadow(0 4px 10px rgba(15, 23, 42, .22));
+            transition: transform .15s ease;
+        }
+        .fish-bubble:hover {
+            transform: scale(1.03);
+        }
+        .fish-bubble.is-top {
+            top: -14px;
+        }
+        .fish-bubble.is-bottom {
+            bottom: 6px;
+        }
+        .fish-bubble::after {
+            content: "";
+            position: absolute;
+            right: 16px;
+            border-left: 14px solid transparent;
+        }
+        .fish-bubble.is-top::after {
+            bottom: -11px;
+            border-top: 12px solid #fff;
+        }
+        .fish-bubble.is-bottom::after {
+            top: -11px;
+            border-bottom: 12px solid #fff;
+        }
+        /* Слева не хватило места (облачко упёрлось бы в край экрана — так
+           бывает на планшете, где карточка с рыбой у самого края): облачко
+           встаёт внизу внутри картинки, хвостиком вверх, к рыбе. Решает
+           fishFitBubble() в разметке у .fish-stage. */
+        .fish-bubble.is-fit {
+            left: 8px;
+            right: auto;
+            max-width: calc(100% - 16px);
+        }
+        /* Внизу внутри картинки хвостик — по центру и симметричный: рыба
+           прямо над облачком. */
+        .fish-bubble.is-fit::after {
+            right: auto;
+            left: 50%;
+            margin-left: -8px;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+        }
+
+        /* Планшет: между квадратом с рыбой и блоком с кнопками — пошире,
+           иначе они слипаются (md:gap-6 включается только с 768px, а до
+           1280px и там тесновато). */
+        @media (min-width: 481px) and (max-width: 1279px) {
+            .dashboard-mascot-row {
+                column-gap: 2rem;
+            }
+        }
+        .fish-bubble-link {
+            text-align: left;
+            display: block;
+            padding: 8px 12px;
+        }
+        .fish-bubble.is-quiet {
+            color: #52525b;
+        }
+        /* Крестик — кружок на правом верхнем углу облачка. На ПК виден при
+           наведении на облачко, на телефоне (наведения нет) — всегда. */
+        .fish-bubble-close {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            background: #fff;
+            color: #71717a;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, .25);
+            transition: opacity .15s ease, color .15s ease;
+        }
+        .fish-bubble-close:hover {
+            color: #18181b;
+        }
+        /* У нижнего облачка хвостик сверху справа — крестик уходит в
+           нижний правый угол, чтобы не сливаться с хвостиком. */
+        .fish-bubble.is-bottom .fish-bubble-close {
+            top: auto;
+            bottom: -8px;
+        }
+        /* На телефоне область нажатия крестика 44px (рекомендуемый минимум
+           под палец) при том же видимом кружке: невидимая подложка лежит
+           поверх угла облачка, и промах рядом с крестиком закрывает реплику,
+           а не уводит в тренажёр. */
+        @media (hover: none) {
+            .fish-bubble-close::before {
+                content: "";
+                position: absolute;
+                inset: -11px;
+            }
+        }
+        @media (hover: hover) {
+            .fish-bubble-close {
+                opacity: 0;
+            }
+            .fish-bubble:hover .fish-bubble-close,
+            .fish-bubble-close:focus-visible {
+                opacity: 1;
+            }
+        }
+        .fish-bubble-arrow {
+            vertical-align: -3px;
+            color: #2563eb;
+        }
+
         /* Мобильная версия карточек 1/2 — обычным media-query, не Tailwind-
            префиксами (sm:/md:): в этом браузере часть таких классов
            ненадёжно применяется, уже несколько раз ловили на других
@@ -113,11 +255,13 @@
             }
             /* Раньше маскот растягивался на всю ширину карточки (width:100%) —
                при aspect-square на узком экране это давало квадрат ~300px+,
-               визуально "гигантский". Ограничиваем компактным размером и
-               центрируем, блок кормления под ним остаётся на всю ширину. */
-            .dashboard-mascot-row #greeting-mascot {
-                width: 160px;
-                max-width: 55%;
+               визуально "гигантский". Компромисс — 230px по центру: рыба
+               крупная, а облачку слева от неё хватает места. */
+            .dashboard-mascot-row .fish-stage {
+                align-self: center;
+                width: 230px;
+                max-width: 72%;
+                margin-top: 10px;
             }
             .dashboard-mascot-row #fish-card {
                 width: 100%;
@@ -134,12 +278,99 @@
                  карточки, когда та расширяется (см. комментарий у
                  #dashboard-cards-grid выше): расширяться должна карточка,
                  а не сам маскот. --}}
-            <div id="greeting-mascot" class="w-56 max-w-full aspect-square shrink-0 rounded-xl bg-gray-100 flex items-center justify-center {{ $fishBalance > 0 ? 'cursor-pointer' : '' }}" style="background-image: url('{{ $fishBackgroundImage }}'); background-size: cover; background-position: center;" title="Покормить">
+            {{-- .fish-stage — рамка для маскота и его реплики: облачко лежит
+                 поверх картинки и может выходить за её край, а сам
+                 #greeting-mascot обрезает содержимое (overflow: hidden). --}}
+            @php
+                $trainers = app(\App\Service\Trainers\TrainerHub::class)->forUser(auth()->user());
+                $fishSays = app(\App\Service\Trainers\FishSpeech::class)->forUser(auth()->user(), $trainers);
+                // Облачко сверху или снизу слева — случайно на каждый заход;
+                // реплики при кормлении появляются там же.
+                $fishSide = random_int(0, 1) ? 'is-top' : 'is-bottom';
+            @endphp
+            <div class="fish-stage" data-side="{{ $fishSide }}" data-trainers-url="{{ $trainers['url'] }}"
+                 data-feed-phrases='@json(config('fish_speech.feeding'), JSON_UNESCAPED_UNICODE | JSON_HEX_APOS)'>
+            <script>
+                // Облачко слева от рыбы не должно упираться в край экрана:
+                // если до края меньше 8px — встаёт внизу внутри картинки
+                // (.is-fit). Меряем по offsetLeft, а не по getBoundingClientRect:
+                // так не мешает масштаб из анимации появления.
+                window.fishFitBubble = function (el) {
+                    var stage = el.parentElement;
+                    el.classList.remove('is-fit', 'is-top', 'is-bottom');
+                    el.classList.add(stage.dataset.side || 'is-top');
+                    var left = stage.getBoundingClientRect().left + el.offsetLeft;
+                    var right = left + el.offsetWidth;
+                    if (left < 8 || right > document.documentElement.clientWidth - 8) {
+                        el.classList.remove('is-top');
+                        el.classList.add('is-bottom', 'is-fit');
+                    }
+                };
+                // Точка, из которой облачко вырастает и в которую втягивается, —
+                // кончик хвостика.
+                window.fishBubbleOrigin = function (el) {
+                    if (el.classList.contains('is-fit')) return '50% 0%';
+                    return el.classList.contains('is-bottom') ? '88% 0%' : '88% 100%';
+                };
+                window.addEventListener('resize', function () {
+                    document.querySelectorAll('.fish-stage .fish-bubble').forEach(window.fishFitBubble);
+                });
+            </script>
+            <div id="greeting-mascot" class="w-full aspect-square rounded-xl bg-gray-100 flex items-center justify-center {{ $fishBalance > 0 ? 'cursor-pointer' : '' }}" style="background-image: url('{{ $fishBackgroundImage }}'); background-size: cover; background-position: center;" title="Покормить">
                 <img id="fish-mascot-img"
                      src="{{ $fishMascotImage }}"
                      data-default-src="{{ $fishMascotImage }}"
                      data-eating-src="{{ $fishMascotEatingImage }}"
                      alt="" class="w-full h-full object-contain">
+            </div>
+            {{-- Реплика рыбы (App\Service\Trainers\FishSpeech) — белое облачко
+                 как в мультике: слева от рыбы, хвостиком к ней. Нажатие ведёт
+                 в тренажёр или кормит (data-feed). Крестик прячет реплику,
+                 пока ситуация та же (data-key, в браузере ученика); daily —
+                 показывается раз в день. Скрипт сразу за облачком — чтобы
+                 скрытое не мелькнуло. --}}
+            @if($fishSays)
+                <div class="fish-bubble {{ $fishSide }} {{ $fishSays['quiet'] ? 'is-quiet' : '' }}"
+                     data-key="{{ $fishSays['key'] }}" {{ $fishSays['daily'] ? 'data-daily' : '' }} {{ $fishSays['feed'] ? 'data-feed' : '' }}>
+                    @if($fishSays['feed'])
+                        <button type="button" class="fish-bubble-link" data-feed-bubble>{{ $fishSays['text'] }}</button>
+                    @else
+                        <a href="{{ $fishSays['url'] }}" class="fish-bubble-link">
+                            {{ $fishSays['text'] }}
+                            @unless($fishSays['quiet'])
+                                <x-icon name="arrow-narrow-right" class="inline-block w-4 h-4 fish-bubble-arrow" />
+                            @endunless
+                        </a>
+                    @endif
+                    <button type="button" class="fish-bubble-close" aria-label="Скрыть">
+                        <x-icon name="x-close" class="w-3.5 h-3.5" />
+                    </button>
+                </div>
+                <script>
+                    (function () {
+                        var bubble = document.currentScript.previousElementSibling;
+                        window.fishFitBubble(bubble);
+                        try {
+                            // ?fish=reset — вернуть скрытые реплики (для проверки).
+                            if (/[?&]fish=reset(&|$)/.test(location.search)) {
+                                localStorage.removeItem('fishBubbleDismissed');
+                                localStorage.removeItem('fishDailySeen');
+                            }
+                            var key = bubble.dataset.key;
+                            if (localStorage.getItem('fishBubbleDismissed') === key) { bubble.remove(); return; }
+                            if (bubble.hasAttribute('data-daily')) {
+                                // Ключи с датой: вчерашние выкидываем.
+                                var today = key.slice(0, 10);
+                                var seen = JSON.parse(localStorage.getItem('fishDailySeen') || '[]')
+                                    .filter(function (k) { return k.slice(0, 10) === today; });
+                                if (seen.indexOf(key) !== -1) { bubble.remove(); return; }
+                                seen.push(key);
+                                localStorage.setItem('fishDailySeen', JSON.stringify(seen));
+                            }
+                        } catch (e) {}
+                    })();
+                </script>
+            @endif
             </div>
             @include('student.partials.fish-card')
         </x-ui.card>
@@ -198,7 +429,186 @@
                 { scale: 0.5, rotate: -8, autoAlpha: 0 },
                 { scale: 1, rotate: 0, autoAlpha: 1, duration: 0.5, ease: 'elastic.out(1, .5)' }
             );
+            // Рыба «заговаривает» чуть позже, чем появляется сама: облачко
+            // вырастает из хвостика (он сверху или снизу — см. .fish-bubble). fromTo с явным концом, а не from: from()
+            // берёт конечное состояние из текущего вида элемента, и облачко
+            // оставалось невидимым.
+            var says = document.querySelector('.fish-bubble');
+            if (says) {
+                gsap.fromTo(says,
+                    { scale: 0.4, autoAlpha: 0 },
+                    {
+                        scale: 1, autoAlpha: 1, duration: 0.5, delay: 0.5,
+                        ease: 'back.out(2.2)', clearProps: 'all',
+                        transformOrigin: window.fishBubbleOrigin(says),
+                    });
+            }
         });
+
+        // Крестик на реплике рыбы: запоминаем ситуацию (data-key — с датой),
+        // облачко «втягивается» в хвостик. На следующий день или при новой
+        // ситуации ключ другой — и рыба заговорит снова.
+        document.addEventListener('click', function (evt) {
+            var close = evt.target.closest('.fish-bubble-close');
+            if (!close) return;
+            var bubble = close.closest('.fish-bubble');
+            try { localStorage.setItem('fishBubbleDismissed', bubble.dataset.key); } catch (e) {}
+            if (typeof window.gsap === 'undefined') { bubble.remove(); return; }
+            gsap.to(bubble, {
+                scale: 0.3, autoAlpha: 0, duration: 0.25, ease: 'back.in(1.6)',
+                transformOrigin: window.fishBubbleOrigin(bubble),
+                onComplete: function () { bubble.remove(); },
+            });
+        });
+
+        // Реплика «покорми меня» (data-feed-bubble) кормит — тем же путём,
+        // что и клик по маскоту: эмулируем клик по актуальной кнопке.
+        document.addEventListener('click', function (evt) {
+            if (!evt.target.closest('[data-feed-bubble]')) return;
+            var feedBtn = document.querySelector('.fish-feed-btn');
+            if (feedBtn && !feedBtn.disabled) feedBtn.click();
+        });
+
+        // Рыба говорит во время кормления (фразы — config/fish_speech.php,
+        // 'feeding'). Нажатия с паузой меньше 2 секунд — одна серия: облачко
+        // появляется на первом, держится, пока кормят, и меняет текст только
+        // на ступенях серии (1-е, 3-е, 6-е, 10-е и дальше каждое 4-е). Корм
+        // кончился или вырос уровень — своя фраза, держится дольше. Обычная
+        // реплика на время серии прячется и потом возвращается — кроме
+        // «покорми меня»: рыбу уже покормили.
+        var fishTalk = (function () {
+            var stage = document.querySelector('.fish-stage');
+            if (!stage) return null;
+            var phrases = JSON.parse(stage.dataset.feedPhrases || '{}');
+            var last = {};
+            var count = 0;
+            var bubble = null;
+            var timer = null;
+            var lockedUntil = 0;
+
+            function pick(pool) {
+                var list = phrases[pool] || [];
+                var options = list.length > 1 ? list.filter(function (p) { return p !== last[pool]; }) : list;
+                last[pool] = options[Math.floor(Math.random() * options.length)];
+                return last[pool];
+            }
+
+            function prompt() {
+                return stage.querySelector('.fish-bubble:not(.is-feed)');
+            }
+
+            function say(text, holdMs, url) {
+                var fresh = !bubble;
+                if (fresh) {
+                    bubble = document.createElement('div');
+                    bubble.className = 'fish-bubble is-feed';
+                    stage.appendChild(bubble);
+                }
+                var inner = document.createElement(url ? 'a' : 'span');
+                inner.className = 'fish-bubble-link';
+                inner.textContent = text;
+                if (url) inner.href = url;
+                bubble.replaceChildren(inner);
+                window.fishFitBubble(bubble);
+                bubble.style.pointerEvents = url ? '' : 'none';
+
+                if (window.gsap) {
+                    var origin = window.fishBubbleOrigin(bubble);
+                    if (fresh) {
+                        gsap.fromTo(bubble, { scale: 0.4, autoAlpha: 0 },
+                            { scale: 1, autoAlpha: 1, duration: 0.35, ease: 'back.out(2.2)', transformOrigin: origin });
+                    } else {
+                        gsap.fromTo(bubble, { scale: 0.92 }, { scale: 1, duration: 0.3, ease: 'back.out(3)', transformOrigin: origin });
+                    }
+                }
+                hold(holdMs);
+            }
+
+            function hold(ms) {
+                clearTimeout(timer);
+                timer = setTimeout(end, ms);
+            }
+
+            function end() {
+                var old = bubble;
+                bubble = null;
+                count = 0;
+                lockedUntil = 0;
+                if (old) {
+                    if (window.gsap) {
+                        gsap.to(old, {
+                            scale: 0.3, autoAlpha: 0, duration: 0.25, ease: 'back.in(1.6)',
+                            transformOrigin: window.fishBubbleOrigin(old),
+                            onComplete: function () { old.remove(); },
+                        });
+                    } else {
+                        old.remove();
+                    }
+                }
+                var p = prompt();
+                if (!p) return;
+                if (p.hasAttribute('data-feed')) {
+                    p.remove();
+                } else if (window.gsap) {
+                    gsap.to(p, { autoAlpha: 1, duration: 0.3, delay: 0.25 });
+                } else {
+                    p.style.visibility = '';
+                }
+            }
+
+            return {
+                // Клик «Покормить» (до ответа сервера).
+                fed: function () {
+                    count++;
+                    if (count === 1) {
+                        var p = prompt();
+                        if (p) {
+                            if (window.gsap) gsap.to(p, { autoAlpha: 0, duration: 0.15 });
+                            else p.style.visibility = 'hidden';
+                        }
+                    }
+                    if (Date.now() < lockedUntil) { hold(Math.max(2000, lockedUntil - Date.now())); return; }
+
+                    var card = document.getElementById('fish-card');
+                    var toLevel = card ? parseInt(card.dataset.toLevel, 10) : NaN;
+                    var pool = count === 1 ? (toLevel > 0 && toLevel <= 3 ? 'first_near_level' : 'first')
+                        : count === 3 ? 'third'
+                        : count === 6 ? 'sixth'
+                        : (count >= 10 && (count - 10) % 4 === 0) ? 'tenth'
+                        : null;
+                    if (pool) say(pick(pool), 2000);
+                    else hold(2000);
+                },
+                // Ответ сервера: корм кончился.
+                empty: function () {
+                    if (Date.now() < lockedUntil) return; // только что вырос уровень — это важнее
+                    var url = stage.dataset.trainersUrl;
+                    say(pick(url ? 'empty_trainer' : 'empty'), url ? 4000 : 2500, url || null);
+                    lockedUntil = Date.now() + (url ? 4000 : 2500);
+                },
+                // Ответ сервера: рыба выросла.
+                levelUp: function () {
+                    say(pick('level_up'), 3000);
+                    lockedUntil = Date.now() + 3000;
+                },
+            };
+        })();
+
+        if (fishTalk) {
+            document.addEventListener('click', function (evt) {
+                var btn = evt.target.closest('.fish-feed-btn');
+                if (btn && !btn.disabled) fishTalk.fed();
+            });
+            document.body.addEventListener('htmx:afterSwap', function (evt) {
+                var card = document.getElementById('fish-card');
+                if (card && evt.detail.target && evt.detail.target.id === 'fish-card' && card.dataset.balance === '0') {
+                    fishTalk.empty();
+                }
+            });
+            // Левел-ап приходит после свапа; если заодно кончился корм —
+            // рост важнее.
+            document.body.addEventListener('fish-level-up', function () { fishTalk.levelUp(); });
+        }
 
         // Таймер возврата картинки маскота с "eating" на "default" после
         // кормления — общий для всех кликов (не локальная переменная внутри

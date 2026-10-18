@@ -14,8 +14,19 @@
     $fishProgressPercent = $fishProgress['isMax']
         ? 100
         : (int) round(($fishProgress['needed'] > 0 ? $fishProgress['current'] / $fishProgress['needed'] : 0) * 100);
+
+    // Тренажёры (App\Service\Trainers\TrainerHub) — для кнопки рядом с
+    // «Покормить». На дашборде уже посчитаны (там же облачко рыбы), после
+    // htmx-кормления считаются здесь.
+    $trainers ??= auth()->check() ? app(\App\Service\Trainers\TrainerHub::class)->forUser(auth()->user()) : null;
+    $trainersUrl = $trainers['url'] ?? null;
 @endphp
-<div id="fish-card" class="flex-1 flex flex-col min-w-0">
+{{-- data-balance / data-to-level читает скрипт кормления на дашборде:
+     что сказать рыбе после очередного кусочка («всё съедено», «ещё кусочек —
+     и я вырасту»). --}}
+<div id="fish-card" class="flex-1 flex flex-col min-w-0"
+     data-balance="{{ $fishBalance }}"
+     data-to-level="{{ $fishProgress['isMax'] ? '' : max(0, $fishProgress['needed'] - $fishProgress['current']) }}">
     <div class="sans-medium text-xs uppercase tracking-wide text-zinc-400 mb-3">Уровень {{ $fishLevel }} · {{ $fishLevelName }}</div>
 
     <div class="flex-1 flex flex-col">
@@ -41,14 +52,26 @@
                 <img src="{{ asset('img/pizza.svg') }}" alt="" class="w-5 h-5 inline-block">
                 <span class="font-medium text-zinc-900">{{ $fishBalance }}</span>
             </div>
-            <x-ui.button type="button" variant="outline" size="sm" block class="fish-feed-btn"
-                    hx-post="{{ route('student.fish.feed') }}"
-                    hx-target="#fish-card"
-                    hx-swap="outerHTML"
-                    :disabled="$fishBalance <= 0">
-                <img src="{{ asset('img/pizza.svg') }}" alt="" class="w-6 h-6 inline-block mr-1.5 align-text-bottom">
-                Покормить
-            </x-ui.button>
+            <div class="{{ $trainersUrl ? 'grid grid-cols-2 gap-2' : '' }}">
+                <x-ui.button type="button" variant="outline" size="sm" block class="fish-feed-btn px-2"
+                        hx-post="{{ route('student.fish.feed') }}"
+                        hx-target="#fish-card"
+                        hx-swap="outerHTML"
+                        :disabled="$fishBalance <= 0">
+                    <img src="{{ asset('img/pizza.svg') }}" alt="" class="w-6 h-6 inline-block mr-1.5 align-text-bottom">
+                    Покормить
+                </x-ui.button>
+                {{-- Пока тренажёр один, кнопка ведёт прямо в него; счётчик —
+                     сколько дел ждёт сегодня во всех тренажёрах. --}}
+                @if($trainersUrl)
+                    <x-ui.button href="{{ $trainersUrl }}" :variant="$trainers['pending'] > 0 ? 'accent' : 'outline'" size="sm" block class="px-2 gap-1.5">
+                        Тренажёры
+                        @if($trainers['pending'] > 0)
+                            <span class="min-w-5 h-5 px-1.5 rounded-full bg-white text-blue-600 text-xs leading-5 font-semibold">{{ $trainers['pending'] }}</span>
+                        @endif
+                    </x-ui.button>
+                @endif
+            </div>
         </div>
     </div>
 </div>
