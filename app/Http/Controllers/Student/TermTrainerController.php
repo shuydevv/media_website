@@ -481,29 +481,16 @@ class TermTrainerController extends Controller
 
     private function progressData(TermSession $session, array $state): array
     {
-        $done = count($state['done'] ?? []);
+        // Тот же подсчёт, что у карточек тренажёра и рыбы на дашборде (см.
+        // TermTrainer::doneCount()). Полоса и кольцо показывают ровно то, что
+        // написано в подписи: выучено 1 из 5 — заполнено на пятую часть.
+        // Копия — чтобы не менять саму модель сессии.
+        $view = clone $session;
+        $view->state = $state;
+        $done = $this->trainer->doneCount($view);
+        $total = max(1, $this->trainer->totalCount($view));
         $isLearn = $session->kind === TermSession::KIND_LEARN;
 
-        // Термин засчитывается в очередь «пройденных» только на «Далее» (или
-        // автопереходе), но ученик видит успех сразу — счётчик должен
-        // прибавиться в тот же момент, а не через пару секунд вместе с
-        // улетающей карточкой. В изучении последним шагом термина бывает
-        // только задание на признаки, в остальных сессиях — любое задание.
-        $current = $state['current'] ?? null;
-        $succeeded = match ($current['type'] ?? null) {
-            'a' => !$isLearn && ($current['result']['correct'] ?? false),
-            'b', 'c' => (bool) ($current['done'] ?? false),
-            default => false,
-        };
-        if ($succeeded) {
-            $done++;
-        }
-        $total = max(1, $isLearn ? count($state['terms']) : (int) $session->total);
-
-        // Полоса и кольцо показывают ровно то, что написано в подписи:
-        // выучено 1 из 5 — заполнено на пятую часть. Раньше в изучении
-        // полоса считала ещё и промежуточные шаги (карточка, квадратики) и
-        // расходилась с подписью: «1 из 5» при кольце почти наполовину.
         return [
             'progressLabel' => ($isLearn ? 'Выучено' : 'Пройдено')." {$done} из {$total}",
             'percent' => (int) round($done / $total * 100),

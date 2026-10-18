@@ -93,7 +93,7 @@ class TermTrainer
         $limit = (int) config('terms.daily_review_limit');
 
         if ($reviewToday && !$reviewToday->finished_at) {
-            $review = ['status' => 'in_progress', 'count' => count($reviewToday->state['queue'] ?? [])];
+            $review = ['status' => 'in_progress', 'count' => $this->remainingCount($reviewToday)];
         } elseif ($reviewToday) {
             // Повторение дня одно: всё, что не влезло в потолок, ждёт завтра.
             $review = ['status' => 'done', 'count' => 0, 'carried' => $dueCount, 'next' => $this->nextReview($user, $today)];
@@ -105,7 +105,7 @@ class TermTrainer
 
         $batch = $this->nextBatch($user);
         if ($learnToday && !$learnToday->finished_at) {
-            $learn = ['status' => 'in_progress', 'count' => count($learnToday->state['terms'] ?? [])];
+            $learn = ['status' => 'in_progress', 'count' => $this->remainingCount($learnToday)];
         } elseif ($learnToday) {
             $learn = ['status' => 'done_today', 'count' => 0];
         } elseif ($batch->isEmpty()) {
@@ -117,7 +117,7 @@ class TermTrainer
         }
 
         if ($freeOpen) {
-            $free = ['status' => 'in_progress', 'count' => count($freeOpen->state['queue'] ?? []), 'total' => (int) $freeOpen->total];
+            $free = ['status' => 'in_progress', 'count' => $this->remainingCount($freeOpen), 'total' => $this->totalCount($freeOpen)];
         } elseif ($learnedCount === 0) {
             $free = ['status' => 'empty', 'count' => 0];
         } elseif ($dueCount > 0 && !($reviewToday && $reviewToday->finished_at)) {
@@ -195,6 +195,41 @@ class TermTrainer
     public function dueTomorrow(User $user): int
     {
         return $this->dueQuery($user, now()->addDay()->toDateString())->count();
+    }
+
+    /**
+     * Сколько терминов в сессии пройдено — одна цифра для полосы прогресса,
+     * карточек тренажёра и рыбы на дашборде. Термин засчитывается на «Далее»
+     * (state['done']), но успех в текущем задании ученик видит сразу —
+     * поэтому он тоже считается. В изучении последний шаг термина — только
+     * задание на признаки, в остальных сессиях — любое задание.
+     */
+    public function doneCount(TermSession $session): int
+    {
+        $state = $session->state;
+        $done = count($state['done'] ?? []);
+        $current = $state['current'] ?? null;
+        $succeeded = match ($current['type'] ?? null) {
+            'a' => $session->kind !== TermSession::KIND_LEARN && ($current['result']['correct'] ?? false),
+            'b', 'c' => (bool) ($current['done'] ?? false),
+            default => false,
+        };
+
+        return $done + ($succeeded ? 1 : 0);
+    }
+
+    /** Сколько терминов в сессии всего. */
+    public function totalCount(TermSession $session): int
+    {
+        return $session->kind === TermSession::KIND_LEARN
+            ? count($session->state['terms'] ?? [])
+            : (int) $session->total;
+    }
+
+    /** Сколько терминов осталось пройти. Не очередь шагов: у термина их несколько, а ошибка возвращает его в очередь. */
+    public function remainingCount(TermSession $session): int
+    {
+        return max(0, $this->totalCount($session) - $this->doneCount($session));
     }
 
     /** Сколько терминов ждут повторения со вчера и раньше — для рыбы на дашборде. */
