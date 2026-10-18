@@ -49,7 +49,6 @@
              aria-label="Название термина"
              class="absolute inset-0 w-full h-full opacity-0 cursor-text" style="font-size:16px;">
     </div>
-    <div class="text-xs text-zinc-500 mt-2">Ответ проверится сам, когда заполнишь все клетки.</div>
 
     <div class="mt-5">
       @if($hintsLeft > 0)

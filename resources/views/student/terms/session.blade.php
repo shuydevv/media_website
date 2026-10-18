@@ -51,11 +51,60 @@
   var lastOption = null;    // куда кликнули в квизе — оттуда «летит» вариант
   var mascotTimer = null;
   var autoTimer = null;     // автопереход после верного ответа
+  var typingBefore = false; // перед подменой шага ученик печатал в квадратики
+  // Сенсорный экран: клавиатура там экранная и закрывает пол-вопроса.
+  var touchScreen = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
   function gs() { return typeof window.gsap !== 'undefined' ? window.gsap : null; }
   function $(id) { return document.getElementById(id); }
 
   /* ---------- способ А: ввод в квадратики ---------- */
+
+  // Квадратики не должны прятаться под экранной клавиатурой: после её
+  // появления страница докручивается так, чтобы клетки были над ней (и над
+  // полосой прогресса внизу, если она встала над клавиатурой), но не ушли
+  // под рыбу-подсказку сверху. visualViewport — видимая часть страницы без
+  // клавиатуры; есть во всех современных мобильных браузерах.
+  var KEYBOARD_GAP = 16;
+  function keepCellsAboveKeyboard() {
+    var input = $('term-a-input');
+    var cellsBox = $('term-a-cells');
+    var vv = window.visualViewport;
+    if (!input || !cellsBox || !vv || document.activeElement !== input) return;
+
+    // Под содержимым — место высотой с клавиатуру: иначе, если клетки у
+    // самого низа страницы, прокручивать было бы некуда.
+    var spacer = $('term-keyboard-spacer');
+    if (!spacer) {
+      spacer = document.createElement('div');
+      spacer.id = 'term-keyboard-spacer';
+      app.parentNode.insertBefore(spacer, app.nextSibling);
+    }
+    spacer.style.height = Math.max(0, window.innerHeight - vv.height) + 'px';
+
+    var cells = cellsBox.getBoundingClientRect();
+    var bottom = vv.offsetTop + vv.height;
+    var top = vv.offsetTop;
+
+    var strip = $('term-bottom-strip');
+    if (strip && strip.offsetParent !== null) {
+      var stripTop = strip.getBoundingClientRect().top;
+      if (stripTop < bottom) bottom = stripTop;
+    }
+    var hud = $('term-hud-place');
+    if (hud && getComputedStyle(hud).display !== 'none') {
+      top = Math.max(top, hud.getBoundingClientRect().bottom);
+    }
+
+    var shift = 0;
+    if (cells.bottom > bottom - KEYBOARD_GAP) shift = cells.bottom - (bottom - KEYBOARD_GAP);
+    // Не уводим клетки верхом под рыбу/за край.
+    if (cells.top - shift < top + KEYBOARD_GAP) shift = cells.top - (top + KEYBOARD_GAP);
+    if (Math.abs(shift) > 1) window.scrollBy({ top: shift, behavior: 'smooth' });
+  }
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', keepCellsAboveKeyboard);
+  }
 
   function initSquares() {
     var form = $('term-a-form');
@@ -105,8 +154,17 @@
       // Последняя клетка заполнена — отправляем без кнопки.
       if (render() === room && room > 0) send();
     });
-    input.addEventListener('focus', render);
-    input.addEventListener('blur', render);
+    input.addEventListener('focus', function () {
+      render();
+      // Клавиатура выезжает не сразу — подстраховываемся, пока она едет
+      // (основная подстройка — по resize у visualViewport ниже).
+      [150, 400, 800].forEach(function (ms) { setTimeout(keepCellsAboveKeyboard, ms); });
+    });
+    input.addEventListener('blur', function () {
+      render();
+      var spacer = $('term-keyboard-spacer');
+      if (spacer) spacer.style.height = '0px';
+    });
     input.addEventListener('keydown', function (evt) {
       // Enter — для коротких «других названий» (ВВП), которые клетки не
       // заполняют. Нативную отправку формы гасим: send() не пускает пустой
@@ -116,8 +174,12 @@
         send();
       }
     });
-    // preventScroll — иначе на телефоне страница прыгает к полю при каждой подмене шага.
-    input.focus({ preventScroll: true });
+    // На компьютере сразу печатаем. На телефоне клавиатуру не открываем
+    // сами — она закрыла бы половину вопроса; ученик тапает по клеткам,
+    // когда готов. Исключение — клавиатура уже была открыта (взял
+    // подсказку): тогда не закрываем её подменой шага.
+    // preventScroll — иначе страница прыгает к полю при каждой подмене шага.
+    if (!touchScreen || typingBefore) input.focus({ preventScroll: true });
     render();
   }
 
@@ -739,6 +801,10 @@
   document.body.addEventListener('htmx:beforeSwap', function (evt) {
     if (evt.detail.target !== app) return;
     clearTimeout(autoTimer);
+    typingBefore = document.activeElement && document.activeElement.id === 'term-a-input';
+    // Поле квадратиков уходит вместе со шагом, blur может не прийти.
+    var kbSpacer = $('term-keyboard-spacer');
+    if (kbSpacer && !typingBefore) kbSpacer.style.height = '0px';
     before = snapshot();
   });
   document.body.addEventListener('htmx:afterSwap', function (evt) {

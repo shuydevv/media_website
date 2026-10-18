@@ -52,7 +52,7 @@
                 <img src="{{ asset('img/pizza.svg') }}" alt="" class="w-5 h-5 inline-block">
                 <span class="font-medium text-zinc-900">{{ $fishBalance }}</span>
             </div>
-            <div class="{{ $trainersUrl ? 'grid grid-cols-2 gap-2' : '' }}">
+            <div class="fish-buttons {{ $trainersUrl ? 'grid grid-cols-2 gap-2' : '' }}">
                 <x-ui.button type="button" variant="outline" size="sm" block class="fish-feed-btn px-2"
                         hx-post="{{ route('student.fish.feed') }}"
                         hx-target="#fish-card"

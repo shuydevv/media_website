@@ -20,7 +20,10 @@
             gap: 1rem;
             margin-bottom: 1.5rem;
         }
-        @media (min-width: 768px) {
+        /* Две колонки — только с 1030px: уже карточке с рыбой (3/5 строки)
+           не хватает ширины на квадрат и две кнопки рядом, кнопки
+           наезжали друг на друга. До 1030px карточки идут друг под другом. */
+        @media (min-width: 1030px) {
             #dashboard-cards-grid {
                 /* Явное соотношение 3:2 (маскот:события), не подобранное на
                    глаз число. Сам квадрат с рыбой при этом НЕ растёт (см.
@@ -179,8 +182,8 @@
            квадрат выше → строка выше → квадрат ещё выше. min-height держит
            карточку не ниже квадрата 14rem, когда соседняя карточка низкая.
            Потолок — 20rem и половина ширины карточки, чтобы блоку с
-           кнопками хватало места. На телефоне (≤480px) рыба над блоком. */
-        @media (min-width: 481px) {
+           кнопками хватало места. На телефоне (<600px) рыба над блоком. */
+        @media (min-width: 600px) {
             .dashboard-mascot-row {
                 container-type: size;
                 min-height: 16.5rem;
@@ -188,7 +191,9 @@
             }
             .dashboard-mascot-row .fish-stage,
             .dashboard-mascot-row #fish-card {
-                --fish-side: max(14rem, min(100cqh, 50cqw, 20rem));
+                /* 100cqw - 20rem — блоку с кнопками остаётся не меньше
+                   18rem (две кнопки рядом) плюс промежуток 2rem. */
+                --fish-side: max(14rem, min(100cqh, calc(100cqw - 20rem), 20rem));
             }
             .dashboard-mascot-row .fish-stage {
                 width: var(--fish-side);
@@ -196,13 +201,28 @@
             }
             .dashboard-mascot-row #fish-card {
                 height: var(--fish-side);
+                container: fish-column / inline-size;
+            }
+        }
+        /* Две кнопки рядом: боковой отступ 8px. Класс px-2 на кнопке не
+           срабатывает — его перебивает px-4 размера sm у x-ui.button. */
+        .fish-buttons.grid > * {
+            padding-left: .5rem;
+            padding-right: .5rem;
+        }
+        /* Колонка всё равно узкая (квадрат не меньше 14rem) — текст кнопок
+           на размер меньше, чтобы «Покормить» и «Тренажёры» не упирались в
+           края. */
+        @container fish-column (max-width: 300px) {
+            .fish-buttons > * {
+                font-size: .875rem;
             }
         }
 
         /* Планшет: между квадратом с рыбой и блоком с кнопками — пошире,
            иначе они слипаются (md:gap-6 включается только с 768px, а до
            1280px и там тесновато). */
-        @media (min-width: 481px) and (max-width: 1279px) {
+        @media (min-width: 600px) and (max-width: 1279px) {
             .dashboard-mascot-row {
                 column-gap: 2rem;
             }
@@ -273,7 +293,7 @@
            не помещаются в один ряд по половине ширины каждый (кнопке
            "Покормить" и прогресс-бару тесно) — на мобильном они идут друг
            под другом на всю ширину карточки. */
-        @media (max-width: 480px) {
+        @media (max-width: 599px) {
             .dashboard-card {
                 padding: 1rem;
             }
@@ -324,16 +344,30 @@
                 // если до края меньше 8px — встаёт внизу внутри картинки
                 // (.is-fit). Меряем по offsetLeft, а не по getBoundingClientRect:
                 // так не мешает масштаб из анимации появления.
+                // Сначала облачко сужается (не уже 130px), чтобы поместиться
+                // слева, — на телефоне ему обычно не хватает считанных
+                // пикселей. Только если и так не влезает — вниз (.is-fit).
+                var FISH_EDGE = 8, FISH_MIN_BUBBLE = 130;
                 window.fishFitBubble = function (el) {
                     var stage = el.parentElement;
                     el.classList.remove('is-fit', 'is-top', 'is-bottom');
                     el.classList.add(stage.dataset.side || 'is-top');
-                    var left = stage.getBoundingClientRect().left + el.offsetLeft;
+                    el.style.maxWidth = '';
+                    var stageLeft = stage.getBoundingClientRect().left;
+                    var left = stageLeft + el.offsetLeft;
                     var right = left + el.offsetWidth;
-                    if (left < 8 || right > document.documentElement.clientWidth - 8) {
-                        el.classList.remove('is-top');
-                        el.classList.add('is-bottom', 'is-fit');
+                    if (left >= FISH_EDGE && right <= document.documentElement.clientWidth - FISH_EDGE) return;
+
+                    // Правый край облачка привязан к рыбе. -1 и допуск в 1px —
+                    // запас на округление offsetLeft до целых.
+                    var room = Math.floor(right - FISH_EDGE) - 1;
+                    if (left < FISH_EDGE && room >= FISH_MIN_BUBBLE) {
+                        el.style.maxWidth = room + 'px';
+                        if (stageLeft + el.offsetLeft >= FISH_EDGE - 1) return;
+                        el.style.maxWidth = '';
                     }
+                    el.classList.remove('is-top');
+                    el.classList.add('is-bottom', 'is-fit');
                 };
                 // Точка, из которой облачко вырастает и в которую втягивается, —
                 // кончик хвостика.

@@ -88,7 +88,7 @@
          часть), а не номера вопросов: очередь меняется, когда термин
          возвращается на круг. Серия верных подряд — только для азарта,
          корма не даёт; пока её нет, плашка скрыта. --}}
-    <div class="xl:hidden fixed z-30 inset-x-0 bottom-0 border-t border-gray-200 bg-white/95 backdrop-blur px-4 pt-2.5 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+    <div id="term-bottom-strip" class="xl:hidden fixed z-30 inset-x-0 bottom-0 border-t border-gray-200 bg-white/95 backdrop-blur px-4 pt-2.5 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
       <div class="max-w-3xl mx-auto">
         <div class="flex items-center justify-between gap-3 min-h-[1.5rem]">
           <div data-progress-label class="text-sm text-zinc-600 whitespace-nowrap">{{ $progressLabel }}</div>
