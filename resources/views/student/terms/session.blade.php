@@ -185,21 +185,30 @@
       return letters.length;
     }
 
+    // Отправка: в hidden уже ровно столько букв, сколько клеток. Поле
+    // закрываем и снимаем с него фокус — это обрывает «сборку» слова
+    // клавиатурой, и всё, что ученик успел нажать сверх клеток, не
+    // доходит никуда.
     function send() {
       if (sent || hidden.value === '') return;
       sent = true;
       input.setAttribute('contenteditable', 'false');
+      input.textContent = hidden.value;
+      input.blur();
       htmx.trigger(form, 'submit');
     }
 
+    // Последняя клетка заполнена — отправляем сразу, без кнопки. Даже если
+    // клавиатура ещё «собирает» слово (на Android это обычное состояние при
+    // наборе): иначе отправка ждала бы конца сборки, а лишние нажатия
+    // продолжали бы её — проверка могла не случиться вовсе.
     input.addEventListener('input', function () {
-      // Последняя клетка заполнена — отправляем без кнопки.
-      if (render() === room && room > 0 && !composing) send();
+      if (render() >= room && room > 0) send();
     });
     input.addEventListener('compositionstart', function () { composing = true; });
     input.addEventListener('compositionend', function () {
       composing = false;
-      if (render() === room && room > 0) send();
+      if (render() >= room && room > 0) send();
     });
     // Перенос строки в редактируемом блоке — это отправка ответа (клавиша
     // «Готово» на телефоне шлёт его без keydown Enter).
@@ -207,6 +216,12 @@
       if (evt.inputType === 'insertParagraph' || evt.inputType === 'insertLineBreak') {
         evt.preventDefault();
         send();
+        return;
+      }
+      // Клетки заполнены или ответ уже ушёл — новые символы не пускаем
+      // (сборку слова отменить нельзя, её обрывает send()).
+      if ((sent || hidden.value.length >= room) && evt.inputType.indexOf('insert') === 0 && evt.cancelable) {
+        evt.preventDefault();
       }
     });
     // Вставка — только текстом, без разметки.

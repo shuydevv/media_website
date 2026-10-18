@@ -78,12 +78,6 @@
   <div class="min-w-0 mt-8 lg:mt-0 flex flex-col">
     @if($failedTerms->isNotEmpty())
       <div class="sans-medium text-sm text-zinc-900">Стоит перечитать</div>
-      {{-- Подпись — только там, где это правда: свободная тренировка
-           список «Стоит перечитать» на главной не меняет. --}}
-      @unless($isFree)
-        <div class="text-xs text-zinc-500 mt-0.5">Останутся в этом списке на главной, пока не ответишь верно на повторении.</div>
-      @endunless
-
       {{-- Телефон — лента карточек, листается пальцем; широкий экран — список. --}}
       <div class="mt-3 -mx-5 px-5 sm:-mx-8 sm:px-8 lg:mx-0 lg:px-0 flex gap-3 overflow-x-auto snap-x lg:flex-col lg:overflow-visible">
         @foreach($failedTerms as $failed)
