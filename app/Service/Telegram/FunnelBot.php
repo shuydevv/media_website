@@ -129,8 +129,8 @@ class FunnelBot
             'bad_auto' => $this->sendAuto($contact, 'bad_auto', FunnelTexts::render('bad_auto', $this->vars($contact))),
             'nudge' => $this->sendNudge($contact),
             'reminder' => $this->sendReminder($contact),
-            'lead_ack' => $this->sendHuman($contact, 'lead_ack'),
-            'site_lead_question' => $contact->blocked_at ? null : $this->sendHuman($contact, 'site_lead_question'),
+            // lead_ack — старое имя шага (задачи, поставленные до замены текста).
+            'site_lead_question', 'lead_ack' => $contact->blocked_at ? null : $this->sendHuman($contact, 'site_lead_question'),
             'lead_topic' => ($lead = SiteLead::find($payload['lead_id'] ?? 0))
                 ? $this->topics->openLeadTopic($contact, $lead, ($payload['from_site'] ?? false) === true) : null,
             'topic' => $this->topics->ensureTopic($contact),
@@ -366,7 +366,7 @@ class FunnelBot
     /**
      * Запуск по кнопке «Получить ответ в Telegram» со страницы «Спасибо»
      * (после формы «Записаться»). Урок такому человеку не нужен — он уже
-     * хочет на курс: короткий ответ от Александра и сразу тема в группе с
+     * хочет на курс: вопрос от Александра и сразу тема в группе с
      * заявкой, чтобы ответить через бота. Тема заводится сразу, а не по
      * первому сообщению: человек сам сделал шаг, и это заявка — о ней
      * уведомление и нужно.
@@ -383,9 +383,12 @@ class FunnelBot
                 'last_name' => $from['last_name'] ?? null,
                 'last_start_at' => now(),
                 'blocked_at' => null,
-                // Дальше ведёт живой человек — напоминания про урок невпопад.
+                // Дальше ведёт живой человек — напоминания про урок невпопад,
+                // а вопрос после оценки заменяет вопрос про класс.
                 'reminder_due_at' => null,
                 'nudge_due_at' => null,
+                'question_due_at' => null,
+                'question_sent_at' => $contact->question_sent_at ?? now(),
             ])->save();
         }
 
@@ -402,7 +405,9 @@ class FunnelBot
         // Человек сам нажал «Получить ответ» и ждёт — поэтому быстрее, чем
         // вопрос после оценки, и без ночной паузы.
         $t = config('telegram_funnel.timing');
-        $this->dispatch($contact, 'lead_ack', [], random_int($t['lead_ack_delay_min_seconds'], $t['lead_ack_delay_max_seconds']));
+        // Не «заявку получил», а сразу живой вопрос — как и тем, кто записался
+        // со страницы урока (leadFromSite).
+        $this->dispatch($contact, 'site_lead_question', [], random_int($t['lead_ack_delay_min_seconds'], $t['lead_ack_delay_max_seconds']));
     }
 
     private function createContact(array $from, string $lesson, ?string $source, bool $withReminder = true): TelegramContact
