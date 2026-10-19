@@ -7,10 +7,7 @@
     Воронка пробного урока в &#64;poltavskiy_ege_bot. Диалоги — в темах админ-группы в Telegram, здесь — цифры по шагам.
 </x-ui.page-header>
 
-<x-ui.tabs class="mb-4">
-    <x-ui.tab href="{{ route('admin.telegram.index') }}" :active="true">Аналитика</x-ui.tab>
-    <x-ui.tab href="{{ route('admin.telegram.texts.edit') }}">Тексты сообщений</x-ui.tab>
-</x-ui.tabs>
+@include('admin.telegram._tabs', ['active' => 'analytics'])
 
 @if (in_array(false, $configured, true))
     <x-ui.alert tone="orange" class="mb-4">
@@ -107,7 +104,10 @@
         </tbody>
     </x-ui.table>
 
-    <h2 class="sans-medium text-lg text-zinc-900 mb-2">Последние контакты</h2>
+    <div class="flex items-baseline justify-between gap-2 mb-2">
+        <h2 class="sans-medium text-lg text-zinc-900">Последние контакты</h2>
+        <a href="{{ route('admin.telegram.contacts.index') }}" class="text-sm text-blue-600 hover:underline">Все контакты и этапы →</a>
+    </div>
     <x-ui.table>
         <thead>
             <tr><th>Кто</th><th>Метка</th><th>Старт</th><th>Урок</th><th>Оценка</th><th>Диалог</th></tr>
@@ -116,7 +116,7 @@
             @foreach ($recent as $c)
                 <tr>
                     <td data-primary>
-                        {{ $c->statusEmoji() }} {{ $c->displayName() }}
+{{ $c->statusEmoji() }} <a href="{{ route('admin.telegram.contacts.show', $c) }}" class="text-blue-600 hover:underline">{{ $c->displayName() }}</a>
                         @if ($c->username && ! str_starts_with($c->displayName(), '@'))
                             <span class="text-zinc-400">{{ '@'.$c->username }}</span>
                         @endif

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -140,6 +141,76 @@ class TelegramContact extends Model
             $this->opened_lesson_at !== null || $this->opened_bonus_at !== null => '👀',
             default => '🆕',
         };
+    }
+
+    /**
+     * Этапы воронки для списка в админке — взаимоисключающие, в порядке
+     * «насколько далеко зашёл»: человек всегда ровно на одном.
+     */
+    public const STAGES = [
+        'not_opened' => 'Не открыл урок',
+        'opened' => 'Открыл, не досмотрел',
+        'watched' => 'Досмотрел, не оценил',
+        'rated' => 'Оценил',
+        'wrote' => 'Написал',
+        'blocked' => 'Заблокировал',
+    ];
+
+    /** То же условие, что stageKey(), — но запросом, для фильтра и счётчиков. */
+    public function scopeStage(Builder $q, string $stage): Builder
+    {
+        $opened = fn (Builder $w) => $w->whereNotNull('opened_lesson_at')->orWhereNotNull('opened_bonus_at');
+        $watched = fn (Builder $w) => $w->whereNotNull('lesson_watched_at')->orWhereNotNull('bonus_watched_at');
+        $rated = fn (Builder $w) => $w->whereNotNull('rating')->orWhereNotNull('bonus_rating');
+        $notWrote = fn (Builder $w) => $w->whereNull('blocked_at')->whereNull('first_user_message_at');
+
+        return match ($stage) {
+            'blocked' => $q->whereNotNull('blocked_at'),
+            'wrote' => $q->whereNull('blocked_at')->whereNotNull('first_user_message_at'),
+            'rated' => $notWrote($q)->where($rated),
+            'watched' => $notWrote($q)->whereNot($rated)->where($watched),
+            'opened' => $notWrote($q)->whereNot($rated)->whereNot($watched)->where($opened),
+            'not_opened' => $notWrote($q)->whereNot($rated)->whereNot($watched)->whereNot($opened),
+            default => $q,
+        };
+    }
+
+    public function stageKey(): string
+    {
+        return match (true) {
+            $this->blocked_at !== null => 'blocked',
+            $this->first_user_message_at !== null => 'wrote',
+            $this->ratedAny() => 'rated',
+            $this->watchedAny() => 'watched',
+            $this->opened_lesson_at !== null || $this->opened_bonus_at !== null => 'opened',
+            default => 'not_opened',
+        };
+    }
+
+    /** Отложенные сообщения (поля *_due_at, FunnelBot::DUE_STEPS) — подписи для админки. */
+    public const SCHEDULE_LABELS = [
+        'question_due_at' => 'вопрос от Александра после оценки',
+        'lesson_ask_due_at' => '«Как вам урок?» — основной урок',
+        'bonus_ask_due_at' => '«Как вам урок?» — бонусный урок',
+        'nudge_due_at' => 'напоминание недосмотревшему',
+        'reminder_due_at' => '«Получилось посмотреть урок?»',
+    ];
+
+    /**
+     * Ближайшее запланированное сообщение: [подпись, когда] или null. Уйдёт
+     * ли оно на самом деле, решается в момент отправки (FunnelBot) — здесь
+     * только то, что стоит в расписании.
+     */
+    public function nextScheduled(): ?array
+    {
+        $next = null;
+        foreach (self::SCHEDULE_LABELS as $field => $label) {
+            if ($this->{$field} !== null && ($next === null || $this->{$field}->lt($next[1]))) {
+                $next = [$label, $this->{$field}];
+            }
+        }
+
+        return $next;
     }
 
     public function displayName(): string

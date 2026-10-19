@@ -43,6 +43,20 @@ class AdminTopics
         return self::adminChatId() !== null && (int) $chatId === self::adminChatId();
     }
 
+    /**
+     * Ссылка на тему человека в админ-группе (t.me/c/<id группы без -100>/<тема>) —
+     * открывается в Telegram у участников группы.
+     */
+    public static function topicUrl(TelegramContact $contact): ?string
+    {
+        $chatId = self::adminChatId();
+        if (! $chatId || ! $contact->topic_id) {
+            return null;
+        }
+
+        return 'https://t.me/c/'.preg_replace('/^-100/', '', (string) $chatId).'/'.$contact->topic_id;
+    }
+
     /** @return int|null id темы или null, если группа не настроена */
     public function ensureTopic(TelegramContact $contact): ?int
     {

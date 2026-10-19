@@ -276,6 +276,9 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
             Route::get('/', 'IndexController')->name('admin.telegram.index');
             Route::get('/texts', 'Texts\EditController')->name('admin.telegram.texts.edit');
             Route::put('/texts', 'Texts\UpdateController')->name('admin.telegram.texts.update');
+            Route::get('/contacts', 'Contacts\IndexController')->name('admin.telegram.contacts.index');
+            Route::get('/contacts/{contact}', 'Contacts\ShowController')->name('admin.telegram.contacts.show');
+            Route::post('/contacts/{contact}/dialog', 'Contacts\StartDialogController')->name('admin.telegram.contacts.dialog');
         });
 
         Route::group(['namespace' => 'Crm', 'prefix' => 'crm'], function () {
