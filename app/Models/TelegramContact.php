@@ -53,6 +53,8 @@ class TelegramContact extends Model
         'nudge_sent_at' => 'datetime',
         'question_due_at' => 'datetime',
         'question_sent_at' => 'datetime',
+        'followup_due_at' => 'datetime',
+        'followup_sent_at' => 'datetime',
     ];
 
     public function messages(): HasMany
@@ -195,6 +197,7 @@ class TelegramContact extends Model
         'bonus_ask_due_at' => '«Как вам урок?» — бонусный урок',
         'nudge_due_at' => 'напоминание недосмотревшему',
         'reminder_due_at' => '«Получилось посмотреть урок?»',
+        'followup_due_at' => 'второе касание — «какая тема даётся сложнее всего?»',
     ];
 
     /**

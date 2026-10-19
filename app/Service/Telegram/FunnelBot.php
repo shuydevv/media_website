@@ -26,6 +26,10 @@ use Illuminate\Support\Str;
  *       с кнопками и ссылкой «продолжить с того же места»;
  *     не открыл ни один → «Получилось посмотреть?» через 22–26 ч.
  *
+ *   Молчит после «Как вам урок?» или вопроса после оценки, хотя досмотрел
+ *     или оценил хорошо → через сутки одно второе касание от Александра
+ *     (sendFollowup).
+ *
  *   Оценка (applyRating): «Отлично»/«Хорошо» → через 1–4 минуты вопрос от
  *     Александра, один на человека (текст — по последней хорошей оценке в
  *     момент отправки); «Плохо» в боте → автоответ, на сайте — ничего.
@@ -51,6 +55,7 @@ class FunnelBot
         'question_due_at' => ['question', []],
         'lesson_ask_due_at' => ['rate_ask', ['bonus' => false]],
         'bonus_ask_due_at' => ['rate_ask', ['bonus' => true]],
+        'followup_due_at' => ['followup', []],
     ];
 
     public function __construct(
@@ -128,6 +133,7 @@ class FunnelBot
             'question' => $this->sendQuestion($contact),
             'bad_auto' => $this->sendAuto($contact, 'bad_auto', FunnelTexts::render('bad_auto', $this->vars($contact))),
             'nudge' => $this->sendNudge($contact),
+            'followup' => $this->sendFollowup($contact),
             'reminder' => $this->sendReminder($contact),
             // lead_ack — старое имя шага (задачи, поставленные до замены текста).
             'site_lead_question', 'lead_ack' => $contact->blocked_at ? null : $this->sendHuman($contact, 'site_lead_question'),
@@ -213,6 +219,7 @@ class FunnelBot
             'bonus_ask_due_at' => null,
             'question_due_at' => null,
             'question_sent_at' => $contact->question_sent_at ?? now(),
+            'followup_due_at' => null,
         ])->save();
 
         $this->dispatch($contact, 'lead_topic', ['lead_id' => $lead->id, 'from_site' => true]);
@@ -663,7 +670,9 @@ class FunnelBot
         $contact->forceFill([
             $f['ask_sent_at'] => now(),
             $f['message_id'] => $sent['message_id'] ?? $contact->{$f['message_id']},
-        ])->save();
+        ]);
+        $this->scheduleFollowup($contact);
+        $contact->save();
     }
 
     /**
@@ -699,7 +708,39 @@ class FunnelBot
         }
 
         $this->sendHuman($contact, $latest[0] === TelegramContact::RATING_GREAT ? 'question_great' : 'question_good');
-        $contact->forceFill(['question_sent_at' => now()])->save();
+        $contact->question_sent_at = now();
+        $this->scheduleFollowup($contact);
+        $contact->save();
+    }
+
+    /** Через сутки — второе касание (если к тому времени человек так и молчит). */
+    private function scheduleFollowup(TelegramContact $contact): void
+    {
+        if ($contact->followup_sent_at === null) {
+            $contact->followup_due_at = ReminderSchedule::inWindow(now()->addHours(config('telegram_funnel.timing.followup_after_hours')));
+        }
+    }
+
+    /**
+     * Второе касание: досмотрел урок или оценил хорошо, но за сутки после
+     * «Как вам урок?» / вопроса Александра так ничего и не написал. Одно на
+     * человека и только если с ним ещё никто не разговаривал: написал сам,
+     * ответил админ, «Плохо», заявка с сайта — не отправляем.
+     */
+    private function sendFollowup(TelegramContact $contact): void
+    {
+        $bad = $contact->rating === TelegramContact::RATING_BAD || $contact->bonus_rating === TelegramContact::RATING_BAD;
+        $good = TelegramContact::isGoodRating($contact->rating) || TelegramContact::isGoodRating($contact->bonus_rating);
+
+        if ($contact->followup_sent_at !== null || $contact->blocked_at || $bad
+            || $contact->first_user_message_at !== null || $contact->first_admin_message_at !== null
+            || ! ($contact->watchedAny() || $good)
+            || SiteLead::where('telegram_contact_id', $contact->id)->exists()) {
+            return;
+        }
+
+        $this->sendHuman($contact, 'followup');
+        $contact->forceFill(['followup_sent_at' => now()])->save();
     }
 
     /**
