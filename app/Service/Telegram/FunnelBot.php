@@ -135,6 +135,7 @@ class FunnelBot
                 ? $this->topics->openLeadTopic($contact, $lead, ($payload['from_site'] ?? false) === true) : null,
             'topic' => $this->topics->ensureTopic($contact),
             'start_feed' => $this->topics->postStart($contact),
+            'liked_feed' => $this->topics->postLiked($contact, ($payload['bonus'] ?? false) === true),
             'forward' => $this->topics->forward($contact, (int) $payload['message_id']),
             'note' => $this->topics->note($contact, $payload['html'], $payload['silent'] ?? true),
             'admin_reply' => $this->topics->relayAdminMessage($contact, $payload['message']),
@@ -150,7 +151,8 @@ class FunnelBot
     public function applyRating(TelegramContact $contact, bool $bonus, string $rating, string $source): void
     {
         $f = TelegramContact::slotFields($bonus);
-        if ($contact->{$f['rating']} === $rating) {
+        $previous = $contact->{$f['rating']};
+        if ($previous === $rating) {
             return;
         }
 
@@ -181,6 +183,12 @@ class FunnelBot
             'html' => e(FunnelTexts::ratingLabel($rating)).' — урок «'.e(FunnelLessons::title($code)).'»'.($source === 'site' ? ' · на сайте' : ''),
         ]);
         $this->dispatch($contact, 'refresh_status');
+
+        // В «🔥 Понравилось» — когда урок впервые оценён хорошо (переголосование
+        // «Отлично» → «Хорошо» второй строкой не дублируем).
+        if (TelegramContact::isGoodRating($rating) && ! TelegramContact::isGoodRating($previous)) {
+            $this->dispatch($contact, 'liked_feed', ['bonus' => $bonus]);
+        }
 
         // «Плохо» в боте — человек уже в переписке, вопрос естественен; на
         // сайте — ничего: там он не должен знать, что ему напишут в Telegram.

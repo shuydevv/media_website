@@ -183,6 +183,28 @@ class AdminTopics
         }
     }
 
+    /**
+     * Строка в «🔥 Понравилось» на хорошую оценку (без звука): самые тёплые
+     * люди. Если на вопрос Александра человек не ответит, темы у него не
+     * будет — а здесь он останется, со ссылкой на карточку в админке, где
+     * можно «Начать диалог».
+     */
+    public function postLiked(TelegramContact $contact, bool $bonus): void
+    {
+        $code = $bonus ? FunnelLessons::bonusFor($contact->lesson) : $contact->lesson;
+        $line = e(FunnelTexts::ratingLabel($contact->slot($bonus, 'rating'))).' — '.e($contact->displayName())
+            .($contact->username && ! str_starts_with($contact->displayName(), '@') ? ' @'.e($contact->username) : '')
+            .' · «'.e(FunnelLessons::title($code)).'»'
+            .($contact->slot($bonus, 'rating_source') === 'site' ? ' · на сайте' : '')
+            .' · <a href="'.e(route('admin.telegram.contacts.show', $contact)).'">карточка</a>';
+
+        try {
+            $this->postToService('liked', $line, true);
+        } catch (TelegramApiException $e) {
+            Log::warning('Telegram funnel: не удалось написать в «Понравилось»', ['contact' => $contact->id, 'error' => $e->getMessage()]);
+        }
+    }
+
     /** Строка в «📥 Старты» на каждый новый запуск бота — без звука. */
     public function postStart(TelegramContact $contact): void
     {
@@ -203,6 +225,7 @@ class AdminTopics
         $names = [
             'starts' => '📥 Старты',
             'leads' => '📝 Заявки с сайта',
+            'liked' => '🔥 Понравилось',
         ];
 
         return Cache::lock("telegram-service-topic-{$key}", 20)->block(15, function () use ($key, $names) {

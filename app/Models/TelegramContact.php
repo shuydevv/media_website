@@ -37,6 +37,7 @@ class TelegramContact extends Model
         'last_user_message_at' => 'datetime',
         'first_admin_message_at' => 'datetime',
         'last_admin_message_at' => 'datetime',
+        'awaiting_alerted_at' => 'datetime',
         'blocked_at' => 'datetime',
         'started_at' => 'datetime',
         'last_start_at' => 'datetime',

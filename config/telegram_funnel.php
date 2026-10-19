@@ -66,6 +66,10 @@ return [
         'typing_seconds_min' => 6,
         'typing_seconds_max' => 15,
 
+        // Человек написал, а ответа нет столько минут — напоминание админу
+        // со звуком в его теме (telegram:remind-unanswered, только днём).
+        'unanswered_alert_minutes' => 120,
+
         // Не открыл ни один урок: напоминание случайно в пределах 22–26 ч,
         // только в окне 10:00–21:00 по Москве (config app.timezone).
         'reminder_min_hours' => 22,
