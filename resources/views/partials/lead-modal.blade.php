@@ -6,7 +6,11 @@
     Подключается один раз на странице (сейчас — пробные уроки). На
     /repetitor свои формы и своя модалка (LeadController) — сюда не подключать,
     два обработчика data-open-form открывали бы обе.
+
+    $known — пришёл из бота (cookie): Telegram уже известен, поле логина не
+    показываем, имя подставлено из Telegram ($knownName).
 --}}
+@php($known = $known ?? false)
 <div id="lead-modal" class="fixed inset-0 z-[9998] hidden" role="dialog" aria-modal="true" aria-labelledby="lead-modal-title" aria-hidden="true">
   <div id="lead-overlay" class="fixed inset-0 z-[9998] bg-black opacity-0 transition-opacity duration-200 pointer-events-none"></div>
 
@@ -18,7 +22,11 @@
       <form action="{{ route('site-lead.store') }}" method="POST" class="p-6 space-y-4" novalidate>
         @csrf
         <p id="lead-modal-title" class="text-gray-900 font-semibold text-lg">
-          Оставьте контакт — я напишу вам в Telegram и расскажу про курс
+          @if ($known)
+            Запишитесь на курс — я напишу вам в Telegram и всё расскажу
+          @else
+            Оставьте контакт — я напишу вам в Telegram и расскажу про курс
+          @endif
         </p>
 
         <input type="hidden" name="cta" value="{{ old('cta') }}">
@@ -29,13 +37,14 @@
                style="position:absolute;left:-10000px;width:1px;height:1px;opacity:0">
 
         <div>
-          <input name="name" type="text" placeholder="Имя" value="{{ old('name') }}" required maxlength="100" autocomplete="given-name"
+          <input name="name" type="text" placeholder="Имя" value="{{ old('name', $knownName ?? '') }}" required maxlength="100" autocomplete="given-name"
                  class="w-full bg-purple-50 border {{ $errors->has('name') ? 'border-red-400' : 'border-gray-300' }} rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300">
           @error('name')
             <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
           @enderror
         </div>
 
+        @unless ($known)
         <div>
           <input name="telegram" type="text" placeholder="@username в Telegram или телефон" value="{{ old('telegram') }}" required maxlength="100"
                  autocomplete="off" autocapitalize="off" spellcheck="false"
@@ -46,6 +55,8 @@
           {{-- Показывается, когда в поле набирают номер (см. скрипт ниже). --}}
           <p data-phone-warning class="text-xs text-yellow-600 mt-1 hidden">Если у вас скрыт номер телефона, указывайте свой @username</p>
         </div>
+
+        @endunless
 
         <button type="submit" class="w-full bg-pink-500 text-white font-bold py-3 rounded-lg hover:brightness-110 active:scale-[0.99]">
           Записаться
@@ -81,8 +92,10 @@
     var v = contactInput.value.trim();
     phoneWarning.classList.toggle('hidden', !/^\+?[\d\s()\-]{3,}$/.test(v));
   }
-  contactInput.addEventListener('input', togglePhoneWarning);
-  togglePhoneWarning();
+  if (contactInput) {
+    contactInput.addEventListener('input', togglePhoneWarning);
+    togglePhoneWarning();
+  }
 
   function open(cta, label, trigger) {
     lastTrigger = trigger || null;

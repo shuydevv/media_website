@@ -142,21 +142,25 @@ class AdminTopics
     }
 
     /**
-     * Человек из заявки на сайте запустил бота: заводим ему тему сразу (с
-     * уведомлением — это заявка) и отмечаем в «📝 Заявки с сайта», что с
-     * ним теперь можно говорить через бота.
+     * Заявка с сайта, по которой с человеком можно говорить через бота: он
+     * запустил бота по ссылке со страницы «Спасибо» или записался на
+     * странице урока, придя из бота ($fromSite). Тема — сразу и со звуком:
+     * это заявка. В «📝 Заявки с сайта» для первого случая — отметка, что
+     * отвечать можно в теме (для второго это пишет сама заявка, SendSiteLead).
      */
-    public function openLeadTopic(TelegramContact $contact, SiteLead $lead): void
+    public function openLeadTopic(TelegramContact $contact, SiteLead $lead, bool $fromSite = false): void
     {
         if (! $this->ensureTopic($contact)) {
             return;
         }
 
         $details = e($lead->name).' · '.e($lead->contactLabel()).($lead->cta_label ? ' · '.e($lead->cta_label) : '');
-        $this->note($contact, "📝 <b>Пришёл из заявки с сайта</b>
-{$details}
+        $title = $fromSite ? '📝 <b>Записался на курс на сайте</b>' : '📝 <b>Пришёл из заявки с сайта</b>';
+        $this->note($contact, "{$title}\n{$details}\n\nМожно отвечать прямо здесь.", false);
 
-Можно отвечать прямо здесь.", false);
+        if ($fromSite) {
+            return;
+        }
 
         try {
             $this->postToService('leads', '✅ '.e($lead->name).' ('.e($lead->contactLabel()).') запустил бота — отвечать можно в его теме', true);

@@ -4,7 +4,12 @@
 @section('content')
   <div class="max-w-2xl mx-auto py-20 text-center mt-12 px-3">
     <h1 class="text-2xl font-semibold mb-3 sans">Спасибо! Заявка отправлена.</h1>
-    <p class="text-gray-600">Обычно я отвечаю в течение 10-15 минут, если сейчас не поздний вечер или ночь</p>
+    @if (session('lead_known'))
+      {{-- Записался, придя из бота: Telegram известен, Александр напишет сам. --}}
+      <p class="text-gray-600">Скоро напишу вам в Telegram 🙂</p>
+    @else
+      <p class="text-gray-600">Обычно я отвечаю в течение 10-15 минут, если сейчас не поздний вечер или ночь</p>
+    @endif
 
     {{-- Только после формы «Записаться» (SiteLeadController): бот не может
          написать первым — запуск по этой ссылке открывает админу диалог с

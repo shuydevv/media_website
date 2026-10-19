@@ -130,7 +130,9 @@ class FunnelBot
             'nudge' => $this->sendNudge($contact),
             'reminder' => $this->sendReminder($contact),
             'lead_ack' => $this->sendHuman($contact, 'lead_ack'),
-            'lead_topic' => ($lead = SiteLead::find($payload['lead_id'] ?? 0)) ? $this->topics->openLeadTopic($contact, $lead) : null,
+            'site_lead_question' => $contact->blocked_at ? null : $this->sendHuman($contact, 'site_lead_question'),
+            'lead_topic' => ($lead = SiteLead::find($payload['lead_id'] ?? 0))
+                ? $this->topics->openLeadTopic($contact, $lead, ($payload['from_site'] ?? false) === true) : null,
             'topic' => $this->topics->ensureTopic($contact),
             'start_feed' => $this->topics->postStart($contact),
             'forward' => $this->topics->forward($contact, (int) $payload['message_id']),
@@ -185,6 +187,30 @@ class FunnelBot
         if ($rating === TelegramContact::RATING_BAD && $source === 'bot') {
             $this->dispatch($contact, 'bad_auto');
         }
+    }
+
+    /**
+     * «Записаться» на странице урока от пришедшего из бота: тема сразу (это
+     * заявка — уведомление нужно), а через 1–3 минуты Александр пишет
+     * первым. Остальные автосообщения больше не нужны: дальше живой
+     * диалог; вопрос после оценки, если ещё не ушёл, заменяет этот — чтобы
+     * не пришло два вопроса от Александра подряд.
+     */
+    public function leadFromSite(TelegramContact $contact, SiteLead $lead): void
+    {
+        $contact->forceFill([
+            'reminder_due_at' => null,
+            'nudge_due_at' => null,
+            'lesson_ask_due_at' => null,
+            'bonus_ask_due_at' => null,
+            'question_due_at' => null,
+            'question_sent_at' => $contact->question_sent_at ?? now(),
+        ])->save();
+
+        $this->dispatch($contact, 'lead_topic', ['lead_id' => $lead->id, 'from_site' => true]);
+
+        $t = config('telegram_funnel.timing');
+        $this->dispatch($contact, 'site_lead_question', [], random_int($t['lead_ack_delay_min_seconds'], $t['lead_ack_delay_max_seconds']));
     }
 
     /** Переход по персональной ссылке на урок (Telegram\LessonLinkController). */

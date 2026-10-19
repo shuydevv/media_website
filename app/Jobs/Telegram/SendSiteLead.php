@@ -46,6 +46,8 @@ class SendSiteLead implements ShouldQueue
         ];
         if ($lead->telegram) {
             $lines[] = 'Telegram: <a href="'.e($lead->telegramUrl()).'">@'.e($lead->telegram).'</a>';
+        } elseif (! $lead->phone && $lead->contact) {
+            $lines[] = 'Telegram: <a href="'.e($lead->telegramUrl()).'">'.e($lead->contact->displayName()).'</a> (без логина)';
         } else {
             // t.me/+7… откроет чат, только если человек не скрыл номер
             // в настройках приватности Telegram.
@@ -60,7 +62,7 @@ class SendSiteLead implements ShouldQueue
 
         // Если этот человек уже запускал бота — сразу видно, откуда он и
         // смотрел ли пробный урок.
-        $contact = $lead->telegram ? TelegramContact::where('username', $lead->telegram)->first() : null;
+        $contact = $lead->contact ?? ($lead->telegram ? TelegramContact::where('username', $lead->telegram)->first() : null);
         if ($contact) {
             $lines[] = '';
             $lines[] = '🤖 Уже в боте с '.$contact->started_at->format('d.m')
@@ -70,7 +72,14 @@ class SendSiteLead implements ShouldQueue
         }
 
         try {
-            (new AdminTopics(TelegramApi::funnel()))->postToService('leads', implode("\n", $lines), false);
+            // Записался со страницы урока, придя из бота: тема с ним уже
+            // открыта и прозвонила (SiteLeadController ставит её в очередь
+            // раньше этой задачи) — здесь только отметка, без звука.
+            $silent = $lead->contact?->topic_id !== null;
+            if ($silent) {
+                $lines[] = '💬 Тема с ним открыта — отвечайте там';
+            }
+            (new AdminTopics(TelegramApi::funnel()))->postToService('leads', implode("\n", $lines), $silent);
         } catch (TelegramApiException $e) {
             if ($e->isRateLimited() && $e->retryAfter) {
                 $this->release($e->retryAfter + 1);

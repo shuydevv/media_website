@@ -55,7 +55,7 @@
                data-open-form="trial" data-label="Пробный урок «{{ $lesson['title'] }}»">Записаться на курс</a>
         </div>
     </div>
-    @include('partials.lead-modal')
+    @include('partials.lead-modal', ['known' => (bool) $feedback, 'knownName' => $feedback['lead_name'] ?? null])
 
     @if ($feedback)
         <script>

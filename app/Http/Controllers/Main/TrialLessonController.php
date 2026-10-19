@@ -45,6 +45,8 @@ class TrialLessonController extends Controller
                 'progress_url' => route('telegram.trial.progress', $slug),
                 // «Продолжить с того же места» из бота (?t=секунды).
                 'start_at' => max(0, $request->integer('t')),
+                // Форма «Записаться» без поля логина — имя из Telegram.
+                'lead_name' => $contact->first_name,
             ];
         }
 
