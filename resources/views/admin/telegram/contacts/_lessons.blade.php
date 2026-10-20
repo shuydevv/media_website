@@ -15,6 +15,12 @@
             @php($watched = (int) $c->slot($bonus, 'watch_seconds'))
             @if ($watched > 0)
                 · смотрел {{ $watched >= 60 ? intdiv($watched, 60).' мин' : $watched.' с' }}@if ((int) $c->slot($bonus, 'progress') > 0) ({{ (int) $c->slot($bonus, 'progress') }}%)@endif
+            @elseif ($c->{($bonus ? 'bonus' : 'lesson').'_player_status'} === 'fallback')
+                · <span class="text-orange-600">плеер не загрузился — время не считалось</span>
+            @elseif ($c->{($bonus ? 'bonus' : 'lesson').'_played_at'})
+                · включал видео
+            @elseif ($c->{($bonus ? 'bonus' : 'lesson').'_player_status'} === 'ready')
+                · <span class="text-zinc-400">видео не включал</span>
             @else
                 · <span class="text-zinc-400">просмотр не зафиксирован</span>
             @endif

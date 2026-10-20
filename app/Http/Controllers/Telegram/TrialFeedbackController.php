@@ -35,7 +35,15 @@ class TrialFeedbackController extends Controller
             'seconds' => ['required', 'integer', 'min:0'],
             'position' => ['nullable', 'integer', 'min:0'],
             'duration' => ['nullable', 'integer', 'min:0'],
+            'event' => ['nullable', Rule::in(['ready', 'play', 'fallback'])],
         ]);
+
+        // Служебная отметка плеера (загрузился / нажал play / показан запасной).
+        if (! empty($data['event'])) {
+            FunnelBot::make()->trackPlayerEvent($contact, $bonus, $data['event']);
+
+            return response()->json(['ok' => true]);
+        }
 
         FunnelBot::make()->trackProgress($contact, $bonus, (int) $data['seconds'], (int) ($data['position'] ?? 0), (int) ($data['duration'] ?? 0));
 

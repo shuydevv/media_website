@@ -41,6 +41,13 @@ final class ContactTimeline
 
             $add($contact->slot($bonus, 'opened_at'), '👀', 'Открыл '.$prefix.$title);
 
+            $p = $bonus ? 'bonus' : 'lesson';
+            if ($contact->{"{$p}_player_status"} === 'fallback') {
+                $add($contact->{"{$p}_player_at"}, '⚠️', 'Плеер с учётом просмотра не загрузился — показан обычный', 'action',
+                    'видео человек видел, но сколько посмотрел — не узнать');
+            }
+            $add($contact->{"{$p}_played_at"}, '▶️', 'Включил видео: '.$prefix.$title);
+
             $progress = (int) $contact->slot($bonus, 'progress');
             $watched = (int) $contact->slot($bonus, 'watch_seconds');
             if ($watched > 0 && $contact->slot($bonus, 'last_watch_at')) {

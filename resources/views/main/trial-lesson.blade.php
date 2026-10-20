@@ -98,11 +98,31 @@
           var MAX_STEP = 5;
           var holder = document.getElementById('trial-player');
 
+          // Служебные отметки для карточки человека в админке: загрузился ли
+          // плеер с учётом просмотра, нажал ли play. Без них «0 секунд» не
+          // отличить от «у человека не показалось видео».
+          var sent = {};
+          function ping(event) {
+            if (sent[event]) return;
+            sent[event] = true;
+            var body = new FormData();
+            body.append('_token', CSRF);
+            body.append('seconds', '0');
+            body.append('event', event);
+            if (navigator.sendBeacon) { navigator.sendBeacon(PROGRESS_URL, body); return; }
+            fetch(PROGRESS_URL, { method: 'POST', body: body, credentials: 'same-origin', keepalive: true }).catch(function () {});
+          }
+
+          // Плеер с учётом не появился (скрипт заблокирован, Kinescope не
+          // ответил) — показываем обычное видео: урок важнее учёта.
           var decided = false;
           function fallback() {
             if (decided) return;
             decided = true;
-            holder.outerHTML = '<iframe src="https://kinescope.io/embed/' + VIDEO_ID + '" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" frameborder="0" allowfullscreen style="width:100%;height:100%"></iframe>';
+            if (holder && holder.isConnected) {
+              holder.outerHTML = '<iframe src="https://kinescope.io/embed/' + VIDEO_ID + '" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" frameborder="0" allowfullscreen style="width:100%;height:100%"></iframe>';
+            }
+            ping('fallback');
           }
           var fallbackTimer = setTimeout(fallback, 5000);
 
@@ -134,6 +154,7 @@
             // Длительность нужна для %: не пришла в Loaded/DurationChange —
             // спрашиваем у плеера, как только видео пошло.
             player.on(E.Playing, function () {
+              ping('play');
               if (duration > 0 || !player.getDuration) return;
               try { player.getDuration().then(function (d) { d = Number(d); if (isFinite(d) && d > 0) duration = d; }).catch(function () {}); } catch (e) {}
             });
@@ -156,11 +177,19 @@
 
           window.onKinescopeIframeAPIReady = function (factory) {
             if (decided) return;
-            decided = true;
             clearTimeout(fallbackTimer);
+            // Скрипт загрузился, но плеер может так и не появиться (ни
+            // ошибки, ни плеера) — тогда через 8 с тоже обычное видео.
+            var createTimer = setTimeout(fallback, 8000);
             factory.create('trial-player', { url: 'https://kinescope.io/' + VIDEO_ID, size: { width: '100%', height: '100%' } })
-              .then(track)
-              .catch(function () { decided = false; fallback(); });
+              .then(function (player) {
+                clearTimeout(createTimer);
+                if (decided) return; // уже показали запасной
+                decided = true;
+                ping('ready');
+                track(player);
+              })
+              .catch(function () { clearTimeout(createTimer); fallback(); });
           };
 
           var script = document.createElement('script');

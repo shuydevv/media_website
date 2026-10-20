@@ -54,6 +54,10 @@ class TelegramContact extends Model
         'question_due_at' => 'datetime',
         'question_sent_at' => 'datetime',
         'followup_due_at' => 'datetime',
+        'lesson_player_at' => 'datetime',
+        'bonus_player_at' => 'datetime',
+        'lesson_played_at' => 'datetime',
+        'bonus_played_at' => 'datetime',
         'followup_sent_at' => 'datetime',
     ];
 

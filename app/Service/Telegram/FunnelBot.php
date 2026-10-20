@@ -286,6 +286,18 @@ class FunnelBot
         }
     }
 
+    /** Отметка плеера со страницы урока: ready | play | fallback (для карточки в админке). */
+    public function trackPlayerEvent(TelegramContact $contact, bool $bonus, string $event): void
+    {
+        $p = $bonus ? 'bonus' : 'lesson';
+        if ($event === 'play') {
+            $contact->{"{$p}_played_at"} ??= now();
+        } else {
+            $contact->forceFill(["{$p}_player_status" => $event, "{$p}_player_at" => now()]);
+        }
+        $contact->save();
+    }
+
     private function scheduleNudge(TelegramContact $contact): void
     {
         if ($contact->nudge_sent_at === null && ! $contact->watchedAny() && ! $contact->ratedAny()) {
