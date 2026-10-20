@@ -55,8 +55,33 @@ class SubmissionController extends Controller
         $skipped = Submission::withoutSuperseded($skipped);
 
 
+        // «Проверить разом»: сколько заданий уйдёт в пачку, по каким предметам
+        // (и есть ли для предмета свои правила), и сколько уже в обработке.
+        $aiBatch = null;
+        $grader = app(\App\Service\Homework\ClaudeGrader::class);
+        if ($grader->isEnabled()) {
+            $candidates = app(\App\Service\Homework\ClaudeBatchGrader::class)->candidates($queue);
+            $bySubject = $candidates
+                ->groupBy(fn ($pair) => $grader->subjectFor($pair[0], $pair[1]) ?: 'Предмет не указан')
+                ->map(fn ($items, $subject) => [
+                    'count'     => $items->count(),
+                    'has_rules' => $grader->subjectRulesFile($subject) !== null,
+                ]);
+            $aiBatch = [
+                'count'       => $candidates->count(),
+                'by_subject'  => $bySubject,
+                'in_progress' => \App\Models\AiGradingBatch::where('channel', \App\Models\AiGradingBatch::CHANNEL_API)
+                    ->where('status', 'in_progress')->sum('request_count'),
+            ];
+        }
+
+        // Проверка через Claude Desktop (выгрузка/загрузка файла) — только админ.
+        $aiDesktop = (int) $user->role === \App\Models\User::ROLE_ADMIN
+            ? app(\App\Service\Homework\DesktopGradingExchange::class)->stats($queue)
+            : null;
+
         $subs = Submission::with(['user','homework'])->latest()->paginate(20);
-        return view('mentor.submissions.index', ['submissions' => $subs, 'mine' => $mine, 'queue' => $queue, 'retrying' => $retrying, 'skipped' => $skipped], );
+        return view('mentor.submissions.index', ['submissions' => $subs, 'mine' => $mine, 'queue' => $queue, 'retrying' => $retrying, 'skipped' => $skipped, 'aiBatch' => $aiBatch, 'aiDesktop' => $aiDesktop], );
     }
 
     public function show(Submission $submission)

@@ -110,6 +110,16 @@ class SubmissionReviewController extends Controller
         $row['reviewed_by'] = $request->user()->id;
         $row['reviewed_at'] = now()->toDateTimeString();
 
+        // Какой балл предлагал ИИ на момент сохранения — чтобы потом видеть,
+        // на каких номерах кураторы его исправляют, и уточнять правила
+        // (resources/ai/grading). Без черновика — ключ не пишем.
+        $aiScore = ($submission->ai_drafts ?? [])[$taskKey]['score'] ?? null;
+        if (is_numeric($aiScore)) {
+            $row['ai_score'] = (int) $aiScore;
+        } else {
+            unset($row['ai_score']);
+        }
+
         $per[$taskKey] = $row;
         $submission->per_task_results = $per;
 

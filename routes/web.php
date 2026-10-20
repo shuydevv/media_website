@@ -556,6 +556,10 @@ Route::prefix('mentor/review')
     ->middleware(['auth', 'mentor'])
     ->group(function () {
         Route::get('/inbox', [SubmissionReviewController::class, 'inbox'])->name('inbox');
+        Route::post('/ai-batch', [\App\Http\Controllers\Mentor\AiBatchController::class, 'store'])->name('ai_batch');
+        Route::post('/ai-desktop/export', [\App\Http\Controllers\Mentor\AiDesktopController::class, 'export'])->name('ai_desktop.export');
+        Route::post('/ai-desktop/import', [\App\Http\Controllers\Mentor\AiDesktopController::class, 'import'])->name('ai_desktop.import');
+        Route::get('/ai-desktop/skill', [\App\Http\Controllers\Mentor\AiDesktopController::class, 'skill'])->name('ai_desktop.skill');
         Route::get('/{submission}', [SubmissionReviewController::class, 'show'])->name('show');
 
         // СНАЧАЛА — специфичные

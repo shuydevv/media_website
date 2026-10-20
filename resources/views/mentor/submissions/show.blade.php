@@ -48,6 +48,7 @@
   $newerRetry   = $submission->newerInProgress();
   $aiDrafts     = $submission->ai_drafts ?? [];
   $aiFrozenHash = $submission->ai_frozen_hash ?? [];
+  $aiEnabled    = app(\App\Service\Homework\ClaudeGrader::class)->isEnabled();
 
   $get = function($arr, $id, $key, $def=null) {
       return $arr[$id][$key] ?? $def;
@@ -298,17 +299,34 @@
           @php
             $hasAi = ($aiRationaleFull && trim($aiRationaleFull) !== '') || ($aiCommentFull && trim($aiCommentFull) !== '') || is_numeric($aiScore);
           @endphp
-          <div class="rounded-xl border {{ $hasAi ? 'border-indigo-200 bg-indigo-50 text-indigo-800' : 'border-gray-200 bg-gray-50 text-gray-700' }} px-3 py-2 text-sm">
+          <div class="ai-panel min-w-0 flex-1 rounded-xl border {{ $hasAi ? 'border-indigo-200 bg-indigo-50 text-indigo-800' : 'border-gray-200 bg-gray-50 text-gray-700' }} px-3 py-2 text-sm">
             <div class="font-medium mb-1">AI-эксперт</div>
-            @if($hasAi)
-              <div class="grid gap-1">
-                <div class="ai-score-display">
-                  Рекомендованные баллы: {{ is_numeric($aiScore) ? $aiScore : '—' }}
-                </div>
-              </div>
-            @else
-              <div class="text-sm">Пока без рекомендаций. Нажмите «Проверить заново (AI)» или заполните поля вручную.</div>
-            @endif
+            <div class="ai-empty text-sm {{ $hasAi ? 'hidden' : '' }}">
+              @if(($aiDraft['status'] ?? null) === 'pending')
+                ИИ-проверка в очереди — черновик появится автоматически. Можно не ждать и проверить вручную.
+              @elseif(($aiDraft['status'] ?? null) === 'exported')
+                Выгружено на ИИ-проверку в Claude ({{ $aiDraft['exported_at'] ?? '' }}) — черновик появится после загрузки результата. Можно не ждать и проверить вручную.
+              @elseif(($aiDraft['status'] ?? null) === 'error')
+                ИИ-проверка не удалась: {{ $aiDraft['error'] ?? '' }} Нажмите «AI-проверка», чтобы попробовать ещё раз.
+              @else
+                Пока без рекомендаций. Нажмите «AI-проверка» или заполните поля вручную.
+              @endif
+            </div>
+            <div class="ai-score-display {{ $hasAi ? '' : 'hidden' }}">
+              Рекомендованные баллы: {{ is_numeric($aiScore) ? $aiScore : '—' }}
+            </div>
+            {{-- Флаг «модель не уверена» и разбор по элементам видит только куратор. --}}
+            <div class="ai-review mt-1 rounded-lg bg-amber-100 px-2 py-1 text-amber-900 {{ !empty($aiDraft['needs_review']) ? '' : 'hidden' }}">
+              Проверьте сами: <span class="ai-review-reason">{{ $aiDraft['review_reason'] ?? '' }}</span>
+            </div>
+            <details class="ai-elements mt-1 {{ !empty($aiDraft['elements']) ? '' : 'hidden' }}">
+              <summary class="cursor-pointer select-none">Разбор по элементам</summary>
+              <ul class="ai-elements-list mt-1 grid gap-1">
+                @foreach(($aiDraft['elements'] ?? []) as $el)
+                  <li>{{ !empty($el['counted']) ? '✓' : '✗' }} <b>{{ $el['element'] ?? '' }}</b> — {{ $el['reason'] ?? '' }}</li>
+                @endforeach
+              </ul>
+            </details>
           </div>
 
           <div class="w-28">
@@ -458,8 +476,7 @@
         <div class="flex flex-wrap items-center gap-2 justify-start pt-1">
           {{-- Кнопки слева --}}
           <div class="flex flex-wrap items-center gap-2">
-            {{-- ВРЕМЕННО скрыто: AI-проверка задания пока не нужна. Чтобы
-                 вернуть, раскомментировать (JS-обработчик regen ниже жив).
+            @if($aiEnabled)
             <button
               formaction="{{ route('mentor.review.task.regen', [$submission, $tid]) }}"
               class="px-3 py-2 rounded-lg border-2 border-purple-200 text-purple-700 hover:bg-purple-50"
@@ -471,7 +488,7 @@
               </svg>
               AI-проверка
             </button>
-            --}}
+            @endif
 
 {{-- Пропустить / Вернуть --}}
   @if(!$isSkipped)
@@ -995,10 +1012,29 @@ document.addEventListener('DOMContentLoaded', () => {
         if (reasonEl)    reasonEl.value    = data.rationale ?? '';
         if (commentEl)   commentEl.value   = data.comment ?? '';
 
-        // обновляем «Рекомендованные баллы»
-        const aiScoreDiv = card.querySelector('.ai-score-display');
-        if (aiScoreDiv) {
-          aiScoreDiv.textContent = 'Рекомендованные баллы: ' + (data.score ?? '—');
+        // обновляем панель «AI-эксперт»
+        const panel = card.querySelector('.ai-panel');
+        if (panel) {
+          panel.classList.remove('border-gray-200', 'bg-gray-50', 'text-gray-700');
+          panel.classList.add('border-indigo-200', 'bg-indigo-50', 'text-indigo-800');
+          panel.querySelector('.ai-empty')?.classList.add('hidden');
+
+          const scoreDiv = panel.querySelector('.ai-score-display');
+          scoreDiv.textContent = 'Рекомендованные баллы: ' + (data.score ?? '—');
+          scoreDiv.classList.remove('hidden');
+
+          panel.querySelector('.ai-review').classList.toggle('hidden', !data.needs_review);
+          panel.querySelector('.ai-review-reason').textContent = data.review_reason || '';
+
+          const list = panel.querySelector('.ai-elements-list');
+          list.replaceChildren(...(data.elements || []).map((el) => {
+            const li = document.createElement('li');
+            const b = document.createElement('b');
+            b.textContent = el.element || '';
+            li.append((el.counted ? '✓ ' : '✗ '), b, ' — ' + (el.reason || ''));
+            return li;
+          }));
+          panel.querySelector('.ai-elements').classList.toggle('hidden', !(data.elements || []).length);
         }
 
         // показать галочку согласия

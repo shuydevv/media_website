@@ -16,6 +16,77 @@
     <div class="mb-4 rounded-xl border border-green-200 bg-green-50 text-green-800 px-3 py-2">{{ session('success') }}</div>
   @endif
 
+  {{-- ИИ-проверка через Claude Desktop: выгрузить порцию → проверить скиллом → загрузить результат --}}
+  @if($aiDesktop)
+    <div class="mb-6 rounded-2xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm text-purple-900">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div class="font-medium">ИИ-проверка через Claude Desktop</div>
+          @if($aiDesktop['tasks'] > 0)
+            <div>Ждут проверки: {{ $aiDesktop['tasks'] }} зад. в {{ $aiDesktop['submissions'] }} раб. Выгрузка — порциями примерно по {{ \App\Service\Homework\DesktopGradingExchange::PORTION }} заданий, работа ученика целиком.</div>
+          @else
+            <div>Новых письменных заданий для выгрузки нет.</div>
+          @endif
+          @foreach($aiDesktop['open'] as $open)
+            <div class="text-purple-700">Ждёт результата: {{ $open->external_id }} — {{ $open->request_count }} зад., выгружено {{ $open->created_at->format('d.m H:i') }}</div>
+          @endforeach
+          <a href="{{ route('mentor.review.ai_desktop.skill') }}" class="underline text-purple-700">Скачать скилл для Claude</a>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          @if($aiDesktop['tasks'] > 0)
+            <form method="POST" action="{{ route('mentor.review.ai_desktop.export') }}">
+              @csrf
+              <button type="submit" class="w-full px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700">
+                Выгрузить порцию
+              </button>
+            </form>
+          @endif
+          <form method="POST" action="{{ route('mentor.review.ai_desktop.import') }}" enctype="multipart/form-data" class="flex items-center gap-2">
+            @csrf
+            <input type="file" name="result" accept=".json,application/json" required class="text-xs max-w-[12rem]">
+            <button type="submit" class="px-3 py-2 rounded-lg border-2 border-purple-300 text-purple-700 hover:bg-purple-100">
+              Загрузить результат
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  @endif
+
+  {{-- ИИ-проверка пачкой через API: все непроверенные письменные задания из очереди --}}
+  @if($aiBatch)
+    <div class="mb-6 rounded-2xl border border-purple-200 bg-purple-50 px-4 py-3">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="text-sm text-purple-900">
+          <div class="font-medium">ИИ-проверка разом</div>
+          @if($aiBatch['count'] > 0)
+            <div>
+              Готово к отправке: {{ $aiBatch['count'] }} зад. —
+              @foreach($aiBatch['by_subject'] as $subject => $info)
+                {{ $subject }}: {{ $info['count'] }}@if(!$info['has_rules']) <span class="text-amber-700">(по общим правилам)</span>@endif{{ !$loop->last ? ',' : '' }}
+              @endforeach
+            </div>
+          @else
+            <div>Новых письменных заданий для ИИ-проверки нет.</div>
+          @endif
+          @if($aiBatch['in_progress'] > 0)
+            <div class="text-purple-700">В обработке: {{ $aiBatch['in_progress'] }} зад. — черновики появятся в работах, обычно в течение часа.</div>
+          @endif
+        </div>
+        @if($aiBatch['count'] > 0)
+          <form method="POST" action="{{ route('mentor.review.ai_batch') }}"
+                onsubmit="return confirm('Отправить {{ $aiBatch['count'] }} зад. на ИИ-проверку?');">
+            @csrf
+            <button type="submit" class="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700">
+              Проверить разом
+            </button>
+          </form>
+        @endif
+      </div>
+    </div>
+  @endif
+
   {{-- Пропущенные задания (видит только админ) --}}
 @php
   $isAdmin = (int)auth()->user()->role === \App\Models\User::ROLE_ADMIN;
