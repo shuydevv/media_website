@@ -325,6 +325,31 @@ public function allManualTasksClosedForMentor(): bool
 }
 
 /**
+ * ИИ-статус работы для списка на /mentor/submissions: сколько письменных
+ * заданий уже с черновиком ИИ (ready), сколько ждут ИИ-проверки — выгружены
+ * в Claude Desktop или в пачке API (waiting), из всех письменных (total).
+ *
+ * @return array{ready:int, waiting:int, total:int}
+ */
+public function aiDraftSummary(): array
+{
+    $drafts = $this->ai_drafts ?? [];
+    $ready = $waiting = 0;
+    $tasks = $this->getManualTasks();
+
+    foreach ($tasks as $idx => $t) {
+        $draft = $drafts[$t->id ?? ("t_manual_{$idx}")] ?? [];
+        if (isset($draft['score'])) {
+            $ready++;
+        } elseif (in_array($draft['status'] ?? null, ['exported', 'pending'], true)) {
+            $waiting++;
+        }
+    }
+
+    return ['ready' => $ready, 'waiting' => $waiting, 'total' => count($tasks)];
+}
+
+/**
  * Все ли письменные задания «закрыты» для АДМИНА:
  * — должны быть фактические данные (skipped НЕ считается закрытием).
  */

@@ -9,6 +9,7 @@
 """
 
 import json
+import os
 import sys
 
 INPUT_FORMAT = "poltavskiy-homework-check/v1"
@@ -32,6 +33,16 @@ def main(input_path, results_path, output_path):
         export = json.load(f)
     if export.get("format") != INPUT_FORMAT:
         sys.exit(f"{input_path}: это не файл выгрузки ({INPUT_FORMAT})")
+
+    version_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "VERSION")
+    if os.path.exists(version_path):
+        with open(version_path, encoding="utf-8") as f:
+            skill_version = f.read().strip()
+        if export.get("rules_version") and export["rules_version"] != skill_version:
+            print(
+                f"Предупреждение: навык версии {skill_version}, а выгрузка сделана по правилам "
+                f"{export['rules_version']} — навык устарел, его нужно скачать в кабинете заново."
+            )
 
     items = {item["id"]: item for item in export["items"]}
 
@@ -99,7 +110,7 @@ def main(input_path, results_path, output_path):
         )
 
     review = sum(1 for r in out if r["needs_human_review"])
-    print(f"Готово: {output_path} — {len(out)} заданий, «проверьте сами»: {review}")
+    print(f"Готово: {output_path} — заданий: {len(out)}, «проверьте сами»: {review}")
 
 
 if __name__ == "__main__":

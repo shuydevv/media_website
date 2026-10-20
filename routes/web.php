@@ -559,6 +559,8 @@ Route::prefix('mentor/review')
         Route::post('/ai-batch', [\App\Http\Controllers\Mentor\AiBatchController::class, 'store'])->name('ai_batch');
         Route::post('/ai-desktop/export', [\App\Http\Controllers\Mentor\AiDesktopController::class, 'export'])->name('ai_desktop.export');
         Route::post('/ai-desktop/import', [\App\Http\Controllers\Mentor\AiDesktopController::class, 'import'])->name('ai_desktop.import');
+        Route::post('/ai-desktop/{batch}/redownload', [\App\Http\Controllers\Mentor\AiDesktopController::class, 'redownload'])->whereNumber('batch')->name('ai_desktop.redownload');
+        Route::post('/ai-desktop/{batch}/cancel', [\App\Http\Controllers\Mentor\AiDesktopController::class, 'cancel'])->whereNumber('batch')->name('ai_desktop.cancel');
         Route::get('/ai-desktop/skill', [\App\Http\Controllers\Mentor\AiDesktopController::class, 'skill'])->name('ai_desktop.skill');
         Route::get('/{submission}', [SubmissionReviewController::class, 'show'])->name('show');
 

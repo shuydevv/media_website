@@ -76,9 +76,18 @@ class SubmissionController extends Controller
         }
 
         // Проверка через Claude Desktop (выгрузка/загрузка файла) — только админ.
-        $aiDesktop = (int) $user->role === \App\Models\User::ROLE_ADMIN
-            ? app(\App\Service\Homework\DesktopGradingExchange::class)->stats($queue)
-            : null;
+        $aiDesktop = null;
+        if ((int) $user->role === \App\Models\User::ROLE_ADMIN) {
+            $aiDesktop = app(\App\Service\Homework\DesktopGradingExchange::class)->stats($queue) + [
+                'rules_version' => app(\App\Service\Homework\DesktopGradingSkill::class)->version(),
+                // Статистика пересчитывается не чаще раза в 10 минут.
+                'quality' => \Illuminate\Support\Facades\Cache::remember(
+                    'ai_grading_stats',
+                    600,
+                    fn () => app(\App\Service\Homework\AiGradingStats::class)->summary(),
+                ),
+            ];
+        }
 
         $subs = Submission::with(['user','homework'])->latest()->paginate(20);
         return view('mentor.submissions.index', ['submissions' => $subs, 'mine' => $mine, 'queue' => $queue, 'retrying' => $retrying, 'skipped' => $skipped, 'aiBatch' => $aiBatch, 'aiDesktop' => $aiDesktop], );

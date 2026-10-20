@@ -91,7 +91,7 @@ class ClaudeGrader
 
         // Пустой ответ проверять моделью незачем.
         if (trim($task['student_answer']) === '') {
-            return $this->result(0, 'Ответ отсутствует.', 'Ты не дал ответ на это задание.', false, '', [], [], [], 'none');
+            return $this->result(0, 'Ответ отсутствует.', 'Ответа на это задание нет.', false, '', [], [], [], 'none');
         }
 
         $message = $this->client()->beta->messages->create(

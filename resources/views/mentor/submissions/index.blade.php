@@ -3,6 +3,12 @@
 @php
   $queueChecked = $queue->where('status', 'checked');
   $queuePending = $queue->where('status', '!=', 'checked');
+
+  // «Сначала с ИИ-черновиком»: такие работы проверять быстрее.
+  $aiFirst = request()->boolean('ai_first');
+  if ($aiFirst) {
+      $queuePending = $queuePending->sortByDesc(fn ($s) => $s->aiDraftSummary()['ready'] > 0)->values();
+  }
 @endphp
 
 @section('content')
@@ -18,40 +24,7 @@
 
   {{-- ИИ-проверка через Claude Desktop: выгрузить порцию → проверить скиллом → загрузить результат --}}
   @if($aiDesktop)
-    <div class="mb-6 rounded-2xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm text-purple-900">
-      <div class="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div class="font-medium">ИИ-проверка через Claude Desktop</div>
-          @if($aiDesktop['tasks'] > 0)
-            <div>Ждут проверки: {{ $aiDesktop['tasks'] }} зад. в {{ $aiDesktop['submissions'] }} раб. Выгрузка — порциями примерно по {{ \App\Service\Homework\DesktopGradingExchange::PORTION }} заданий, работа ученика целиком.</div>
-          @else
-            <div>Новых письменных заданий для выгрузки нет.</div>
-          @endif
-          @foreach($aiDesktop['open'] as $open)
-            <div class="text-purple-700">Ждёт результата: {{ $open->external_id }} — {{ $open->request_count }} зад., выгружено {{ $open->created_at->format('d.m H:i') }}</div>
-          @endforeach
-          <a href="{{ route('mentor.review.ai_desktop.skill') }}" class="underline text-purple-700">Скачать скилл для Claude</a>
-        </div>
-
-        <div class="flex flex-col gap-2">
-          @if($aiDesktop['tasks'] > 0)
-            <form method="POST" action="{{ route('mentor.review.ai_desktop.export') }}">
-              @csrf
-              <button type="submit" class="w-full px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700">
-                Выгрузить порцию
-              </button>
-            </form>
-          @endif
-          <form method="POST" action="{{ route('mentor.review.ai_desktop.import') }}" enctype="multipart/form-data" class="flex items-center gap-2">
-            @csrf
-            <input type="file" name="result" accept=".json,application/json" required class="text-xs max-w-[12rem]">
-            <button type="submit" class="px-3 py-2 rounded-lg border-2 border-purple-300 text-purple-700 hover:bg-purple-100">
-              Загрузить результат
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
+    @include('mentor.submissions.partials.ai-desktop')
   @endif
 
   {{-- ИИ-проверка пачкой через API: все непроверенные письменные задания из очереди --}}
@@ -137,6 +110,7 @@
             <div class="text-sm text-gray-600">
               Ученик: {{ $s->user->name ?? ('ID '.$s->user_id) }}
             </div>
+            @include('mentor.submissions.partials.ai-badge', ['submission' => $s])
           </div>
           <div class="text-sm text-amber-700">
             Проверить до: {{ optional($s->lock_expires_at)->format('H:i') }}
@@ -150,7 +124,13 @@
 
 {{-- Очередь доступных --}}
 <div>
-  <h2 class="text-lg font-semibold mb-3">Доступные к проверке</h2>
+  <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+    <h2 class="text-lg font-semibold">Доступные к проверке</h2>
+    <a href="{{ request()->fullUrlWithQuery(['ai_first' => $aiFirst ? null : 1]) }}"
+       class="text-sm {{ $aiFirst ? 'text-green-700 font-medium' : 'text-gray-600' }} underline">
+      {{ $aiFirst ? '✓ Сначала с ИИ-черновиком' : 'Сначала с ИИ-черновиком' }}
+    </a>
+  </div>
 
   {{-- Pending --}}
   @forelse($queuePending as $s)
@@ -166,6 +146,7 @@
               Ученик перерешивает — новая попытка ещё не отправлена
             </div>
           @endif
+          @include('mentor.submissions.partials.ai-badge', ['submission' => $s])
         </div>
         <div class="text-sm text-gray-500">Статус: {{ $s->status }}</div>
       </div>
