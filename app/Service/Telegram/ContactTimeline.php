@@ -42,9 +42,11 @@ final class ContactTimeline
             $add($contact->slot($bonus, 'opened_at'), '👀', 'Открыл '.$prefix.$title);
 
             $progress = (int) $contact->slot($bonus, 'progress');
-            if ($progress > 0 && $contact->slot($bonus, 'last_watch_at')) {
+            $watched = (int) $contact->slot($bonus, 'watch_seconds');
+            if ($watched > 0 && $contact->slot($bonus, 'last_watch_at')) {
                 $add($contact->slot($bonus, 'last_watch_at'), '⏸', 'Смотрел '.$prefix.$title, 'action',
-                    "посмотрел {$progress}%, остановился на ".self::clock((int) $contact->slot($bonus, 'position')));
+                    'смотрел '.self::clock($watched).($progress > 0 ? " ({$progress}%)" : '')
+                    .', остановился на '.self::clock((int) $contact->slot($bonus, 'position')));
             }
             $add($contact->slot($bonus, 'watched_at'), '✅', 'Досмотрел '.$prefix.$title.' до 80%');
 

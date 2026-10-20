@@ -11,7 +11,13 @@
             <span class="text-zinc-400">не открывал</span>
         @else
             открыл
-            @if ((int) $c->slot($bonus, 'progress') > 0) · {{ (int) $c->slot($bonus, 'progress') }}% @endif
+            {{-- Время — реально проигранное в плеере (без перемотки); % — если плеер сообщил длительность. --}}
+            @php($watched = (int) $c->slot($bonus, 'watch_seconds'))
+            @if ($watched > 0)
+                · смотрел {{ $watched >= 60 ? intdiv($watched, 60).' мин' : $watched.' с' }}@if ((int) $c->slot($bonus, 'progress') > 0) ({{ (int) $c->slot($bonus, 'progress') }}%)@endif
+            @else
+                · <span class="text-zinc-400">просмотр не зафиксирован</span>
+            @endif
             @if ($rating) · {{ \App\Service\Telegram\FunnelTexts::ratingLabel($rating) }}@if ($c->slot($bonus, 'rating_source') === 'site') <span class="text-zinc-400">(сайт)</span>@endif @endif
         @endif
     </div>

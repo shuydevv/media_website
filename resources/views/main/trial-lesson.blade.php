@@ -131,6 +131,12 @@
               if (START_AT > 0 && player.seekTo) { try { player.seekTo(START_AT); } catch (e) {} }
             });
             player.on(E.DurationChange, setDuration);
+            // Длительность нужна для %: не пришла в Loaded/DurationChange —
+            // спрашиваем у плеера, как только видео пошло.
+            player.on(E.Playing, function () {
+              if (duration > 0 || !player.getDuration) return;
+              try { player.getDuration().then(function (d) { d = Number(d); if (isFinite(d) && d > 0) duration = d; }).catch(function () {}); } catch (e) {}
+            });
             player.on(E.TimeUpdate, function (ev) {
               var t = Number(data(ev).currentTime);
               if (!isFinite(t)) return;
