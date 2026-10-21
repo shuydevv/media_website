@@ -508,8 +508,10 @@
                       title="Сохранить балл, обоснование и комментарий ИИ как оценку куратора">Принять оценку ИИ</button>
             </div>
             <div class="ai-review-reason mt-1 text-xs text-amber-900 {{ !empty($aiDraft['review_reason']) && !empty($aiDraft['needs_review']) ? '' : 'hidden' }}">{{ $aiDraft['review_reason'] ?? '' }}</div>
-            <details class="ai-elements mt-1 {{ !empty($aiDraft['elements']) ? '' : 'hidden' }}">
-              <summary class="cursor-pointer select-none text-xs">Разбор по элементам</summary>
+            {{-- Разбор нужен куратору, когда ИИ не уверен (раскрыт сразу); иначе — тихая ссылка. --}}
+            @php $aiNeedsReview = !empty($aiDraft['needs_review']); @endphp
+            <details class="ai-elements mt-1 {{ !empty($aiDraft['elements']) ? '' : 'hidden' }}" @if($aiNeedsReview) open @endif>
+              <summary class="ai-elements-summary cursor-pointer select-none text-xs {{ $aiNeedsReview ? '' : 'text-gray-500' }}">{{ $aiNeedsReview ? 'Разбор по элементам' : 'почему такой балл' }}</summary>
               <ul class="ai-elements-list mt-1 grid gap-1 text-xs">
                 @foreach(($aiDraft['elements'] ?? []) as $el)
                   <li>{{ !empty($el['counted']) ? '✓' : '✗' }} <b>{{ $el['element'] ?? '' }}</b> — {{ $el['reason'] ?? '' }}</li>
@@ -756,10 +758,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const panel = card.querySelector(`.card-tab-panel[data-tab="${tab.dataset.tab}"]`);
     const wasOpen = panel && !panel.classList.contains('hidden');
     card.querySelectorAll('.card-tab-panel').forEach((p) => p.classList.add('hidden'));
-    card.querySelectorAll('.card-tab').forEach((t) => t.classList.remove('bg-gray-900', 'text-white', 'border-gray-900'));
+    // У активной вкладки свой hover: общий hover:bg-gray-50 давал белый текст на светлом фоне.
+    const ACTIVE = ['bg-gray-900', 'text-white', 'border-gray-900', 'hover:bg-gray-700'];
+    card.querySelectorAll('.card-tab').forEach((t) => {
+      t.classList.remove(...ACTIVE);
+      t.classList.add('hover:bg-gray-50');
+    });
     if (panel && !wasOpen) {
       panel.classList.remove('hidden');
-      tab.classList.add('bg-gray-900', 'text-white', 'border-gray-900');
+      tab.classList.remove('hover:bg-gray-50');
+      tab.classList.add(...ACTIVE);
     }
   });
 
@@ -1274,7 +1282,12 @@ document.addEventListener('DOMContentLoaded', () => {
             li.append((el.counted ? '✓ ' : '✗ '), b, ' — ' + (el.reason || ''));
             return li;
           }));
-          panel.querySelector('.ai-elements').classList.toggle('hidden', !(data.elements || []).length);
+          const details = panel.querySelector('.ai-elements');
+          details.classList.toggle('hidden', !(data.elements || []).length);
+          details.open = !!data.needs_review;
+          const summary = details.querySelector('.ai-elements-summary');
+          summary.textContent = data.needs_review ? 'Разбор по элементам' : 'почему такой балл';
+          summary.classList.toggle('text-gray-500', !data.needs_review);
         }
 
         // Свежий черновик ИИ ещё не оценка: согласие с ним — кнопка «Принять»
