@@ -247,7 +247,9 @@
     } elseif ($allCorrect) {
         $verdict = 'Без ошибок';
     } else {
-        $verdict = $errorCount . ' ' . $plural($errorCount, ['задание', 'задания', 'заданий']) . ' с ошибками';
+        // «1 задание с ошибкой», «2 задания с ошибками», «21 задание с ошибкой».
+        $verdict = $errorCount . ' ' . $plural($errorCount, ['задание', 'задания', 'заданий'])
+            . ' с ' . $plural($errorCount, ['ошибкой', 'ошибками', 'ошибками']);
     }
   @endphp
   <x-ui.card class="mb-8 !p-5 sm:!p-6">
