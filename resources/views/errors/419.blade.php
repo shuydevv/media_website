@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Сессия истекла — {{ config('app.name', 'Школа Полтавского') }}</title>
+    <link rel="icon" href="/favicon.ico?v=2" sizes="any">
     @vite('resources/css/app.css')
 </head>
 <body class="min-h-screen flex items-center justify-center bg-zinc-50 px-4">

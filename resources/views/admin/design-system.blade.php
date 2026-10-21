@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Дизайн-система — текущее состояние</title>
+    <link rel="icon" href="/favicon.ico?v=2" sizes="any">
     @vite('resources/css/app.css')
     <style>
         /* Служебная страница-каталог, не часть студенческого/админского UI —

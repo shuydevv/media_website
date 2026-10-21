@@ -1,6 +1,8 @@
 {{-- resources/views/thank-you.blade.php --}}
 @extends('layouts.main')
 
+@section('title', 'Спасибо за заявку — Школа Полтавского')
+
 @section('content')
   <div class="max-w-2xl mx-auto py-20 text-center mt-12 px-3">
     {{-- Один текст для всех: связь пока всегда через Telegram. --}}

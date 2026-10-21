@@ -3,7 +3,7 @@
      считается повторением и на расписание не влияет. --}}
 @extends('layouts.main')
 
-@section('title', $term->title)
+@section('title', $term->title.' — Школа Полтавского')
 
 @section('content')
 <div class="max-w-3xl mx-auto px-3 sm:px-4 py-5 sm:py-6">

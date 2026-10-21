@@ -1,5 +1,7 @@
 @extends('layouts.main')
 
+@section('title', 'Оплата курса — Школа Полтавского')
+
 @php
     use App\Support\Money;
 @endphp

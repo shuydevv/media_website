@@ -7,7 +7,8 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Школа Полтавского') }}</title>
+    <title>@yield('title', config('app.name', 'Школа Полтавского'))</title>
+    <link rel="icon" href="/favicon.ico?v=2" sizes="any">
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">

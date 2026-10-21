@@ -1,6 +1,8 @@
 {{-- resources/views/student/dashboard.blade.php --}}
 @extends('layouts.main') {{-- замени на свой layout, если другой --}}
 
+@section('title', 'Личный кабинет — Школа Полтавского')
+
 @section('content')
 <div class="max-w-6xl mx-auto px-4 py-6">
 

@@ -1,5 +1,7 @@
 @extends('layouts.main')
 
+@section('title', $lesson->title.' — Школа Полтавского')
+
 @section('back_url', route('student.courses.show', $course))
 
 @section('content')

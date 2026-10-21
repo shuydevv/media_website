@@ -1,5 +1,7 @@
 @extends('layouts.main')
 
+@section('title', 'Доступ к курсу приостановлен — Школа Полтавского')
+
 @section('content')
 <div id="lab-door-overlay" class="fixed inset-0 z-[999] overflow-hidden" aria-hidden="true">
     <div id="lab-door-left" class="lab-door lab-door-left">

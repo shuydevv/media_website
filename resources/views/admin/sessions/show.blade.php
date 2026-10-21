@@ -1,5 +1,7 @@
 @extends('admin.layouts.main')
 
+@section('title', 'Сессия')
+
 @section('content')
     <div>
         {{-- @dd($categories) --}}

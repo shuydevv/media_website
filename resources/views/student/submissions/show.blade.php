@@ -1,7 +1,7 @@
 {{-- resources/views/student/submissions/show.blade.php --}}
 @extends('layouts.main')
 
-@section('title', $homework->title ?? 'Домашнее задание')
+@section('title', ($homework->title ?? 'Домашнее задание').' — Школа Полтавского')
 @section('back_url', route('student.courses.show', $submission->homework?->lesson?->courseSession?->course))
 
 @section('content')

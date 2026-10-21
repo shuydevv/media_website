@@ -1,5 +1,7 @@
 @extends('layouts.main')
 
+@section('title', 'Код из письма — Школа Полтавского')
+
 @section('content')
 <div class="max-w-md mx-auto px-4 pt-16 pb-8">
   @if (session('status'))

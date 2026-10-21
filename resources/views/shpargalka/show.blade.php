@@ -1,6 +1,6 @@
 @extends('layouts.main')
 @section('title')
-{{$material->title}}
+{{$material->title}} — Школа Полтавского
 @endsection
 @section('description')
 {{$material->description}}

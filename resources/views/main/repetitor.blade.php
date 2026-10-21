@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Школа Александра Полтавского</title>
+  <title>Репетитор по истории и обществознанию — Александр Полтавский</title>
+  <link rel="icon" href="/favicon.ico?v=2" sizes="any">
   {{-- Раньше этот <link> был обычным блокирующим stylesheet: до ответа cdn.jsdelivr.net
        страница вообще ничего не рисовала (белый/чёрный экран на нестабильной мобильной
        сети — та же причина, что чинили в layouts/main.blade.php). rel="preload" грузит

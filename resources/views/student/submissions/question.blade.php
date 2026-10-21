@@ -1,6 +1,6 @@
 @extends('layouts.main')
 
-@section('title', $homework->title ?? 'Домашнее задание')
+@section('title', ($homework->title ?? 'Домашнее задание').' — Школа Полтавского')
 
 @section('content')
 <div id="wizard-app">

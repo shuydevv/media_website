@@ -1,5 +1,7 @@
 @extends('layouts.main')
 
+@section('title', 'Ваши данные — Школа Полтавского')
+
 @section('content')
 <div class="max-w-md mx-auto p-6 bg-white rounded-xl border mt-8">
   <h1 class="text-2xl font-medium sans md:mb-6 mb-4">Введите свои данные</h1>

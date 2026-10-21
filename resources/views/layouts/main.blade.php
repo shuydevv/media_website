@@ -5,7 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>@yield('title')</title>
+        <title>@yield('title', 'Школа Полтавского')</title>
+        <link rel="icon" href="/favicon.ico?v=2" sizes="any">
         <meta name="description" content="@yield('description')" />
         {{-- Open Graph и т.п. — превью ссылки в мессенджерах (см. main/trial-lesson). --}}
         @stack('meta')

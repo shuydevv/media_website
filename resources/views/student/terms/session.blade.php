@@ -9,7 +9,7 @@
      CDN) тренажёр работает так же, просто без движения. --}}
 @extends('layouts.main')
 
-@section('title', $kindLabel)
+@section('title', $kindLabel.' — Школа Полтавского')
 
 {{-- Выход из сессии — стрелка «назад» в шапке, как на других страницах
      ученика (partials/student-back-button). Прогресс сохраняется по ходу

@@ -4,6 +4,8 @@
      Один пробник = одна карточка (не по попытке), сетка в 2 колонки. --}}
 @extends('layouts.main')
 
+@section('title', 'Пробники — Школа Полтавского')
+
 @section('content')
 <div class="max-w-5xl mx-auto px-4 py-6">
 

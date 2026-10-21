@@ -4,6 +4,8 @@
      rounded-2xl карточки, цветные бейджи по типу, амбер-акцент. --}}
 @extends('layouts.main')
 
+@section('title', 'Уведомления — Школа Полтавского')
+
 @section('content')
 <div class="max-w-4xl mx-auto px-4 py-6">
 

@@ -1,5 +1,7 @@
 @extends('layouts.main')
 
+@section('title', 'Домашки к проверке — Школа Полтавского')
+
 @php
   $queueChecked = $queue->where('status', 'checked');
   $queuePending = $queue->where('status', '!=', 'checked');

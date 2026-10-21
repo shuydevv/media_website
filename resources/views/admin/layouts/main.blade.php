@@ -63,6 +63,7 @@
     <meta name="robots" content="noindex">
 
     <title>@yield('title', 'Админка') — Школа Полтавского</title>
+    <link rel="icon" href="/favicon.ico?v=2" sizes="any">
 
     @vite('resources/css/app.css')
     @stack('head')

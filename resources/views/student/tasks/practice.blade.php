@@ -4,6 +4,8 @@
      вопроса рендерит тот же partial, что и визард/результаты домашки. --}}
 @extends('layouts.main')
 
+@section('title', 'Банк заданий — Школа Полтавского')
+
 @php
   $isManual = !$task->isAutoGradable();
   $hintText = \App\Support\Text::normalize($task->hint ?? null);

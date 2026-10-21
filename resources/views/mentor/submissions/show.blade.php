@@ -1,6 +1,8 @@
 {{-- resources/views/mentor/review/show.blade.php --}}
 @extends('layouts.main')
 
+@section('title', 'Проверка домашней работы — Школа Полтавского')
+
 @section('content')
 
 @php
