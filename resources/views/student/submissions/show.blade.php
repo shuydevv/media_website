@@ -20,21 +20,19 @@
       ->map(fn($t) => is_array($t) ? (object)$t : $t)
       ->values()
       ->map(function ($t, $origIdx) {
-          // origIdx хранит позицию ДО сортировки — по ней (а не по $i после
-          // сортировки) строятся fallback-ключи t_auto_/t_manual_/t_{$i}
-          // для поиска в $perTaskRes, когда у задания нет id.
+          // origIdx хранит позицию ДО сортировки — по ней строится
+          // fallback-ключ t_{$i} для поиска в $perTaskRes, когда у задания нет id.
           $t->_origIdx = $origIdx;
           return $t;
       })
       ->sortBy(fn($t) => [(int)($t->order ?? PHP_INT_MAX), $t->_origIdx])
       ->values();
-    $storageUrl = function ($path) {
+
+  $storageUrl = function ($path) {
       if (!$path) return null;
       $isFull = \Illuminate\Support\Str::startsWith($path, ['http://','https://','/storage/','data:']);
       return $isFull ? $path : \Illuminate\Support\Facades\Storage::url($path);
   };
-
-  
 
   // Типы, проверяемые вручную
   $manualTypes = \App\Models\HomeworkTask::MANUAL_TYPES;
@@ -54,7 +52,7 @@
   // куратору нечего проверять) — всё ниже по шаблону читает уже $perTaskRes.
   if ($submission->status !== 'checked') {
       foreach ($manualTasks as $mt) {
-          $mtid = $mt->id ?? ("t_manual_{$mt->_origIdx}");
+          $mtid = $mt->id ?? ("t_{$mt->_origIdx}");
           $mAns = $answers[$mtid] ?? null;
           if (is_scalar($mAns) && trim((string)$mAns) !== '') {
               unset($perTaskRes[$mtid]);
@@ -62,84 +60,92 @@
       }
   }
 
-  $getPerTask = function($taskId, $key, $default = null) use ($perTaskRes) {
-      return $taskId !== null ? ($perTaskRes[$taskId][$key] ?? $default) : $default;
-  };
+  // Одна строка на задание — статус, балл, номер. Из неё строятся и полоса
+  // плиток в шапке, и счётчики, и фильтр разбора, чтобы все три места
+  // гарантированно совпадали.
+  //   ok / partial / fail — по баллу;
+  //   wait — ручное задание без оценки куратора (или пропущенное им).
+  $taskRows = $tasksCol->map(function ($t, $i) use ($perTaskRes, $manualTypes) {
+      $tid      = $t->id ?? ("t_{$t->_origIdx}");
+      $isManual = in_array($t->type ?? '', $manualTypes, true);
+      $max      = (int)($t->max_score ?? 1);
+      $row      = $perTaskRes[$tid] ?? [];
+      $hasScore = array_key_exists('score', $row) && $row['score'] !== null;
+      $skipped  = (bool)($row['skipped'] ?? false);
 
-  $maxOf = function($coll) {
-      return (int) $coll->sum(fn($t) => (int)($t->max_score ?? 1));
-  };
+      if ($isManual && (!$hasScore || $skipped)) {
+          $status = 'wait';
+          $score  = null;
+      } else {
+          $score  = (int)($row['score'] ?? 0);
+          $status = $score >= $max ? 'ok' : ($score > 0 ? 'partial' : 'fail');
+      }
 
+      return (object)[
+          'task'     => $t,
+          'tid'      => $tid,
+          'no'       => $t->order ?? ($i + 1),
+          'isManual' => $isManual,
+          'max'      => $max,
+          'score'    => $score,
+          'status'   => $status,
+      ];
+  });
+
+  $counts = ['ok' => 0, 'partial' => 0, 'fail' => 0, 'wait' => 0];
+  foreach ($taskRows as $r) $counts[$r->status]++;
+  $errorCount = $counts['partial'] + $counts['fail'];
+
+  $hasPendingManual   = $counts['wait'] > 0;
+  $studentStatusLabel = $hasPendingManual ? 'Ожидает проверки' : 'Проверено';
+
+  $maxOf = fn($coll) => (int) $coll->sum(fn($t) => (int)($t->max_score ?? 1));
   $autoMax   = max(0, $maxOf($autoTasks));
   $manualMax = max(0, $maxOf($manualTasks));
 
   $autoScore = !is_null($submission->autocheck_score)
-                ? (int)$submission->autocheck_score
-                : (int)$autoTasks->sum(function($t) use ($getPerTask) {
-                    $tid = $t->id ?? null;
-                    return (int)$getPerTask($tid, 'score', 0);
-                  });
+      ? (int)$submission->autocheck_score
+      : (int)$taskRows->where('isManual', false)->sum('score');
 
-$manualScore = ($submission->status === 'checked' && !is_null($submission->manual_score))
-  ? (int)$submission->manual_score
-  : (int)$manualTasks->sum(function($t) use ($perTaskRes) {
-      $tid = $t->id ?? null;
-      if ($tid === null) return 0;
-
-      $row = $perTaskRes[$tid] ?? [];
-      $skipped   = (bool)($row['skipped'] ?? false);
-      $hasScore  = array_key_exists('score', $row) && $row['score'] !== null;
-      // $isChecked_task = $hasScore && !$skipped;
-
-      // учитываем только реально выставленные баллы (ключ score есть и не null) и не пропущенные
-      return (!$skipped && $hasScore) ? (int)$row['score'] : 0;
-    });
+  $manualScore = ($submission->status === 'checked' && !is_null($submission->manual_score))
+      ? (int)$submission->manual_score
+      : (int)$taskRows->where('isManual', true)->sum(fn($r) => $r->score ?? 0);
 
   $totalMax   = $autoMax + $manualMax;
-$totalScore = ($submission->status === 'checked' && !is_null($submission->total_score))
-  ? (int)$submission->total_score
-  : ($autoScore + $manualScore);
+  $totalScore = ($submission->status === 'checked' && !is_null($submission->total_score))
+      ? (int)$submission->total_score
+      : ($autoScore + $manualScore);
+  $totalPct = $totalMax > 0 ? (int) min(100, max(0, round($totalScore * 100 / $totalMax))) : 0;
 
-  $pct = function(int $score, int $max) {
-      return $max > 0 ? min(100, max(0, round($score * 100 / $max))) : 0;
+  // «1 балла / 2 баллов / 5 баллов» — родительный падеж после «из».
+  $plural = function (int $n, array $forms) {
+      $n = abs($n) % 100;
+      $n1 = $n % 10;
+      if ($n > 10 && $n < 20) return $forms[2];
+      if ($n1 > 1 && $n1 < 5) return $forms[1];
+      if ($n1 === 1) return $forms[0];
+      return $forms[2];
   };
-  $autoPct   = $pct($autoScore, $autoMax);
-  $manualPct = $pct($manualScore, $manualMax);
 
-  // Сводка по ручной части
-  $manualCheckedSum = 0;  // сумма баллов по проверенным
-  $manualPendingCnt = 0;  // количество ещё не проверенных (включая «пропущено»)
-  $manualPendingMax = 0;  // их суммарный максимум
-
-  // Единая цветовая палитра статусов для плиток и чипсов-счётчиков —
-  // классы apple-* из tailwind.config.js (см. /admin/design-system —
-  // раздел "Цветовая палитра") вместо разномастных кастомных пастелей.
-  $appleStatus = [
-    'ok'      => ['bg' => 'bg-apple-green-50',  'text' => 'text-apple-green-700',  'border' => 'border-apple-green-500'],
-    'partial' => ['bg' => 'bg-apple-orange-50', 'text' => 'text-apple-orange-700', 'border' => 'border-apple-orange-500'],
-    'fail'    => ['bg' => 'bg-apple-red-50',    'text' => 'text-apple-red-700',    'border' => 'border-apple-red-500'],
-    'wait'    => ['bg' => 'bg-zinc-100',        'text' => 'text-zinc-500',         'border' => 'border-zinc-300'],
+  // Палитра статусов — те же тона, что у x-ui.badge (см. /admin/design-system).
+  $tone = [
+    'ok'      => ['badge' => 'green',  'tile' => 'bg-apple-green-100 text-apple-green-800',   'dot' => 'bg-apple-green-500'],
+    'partial' => ['badge' => 'orange', 'tile' => 'bg-apple-orange-100 text-apple-orange-800', 'dot' => 'bg-apple-orange-500'],
+    'fail'    => ['badge' => 'red',    'tile' => 'bg-apple-red-50 text-apple-red-650',        'dot' => 'bg-apple-red-450'],
+    'wait'    => ['badge' => 'gray',   'tile' => 'bg-zinc-100 text-zinc-500',                 'dot' => 'bg-zinc-300'],
   ];
-@endphp
+  $legend = [
+    'ok'      => 'Верно',
+    'partial' => 'Частично',
+    'fail'    => 'Неверно',
+    'wait'    => 'Ждут проверки',
+  ];
 
-@php
-  // $tasksCol/$manualTasks/$perTaskRes уже посчитаны в блоке выше (отсортированы по order) —
-  // переиспользуем их, не пересобираем заново.
+  // Фильтр разбора: по умолчанию — только ошибки, если они есть и это не
+  // все задания подряд (тогда фильтр ничего не отсекает и не нужен).
+  $showFilter    = $errorCount > 0 && $errorCount < $taskRows->count();
+  $defaultFilter = $showFilter ? 'errors' : 'all';
 
-  // Есть ли хоть одно ручное задание, которое ещё не имеет результата или было пропущено
-  $hasPendingManual = $manualTasks->contains(function($t) use ($perTaskRes) {
-      $tid = $t->id ?? ("t_manual_{$t->_origIdx}");
-      $row = $perTaskRes[$tid] ?? [];
-      $hasScore = array_key_exists('score', $row);
-      $skipped  = (bool)($row['skipped'] ?? false);
-      return !$hasScore || $skipped;
-  });
-
-  $studentStatusLabel = $hasPendingManual ? 'Ожидает проверки' : 'Проверено';
-@endphp
-
-<div class="max-w-6xl mx-auto px-4 py-6">
-@php
   // Уже нормализовано контроллером (Homework::normalizeAttemptsAllowed) —
   // единственный источник истины на 2 попытки по умолчанию, тот же, что и
   // в SubmissionController::create().
@@ -150,21 +156,33 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
   $attemptsLeft = max(0, $attempts_allowed - max($attemptNo, $attempts->count()));
   $redoCount = $redoCount ?? 0;
   $retryInProgress = $retryInProgress ?? null;
+
+  // Утилита нормализации многострочного текста
+  $norm = function ($s) {
+      if ($s === null || $s === '') return '—';
+      $s = (string)$s;
+      $s = preg_replace('/^\xEF\xBB\xBF/u', '', $s);
+      $s = str_replace(["\r\n","\r"], "\n", $s);
+      $s = str_replace("\xC2\xA0", ' ', $s);
+      return trim($s) === '' ? '—' : $s;
+  };
 @endphp
 
+<div class="max-w-6xl mx-auto px-4 py-6">
+
   @if($errors->has('attempts'))
-    <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800 px-3 py-2 text-sm">
+    <div class="mb-4 rounded-xl border border-apple-orange-200 bg-apple-orange-50 text-apple-orange-800 px-4 py-3 text-sm">
       {{ $errors->first('attempts') }}
     </div>
   @endif
 
   @if($retryInProgress)
-    <div class="mb-6 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-      <div class="sans text-sm text-blue-900">
+    <div class="mb-4 rounded-xl border border-apple-blue-200 bg-apple-blue-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="text-sm text-apple-blue-800">
         Попытка № {{ $retryInProgress->attempt_no }} начата, но ещё не отправлена. Пока её не отправишь, в зачёте остаётся эта.
       </div>
       <div class="flex items-center gap-2 shrink-0">
-        <x-ui.button href="{{ route('student.submissions.create', $homework) }}" variant="accent" class="!bg-apple-blue-500 hover:!bg-apple-blue-600 sm:!px-4 sm:!py-2 sm:!text-sm">
+        <x-ui.button href="{{ route('student.submissions.create', $homework) }}" variant="accent" size="sm" class="!bg-apple-blue-500 hover:!bg-apple-blue-600 !py-2">
           Продолжить
         </x-ui.button>
         @if($retryInProgress->canBeCancelled())
@@ -174,340 +192,158 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
     </div>
   @endif
 
-  {{-- Заголовок (левая половина на ПК) + итог/действие (правая половина, по правому краю) --}}
-  <div class="mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-    <div class="min-w-0 sm:w-1/2">
-      <h1 class="sans-medium text-xl md:text-2xl text-zinc-900">
-        {{ $homework->title ?? 'Домашнее задание' }}
-      </h1>
-      <div class="sans text-sm text-zinc-500 mt-1">
-        Попытка № {{ $submission->attempt_no ?? 1 }} ·
-        Статус: <span class="sans-medium text-zinc-700">{{ $studentStatusLabel }}</span>
-      </div>
-    </div>
-
-    <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-stretch sm:justify-end gap-2 shrink-0 sm:w-1/2">
-      <div class="rounded-xl sm:h-full border border-zinc-200 bg-zinc-50 px-4 py-2.5 flex items-center justify-center sm:justify-start">
-        <span class="sans-medium text-base sm:text-sm text-zinc-900 whitespace-nowrap">{{ $totalScore }} / {{ $totalMax }} баллов</span>
-      </div>
-
-      @if($retryInProgress)
-        {{-- Продолжить/отменить — в плашке над результатом. --}}
-      @elseif($attemptsLeft > 0)
-        @if($redoCount > 0)
-          <x-ui.button href="{{ route('student.submissions.create', $homework) }}?retry=1&mode=mistakes" variant="accent" class="w-full sm:w-auto justify-center !bg-apple-blue-500 hover:!bg-apple-blue-600 sm:!px-4 sm:!py-2 sm:!text-sm" title="Верно решённые задания перенесутся в новую попытку">
-            Перерешать ошибки ({{ $redoCount }})
-          </x-ui.button>
+  {{-- ===== Итог: статус, общий балл, действие, карта заданий ===== --}}
+  <x-ui.card class="mb-8 !p-5 sm:!p-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <x-ui.badge :tone="$hasPendingManual ? 'orange' : 'green'">
+          @if($hasPendingManual)
+            <x-icon name="clock-stopwatch" class="w-3.5 h-3.5" />
+          @else
+            <x-icon name="check-circle" class="w-3.5 h-3.5" />
+          @endif
+          {{ $studentStatusLabel }}
+        </x-ui.badge>
+        @if($attempts->count() <= 1)
+          <span class="text-sm text-zinc-500">Попытка № {{ $attemptNo }}</span>
         @endif
-        <x-ui.button href="{{ route('student.submissions.create', $homework) }}?retry=1" variant="{{ $redoCount > 0 ? 'outline' : 'accent' }}" class="w-full sm:w-auto justify-center {{ $redoCount > 0 ? '' : '!bg-apple-blue-500 hover:!bg-apple-blue-600' }} sm:!px-4 sm:!py-2 sm:!text-sm">
-          {{ $redoCount > 0 ? 'Перерешать всю работу' : 'Перерешать работу' }}
-        </x-ui.button>
-        {{-- <div class="sans text-xs text-zinc-400 text-right">
-          У тебя есть еще одна попытка
-        </div> --}}
-      @else
-        <x-ui.button type="button" disabled class="w-full sm:w-auto justify-center sm:!px-4 sm:!py-3 sm:!text-sm">
-          Перерешать работу
-        </x-ui.button>
+      </div>
+
+      {{-- Переключатель между сданными попытками — сравнить, что изменилось. --}}
+      @if($attempts->count() > 1)
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-sm text-zinc-500 shrink-0">Попытки:</span>
+          <x-ui.tabs>
+            @foreach($attempts->sortBy('id') as $att)
+              <x-ui.tab :href="route('student.submissions.show', $att)" :active="$att->id === $submission->id">
+                № {{ $att->attempt_no ?? $loop->iteration }}
+                <span class="text-zinc-400">· {{ ($awaitingReview[$att->id] ?? false) ? 'на проверке' : (int) $att->total_score . ' б.' }}</span>
+              </x-ui.tab>
+            @endforeach
+          </x-ui.tabs>
+        </div>
       @endif
     </div>
-  </div>
 
-  {{-- Переключатель между сданными попытками — сравнить, что изменилось. --}}
-  @if($attempts->count() > 1)
-    <div class="mb-6 flex flex-wrap items-center gap-2">
-      <span class="sans text-sm text-zinc-500 mr-1">Попытки:</span>
-      @foreach($attempts->sortBy('id') as $att)
-        @php $isCurrent = $att->id === $submission->id; @endphp
-        <a href="{{ route('student.submissions.show', $att) }}"
-           @if($isCurrent) aria-current="page" @endif
-           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm {{ $isCurrent ? 'border-apple-blue-500 bg-apple-blue-50 text-apple-blue-700 sans-medium' : 'border-zinc-200 text-zinc-600 hover:bg-zinc-50' }}">
-          № {{ $att->attempt_no ?? $loop->iteration }}
-          <span class="{{ $isCurrent ? 'text-apple-blue-600' : 'text-zinc-400' }}">· {{ ($awaitingReview[$att->id] ?? false) ? 'на проверке' : (int) $att->total_score . ' б.' }}</span>
-        </a>
-      @endforeach
+    <h1 class="mt-4 text-xl md:text-2xl font-medium text-zinc-900">
+      {{ $homework->title ?? 'Домашнее задание' }}
+    </h1>
+
+    <div class="mt-5 flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div class="min-w-0 flex-1">
+        <div class="flex items-baseline flex-wrap gap-x-2">
+          <span class="text-5xl font-medium text-zinc-900 tabular-nums leading-none">{{ $totalScore }}</span>
+          <span class="text-base text-zinc-500">
+            из {{ $totalMax }} {{ $plural($totalMax, ['балла', 'баллов', 'баллов']) }} · {{ $totalPct }}%
+            @if($hasPendingManual)<span class="text-zinc-400">· пока без письменной части</span>@endif
+          </span>
+        </div>
+
+        <div class="mt-4 h-2 max-w-md rounded-full bg-zinc-100 overflow-hidden">
+          <div class="h-full rounded-full bg-apple-blue-500" style="width: {{ $totalPct }}%"></div>
+        </div>
+
+        <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-zinc-600">
+          @foreach($legend as $st => $label)
+            @if($counts[$st] > 0)
+              <span class="inline-flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full {{ $tone[$st]['dot'] }}"></span>
+                {{ $label }}: <span class="font-medium text-zinc-900 tabular-nums">{{ $counts[$st] }}</span>
+              </span>
+            @endif
+          @endforeach
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2 w-full md:w-auto md:items-end shrink-0">
+        @if($retryInProgress)
+          {{-- Продолжить/отменить — в плашке над результатом. --}}
+        @elseif($attemptsLeft > 0)
+          @if($redoCount > 0)
+            <x-ui.button href="{{ route('student.submissions.create', $homework) }}?retry=1&mode=mistakes" variant="accent" size="sm" class="!bg-apple-blue-500 hover:!bg-apple-blue-600" title="Верно решённые задания перенесутся в новую попытку">
+              Перерешать ошибки ({{ $redoCount }})
+            </x-ui.button>
+            <a href="{{ route('student.submissions.create', $homework) }}?retry=1" class="text-sm text-zinc-500 hover:text-zinc-900 text-center md:text-right py-1">
+              Перерешать всю работу
+            </a>
+          @else
+            <x-ui.button href="{{ route('student.submissions.create', $homework) }}?retry=1" variant="accent" size="sm" class="!bg-apple-blue-500 hover:!bg-apple-blue-600">
+              Перерешать работу
+            </x-ui.button>
+          @endif
+          <div class="text-xs text-zinc-400 text-center md:text-right">
+            {{ $attemptsLeft === 1 ? 'Осталась 1 попытка' : 'Осталось попыток: ' . $attemptsLeft }}
+          </div>
+        @else
+          <div class="text-sm text-zinc-500 text-center md:text-right">Попытки закончились</div>
+        @endif
+      </div>
     </div>
-  @endif
 
-  {{-- Две колонки --}}
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    {{-- Левая: автопроверка --}}
-    <x-ui.card>
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="sans-medium text-lg md:text-xl text-zinc-900">Первая часть</h2>
+    @if($hasPendingManual)
+      <div class="mt-5 flex items-start gap-2 rounded-xl bg-apple-orange-50 px-4 py-3 text-sm text-apple-orange-800">
+        <x-icon name="clock-stopwatch" class="w-4 h-4 mt-0.5 shrink-0" />
+        <span>Куратор ещё не проверил письменные задания ({{ $counts['wait'] }}). Итоговый балл обновится после проверки.</span>
       </div>
+    @endif
 
-@php
-  // Подсчёт статусов по автозаданиям
-  $autoStats = ['ok'=>0,'partial'=>0,'fail'=>0];
-  foreach ($autoTasks as $t) {
-      $tid   = $t->id ?? ("t_auto_{$t->_origIdx}");
-      $max   = (int)($t->max_score ?? 1);
-      $score = (int)($perTaskRes[$tid]['score'] ?? 0);
-      if ($score === $max)      $autoStats['ok']++;
-      elseif ($score > 0)       $autoStats['partial']++;
-      else                      $autoStats['fail']++;
-  }
-@endphp
-
-      {{-- Кольцо + чипсы-статусы под ним — в одной левой колонке; баллы за
-           задания — в правой колонке (без обтекания, обычный flex-row). --}}
-      <div class="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6">
-        <div class="flex flex-col items-center shrink-0">
-          <div class="relative w-[160px] h-[160px] md:w-[180px] md:h-[180px]">
-            <canvas
-              class="result-ring"
-              id="gauge-auto"
-              width="320" height="320"
-              data-percent="{{ $autoPct }}"
-              data-color="#AF52DE"
-              data-track="#F1E1F9"
-            ></canvas>
-            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <div class="sans-medium text-2xl text-zinc-900 leading-none">
-                {{ $autoScore }}<span class="text-base font-normal text-zinc-400">/{{ $autoMax }}</span>
-              </div>
-              <div class="sans text-xs text-zinc-400 mt-1.5">баллов</div>
-            </div>
-          </div>
-
-          {{-- Чипсы-статусы — под кольцом. На ПК — один столбик (друг под
-               другом), все чипсы одной ширины: inline-grid с одной колонкой
-               растягивает каждый элемент (justify-items: stretch по
-               умолчанию) до ширины самого широкого — колонка автоматически
-               сайзится по нему, т.к. контейнер inline-grid (shrink-to-fit).
-               На мобиле — обычный flex-wrap, ширина по содержимому. --}}
-          <div class="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs md:inline-grid md:grid-cols-1 md:gap-1.5">
-            <span class="{{ $appleStatus['ok']['bg'] }} {{ $appleStatus['ok']['text'] }} inline-flex items-center justify-center gap-1 px-2 py-1 rounded-full md:w-full">
-              <x-icon name="check-circle" class="w-3 h-3 shrink-0" /> Верно: {{ $autoStats['ok'] }}
-            </span>
-            <span class="{{ $appleStatus['partial']['bg'] }} {{ $appleStatus['partial']['text'] }} inline-flex items-center justify-center gap-1 px-2 py-1 rounded-full md:w-full">
-              <x-icon name="alert-circle" class="w-4 h-4 shrink-0" /> Частично: {{ $autoStats['partial'] }}
-            </span>
-            <span class="{{ $appleStatus['fail']['bg'] }} {{ $appleStatus['fail']['text'] }} inline-flex items-center justify-center gap-1 px-2 py-1 rounded-full md:w-full">
-              <x-icon name="x-circle" class="w-3 h-3 shrink-0" /> Неверно: {{ $autoStats['fail'] }}
-            </span>
-          </div>
-        </div>
-
-        <div class="flex-1 w-full">
-          <div class="sans text-sm font-medium text-zinc-600 mb-2">Баллы за задания:</div>
-          <div class="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-4 lg:grid-cols-5 gap-2">
-            @forelse($autoTasks as $i => $t)
-              @php
-                $tid   = $t->id ?? ("t_auto_{$t->_origIdx}");
-                $max   = (int)($t->max_score ?? 1);
-                $score = (int)($perTaskRes[$tid]['score'] ?? 0);
-
-                if ($score === $max)      $status = 'ok';
-                elseif ($score > 0)       $status = 'partial';
-                else                      $status = 'fail';
-                $tileColor = $appleStatus[$status];
-              @endphp
-
-              <div class="{{ $tileColor['bg'] }} flex flex-col items-center justify-center gap-0.5 rounded-lg aspect-square p-1.5">
-                <div class="text-[10px] font-medium text-zinc-500">
-                  № {{ $t->order ?? ($i+1) }}
-                </div>
-
-                {{-- Без обёрточного круга: check-circle/alert-circle/x-circle
-                     из Untitled UI уже сами нарисованы как круг с символом —
-                     border rounded-full поверх них рисовал второй, лишний круг. --}}
-                <div class="{{ $tileColor['text'] }}">
-                  @if($status === 'ok')
-                    <x-icon name="check-circle" class="w-3.5 h-3.5" />
-                  @elseif($status === 'partial')
-                    <x-icon name="alert-circle" class="w-3.5 h-3.5" />
-                  @else
-                    <x-icon name="x-circle" class="w-3.5 h-3.5" />
+    {{-- Карта заданий: цвет — статус, клик ведёт к разбору задания. Тестовую
+         и письменную части подписываем, только когда в работе есть обе. --}}
+    @if($taskRows->isNotEmpty())
+      @php
+        $groups = $taskRows->groupBy(fn($r) => $r->isManual ? 'manual' : 'auto');
+        $groupTitles = ['auto' => 'Тестовая часть', 'manual' => 'Письменная часть'];
+      @endphp
+      <div class="mt-6 pt-5 border-t border-zinc-100 space-y-4">
+        @foreach(['auto', 'manual'] as $g)
+          @continue(!isset($groups[$g]))
+          <div>
+            @if($groups->count() > 1)
+              <div class="text-xs text-zinc-500 mb-2">{{ $groupTitles[$g] }}</div>
+            @endif
+            <div class="flex flex-wrap gap-2">
+              @foreach($groups[$g] as $r)
+                <a href="#task-{{ $r->tid }}" data-task-link
+                   title="Задание {{ $r->no }}: {{ $r->status === 'wait' ? 'ждёт проверки' : $r->score . ' из ' . $r->max }}"
+                   class="{{ $tone[$r->status]['tile'] }} w-11 h-11 rounded-xl flex flex-col items-center justify-center hover:ring-2 hover:ring-zinc-300 transition">
+                  <span class="text-sm font-medium leading-none tabular-nums">{{ $r->no }}</span>
+                  @if($r->max > 1 && $r->status !== 'wait')
+                    <span class="text-xs leading-none mt-1 opacity-75 tabular-nums">{{ $r->score }}/{{ $r->max }}</span>
                   @endif
-                </div>
-
-                <span class="{{ $tileColor['text'] }} text-sm font-medium">
-                  {{ $score }}/{{ $max }}
-                </span>
-              </div>
-            @empty
-              <div class="text-sm text-zinc-500">Автопроверяемых заданий нет.</div>
-            @endforelse
-          </div>
-        </div>
-      </div>
-    </x-ui.card>
-
-    {{-- Правая: ручная проверка --}}
-    <x-ui.card>
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="sans-medium text-lg md:text-xl text-zinc-900">Вторая часть</h2>
-      </div>
-
-@php
-  $manualTotals = ['ok'=>0,'partial'=>0,'fail'=>0,'pending'=>0];
-
-  foreach ($manualTasks as $t) {
-      $tid = $t->id ?? ("t_manual_{$t->_origIdx}");
-      $max = max(0, (int)($t->max_score ?? 1));
-
-      $row     = $perTaskRes[$tid] ?? [];
-      $skipped = (bool)($row['skipped'] ?? false);
-      $hasRes  = array_key_exists('score', $row);
-
-      // Если нет результата или задача пропущена — «Ожидает»
-      if (!$hasRes || $skipped) {
-          $manualTotals['pending']++;
-          continue;
-      }
-
-      $score = (int)($row['score'] ?? null);
-
-      if ($max === 0) {
-          // Нулевой максимум: считаем как «pending» (или выбери нужную бизнес-логику)
-          $manualTotals['pending']++;
-      } elseif ($score >= $max) {
-          $manualTotals['ok']++;
-      } elseif ($score > 0) {
-          $manualTotals['partial']++;
-      } else {
-          $manualTotals['fail']++;
-      }
-  }
-@endphp
-
-      {{-- Кольцо + чипсы-статусы под ним — в одной левой колонке; баллы за
-           задания — в правой колонке (без обтекания). --}}
-      <div class="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6">
-        <div class="flex flex-col items-center shrink-0">
-          <div class="relative w-[160px] h-[160px] md:w-[180px] md:h-[180px]">
-            <canvas
-              class="result-ring"
-              id="gauge-manual"
-              width="320" height="320"
-              data-percent="{{ $manualPct }}"
-              data-color="#34C759"
-              data-track="#E3F8E8"
-            ></canvas>
-            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <div class="sans-medium text-2xl text-zinc-900 leading-none">
-                {{ $manualScore }}<span class="text-base font-normal text-zinc-400">/{{ $manualMax }}</span>
-              </div>
-              <div class="sans text-xs text-zinc-400 mt-1.5">баллов</div>
+                </a>
+              @endforeach
             </div>
           </div>
-
-          {{-- Чипсы-статусы (без отдельного «админ») — под кольцом. На ПК —
-               один столбик, все чипсы одной ширины (см. комментарий у
-               Первой части); на мобиле — flex-wrap по содержимому. --}}
-          <div class="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs md:inline-grid md:grid-cols-1 md:gap-1.5">
-            <span class="{{ $appleStatus['ok']['bg'] }} {{ $appleStatus['ok']['text'] }} inline-flex items-center justify-center gap-1 px-2 py-1 rounded-full md:w-full">
-              <x-icon name="check-circle" class="w-3 h-3 shrink-0" /> Верно: {{ $manualTotals['ok'] }}
-            </span>
-            <span class="{{ $appleStatus['partial']['bg'] }} {{ $appleStatus['partial']['text'] }} inline-flex items-center justify-center gap-1 px-2 py-1 rounded-full md:w-full">
-              <x-icon name="alert-circle" class="w-4 h-4 shrink-0" /> Частично: {{ $manualTotals['partial'] }}
-            </span>
-            <span class="{{ $appleStatus['fail']['bg'] }} {{ $appleStatus['fail']['text'] }} inline-flex items-center justify-center gap-1 px-2 py-1 rounded-full md:w-full">
-              <x-icon name="x-circle" class="w-3 h-3 shrink-0" /> Неверно: {{ $manualTotals['fail'] }}
-            </span>
-            <span class="{{ $appleStatus['wait']['bg'] }} {{ $appleStatus['wait']['text'] }} inline-flex items-center justify-center gap-1 px-2 py-1 rounded-full md:w-full">
-              <x-icon name="clock-stopwatch" class="w-3.5 h-3.5 shrink-0" /> Ожидает: {{ $manualTotals['pending'] }}
-            </span>
-          </div>
-        </div>
-
-        <div class="flex-1 w-full">
-          <div class="sans text-sm font-medium text-zinc-600 mb-2">Баллы за задания:</div>
-          <div class="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-4 lg:grid-cols-5 gap-2">
-            @forelse($manualTasks as $i => $t)
-              @php
-                $tid   = $t->id ?? ("t_manual_{$t->_origIdx}");
-                $max   = (int)($t->max_score ?? 1);
-
-                $row     = $perTaskRes[$tid] ?? [];
-                $score   = $row['score'] ?? null;             // может быть 0
-                $skipped = (bool)($row['skipped'] ?? false);
-
-                $hasResult = array_key_exists('score', $row); // «сохранено» (даже 0)
-                $isChecked = $hasResult && !$skipped;
-
-                // Плитка: по требованию — «пропущено» и «не начато» = одинаково серые
-                $tileStatus = 'wait';
-                $tileScoreText = '?';
-
-                if ($isChecked) {
-                    $scoreInt = (int)$score;
-                    if ($scoreInt === $max) {
-                        $tileStatus = 'ok';
-                    } elseif ($scoreInt > 0) {
-                        $tileStatus = 'partial';
-                    } else {
-                        $tileStatus = 'fail';
-                    }
-                    $tileScoreText = "{$scoreInt}/{$max}";
-                }
-                $tileColor = $appleStatus[$tileStatus];
-              @endphp
-
-              <div class="{{ $tileColor['bg'] }} flex flex-col items-center justify-center gap-0.5 rounded-lg aspect-square p-1.5">
-                <div class="text-[10px] font-medium text-zinc-500">
-                  № {{ $t->order ?? ($i+1) }}
-                </div>
-
-                {{-- Без обёрточного круга: эти иконки Untitled UI уже сами
-                     нарисованы как круг с символом — border rounded-full
-                     поверх них рисовал второй, лишний круг. --}}
-                <div class="{{ $tileColor['text'] }}">
-                  @if($tileStatus === 'ok')
-                    <x-icon name="check-circle" class="w-3.5 h-3.5" />
-                  @elseif($tileStatus === 'partial')
-                    <x-icon name="alert-circle" class="w-3.5 h-3.5" />
-                  @elseif($tileStatus === 'fail')
-                    <x-icon name="x-circle" class="w-3.5 h-3.5" />
-                  @else {{-- wait (универсальный для «не начато» и «пропущено») --}}
-                    <x-icon name="clock-stopwatch" class="w-3.5 h-3.5" />
-                  @endif
-                </div>
-
-                <span class="{{ $tileColor['text'] }} text-sm font-medium">{{ $tileScoreText }}</span>
-              </div>
-            @empty
-              <div class="text-sm text-zinc-500">Заданий для ручной проверки нет.</div>
-            @endforelse
-          </div>
-        </div>
+        @endforeach
       </div>
+    @endif
+  </x-ui.card>
 
-      {{-- Сводка по ручной части --}}
-      @if($manualPendingCnt > 0)
-      <div class="mt-4 p-3 rounded-lg bg-apple-orange-50 border border-apple-orange-100">
-        <div class="text-sm">
-          {{-- <div>
-            <strong>Проверено:</strong> {{ $manualCheckedSum }}
-            @if($manualMax>0) / {{ $manualMax }} @endif
-          </div> --}}
-            <div class="text-apple-orange-700">
-              Некоторые задания ещё на проверке. Итоговый результат обновится, когда задания будут проверены до конца.
-            </div>
-        </div>
-      </div>
+
+  {{-- ===== Разбор заданий ===== --}}
+  <div id="task-review">
+    <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <h2 class="text-lg md:text-xl font-medium text-zinc-900">Разбор заданий</h2>
+      @if($showFilter)
+        <x-ui.tabs>
+          <x-ui.tab data-review-filter="errors" :active="$defaultFilter === 'errors'">С ошибками · {{ $errorCount }}</x-ui.tab>
+          <x-ui.tab data-review-filter="all" :active="$defaultFilter === 'all'">Все · {{ $taskRows->count() }}</x-ui.tab>
+        </x-ui.tabs>
       @endif
-    </x-ui.card>
-  </div>
+    </div>
 
-
-  {{-- ===== Детализация по каждому заданию (под карточками результатов) ===== --}}
-<div class="mt-8">
-  <h3 class="sans-medium text-lg md:text-2xl text-zinc-900 mb-4">Разбор заданий</h3>
-
-  @forelse($tasksCol as $i => $t)
+  @forelse($taskRows as $r)
     @php
-      $tid          = $t->id ?? ("t_{$t->_origIdx}");
+      $t            = $r->task;
+      $tid          = $r->tid;
       $type         = (string)($t->type ?? 'unknown');
-      $max          = (int)($t->max_score ?? 1);
-      $orderMatters = (bool)($t->order_matters ?? in_array($type, ['matching','table'], true));
+      $max          = $r->max;
+      $status       = $r->status;
+      $isManual     = $r->isManual;
+      $isError      = in_array($status, ['partial', 'fail'], true);
 
       $row      = $perTaskRes[$tid] ?? [];
-      // КЛЮЧЕВОЕ: score считается «есть» только если ключ присутствует и он НЕ null
       $hasScore = array_key_exists('score', $row) && $row['score'] !== null;
-      $score    = $hasScore ? (int)$row['score'] : null;
       $skipped  = (bool)($row['skipped'] ?? false);
 
       // Ответы
@@ -516,91 +352,62 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
 
       // Пояснение куратора (может храниться в reason/comment)
       $mentorNote   = $row['comment'] ?? null;
-
       $mentorReason = $row['reason']  ?? '';
 
       // Медиа (для image_* типов)
-      $mediaPath  = $t->image_path ?? $t->image_path ?? null;
-      $mediaUrl   = $storageUrl($mediaPath);
+      $mediaUrl = $storageUrl($t->image_path ?? null);
 
-      // Статус бейджа. 'short' — компактная версия для мобиле (просто
-      // дробь без слова-статуса, статус и так виден по цвету), 'name' —
-      // полная версия для ПК.
-      $badge = [
-        'bg'    => 'bg-zinc-100',
-        'text'  => 'text-zinc-700',
-        'name'  => 'Ожидает проверки',
-        'short' => 'Ожидает проверки',
-      ];
-      if ($skipped || !$hasScore) {
-        $badge = ['bg'=>'bg-zinc-100','text'=>'text-zinc-700','name'=>'Ожидает проверки','short'=>'Ожидает проверки'];
-      } else {
-        if ($score >= $max) {
-          $badge = ['bg'=>'bg-apple-green-50','text'=>'text-apple-green-700','name'=>"Верно: {$score} / {$max}",'short'=>"{$score}/{$max}"];
-        } elseif ($score > 0) {
-          $badge = ['bg'=>'bg-apple-orange-50','text'=>'text-apple-orange-700','name'=>"Частично верно: {$score} / {$max}",'short'=>"{$score}/{$max}"];
-        } else {
-          $badge = ['bg'=>'bg-apple-red-50','text'=>'text-apple-red-700','name'=>"Неверно: 0 / {$max}",'short'=>"0/{$max}"];
-        }
-      }
+      $badgeText = match ($status) {
+        'ok'      => "Верно · {$r->score}/{$max}",
+        'partial' => "Частично · {$r->score}/{$max}",
+        'fail'    => "Неверно · {$r->score}/{$max}",
+        default   => 'Ожидает проверки',
+      };
+      $badgeShort = $status === 'wait' ? 'Ожидает проверки' : "{$r->score}/{$max}";
 
-      // Читабельные заголовки
-      $titleNo = $t->order ?? ($i + 1);
       $questionText = $t->question_text ?? null;
       $passageText  = $t->passage_text  ?? null;
-
-      // Утилита нормализации многострочного текста
-      $norm = function($s) {
-        if ($s === null || $s === '') return '—';
-        $s = (string)$s;
-        $s = preg_replace('/^\xEF\xBB\xBF/u', '', $s);
-        $s = str_replace(["\r\n","\r"], "\n", $s);
-        $s = str_replace("\xC2\xA0", ' ', $s);
-        return trim($s) === '' ? '—' : $s;
-      };
     @endphp
 
-    <x-ui.card class="mb-4">
-      <div class="flex items-center justify-between gap-2 mb-4 sm:mb-5">
-        <div class="flex items-center gap-3 sm:gap-4 min-w-0">
-          <span class="inline-block shrink-0 whitespace-nowrap px-2 py-0.5 text-xs rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700">
-            №{{ $titleNo }} в ЕГЭ
+    {{-- Верно решённые свёрнуты: ученику на этой странице нужны прежде всего ошибки. --}}
+    <div id="task-{{ $tid }}" data-task-card data-status="{{ $status }}"
+         class="scroll-mt-6 mb-3 {{ $defaultFilter === 'errors' && !$isError ? 'hidden' : '' }}">
+      <details class="group rounded-2xl border border-gray-200 bg-white" @if($status !== 'ok') open @endif>
+        <summary class="flex items-center justify-between gap-3 cursor-pointer list-none p-4 sm:px-5 [&::-webkit-details-marker]:hidden">
+          <span class="flex items-center gap-2 min-w-0">
+            <x-icon name="chevron-right" class="w-4 h-4 text-zinc-400 shrink-0 transition-transform group-open:rotate-90" />
+            <span class="text-base font-medium text-zinc-900">Задание {{ $r->no }}</span>
           </span>
-          <span class="sans-medium text-lg text-zinc-900 truncate">
-            <span class="sm:hidden">№{{ $titleNo }}</span>
-            <span class="hidden sm:inline">Задание №{{ $titleNo }}</span>
-          </span>
-        </div>
-        <span class="inline-flex items-center shrink-0 whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-medium {{ $badge['bg'] }} {{ $badge['text'] }}">
-          <span class="sm:hidden">{{ $badge['short'] }}</span>
-          <span class="hidden sm:inline">{{ $badge['name'] }}</span>
-        </span>
-      </div>
+          <x-ui.badge :tone="$tone[$status]['badge']" class="shrink-0">
+            <span class="sm:hidden">{{ $badgeShort }}</span>
+            <span class="hidden sm:inline">{{ $badgeText }}</span>
+          </x-ui.badge>
+        </summary>
+
+        <div class="px-4 pb-4 sm:px-5 sm:pb-5">
 
       {{-- Текст/медиа задания (если есть). Картиночные типы всегда попадают
            сюда, даже без текста и без реальной картинки — тогда ниже
            покажется заглушка вместо картинки, а не пустой блок. --}}
       @if($questionText || $passageText || $mediaUrl || in_array($type, ['image_auto','image_manual']))
-        <div class="mb-6 space-y-3">
+        <div class="mb-5 space-y-3">
           @if($passageText)
-            <div class="mb-6 p-3 rounded-lg bg-gray-50 border text-sm sm:text-base whitespace-pre-wrap">{{ $norm($passageText) }}</div>
+            <div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200 text-sm sm:text-base text-zinc-700 whitespace-pre-wrap">{{ $norm($passageText) }}</div>
           @endif
           @if($questionText)
-            <div class="sans text-sm sm:text-base text-zinc-700 whitespace-pre-wrap">{{ $norm($questionText) }}</div>
+            <div class="text-sm sm:text-base text-zinc-700 whitespace-pre-wrap">{{ $norm($questionText) }}</div>
           @endif
           {{-- Тот же принцип, что и в самом визарде (task-prompt.blade.php):
                если типу положена картинка, но её не загрузили — заглушка
                вместо пустоты. --}}
           @if(in_array($type, ['image_auto','image_manual']))
-            <div>
-              @if($mediaUrl)
-                <img src="{{ $mediaUrl }}" alt="" class="w-full max-h-[320px] object-contain rounded-lg border">
-              @else
-                <div class="w-full h-40 rounded-lg border border-gray-200 bg-gray-100 flex items-center justify-center text-gray-300">
-                  <x-icon name="image-01" class="w-10 h-10" />
-                </div>
-              @endif
-            </div>
+            @if($mediaUrl)
+              <img src="{{ $mediaUrl }}" alt="" class="w-full max-h-[320px] object-contain rounded-xl border border-zinc-200">
+            @else
+              <div class="w-full h-40 rounded-xl border border-zinc-200 bg-zinc-100 flex items-center justify-center text-zinc-300">
+                <x-icon name="image-01" class="w-10 h-10" />
+              </div>
+            @endif
           @endif
         </div>
       @endif
@@ -623,37 +430,25 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
     if (empty($cols2) && !empty($rows2) && is_array($rows2[0] ?? null)) {
       $cols2 = array_map(fn($i) => 'Колонка '.($i+1), range(0, count($rows2[0])-1));
     }
-
-    $blanks2 = is_array($table2['blanks'] ?? null) ? $table2['blanks'] : [];
-    $blankMap2 = [];
-    foreach ($blanks2 as $b) {
-      if (isset($b['r'], $b['c'])) $blankMap2[$b['r'].'_'.$b['c']] = $b['key'] ?? '';
-    }
   @endphp
 
-  <div class="overflow-auto rounded-xl border border-gray-200 mt-1 mb-5 sm:mb-6">
+  <div class="overflow-auto rounded-xl border border-zinc-200 mb-5">
     <table class="min-w-full border-collapse">
       @if(!empty($cols2))
-        <thead class="bg-gray-50">
+        <thead class="bg-zinc-50">
           <tr>
             @foreach($cols2 as $c)
-              <th class="border border-gray-200 px-3 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-zinc-700">{{ $c }}</th>
+              <th class="border border-zinc-200 px-3 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-zinc-700">{{ $c }}</th>
             @endforeach
           </tr>
         </thead>
       @endif
       <tbody>
-        @forelse($rows2 as $rIdx => $row)
-          <tr class="odd:bg-white ">
-            @foreach((array)$row as $cIdx => $cell)
-              @php
-                $k = $rIdx.'_'.$cIdx;
-                $isBlank = array_key_exists($k, $blankMap2);
-              @endphp
-              <td class="px-3 py-2 sm:py-3 align-top border border-gray-200">
-                <div class="sans text-sm sm:text-[15px] text-zinc-700 whitespace-pre-wrap">
-                  {{ (string)$cell }}
-                </div>
+        @forelse($rows2 as $tRow)
+          <tr>
+            @foreach((array)$tRow as $cell)
+              <td class="px-3 py-2 sm:py-3 align-top border border-zinc-200">
+                <div class="text-sm sm:text-base text-zinc-700 whitespace-pre-wrap">{{ (string)$cell }}</div>
               </td>
             @endforeach
           </tr>
@@ -667,13 +462,9 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
   </div>
 @endif
 
-
-      @php
-  // текущий объект задания в карточке
-  $cur = $t ?? $task ?? null;
-  $curType = $cur->type ?? $type ?? '';
+@php
   // источники вариантов — как на странице create
-  $rawOptions = $cur->options ?? $cur->image_auto_options ?? null;
+  $rawOptions = $t->options ?? $t->image_auto_options ?? null;
   $options = [];
   if (is_array($rawOptions)) {
     $options = array_values(array_filter(array_map('trim', $rawOptions), fn($v) => $v !== '' && $v !== null));
@@ -686,59 +477,51 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
       $options = array_values(array_filter(array_map('trim', $lines), fn($v) => $v !== '' && $v !== null));
     }
   }
-@endphp
 
-@php
   // Подсветка вариантов цветом: вариант, входящий в правильный ответ, —
   // зелёный (даже если ученик его не выбрал — так видно, что пропущено);
   // вариант, который ученик выбрал, но который неверен, — красный.
   // Работает только для автопроверяемых типов — там $studentAns/$correctAns
   // это последовательности цифр-номеров вариантов (как для «квадратиков»
   // ниже); у ручных заданий "options" — просто справочный список, не трогаем.
-  $isManualForOptions = in_array($curType, \App\Models\HomeworkTask::MANUAL_TYPES, true);
-  $optionsCorrectSet = $isManualForOptions ? [] : (preg_split('//u', (string)$correctAns, -1, PREG_SPLIT_NO_EMPTY) ?: []);
-  $optionsStudentSet = $isManualForOptions ? [] : (preg_split('//u', (string)$studentAns, -1, PREG_SPLIT_NO_EMPTY) ?: []);
+  $optionsCorrectSet = $isManual ? [] : (preg_split('//u', (string)$correctAns, -1, PREG_SPLIT_NO_EMPTY) ?: []);
+  $optionsStudentSet = $isManual ? [] : (preg_split('//u', (string)$studentAns, -1, PREG_SPLIT_NO_EMPTY) ?: []);
 @endphp
 
 @if(!empty($options))
-  <div class="mt-3 sm:mt-4 text-zinc-900 text-sm sm:text-base flex flex-col flex-wrap gap-2 sm:gap-3 items-start">
+  <div class="mb-5 flex flex-col items-start gap-2 text-sm sm:text-base text-zinc-900">
     @foreach($options as $optIdx => $opt)
       @php
         $optNum = (string)($optIdx + 1);
         $optIsCorrect  = in_array($optNum, $optionsCorrectSet, true);
         $optIsSelected = in_array($optNum, $optionsStudentSet, true);
 
-        $optClasses = 'border-gray-200 bg-gray-50';
+        $optClasses = 'border-zinc-200 bg-zinc-50';
         if ($optIsCorrect) {
-          $optClasses = 'border-apple-green-500 bg-apple-green-50 text-apple-green-700';
+          $optClasses = 'border-apple-green-500 bg-apple-green-50 text-apple-green-800';
         } elseif ($optIsSelected) {
-          $optClasses = 'border-apple-red-500 bg-apple-red-50 text-apple-red-700';
+          $optClasses = 'border-apple-red-500 bg-apple-red-50 text-apple-red-650';
         }
       @endphp
-      <div class="px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg border {{ $optClasses }}">{{ $opt }}</div>
+      <div class="px-3 py-1 rounded-lg border {{ $optClasses }}">{{ $opt }}</div>
     @endforeach
   </div>
 @endif
 
-@php
-  $cur = $t ?? $task ?? null;
-  $curType = $cur->type ?? $type ?? '';
-@endphp
-
-@if($curType === 'matching')
+@if($type === 'matching')
   @php
     $left  = [];
     $right = [];
     // как на странице create
-    if (!empty($cur->matches['left'])) {
-      $left = is_array($cur->matches['left'])
-        ? $cur->matches['left']
-        : preg_split("/\r\n|\r|\n/", (string)$cur->matches['left']);
+    if (!empty($t->matches['left'])) {
+      $left = is_array($t->matches['left'])
+        ? $t->matches['left']
+        : preg_split("/\r\n|\r|\n/", (string)$t->matches['left']);
     }
-    if (!empty($cur->matches['right'])) {
-      $right = is_array($cur->matches['right'])
-        ? $cur->matches['right']
-        : preg_split("/\r\n|\r|\n/", (string)$cur->matches['right']);
+    if (!empty($t->matches['right'])) {
+      $right = is_array($t->matches['right'])
+        ? $t->matches['right']
+        : preg_split("/\r\n|\r|\n/", (string)$t->matches['right']);
     }
     $letters = ['А','Б','В','Г','Д','Е','Ж','З','И','К','Л','М'];
 
@@ -750,25 +533,21 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
     $matchingCorrectDigits = preg_split('//u', (string)$correctAns, -1, PREG_SPLIT_NO_EMPTY) ?: [];
   @endphp
 
-  <div class="grid md:grid-cols-2 gap-4 sm:gap-6 mt-3 sm:mt-4 mb-4">
-    <div class="rounded-xl border bg-white">
-      <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-zinc-700">{{ $cur->left_title ?? 'Левая колонка' }}</div>
-      <div class="divide-y">
+  <div class="grid md:grid-cols-2 gap-4 mb-5">
+    <div class="rounded-xl border border-zinc-200">
+      <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-zinc-700 border-b border-zinc-200">{{ $t->left_title ?? 'Левая колонка' }}</div>
+      <div class="divide-y divide-zinc-200">
         @forelse($left as $iL => $val)
-          @php
-            $matchingCorrectNum = $matchingCorrectDigits[$iL] ?? null;
-          @endphp
-          <div class="relative px-3 py-2 sm:py-3 text-sm sm:text-base">
+          @php $matchingCorrectNum = $matchingCorrectDigits[$iL] ?? null; @endphp
+          <div class="flex items-start gap-2 px-3 py-2 sm:py-3 text-sm sm:text-base">
+            <span class="text-zinc-500 shrink-0">{{ $letters[$iL] ?? ($iL+1) }}.</span>
+            <span class="flex-1">{{ $val }}</span>
+            {{-- Номер верного элемента из правой колонки — справа в строке. --}}
             @if($matchingCorrectNum !== null && $matchingCorrectNum !== '')
-              {{-- Кружок с номером верного варианта из правой колонки —
-                   абсолютно позиционирован и вынесен левее границы блока,
-                   чтобы сразу бросался в глаза как отдельная пометка,
-                   а не часть текста строки. --}}
-              <div class="absolute -left-8 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-apple-green-500 text-white text-xs font-medium flex items-center justify-center shadow-sm">
+              <span class="shrink-0 w-6 h-6 rounded-full bg-apple-green-100 text-apple-green-800 text-xs font-medium flex items-center justify-center" title="Верное соответствие">
                 {{ $matchingCorrectNum }}
-              </div>
+              </span>
             @endif
-            <span class="text-zinc-500 mr-2">{{ $letters[$iL] ?? ($iL+1) }}.</span> {{ $val }}
           </div>
         @empty
           <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm text-zinc-500">Нет элементов</div>
@@ -776,12 +555,13 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
       </div>
     </div>
 
-    <div class="rounded-xl border bg-white">
-      <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-zinc-700">{{ $cur->right_title ?? 'Правая колонка' }}</div>
-      <div class="divide-y">
+    <div class="rounded-xl border border-zinc-200">
+      <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-zinc-700 border-b border-zinc-200">{{ $t->right_title ?? 'Правая колонка' }}</div>
+      <div class="divide-y divide-zinc-200">
         @forelse($right as $iR => $val)
-          <div class="px-3 py-2 sm:py-3 text-sm sm:text-base">
-            <span class="text-zinc-500 mr-2">{{ $iR+1 }}.</span> {{ $val }}
+          <div class="flex items-start gap-2 px-3 py-2 sm:py-3 text-sm sm:text-base">
+            <span class="text-zinc-500 shrink-0">{{ $iR+1 }}.</span>
+            <span class="flex-1">{{ $val }}</span>
           </div>
         @empty
           <div class="px-3 py-2 sm:py-3 text-xs sm:text-sm text-zinc-500">Нет элементов</div>
@@ -791,233 +571,160 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
   </div>
 @endif
 
-
-      {{-- Ответы и пояснения --}}
-      <div class="mt-4">
-{{-- Ответы и пояснения (для авто — «квадратики», для ручных — как было) --}}
-@php
-  // Определяем тип текущего задания
-  $curType   = $t->type ?? ($task->type ?? '');
-  $isManual  = in_array($curType, \App\Models\HomeworkTask::MANUAL_TYPES, true);
-
-  // Достаём per-task результаты
-  $curId   = $t->id ?? ($task->id ?? null);
-  $row     = $perTaskRes[$curId] ?? [];
-  $max     = (int)($t->max_score ?? ($task->max_score ?? 1));
-  $score   = array_key_exists('score',$row) ? $row['score'] : null; // важно: null ≠ 0
-  $skipped = (bool)($row['skipped'] ?? false);
-
-  // Статус для цвета рамки у ответа ученика (только для автопроверки)
-  $status = 'pending';
-  if (!$isManual) {
-    if ($score === null || $skipped) {
-      $status = 'pending';
-    } elseif ((int)$score >= $max) {
-      $status = 'ok';
-    } elseif ((int)$score > 0) {
-      $status = 'partial';
-    } else {
-      $status = 'fail';
-    }
-  }
-
-  $borderClass = [
-    'ok'      => 'border-apple-green-500',
-    'partial' => 'border-apple-orange-500',
-    'fail'    => 'border-apple-red-500',
-    'pending' => 'border-zinc-300',
-  ][$status];
-
-  // Разбиваем строки ответов на символы для «квадратиков» (только авто)
-  $toChars = function ($s) {
-    $s = (string)($s ?? '');
-    return preg_split('//u', $s, -1, PREG_SPLIT_NO_EMPTY) ?: [];
-  };
-  $stuChars  = $toChars($studentAns);
-  $corrChars = $toChars($correctAns);
-  $boxesLen  = max(count($stuChars), count($corrChars), 1);
-  $up = fn($ch) => mb_strtoupper($ch);
-@endphp
-
 @if(!$isManual)
-  {{-- АВТОПРОВЕРКА: выводим ответ ученика и правильный ответ «квадратиками».
-       flex-wrap вместо grid-cols-1 md:grid-cols-2: если оба блока помещаются
-       в одну строку по контенту (короткие ответы) — стоят рядом на любой
-       ширине; если нет — переносятся, а не залипают в 1 колонку до md. --}}
-  <div class="mt-5 flex flex-wrap gap-4">
-    {{-- Ваш ответ (цветная обводка по статусу) --}}
-    <div class="rounded-xl mt-2 flex-1 min-w-[160px]">
-      <div class="sans text-xs text-zinc-500 mb-2">Ваш ответ</div>
-      <div class="flex flex-wrap gap-2">
-        @for($i=0; $i<$boxesLen; $i++)
-          <div class="w-9 h-9 sm:w-10 sm:h-10 border-2 {{ $borderClass }} rounded-lg flex items-center justify-center text-base sm:text-lg font-medium select-none">
-            {{ $up($stuChars[$i] ?? '') }}
-          </div>
-        @endfor
-      </div>
+  @php
+    // «Квадратики» ответа. Каждая клетка ответа ученика красится по тому же
+    // правилу, что и у AutoGrader::scoreAuto(): при важном порядке — сверка
+    // по позиции, без порядка — есть ли такая цифра в правильном ответе
+    // (с учётом повторов). Ответ словом (image_auto с буквами) сверяется
+    // целиком — красим все клетки по итоговому статусу.
+    $toChars = function ($s) {
+      $s = mb_strtolower(preg_replace('/\s+/u', '', (string)($s ?? '')));
+      return preg_split('//u', strtr($s, ['ё' => 'е']), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+    };
+    $stuChars  = $toChars($studentAns);
+    $corrChars = $toChars($correctAns);
+    $orderMatters = in_array($type, ['matching', 'table'], true) || (bool)($t->order_matters ?? false);
+    $wholeWord = $type === 'image_auto' && preg_match('/[a-zа-я]/u', implode('', $stuChars));
+
+    $pool = array_count_values($corrChars);
+    $cellOk = [];
+    foreach ($stuChars as $i => $ch) {
+      if ($wholeWord) {
+        $cellOk[$i] = $status === 'ok';
+      } elseif ($orderMatters) {
+        $cellOk[$i] = ($corrChars[$i] ?? null) === $ch;
+      } else {
+        $cellOk[$i] = ($pool[$ch] ?? 0) > 0;
+        if ($cellOk[$i]) $pool[$ch]--;
+      }
+    }
+    $boxClass = 'w-10 h-10 rounded-lg border-2 flex items-center justify-center text-lg font-medium select-none tabular-nums';
+  @endphp
+
+  <div class="flex flex-wrap gap-x-8 gap-y-4">
+    <div>
+      <div class="text-xs text-zinc-500 mb-2">Твой ответ</div>
+      @if($stuChars === [])
+        <div class="h-10 flex items-center text-sm text-zinc-400">Нет ответа</div>
+      @else
+        <div class="flex flex-wrap gap-2">
+          @foreach($stuChars as $i => $ch)
+            <div class="{{ $boxClass }} {{ $cellOk[$i] ? 'border-apple-green-500 bg-apple-green-50 text-apple-green-800' : 'border-apple-red-450 bg-apple-red-50 text-apple-red-650' }}">
+              {{ mb_strtoupper($ch) }}
+            </div>
+          @endforeach
+        </div>
+      @endif
     </div>
 
-    {{-- Правильный ответ (всегда серая обводка) --}}
-    <div class="rounded-xl mt-2 flex-1 min-w-[160px]">
-      <div class="sans text-xs text-zinc-500 mb-2">Правильный ответ</div>
-      <div class="flex flex-wrap gap-2">
-        @for($i=0; $i<$boxesLen; $i++)
-          <div class="w-9 h-9 sm:w-10 sm:h-10 border-2 border-zinc-300 rounded-lg flex items-center justify-center text-base sm:text-lg font-medium bg-white select-none">
-            {{ $up($corrChars[$i] ?? '') }}
-          </div>
-        @endfor
+    {{-- Правильный ответ — только когда ответ ученика неверен: при верном
+         оба ряда совпадают и второй ничего не добавляет. --}}
+    @if($status !== 'ok' && $corrChars !== [])
+      <div>
+        <div class="text-xs text-zinc-500 mb-2">Правильный ответ</div>
+        <div class="flex flex-wrap gap-2">
+          @foreach($corrChars as $ch)
+            <div class="{{ $boxClass }} border-zinc-300 bg-white text-zinc-900">{{ mb_strtoupper($ch) }}</div>
+          @endforeach
+        </div>
       </div>
-    </div>
-
+    @endif
   </div>
 
   {{-- Объяснение задания — заполняется админом в конструкторе (поле
        "Объяснение задания", только у авто-проверяемых типов), разбирает
-       каждый пункт ответа: почему верно/неверно, для соотнесения — почему
-       пара именно такая. Показываем только если заполнено — пустой блок
-       с одним "—" ничего ученику не даёт. --}}
+       каждый пункт ответа. Показываем только если заполнено. --}}
   @if(!empty($t->explanation))
-    <div class="mt-4 rounded-xl bg-zinc-50 border border-zinc-200 p-3 px-4">
+    <div class="mt-5 rounded-xl bg-zinc-50 border border-zinc-200 px-4 py-3">
       <div class="text-xs text-zinc-500 mb-2">Объяснение</div>
-      <div class="text-sm whitespace-pre-wrap break-words">{{ $norm($t->explanation) }}</div>
+      <div class="text-sm text-zinc-700 whitespace-pre-wrap break-words">{{ $norm($t->explanation) }}</div>
     </div>
   @endif
 @else
-  {{-- РУЧНАЯ ПРОВЕРКА: оставляем карточки по ширине (без «квадратиков») --}}
-  <div class="mt-4 grid grid-cols-1 md:grid-cols-1 gap-4">
-    <div class="rounded-xl bg-apple-blue-50 p-3 px-4">
-      <div class="sans text-xs text-apple-blue-600 mb-2">Ваш ответ</div>
-      <div class="sans text-sm text-zinc-700 whitespace-pre-wrap break-words">{{ $norm($studentAns) }}</div>
+  <div class="space-y-3">
+    <div class="rounded-xl bg-apple-blue-50 px-4 py-3">
+      <div class="text-xs text-apple-blue-700 mb-2">Твой ответ</div>
+      <div class="text-sm text-zinc-700 whitespace-pre-wrap break-words">{{ $norm($studentAns) }}</div>
     </div>
 
     {{-- Эти три блока показываются, только если куратор реально что-то
-         заполнил — пустой "—" ученику ничего не даёт, лучше не показывать
-         блок вовсе, чем пустую подпись. --}}
+         заполнил — пустой "—" ученику ничего не даёт. --}}
     @if($hasScore && !$skipped && trim((string)$mentorReason) !== '')
-    <div class="rounded-xl border border-gray-200 p-3">
-      <div class="text-xs text-zinc-500 mb-1">Обоснование баллов</div>
-      <div class="text-sm whitespace-pre-wrap break-words">{{ $norm($mentorReason) }}</div>
-    </div>
+      <div class="rounded-xl border border-zinc-200 px-4 py-3">
+        <div class="text-xs text-zinc-500 mb-2">Обоснование баллов</div>
+        <div class="text-sm text-zinc-700 whitespace-pre-wrap break-words">{{ $norm($mentorReason) }}</div>
+      </div>
     @endif
     @if($hasScore && !$skipped && trim((string)$mentorNote) !== '')
-    <div class="rounded-xl border border-gray-200 p-3 px-4">
-      <div class="text-xs text-zinc-500 mb-2">Пояснение куратора</div>
-      <div class="text-sm whitespace-pre-wrap break-words">{{ $norm($mentorNote) }}</div>
-    </div>
+      <div class="rounded-xl border border-zinc-200 px-4 py-3">
+        <div class="text-xs text-zinc-500 mb-2">Пояснение куратора</div>
+        <div class="text-sm text-zinc-700 whitespace-pre-wrap break-words">{{ $norm($mentorNote) }}</div>
+      </div>
     @endif
     {{-- Образцовый ответ — последним, после обоснования баллов и пояснения
          куратора: ученик сначала читает разбор своей работы, потом сверяется
          с эталоном. Только после проверки (до неё эталон был бы подсказкой). --}}
     @if($hasScore && !$skipped && trim((string)$correctAns) !== '')
-    <div class="rounded-xl bg-apple-green-50 p-3 px-4">
-      <div class="sans text-xs text-apple-green-700 mb-2">Образцовый ответ</div>
-      <div class="sans text-sm text-zinc-700 whitespace-pre-wrap break-words">{{ $norm($correctAns) }}</div>
-    </div>
+      <div class="rounded-xl bg-apple-green-50 px-4 py-3">
+        <div class="text-xs text-apple-green-800 mb-2">Образцовый ответ</div>
+        <div class="text-sm text-zinc-700 whitespace-pre-wrap break-words">{{ $norm($correctAns) }}</div>
+      </div>
     @endif
   </div>
 @endif
 
-
-
-      </div>
-    </x-ui.card>
+        </div>
+      </details>
+    </div>
   @empty
     <x-ui.card class="text-sm text-zinc-600">
       Заданий нет.
     </x-ui.card>
   @endforelse
-</div>
+  </div>
 
 </div>
 @endsection
 
 @section('scripts')
-  <style>
-    /* Контейнер для отображения ответа «квадратиками» (read-only) */
-    .ans-boxes{
-      display:grid;
-      grid-template-columns:repeat(auto-fill,minmax(32px,1fr));
-      gap:10px;
-      width:100%;
-      max-width:520px;
-    }
-    .ans-box{
-      aspect-ratio:1/1;
-      min-width:32px;
-      border:2px solid #e5e7eb;  /* нейтральная (для правильного ответа) */
-      border-radius:9px;
-      display:flex;align-items:center;justify-content:center;
-      font-size:18px;font-weight:600;background:#fff;
-      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-    }
-    /* Цвета рамок для ответа ученика по статусу */
-    .ans-ok{ border-color:#10B981; }       /* зелёный */
-    .ans-partial{ border-color:#F59E0B; }  /* оранжевый */
-    .ans-fail{ border-color:#EF4444; }     /* красный */
-    .ans-neutral{ border-color:#e5e7eb; }  /* серый (правильный ответ) */
-  </style>
-  {{-- Chart.js — defer: не блокирует рендер того, что ниже, пока грузится с CDN. --}}
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
-
   <script>
   (function () {
-    // Сплошное кольцо в стиле Apple Activity — та же техника, что и на
-    // /student/mocks (makeSectionRings), но одно кольцо на карточку вместо
-    // двух вложенных: тут каждая часть (авто/ручная) уже на своей карточке.
-    // Второй датасет — невидимый (прозрачный), нужен только чтобы Chart.js
-    // делил полосу кольца между двумя датасетами так же, как на /mocks
-    // (там 2 реальных датасета делят её пополам) — иначе один датасет при
-    // том же cutout занял бы вдвое более широкую полосу.
-    function makeResultRing(canvas, percent, color, track) {
-      new Chart(canvas.getContext('2d'), {
-        type: 'doughnut',
-        data: {
-          datasets: [
-            {
-              data: [percent, 100 - percent],
-              backgroundColor: [color, track],
-              borderColor: '#fff',
-              borderWidth: 5,
-              borderRadius: 12,
-              weight: 1,
-            },
-            {
-              data: [100],
-              backgroundColor: ['transparent'],
-              borderColor: 'transparent',
-              borderWidth: 0,
-              weight: 1,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '62%',
-          rotation: -90,
-          circumference: 360,
-          animation: { duration: 600 },
-          events: [],
-          plugins: {
-            legend: { display: false },
-            tooltip: { enabled: false },
-          },
-        },
+    // Фильтр разбора «С ошибками / Все» и переход к заданию по плитке.
+    // Классы активной/неактивной вкладки — те же, что в x-ui.tab.
+    var ACTIVE = ['bg-white', 'text-zinc-900', 'shadow-sm', 'font-medium'];
+    var IDLE = ['text-zinc-500', 'hover:text-zinc-900'];
+
+    function applyFilter(filter) {
+      document.querySelectorAll('[data-task-card]').forEach(function (card) {
+        var isError = card.dataset.status === 'fail' || card.dataset.status === 'partial';
+        card.classList.toggle('hidden', filter === 'errors' && !isError);
+      });
+      document.querySelectorAll('[data-review-filter]').forEach(function (btn) {
+        var on = btn.dataset.reviewFilter === filter;
+        btn.classList.remove.apply(btn.classList, on ? IDLE : ACTIVE);
+        btn.classList.add.apply(btn.classList, on ? ACTIVE : IDLE);
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
       });
     }
 
-    // Инициализация всех .result-ring — ждём DOMContentLoaded, т.к. Chart.js теперь
-    // подключён с defer (та же причина и тот же приём, что у GSAP чуть ниже в этом файле):
-    // без этого inline-скрипт, который парсится раньше, видит window.Chart ещё не
-    // определённым.
-    document.addEventListener('DOMContentLoaded', function () {
-      if (typeof window.Chart === 'undefined') return;
+    document.querySelectorAll('[data-review-filter]').forEach(function (btn) {
+      btn.addEventListener('click', function () { applyFilter(btn.dataset.reviewFilter); });
+    });
 
-      document.querySelectorAll('canvas.result-ring').forEach(cv => {
-        const pct   = Number(cv.dataset.percent || 0);
-        const color = cv.dataset.color || '#AF52DE';
-        const track = cv.dataset.track || '#F1E1F9';
-        makeResultRing(cv, pct, color, track);
+    // Плитка может вести к заданию, скрытому фильтром или свёрнутому, —
+    // сначала показываем и раскрываем, потом прокручиваем.
+    document.querySelectorAll('[data-task-link]').forEach(function (link) {
+      link.addEventListener('click', function (e) {
+        var hash = link.getAttribute('href');
+        var card = document.getElementById(hash.slice(1));
+        if (!card) return;
+        e.preventDefault();
+        if (card.classList.contains('hidden')) applyFilter('all');
+        var details = card.querySelector('details');
+        if (details) details.open = true;
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        history.replaceState(null, '', hash);
       });
     });
   })();
