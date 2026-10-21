@@ -25,7 +25,11 @@
         @vite('resources/css/app.css')
 
         <!-- htmx: AJAX-переходы без перезагрузки страницы -->
-        <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+        {{-- Самохостится (public/js), а не с unpkg.com: если CDN не ответил
+             на мобильной сети, htmx не было вовсе — падал htmx.config ниже и
+             не работали все hx-кнопки. Версия в имени файла — чтобы при
+             обновлении браузер не взял старую копию из кэша. --}}
+        <script src="{{ asset('js/htmx-1.9.12.min.js') }}" defer></script>
 
         <!-- GSAP: анимация попапа с результатом проверки -->
         <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
@@ -43,7 +47,7 @@
             // defer, поэтому ждём DOMContentLoaded — он гарантированно
             // выполняется после всех defer-скриптов, включая htmx.org.
             document.addEventListener('DOMContentLoaded', function () {
-                htmx.config.timeout = 15000;
+                if (window.htmx) htmx.config.timeout = 15000;
             });
         </script>
 
