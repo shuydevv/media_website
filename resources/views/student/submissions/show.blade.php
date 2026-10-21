@@ -240,10 +240,6 @@
       : ['text-apple-red-450', 'stroke-apple-red-100']));
     $ringLen = 2 * M_PI * 42;
 
-    // Номера заданий, которые уйдут в «Перерешать ошибки», — прямо на кнопке.
-    $redoNos = $taskRows->whereIn('tid', $redoTaskIds ?? [])->pluck('no')->values();
-    $attemptsUsed = $attempts_allowed - $attemptsLeft;
-
     $tasksTotal = $taskRows->count();
     $allCorrect = !$hasPendingManual && $errorCount === 0;
     if ($hasPendingManual) {
@@ -294,20 +290,13 @@
           {{-- На ПК кнопки в ряд, на телефоне — каждая на всю ширину, друг под другом. --}}
           <div class="flex flex-col md:flex-row gap-2">
             @if($redoCount > 0)
-              {{-- Номера заданий, которые придётся решить заново, — прямо на кнопке. --}}
+              {{-- На подложке — сколько заданий придётся решить заново. --}}
               <a href="{{ route('student.submissions.create', $homework) }}?retry=1&mode=mistakes"
-                 aria-label="Перерешать ошибки: {{ $redoNos->count() === 1 ? 'задание' : 'задания' }} {{ $redoNos->implode(', ') }}"
+                 aria-label="Перерешать ошибки: {{ $redoCount }} {{ $plural($redoCount, ['задание', 'задания', 'заданий']) }}"
                  title="Верно решённые задания перенесутся в новую попытку"
                  class="group inline-flex items-center justify-center gap-2.5 min-h-12 px-5 rounded-xl bg-apple-blue-500 hover:bg-apple-blue-600 text-white font-medium whitespace-nowrap transition">
                 Перерешать ошибки
-                <span class="flex items-center gap-1">
-                  @foreach($redoNos->take(5) as $no)
-                    <span class="min-w-6 h-6 px-1 rounded-md bg-white/20 text-xs flex items-center justify-center tabular-nums">{{ $no }}</span>
-                  @endforeach
-                  @if($redoNos->count() > 5)
-                    <span class="h-6 px-1.5 rounded-md bg-white/10 text-xs flex items-center">+{{ $redoNos->count() - 5 }}</span>
-                  @endif
-                </span>
+                <span class="min-w-6 h-6 px-1.5 rounded-md bg-white/20 text-xs flex items-center justify-center tabular-nums">{{ $redoCount }}</span>
                 <x-icon name="arrow-narrow-right" class="w-5 h-5 shrink-0 transition-transform group-hover:translate-x-0.5" />
               </a>
             @endif
@@ -319,19 +308,16 @@
           </div>
         @endif
 
-        {{-- Попытки точками: закрашены потраченные. --}}
-        @if(!$retryInProgress)
+        {{-- Только когда попыток не осталось — иначе хватает самих кнопок.
+             Точки — все потраченные попытки. --}}
+        @if(!$retryInProgress && $attemptsLeft === 0)
           <div class="flex items-center justify-center md:justify-end gap-2 text-xs text-zinc-500">
             <span class="flex items-center gap-1" aria-hidden="true">
               @for($i = 0; $i < $attempts_allowed; $i++)
-                <span class="w-2 h-2 rounded-full {{ $i < $attemptsUsed ? 'bg-zinc-400' : 'border border-zinc-300' }}"></span>
+                <span class="w-2 h-2 rounded-full bg-zinc-400"></span>
               @endfor
             </span>
-            @if($attemptsLeft === 0)
-              Попытки закончились
-            @else
-              {{ $attemptsLeft === 1 ? 'Осталась 1 попытка' : 'Осталось попыток: ' . $attemptsLeft }}
-            @endif
+            Попытки закончились
           </div>
         @endif
       </div>

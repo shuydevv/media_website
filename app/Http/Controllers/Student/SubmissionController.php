@@ -773,13 +773,12 @@ class SubmissionController extends Controller
         // «Перерешать ошибки» — только от последней сданной попытки и не для
         // пробника (см. MistakesRetry).
         $isLatest = $attempts->first()?->id === $submission->id;
-        // id заданий, которые придётся перерешать, — их номера показываются на кнопке.
-        $redoTaskIds = ($isLatest && ($hwRow->type ?? null) !== 'mock')
-            ? app(MistakesRetry::class)->plan($submission, $this->orderedTasks($submission->homework_id))['redo']
-            : [];
-        $redoCount = count($redoTaskIds);
+        // Сколько заданий придётся перерешать — число на кнопке.
+        $redoCount = ($isLatest && ($hwRow->type ?? null) !== 'mock')
+            ? count(app(MistakesRetry::class)->plan($submission, $this->orderedTasks($submission->homework_id))['redo'])
+            : 0;
 
-        return view('student.submissions.show', compact('submission', 'homework', 'attempts', 'awaitingReview', 'retryInProgress', 'redoCount', 'redoTaskIds'));
+        return view('student.submissions.show', compact('submission', 'homework', 'attempts', 'awaitingReview', 'retryInProgress', 'redoCount'));
     }
 
     /**
