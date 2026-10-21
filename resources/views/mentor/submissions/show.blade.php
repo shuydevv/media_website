@@ -106,173 +106,168 @@
   }
 @endphp
 
-<div class="max-w-5xl mx-auto px-4 py-6 space-y-6">
+<div class="max-w-6xl mx-auto px-4 py-6 space-y-4">
 
-  {{-- Хедер --}}
-  <div class="flex items-start justify-between gap-4">
-    <div>
-      <h1 class="text-2xl font-bold mb-1">Проверка домашней работы</h1>
-      <div class="text-sm text-gray-600">
-        Ученик: <span class="font-medium text-gray-800">{{ $student?->full_name ?? ('ID '.$submission->user_id) }}</span>
-        <span class="mx-2">•</span>
-        Работа: <span class="font-medium text-gray-800">{{ $homework->title ?? 'Без названия' }}</span>
-        <span class="mx-2">•</span>
-        Попытка № {{ $submission->attempt_no ?? 1 }}
-      </div>
-      <div class="mt-1 text-sm text-gray-600">
-        @if($course)
-          Курс: <span class="text-gray-800">{{ $course->title }}</span>
-        @endif
-        @if($lesson)
-          <span class="mx-2">•</span>Урок: <span class="text-gray-800">{{ $lesson->title }}</span>
-        @endif
-      </div>
-      <div class="mt-1 text-sm text-gray-600">
-        Сдано: <span class="text-gray-800">{{ $submittedAt?->format('d.m.Y H:i') ?? '—' }}</span>
-        @if($dueAt)
-          <span class="mx-2">•</span>Дедлайн: <span class="text-gray-800">{{ $dueAt->format('d.m.Y H:i') }}</span>
-          @if($lateHours > 0)
-            <span class="ml-2 inline-flex rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-xs text-red-700">с опозданием {{ $lateText }}</span>
-          @elseif($submittedAt)
-            <span class="ml-2 inline-flex rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-xs text-green-700">вовремя</span>
+  {{-- Шапка: кто, что, когда сдано + прогресс, итог и лок --}}
+  <div class="rounded-2xl border border-gray-200 bg-white p-4">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div class="min-w-0">
+        <div class="text-xs font-medium uppercase tracking-wide text-gray-400">Проверка домашней работы</div>
+        <h1 class="mt-0.5 text-xl font-semibold text-gray-900">{{ $student?->full_name ?? ('ID '.$submission->user_id) }}</h1>
+        <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-gray-600">
+          <span class="font-medium text-gray-800">{{ $homework->title ?? 'Без названия' }}</span>
+          <span class="text-gray-300">•</span><span>попытка № {{ $submission->attempt_no ?? 1 }}</span>
+          @if($course)<span class="text-gray-300">•</span><span>Курс: {{ $course->title }}</span>@endif
+          @if($lesson)<span class="text-gray-300">•</span><span>Урок: {{ $lesson->title }}</span>@endif
+        </div>
+        <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-gray-600">
+          <span>Сдано: <span class="text-gray-800">{{ $submittedAt?->format('d.m.Y H:i') ?? '—' }}</span></span>
+          @if($dueAt)
+            <span class="text-gray-300">•</span>
+            <span>Дедлайн: <span class="text-gray-800">{{ $dueAt->format('d.m.Y H:i') }}</span></span>
+            @if($lateHours > 0)
+              <span class="rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">с опозданием {{ $lateText }}</span>
+            @elseif($submittedAt)
+              <span class="rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">вовремя</span>
+            @endif
           @endif
-        @endif
+        </div>
       </div>
 
-      {{-- Мини-карточка ученика --}}
-      @if($studentSummary)
-        <div class="mt-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
-          <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
-            @if($studentSummary['courses'])
-              <span>Курсы: <span class="text-gray-900">{{ implode(', ', $studentSummary['courses']) }}</span></span>
-            @endif
-            <span>Проверено работ: <span class="text-gray-900">{{ $studentSummary['checked'] }}</span></span>
-            @if($studentSummary['recent_percent'] !== null)
-              <span>
-                Средний результат за последние {{ $studentSummary['recent_count'] }}:
-                <span class="font-semibold {{ $studentSummary['recent_percent'] < 50 ? 'text-red-700' : ($studentSummary['recent_percent'] < 75 ? 'text-amber-700' : 'text-green-700') }}">{{ $studentSummary['recent_percent'] }}%</span>
-              </span>
-            @endif
-            @if($isAdmin)
-              <a href="{{ route('admin.user.show', $student) }}" class="underline text-gray-600 hover:text-gray-900">Профиль ученика</a>
-            @endif
-          </div>
-          @if($studentSummary['numbers'])
-            <div class="mt-2 flex flex-wrap items-center gap-1.5">
-              <span class="text-xs text-gray-500">По номерам (письменная часть):</span>
+      <div class="flex flex-wrap items-stretch gap-2 text-sm">
+        <div class="rounded-xl bg-gray-50 px-3 py-2">
+          <div class="text-xs text-gray-500">Проверено</div>
+          <div class="font-semibold text-gray-900"><span id="progress-count">{{ $manualClosedCount }}</span> из {{ $manualTotal }}</div>
+        </div>
+        <div class="rounded-xl bg-gray-50 px-3 py-2" title="Автопроверка ({{ $autoScoreNow }}) + баллы, выставленные за письменную часть">
+          <div class="text-xs text-gray-500">Итог сейчас</div>
+          <div class="font-semibold text-gray-900"><span id="total-now" data-auto="{{ $autoScoreNow }}">—</span> из {{ $totalMax }}</div>
+        </div>
+        <div class="rounded-xl bg-gray-50 px-3 py-2">
+          <div class="text-xs text-gray-500">Лок до <span id="lock-until-text">{{ optional($submission->lock_expires_at)->format('H:i') ?? '—' }}</span></div>
+          @if(($submission->lock_expires_at && now()->lt($submission->lock_expires_at)))
+            <div class="text-xs font-semibold text-gray-900">осталось <span id="lock-countdown">—:—</span></div>
+          @endif
+          @if($submission->locked_by && $submission->locked_by !== $user->id && now()->lt($submission->lock_expires_at))
+            <div class="text-xs text-amber-700">Занято: {{ $submission->lockedByUser?->name ?? ('ID '.$submission->locked_by) }}</div>
+          @endif
+        </div>
+      </div>
+    </div>
+
+    {{-- Ученик одной строкой: курсы, сколько проверено, средний результат, слабые номера --}}
+    @if($studentSummary)
+      @php $weak = collect($studentSummary['numbers'])->where('weak', true); @endphp
+      <div class="mt-3 flex flex-wrap items-center gap-1.5 border-t border-gray-100 pt-3 text-xs">
+        @foreach($studentSummary['courses'] as $courseTitle)
+          <span class="rounded-full bg-gray-100 px-2 py-0.5 text-gray-700">{{ $courseTitle }}</span>
+        @endforeach
+        <span class="rounded-full bg-gray-100 px-2 py-0.5 text-gray-700">проверено работ: {{ $studentSummary['checked'] }}</span>
+        @if($studentSummary['recent_percent'] !== null)
+          @php $rp = $studentSummary['recent_percent']; @endphp
+          <span class="rounded-full px-2 py-0.5 font-medium {{ $rp < 50 ? 'bg-red-50 text-red-700' : ($rp < 75 ? 'bg-amber-50 text-amber-700' : 'bg-green-50 text-green-700') }}"
+                title="Средний результат за последние {{ $studentSummary['recent_count'] }} проверенных работ">
+            в среднем {{ $rp }}%
+          </span>
+        @endif
+        @if($weak->isNotEmpty())
+          <span class="ml-1 text-gray-500">слабые места:</span>
+          @foreach($weak as $n)
+            <span class="rounded-full bg-red-50 px-2 py-0.5 font-medium text-red-700"
+                  title="Набрано {{ $n['score'] }} из {{ $n['max'] }} за {{ $n['count'] }} отв. — стоит обратить внимание в комментарии">№{{ $n['number'] }}: {{ $n['percent'] }}%</span>
+          @endforeach
+        @endif
+        @if(count($studentSummary['numbers']) > $weak->count())
+          <details class="relative">
+            <summary class="cursor-pointer select-none rounded-full px-2 py-0.5 text-gray-500 hover:bg-gray-100">все номера</summary>
+            <div class="absolute left-0 z-10 mt-1 flex w-72 flex-wrap gap-1 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
               @foreach($studentSummary['numbers'] as $n)
-                <span class="rounded-full border px-2 py-0.5 text-xs {{ $n['weak'] ? 'border-red-200 bg-red-50 text-red-700 font-medium' : 'border-gray-200 bg-white text-gray-600' }}"
-                      title="Набрано {{ $n['score'] }} из {{ $n['max'] }} за {{ $n['count'] }} отв.">
-                  №{{ $n['number'] }}: {{ $n['percent'] }}%
-                </span>
+                <span class="rounded-full px-2 py-0.5 {{ $n['weak'] ? 'bg-red-50 text-red-700' : 'bg-gray-100 text-gray-700' }}"
+                      title="Набрано {{ $n['score'] }} из {{ $n['max'] }} за {{ $n['count'] }} отв.">№{{ $n['number'] }}: {{ $n['percent'] }}%</span>
               @endforeach
             </div>
-            @if(collect($studentSummary['numbers'])->contains('weak', true))
-              <div class="mt-1 text-xs text-red-700">Красным — слабые места (меньше 60% баллов хотя бы за 2 ответа): на них стоит обратить внимание в комментарии.</div>
-            @endif
-          @endif
-        </div>
-      @endif
-
-      @if($newerRetry)
-        <div class="mt-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800 px-3 py-2 text-sm">
-          Ученик сейчас перерешивает эту работу (попытка № {{ $newerRetry->attempt_no }}, начата {{ $newerRetry->created_at?->format('d.m H:i') }}, ещё не отправлена).
-          Если он её отправит, проверять эту попытку будет не нужно — итог считается по последней.
-        </div>
-      @endif
-
-      @if($submission->isSuperseded())
-        <div class="mt-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800 px-3 py-2 text-sm">
-          Ученик уже сдал более новую попытку по этой работе — эту проверять не нужно, итог считается по последней.
-        </div>
-      @endif
-
-      @foreach (['success'=>'green','error'=>'red','warning'=>'yellow','info'=>'blue'] as $k=>$clr)
-        @if (session($k))
-          <div class="mt-3 rounded-lg bg-{{ $clr }}-50 border border-{{ $clr }}-200 text-{{ $clr }}-800 px-3 py-2">
-            {{ session($k) }}
-          </div>
+          </details>
         @endif
-      @endforeach
-    </div>
-
-    {{-- таймер лока в шапке --}}
-    <div class="shrink-0 flex flex-col items-end gap-2">
-      <div class="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium">
-        Проверено: <span id="progress-count">{{ $manualClosedCount }}</span> из {{ $manualTotal }}
-      </div>
-      <div class="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium"
-           title="Автопроверка ({{ $autoScoreNow }}) + баллы, выставленные за письменную часть">
-        Итог сейчас: <span id="total-now" data-auto="{{ $autoScoreNow }}">—</span> из {{ $totalMax }}
-      </div>
-
-      <div class="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm">
-        <div class="text-gray-600">Лок до:</div>
-        <div class="font-semibold">
-          <span id="lock-until-text">
-            {{ optional($submission->lock_expires_at)->format('H:i') ?? '—' }}
+        @if($isAdmin)
+          <span class="ml-auto flex items-center gap-3">
+            <a href="{{ route('admin.user.show', $student) }}" class="text-gray-500 underline hover:text-gray-800">Профиль ученика</a>
+            {{-- Удаление попытки целиком — только админ, не куратор. --}}
+            <form action="{{ route('mentor.submissions.destroy', $submission) }}" method="POST"
+                  onsubmit="return confirm('Удалить эту попытку сдачи безвозвратно? Ответы, оценки и комментарии куратора будут потеряны.');">
+              @csrf
+              @method('DELETE')
+              <button type="submit" class="text-red-600 hover:underline">Удалить попытку</button>
+            </form>
           </span>
-        </div>
-        @if(($submission->lock_expires_at && now()->lt($submission->lock_expires_at)))
-          <div class="text-xs text-gray-500 mt-1">
-            Осталось: <span id="lock-countdown">—:—</span>
-          </div>
-        @endif
-        @if($submission->locked_by && $submission->locked_by !== $user->id && now()->lt($submission->lock_expires_at))
-          <div class="text-xs text-amber-700 mt-1">
-            Занято: {{ $submission->lockedByUser?->name ?? ('ID '.$submission->locked_by) }}
-          </div>
         @endif
       </div>
+    @endif
 
-      {{-- Удаление попытки целиком — только админ, не куратор. --}}
-      @if($isAdmin)
-        <form action="{{ route('mentor.submissions.destroy', $submission) }}" method="POST"
-              onsubmit="return confirm('Удалить эту попытку сдачи безвозвратно? Ответы, оценки и комментарии куратора будут потеряны.');">
-          @csrf
-          @method('DELETE')
-          <button type="submit" class="text-sm text-red-600 hover:underline">Удалить попытку</button>
-        </form>
+    @if($newerRetry)
+      <div class="mt-3 rounded-lg bg-yellow-50 px-3 py-2 text-sm text-yellow-800">
+        Ученик сейчас перерешивает эту работу (попытка № {{ $newerRetry->attempt_no }}, начата {{ $newerRetry->created_at?->format('d.m H:i') }}, ещё не отправлена).
+        Если он её отправит, проверять эту попытку будет не нужно — итог считается по последней.
+      </div>
+    @endif
+    @if($submission->isSuperseded())
+      <div class="mt-3 rounded-lg bg-yellow-50 px-3 py-2 text-sm text-yellow-800">
+        Ученик уже сдал более новую попытку по этой работе — эту проверять не нужно, итог считается по последней.
+      </div>
+    @endif
+    @foreach (['success'=>'green','error'=>'red','warning'=>'yellow','info'=>'blue'] as $k=>$clr)
+      @if (session($k))
+        <div class="mt-3 rounded-lg bg-{{ $clr }}-50 px-3 py-2 text-sm text-{{ $clr }}-800">{{ session($k) }}</div>
       @endif
-    </div>
+    @endforeach
   </div>
 
-  {{-- Автопроверка (если есть) --}}
-  <details class="rounded-2xl border border-gray-200 bg-white p-4">
-    <summary class="cursor-pointer select-none text-sm text-gray-700">
-      Показать первую часть (автопроверка)
+  {{-- Первая часть (автопроверка) — таблицей, ошибки красным --}}
+  @php
+    $autoRows = $autoTasks->values()->map(function ($t, $i) use ($perTaskRes, $answers) {
+        $tid = $t->id ?? ("t_auto_$i");
+        return [
+            'no'      => $t->number ?? $t->order ?? ($i + 1),
+            'max'     => (int) ($t->max_score ?? 1),
+            'score'   => (int) ($perTaskRes[$tid]['score'] ?? 0),
+            'answer'  => (string) ($answers[$tid] ?? ''),
+            'correct' => (string) ($t->answer ?? ''),
+        ];
+    });
+    $autoWrong = $autoRows->filter(fn ($r) => $r['score'] < $r['max'])->count();
+  @endphp
+  <details class="rounded-2xl border border-gray-200 bg-white">
+    <summary class="cursor-pointer select-none px-4 py-3 text-sm text-gray-700">
+      Первая часть (автопроверка):
+      <span class="font-semibold text-gray-900">{{ $autoRows->sum('score') }} из {{ $autoRows->sum('max') }}</span>
+      @if($autoWrong)<span class="ml-1 text-red-700">· с ошибками: {{ $autoWrong }}</span>@endif
     </summary>
-    <div class="mt-3 grid gap-3">
-      @forelse($autoTasks as $i => $t)
-        @php
-          $tid     = $t->id ?? ("t_auto_$i");
-          $max     = (int)($t->max_score ?? 1);
-          $score   = (int)($perTaskRes[$tid]['score'] ?? 0);
-          $ans     = (string)($answers[$tid] ?? '');
-          $correct = (string)($t->answer ?? '');
-        @endphp
-        <div class="rounded-xl border border-gray-200 bg-white p-3">
-          <div class="flex items-center justify-between">
-            <div class="text-sm text-gray-700">№ {{ $t->order ?? ($i+1) }}</div>
-            <div class="text-sm text-gray-700">
-              Баллы: <span class="font-semibold">{{ $score }} / {{ $max }}</span>
-            </div>
-          </div>
-          <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            <div>
-              <div class="text-gray-500">Ответ ученика</div>
-              <div class="font-mono">{{ $ans !== '' ? e($ans) : '—' }}</div>
-            </div>
-            <div>
-              <div class="text-gray-500">Правильный ответ</div>
-              <div class="font-mono">{{ $correct !== '' ? e($correct) : '—' }}</div>
-            </div>
-          </div>
-        </div>
-      @empty
-        <div class="text-sm text-gray-500">Автопроверяемых заданий нет.</div>
-      @endforelse
-    </div>
+    @if($autoRows->isNotEmpty())
+      <div class="overflow-x-auto border-t border-gray-100 px-4 pb-3">
+        <table class="mt-2 w-full text-sm">
+          <thead>
+            <tr class="text-left text-xs text-gray-500">
+              <th class="py-1 pr-3 font-normal">№</th>
+              <th class="py-1 pr-3 font-normal">Ответ ученика</th>
+              <th class="py-1 pr-3 font-normal">Правильный</th>
+              <th class="py-1 text-right font-normal">Балл</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach($autoRows as $r)
+              @php $ok = $r['score'] >= $r['max']; @endphp
+              <tr class="border-t border-gray-50 {{ $ok ? '' : 'text-red-700' }}">
+                <td class="py-1 pr-3">{{ $r['no'] }}</td>
+                <td class="py-1 pr-3 font-mono">{{ $r['answer'] !== '' ? $r['answer'] : '—' }}</td>
+                <td class="py-1 pr-3 font-mono text-gray-600">{{ $r['correct'] !== '' ? $r['correct'] : '—' }}</td>
+                <td class="py-1 text-right font-medium">{{ $r['score'] }}/{{ $r['max'] }}</td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+    @else
+      <div class="border-t border-gray-100 px-4 py-3 text-sm text-gray-500">Автопроверяемых заданий нет.</div>
+    @endif
   </details>
 
   {{-- Письменная часть --}}
@@ -343,65 +338,170 @@
       $needConsent = $frozenHash && $frozenHash === $currentHash;
 
       $initialState = ($isSkipped || ($dbScore !== null || $dbReason !== null || $dbComment !== null)) ? 'done' : 'idle';
+
+      // Новое оформление карточки
+      $hasAi     = ($aiRationaleFull && trim($aiRationaleFull) !== '') || ($aiCommentFull && trim($aiCommentFull) !== '') || is_numeric($aiScore);
+      $meta      = $taskMeta[(string) $tid] ?? [];
+      $exemplar  = trim((string) ($t->answer ?? ''));
+      $explain   = trim((string) ($t->explanation ?? ''));
+      $hintText  = trim((string) ($t->hint ?? ''));
+      $passage   = trim((string) ($t->passage_text ?? ''));
+      $prevRow   = $prevPerTask[$tid] ?? null;
+      $prevAns   = (string) ($prevAnswers[$tid] ?? '');
+      $showPrev  = $prevAttempt && empty($perTaskRes[$tid]['carried']) && ($prevAns !== '' || is_array($prevRow));
+      $prevScore = (is_array($prevRow) && array_key_exists('score', $prevRow) && empty($prevRow['skipped'])) ? (int) $prevRow['score'] : null;
+      // Баллы кнопками 0…max; при большом максимуме — обычное поле.
+      $scoreButtons = $maxScore <= 6;
+      // Уже проверенные карточки при открытии страницы свёрнуты в одну строку.
+      $collapsed = $initialState === 'done';
+      $stripe = $isSkipped ? 'border-l-red-300' : ($initialState === 'done' ? 'border-l-green-400' : 'border-l-gray-200');
+      $tabCls = 'card-tab rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:bg-gray-50';
     @endphp
 
     <div
-      class="review-card relative rounded-2xl bg-white p-5 transition-shadow border-4
-            @if($isSkipped) border-red-100
-            @elseif($initialState==='done') border-green-100
-            @else border-gray-200 @endif"
+      class="review-card relative overflow-hidden rounded-2xl border border-gray-200 border-l-4 {{ $stripe }} bg-white transition-shadow"
       data-state="{{ $initialState }}"
       data-skipped="{{ $isSkipped ? '1' : '0' }}"
+      data-collapsed="{{ $collapsed ? '1' : '0' }}"
     >
+      {{-- Заголовок: номер ЕГЭ, статус; клик сворачивает/разворачивает --}}
+      <button type="button" class="card-toggle flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-gray-50">
+        <span class="text-base font-semibold text-gray-900">№{{ $t->number ?? ($t->order ?? ($i+1)) }}</span>
+        <span class="text-xs text-gray-500">макс. {{ $maxScore }}</span>
+        @if($isSkipped)
+          <span class="rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">Пропущено</span>
+        @endif
+        @if(!empty($perTaskRes[$tid]['carried']))
+          {{-- «Перерешать ошибки»: ученик не решал это задание заново, ответ
+               (и оценка, если она уже была) перенесены из прошлой попытки. --}}
+          <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">Из прошлой попытки</span>
+        @endif
+        <span class="card-summary min-w-0 flex-1 truncate text-sm text-gray-500 {{ $collapsed ? '' : 'hidden' }}">
+          @if(is_numeric($dbScore))<b class="text-gray-800">{{ $dbScore }}/{{ $maxScore }}</b>@endif
+          {{ \Illuminate\Support\Str::limit((string) $dbReason, 110) }}
+        </span>
+        <span class="ml-auto flex shrink-0 items-center gap-1.5 text-xs">
+          @if(isset($meta['seconds']))
+            <span class="rounded-full bg-gray-100 px-2 py-0.5 text-gray-600" title="Сколько времени задание было открыто у ученика">⏱ {{ $formatSeconds((int) $meta['seconds']) }}</span>
+          @endif
+          @if(!empty($meta['hint']))
+            <span class="rounded-full bg-amber-50 px-2 py-0.5 text-amber-800">💡 подсказка открыта</span>
+          @endif
+          <svg class="card-chevron h-4 w-4 text-gray-400 transition-transform {{ $collapsed ? '' : 'rotate-180' }}" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+        </span>
+      </button>
 
-      <div class="flex items-start justify-between gap-4 mb-3">
-        <div>
-          <div class="text-xs text-gray-500">Задание (ручная проверка)</div>
-          <div class="flex items-center gap-2">
-            <h2 class="text-lg font-semibold">№ {{ $t->order ?? ($i+1) }}</h2>
-            @if($isSkipped)
-              <span class="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">
-                Пропущено
-              </span>
-            @endif
-            @if(!empty($perTaskRes[$tid]['carried']))
-              {{-- «Перерешать ошибки»: ученик не решал это задание заново, ответ
-                   (и оценка, если она уже была) перенесены из прошлой попытки. --}}
-              <span class="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-600">
-                Из прошлой попытки
-              </span>
-            @endif
+      <div class="card-body grid gap-5 border-t border-gray-100 p-4 lg:grid-cols-2 {{ $collapsed ? 'hidden' : '' }}">
+        {{-- Слева — то, что читаем --}}
+        <div class="min-w-0 space-y-3">
+          @if(trim((string)($t->question_text ?? '')) !== '')
+            <div class="whitespace-pre-wrap text-sm text-gray-600">{{ $t->question_text }}</div>
+          @endif
+
+          <div>
+            <div class="mb-1 text-xs font-medium uppercase tracking-wide text-gray-400">Ответ ученика</div>
+            <div class="whitespace-pre-wrap rounded-xl bg-gray-50 px-3 py-3 text-[15px] leading-relaxed text-gray-900">{{ $studentAns !== '' ? $studentAns : '—' }}</div>
           </div>
-        </div>
 
-        <div class="flex gap-6">
-          {{-- AI-эксперт --}}
-          @php
-            $hasAi = ($aiRationaleFull && trim($aiRationaleFull) !== '') || ($aiCommentFull && trim($aiCommentFull) !== '') || is_numeric($aiScore);
-          @endphp
-          <div class="ai-panel min-w-0 flex-1 rounded-xl border {{ $hasAi ? 'border-indigo-200 bg-indigo-50 text-indigo-800' : 'border-gray-200 bg-gray-50 text-gray-700' }} px-3 py-2 text-sm">
-            <div class="font-medium mb-1">AI-эксперт</div>
-            <div class="ai-empty text-sm {{ $hasAi ? 'hidden' : '' }}">
-              @if(($aiDraft['status'] ?? null) === 'pending')
-                ИИ-проверка в очереди — черновик появится автоматически. Можно не ждать и проверить вручную.
-              @elseif(($aiDraft['status'] ?? null) === 'exported')
-                Выгружено на ИИ-проверку в Claude ({{ $aiDraft['exported_at'] ?? '' }}) — черновик появится после загрузки результата. Можно не ждать и проверить вручную.
-              @elseif(($aiDraft['status'] ?? null) === 'error')
-                ИИ-проверка не удалась: {{ $aiDraft['error'] ?? '' }} Нажмите «AI-проверка», чтобы попробовать ещё раз.
-              @else
-                Пока без рекомендаций. Нажмите «AI-проверка» или заполните поля вручную.
+          {{-- Справка вкладками: открыта максимум одна --}}
+          <div class="flex flex-wrap gap-1.5">
+            @if($passage !== '')<button type="button" class="{{ $tabCls }}" data-tab="text">Текст</button>@endif
+            @if($exemplar !== '' || $explain !== '' || $hintText !== '')<button type="button" class="{{ $tabCls }}" data-tab="exemplar">Образец</button>@endif
+            <button type="button" class="{{ $tabCls }}" data-tab="criteria">Критерии</button>
+            @if($showPrev)
+              <button type="button" class="{{ $tabCls }}" data-tab="prev">Прошлая попытка{{ $prevScore !== null ? ' · '.$prevScore.'/'.$maxScore : '' }}</button>
+            @endif
+            @if(!empty($taskHistory))<button type="button" class="{{ $tabCls }}" data-tab="history">История</button>@endif
+          </div>
+
+          @if($passage !== '')
+            <div class="card-tab-panel hidden max-h-96 overflow-y-auto whitespace-pre-wrap rounded-xl bg-gray-50 px-3 py-2 text-sm text-gray-800" data-tab="text">{{ $passage }}</div>
+          @endif
+          @if($exemplar !== '' || $explain !== '' || $hintText !== '')
+            <div class="card-tab-panel hidden space-y-2 rounded-xl bg-green-50 px-3 py-2 text-sm text-gray-800" data-tab="exemplar">
+              @if($exemplar !== '')<div class="whitespace-pre-wrap">{{ $exemplar }}</div>@endif
+              @if($explain !== '')
+                <div><div class="mb-0.5 text-xs text-gray-500">Пояснение</div><div class="whitespace-pre-wrap">{{ $explain }}</div></div>
+              @endif
+              @if($hintText !== '')
+                <div><div class="mb-0.5 text-xs text-gray-500">Подсказка, которую видел ученик</div><div class="whitespace-pre-wrap">{{ $hintText }}</div></div>
               @endif
             </div>
-            <div class="ai-score-display {{ $hasAi ? '' : 'hidden' }}">
-              Рекомендованные баллы: {{ is_numeric($aiScore) ? $aiScore : '—' }}
+          @endif
+          <div class="card-tab-panel hidden rounded-xl bg-gray-50 px-3 py-2 text-sm text-gray-800" data-tab="criteria">
+            @if(!empty($criteriaLines))
+              <ul class="list-disc space-y-1 pl-5">
+                @foreach($criteriaLines as $line)
+                  <li class="whitespace-pre-wrap">{{ $line }}</li>
+                @endforeach
+              </ul>
+            @else
+              <div class="text-gray-500">Критерии для этого задания не указаны.</div>
+            @endif
+          </div>
+          @if($showPrev)
+            <div class="card-tab-panel hidden space-y-2 rounded-xl bg-gray-50 px-3 py-2 text-sm" data-tab="prev">
+              <div class="text-xs text-gray-500">
+                Прошлая попытка № {{ $prevAttempt->attempt_no ?? '—' }}:
+                @if($prevScore !== null)
+                  <b class="text-gray-800">{{ $prevScore }} / {{ $t->max_score ?? ($prevRow['max'] ?? '—') }}</b>
+                  @if($prevAttempt->status !== 'checked')<span class="text-gray-400">(проверка не была завершена)</span>@endif
+                @else
+                  без оценки
+                @endif
+              </div>
+              <div class="whitespace-pre-wrap">{{ $prevAns !== '' ? $prevAns : '—' }}</div>
+              @if(filled($prevRow['reason'] ?? null))
+                <div><div class="mb-0.5 text-xs text-gray-500">Обоснование</div><div class="whitespace-pre-wrap">{{ $prevRow['reason'] }}</div></div>
+              @endif
+              @if(filled($prevRow['comment'] ?? null))
+                <div><div class="mb-0.5 text-xs text-gray-500">Комментарий ученику</div><div class="whitespace-pre-wrap">{{ $prevRow['comment'] }}</div></div>
+              @endif
             </div>
-            {{-- Флаг «модель не уверена» и разбор по элементам видит только куратор. --}}
-            <div class="ai-review mt-1 rounded-lg bg-amber-100 px-2 py-1 text-amber-900 {{ !empty($aiDraft['needs_review']) ? '' : 'hidden' }}">
-              Проверьте сами: <span class="ai-review-reason">{{ $aiDraft['review_reason'] ?? '' }}</span>
+          @endif
+          @if(!empty($taskHistory))
+            <div class="card-tab-panel hidden rounded-xl bg-gray-50 px-3 py-2 text-sm" data-tab="history">
+              <div class="mb-1 text-xs text-gray-500">Прошлые попытки ученика по этому номеру</div>
+              <div class="flex flex-wrap gap-1.5">
+                @foreach($taskHistory as $h)
+                  <span class="rounded-full bg-white px-2 py-0.5 text-xs text-gray-700">{{ $h['score'] }} / {{ $h['max'] }} <span class="text-gray-400">· {{ $h['date'] }}</span></span>
+                @endforeach
+              </div>
             </div>
+          @endif
+        </div>
+
+        {{-- Справа — то, что заполняем --}}
+        <div class="min-w-0 space-y-3">
+          {{-- ИИ одной строкой --}}
+          <div class="ai-panel rounded-xl border {{ $hasAi ? 'border-indigo-200 bg-indigo-50 text-indigo-800' : 'border-gray-200 bg-gray-50 text-gray-700' }} px-3 py-2 text-sm">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="ai-score-display font-medium {{ $hasAi ? '' : 'hidden' }}">ИИ: {{ is_numeric($aiScore) ? $aiScore : '—' }} из {{ $maxScore }}</span>
+              <span class="ai-empty {{ $hasAi ? 'hidden' : '' }}">
+                @if(($aiDraft['status'] ?? null) === 'pending')
+                  ИИ-проверка в очереди — можно не ждать.
+                @elseif(($aiDraft['status'] ?? null) === 'exported')
+                  Выгружено на ИИ-проверку в Claude ({{ $aiDraft['exported_at'] ?? '' }}) — можно не ждать.
+                @elseif(($aiDraft['status'] ?? null) === 'error')
+                  ИИ-проверка не удалась: {{ $aiDraft['error'] ?? '' }}
+                @else
+                  ИИ-черновика нет.
+                @endif
+              </span>
+              {{-- Флаг «модель не уверена» и разбор по элементам видит только куратор. --}}
+              <span class="ai-review rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900 {{ !empty($aiDraft['needs_review']) ? '' : 'hidden' }}"
+                    title="{{ $aiDraft['review_reason'] ?? '' }}">⚠ проверьте сами</span>
+              <button type="button"
+                      class="ai-accept ml-auto rounded-lg bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700 {{ $hasAi && $initialState !== 'done' ? '' : 'hidden' }}"
+                      data-score="{{ is_numeric($aiScore) ? $aiScore : '' }}"
+                      data-reason="{{ $aiRationaleFull }}"
+                      data-comment="{{ $aiCommentFull }}"
+                      title="Подставить черновик ИИ и сохранить">Принять</button>
+            </div>
+            <div class="ai-review-reason mt-1 text-xs text-amber-900 {{ !empty($aiDraft['review_reason']) && !empty($aiDraft['needs_review']) ? '' : 'hidden' }}">{{ $aiDraft['review_reason'] ?? '' }}</div>
             <details class="ai-elements mt-1 {{ !empty($aiDraft['elements']) ? '' : 'hidden' }}">
-              <summary class="cursor-pointer select-none">Разбор по элементам</summary>
-              <ul class="ai-elements-list mt-1 grid gap-1">
+              <summary class="cursor-pointer select-none text-xs">Разбор по элементам</summary>
+              <ul class="ai-elements-list mt-1 grid gap-1 text-xs">
                 @foreach(($aiDraft['elements'] ?? []) as $el)
                   <li>{{ !empty($el['counted']) ? '✓' : '✗' }} <b>{{ $el['element'] ?? '' }}</b> — {{ $el['reason'] ?? '' }}</li>
                 @endforeach
@@ -409,268 +509,132 @@
             </details>
           </div>
 
-          <div class="w-28">
-            <label class="block text-xs text-gray-500 mb-1">Баллы (макс. {{ $maxScore }})</label>
+          {{-- Баллы --}}
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-sm font-medium text-gray-700">Баллы</span>
+            @if($scoreButtons)
+              <div class="inline-flex overflow-hidden rounded-lg border border-gray-200">
+                @for($v = 0; $v <= $maxScore; $v++)
+                  <button type="button" class="score-btn min-w-[2.25rem] border-l border-gray-200 px-2 py-1.5 text-sm font-semibold text-gray-700 first:border-l-0 hover:bg-gray-50" data-value="{{ $v }}">{{ $v }}</button>
+                @endfor
+              </div>
+            @endif
             <input
               type="number" min="0" step="1" max="{{ $maxScore }}"
-              class="score-input w-full border rounded-lg px-2 py-1.5 text-center font-semibold"
+              class="score-input {{ $scoreButtons ? 'sr-only' : 'w-20 rounded-lg border px-2 py-1.5 text-center font-semibold' }}"
               name="score-visible-{{ $tid }}"
               data-input-for="score-{{ $tid }}"
               data-max="{{ $maxScore }}"
               value="{{ is_numeric($curScore) ? $curScore : '' }}"
             >
+            <span class="text-xs text-gray-400">из {{ $maxScore }}</span>
           </div>
-        </div>
-      </div>
 
-      @if(trim((string)($t->question_text ?? '')) !== '')
-      <div class="mb-4">
-        <div class="text-xs text-gray-500 mb-1">Текст задания</div>
-        <div class="whitespace-pre-wrap rounded-xl border border-blue-100 bg-blue-50 px-3 py-3 text-sm">
-          {{ $t->question_text }}
-        </div>
-        @if(trim((string)($t->passage_text ?? '')) !== '')
-          <details class="mt-2 rounded-xl border border-gray-200 p-3 bg-gray-50">
-            <summary class="text-sm text-gray-700 cursor-pointer select-none">Показать текст к заданию</summary>
-            <div class="mt-2 whitespace-pre-wrap text-sm text-gray-800">{{ $t->passage_text }}</div>
-          </details>
-        @endif
-      </div>
-      @endif
+          <form
+            action="{{ route('mentor.review.task.save', [$submission, $tid]) }}"
+            method="post"
+            class="per-task-form space-y-3"
+            data-task="{{ $tid }}"
+            data-has-db="{{ ($dbScore !== null || $dbReason !== null || $dbComment !== null) ? '1' : '0' }}"
+            data-submission="{{ $submission->id }}"
+          >
+            @csrf
+            <input type="hidden" name="score" id="score-{{ $tid }}" value="{{ is_numeric($curScore) ? $curScore : '' }}">
 
-      @php
-        $meta      = $taskMeta[(string) $tid] ?? [];
-        $exemplar  = trim((string) ($t->answer ?? ''));
-        $explain   = trim((string) ($t->explanation ?? ''));
-        $hintText  = trim((string) ($t->hint ?? ''));
-      @endphp
-      <div class="mb-4">
-        <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
-          <div class="text-xs text-gray-500">Ответ ученика</div>
-          @if(isset($meta['seconds']) || !empty($meta['hint']))
-            <div class="flex flex-wrap gap-1.5 text-xs">
-              @if(isset($meta['seconds']))
-                <span class="rounded-full border border-gray-200 bg-white px-2 py-0.5 text-gray-600" title="Сколько времени задание было открыто у ученика">⏱ {{ $formatSeconds((int) $meta['seconds']) }}</span>
-              @endif
-              @if(!empty($meta['hint']))
-                <span class="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-amber-800">💡 подсказка открыта</span>
-              @endif
-            </div>
-          @endif
-        </div>
-        <div class="whitespace-pre-wrap rounded-xl border border-gray-100 bg-gray-50 px-3 py-3 text-sm">
-          {{ $studentAns !== '' ? $studentAns : '—' }}
-        </div>
-      </div>
-
-      @if($exemplar !== '' || $explain !== '' || $hintText !== '')
-        <details class="mb-4 rounded-xl border border-green-100 bg-green-50 px-3 py-2 text-sm" open>
-          <summary class="cursor-pointer select-none text-green-800">Образцовый ответ</summary>
-          <div class="mt-2 space-y-2 text-gray-800">
-            @if($exemplar !== '')
-              <div class="whitespace-pre-wrap">{{ $exemplar }}</div>
-            @endif
-            @if($explain !== '')
-              <div>
-                <div class="text-xs text-gray-500 mb-1">Пояснение</div>
-                <div class="whitespace-pre-wrap">{{ $explain }}</div>
-              </div>
-            @endif
-            @if($hintText !== '')
-              <div>
-                <div class="text-xs text-gray-500 mb-1">Подсказка, которую видел ученик</div>
-                <div class="whitespace-pre-wrap">{{ $hintText }}</div>
-              </div>
-            @endif
-          </div>
-        </details>
-      @endif
-
-      @php
-        $prevRow = $prevPerTask[$tid] ?? null;
-        $prevAns = (string) ($prevAnswers[$tid] ?? '');
-        $showPrev = $prevAttempt && empty($perTaskRes[$tid]['carried']) && ($prevAns !== '' || is_array($prevRow));
-      @endphp
-      @if($showPrev)
-        <details class="mb-4 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm">
-          <summary class="cursor-pointer select-none text-gray-700">
-            Прошлая попытка № {{ $prevAttempt->attempt_no ?? '—' }}:
-            @if(is_array($prevRow) && array_key_exists('score', $prevRow) && empty($prevRow['skipped']))
-              <b>{{ (int) $prevRow['score'] }} / {{ $t->max_score ?? ($prevRow['max'] ?? '—') }}</b>
-              @if($prevAttempt->status !== 'checked')
-                <span class="text-gray-400">(проверка не была завершена)</span>
-              @endif
-            @else
-              <span class="text-gray-400">без оценки</span>
-            @endif
-          </summary>
-          <div class="mt-2 space-y-2">
             <div>
-              <div class="text-xs text-gray-500 mb-1">Ответ тогда</div>
-              <div class="whitespace-pre-wrap rounded-lg bg-gray-50 px-3 py-2">{{ $prevAns !== '' ? $prevAns : '—' }}</div>
+              <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-400">Обоснование баллов</label>
+              <textarea name="reason" rows="2" class="smart-textarea w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-indigo-300 focus:ring-indigo-200" placeholder="По критериям экзамена: почему именно такие баллы">{{ $curReason }}</textarea>
+              @if(!empty($quickPhrases['reason']))
+                <div class="mt-1.5 flex flex-wrap gap-1.5">
+                  @foreach($quickPhrases['reason'] as $phrase)
+                    <button type="button" class="quick-phrase-btn rounded-full border border-gray-200 px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-100" data-target="reason" data-phrase="{{ $phrase }}">{{ \Illuminate\Support\Str::limit($phrase, 28) }}</button>
+                  @endforeach
+                </div>
+              @endif
             </div>
-            @if(filled($prevRow['reason'] ?? null))
-              <div>
-                <div class="text-xs text-gray-500 mb-1">Обоснование</div>
-                <div class="whitespace-pre-wrap">{{ $prevRow['reason'] }}</div>
-              </div>
-            @endif
-            @if(filled($prevRow['comment'] ?? null))
-              <div>
-                <div class="text-xs text-gray-500 mb-1">Комментарий ученику</div>
-                <div class="whitespace-pre-wrap">{{ $prevRow['comment'] }}</div>
-              </div>
-            @endif
-          </div>
-        </details>
-      @endif
 
-      <form
-        action="{{ route('mentor.review.task.save', [$submission, $tid]) }}"
-        method="post"
-        class="per-task-form space-y-4"
-        data-task="{{ $tid }}"
-        data-has-db="{{ ($dbScore !== null || $dbReason !== null || $dbComment !== null) ? '1' : '0' }}"
-        data-submission="{{ $submission->id }}"
-      >
-        @csrf
-        <input type="hidden" name="score" id="score-{{ $tid }}" value="{{ is_numeric($curScore) ? $curScore : '' }}">
-
-        <div>
-          <label class="block text-sm font-medium mb-1">Обоснование баллов</label>
-          <textarea name="reason" rows="4" class="smart-textarea w-full border rounded-xl px-3 py-2" placeholder="По критериям экзамена...">{{ $curReason }}</textarea>
-          <div class="text-[11px] text-gray-400 mt-1">Опишите, почему выставлены именно такие баллы.</div>
-          @if(!empty($quickPhrases['reason']))
-            <div class="flex flex-wrap gap-1.5 mt-2">
-              @foreach($quickPhrases['reason'] as $phrase)
-                <button type="button" class="quick-phrase-btn text-xs px-2 py-1 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-100" data-target="reason" data-phrase="{{ e($phrase) }}">{{ \Illuminate\Support\Str::limit($phrase, 28) }}</button>
-              @endforeach
+            <div>
+              <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-400">Комментарий ученику</label>
+              <textarea name="comment" rows="3" class="smart-textarea w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-indigo-300 focus:ring-indigo-200" placeholder="Понятный комментарий для ученика">{{ $curComment }}</textarea>
+              @if(!empty($quickPhrases['comment']))
+                <div class="mt-1.5 flex flex-wrap gap-1.5">
+                  @foreach($quickPhrases['comment'] as $phrase)
+                    <button type="button" class="quick-phrase-btn rounded-full border border-gray-200 px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-100" data-target="comment" data-phrase="{{ $phrase }}">{{ \Illuminate\Support\Str::limit($phrase, 28) }}</button>
+                  @endforeach
+                </div>
+              @endif
             </div>
-          @endif
-        </div>
 
-        <div>
-          <label class="block text-sm font-medium mb-1">Комментарий ученику</label>
-          <textarea name="comment" rows="5" class="smart-textarea w-full border rounded-xl px-3 py-2" placeholder="Понятный комментарий для ученика...">{{ $curComment }}</textarea>
-          @if(!empty($quickPhrases['comment']))
-            <div class="flex flex-wrap gap-1.5 mt-2">
-              @foreach($quickPhrases['comment'] as $phrase)
-                <button type="button" class="quick-phrase-btn text-xs px-2 py-1 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-100" data-target="comment" data-phrase="{{ e($phrase) }}">{{ \Illuminate\Support\Str::limit($phrase, 28) }}</button>
-              @endforeach
+            <div class="flex flex-wrap items-center gap-2">
+              @if($aiEnabled)
+                <button formaction="{{ route('mentor.review.task.regen', [$submission, $tid]) }}"
+                        class="inline-flex items-center gap-1 rounded-lg border border-purple-200 px-2.5 py-1 text-xs text-purple-700 hover:bg-purple-50">
+                  <svg class="h-4 w-4 text-purple-500" viewBox="0 0 72 72" fill="currentColor" aria-hidden="true">
+                    <path d="M26 12 Q31 26, 46 36 Q31 46, 26 60 Q21 46, 6 36 Q21 26, 26 12Z"/>
+                    <path d="M50 6 Q53 12, 60 18 Q53 24, 50 30 Q47 24, 40 18 Q47 12, 50 6Z"/>
+                    <path d="M56 38 Q59 43, 64 48 Q59 53, 56 58 Q53 53, 48 48 Q53 43, 56 38Z"/>
+                  </svg>
+                  AI-проверка
+                </button>
+              @endif
+
+              {{-- Пропустить / Вернуть --}}
+              @if(!$isSkipped)
+                <button type="submit"
+                        formaction="{{ route('mentor.review.task.skip', [$submission, $tid]) }}"
+                        formmethod="POST"
+                        onclick="return confirm('Пропустить задание? Оно уйдёт администратору.');"
+                        class="rounded-lg border border-amber-200 px-2.5 py-1 text-xs text-amber-700 hover:bg-amber-50">
+                  Пропустить
+                </button>
+              @else
+                <button type="submit"
+                        formaction="{{ route('mentor.review.task.unskip', [$submission, $tid]) }}"
+                        formmethod="POST"
+                        class="rounded-lg border border-emerald-200 px-2.5 py-1 text-xs text-emerald-700 hover:bg-emerald-50">
+                  Вернуть на проверку
+                </button>
+              @endif
+
+              {{-- Кнопки «Сохранить» нет: правки уходят на сервер автоматически
+                   (см. autosave в скрипте ниже), тут только статус. --}}
+              <span class="save-status text-xs text-gray-500"></span>
+
+              {{-- Галочка согласия справа --}}
+              <label class="consent-wrap ml-auto inline-flex items-center gap-2 text-xs text-gray-700 {{ $needConsent ? '' : 'hidden' }}">
+                <input type="checkbox" class="consent-checkbox rounded" data-task="{{ $tid }}">
+                Я согласен с AI-экспертом
+              </label>
             </div>
-          @endif
+          </form>
         </div>
-
-        {{-- Спойлер с критериями (из tasks.criteria) --}}
-        <details class="rounded-xl border border-gray-200 p-3 bg-gray-50">
-          <summary class="text-sm text-gray-700 cursor-pointer select-none">
-            Показать критерии для этого задания
-          </summary>
-          <div class="mt-2 text-sm text-gray-800">
-            @if(!empty($criteriaLines))
-              <ul class="list-disc pl-5 space-y-1">
-                @foreach($criteriaLines as $line)
-                  <li class="whitespace-pre-wrap">{{ e($line) }}</li>
-                @endforeach
-              </ul>
-            @else
-              <div class="text-gray-500">Критерии для этого задания не указаны.</div>
-            @endif
-          </div>
-        </details>
-
-        @if(!empty($taskHistory))
-        <details class="rounded-xl border border-gray-200 p-3 bg-gray-50">
-          <summary class="text-sm text-gray-700 cursor-pointer select-none">
-            Прошлые попытки студента по этому номеру задания
-          </summary>
-          <div class="mt-2 flex flex-wrap gap-2">
-            @foreach($taskHistory as $h)
-              <span class="inline-flex items-center rounded-full border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700" title="{{ $h['date'] }}">
-                {{ $h['score'] }} / {{ $h['max'] }} <span class="text-gray-400 ml-1">({{ $h['date'] }})</span>
-              </span>
-            @endforeach
-          </div>
-        </details>
-        @endif
-
-        <div class="flex flex-wrap items-center gap-2 justify-start pt-1">
-          {{-- Кнопки слева --}}
-          <div class="flex flex-wrap items-center gap-2">
-            @if($aiEnabled)
-            <button
-              formaction="{{ route('mentor.review.task.regen', [$submission, $tid]) }}"
-              class="px-3 py-2 rounded-lg border-2 border-purple-200 text-purple-700 hover:bg-purple-50"
-            >
-              <svg class="w-5 h-5 text-purple-500 inline-block align-[-2px]" viewBox="0 0 72 72" fill="currentColor" aria-hidden="true">
-                <path d="M26 12 Q31 26, 46 36 Q31 46, 26 60 Q21 46, 6 36 Q21 26, 26 12Z"/>
-                <path d="M50 6 Q53 12, 60 18 Q53 24, 50 30 Q47 24, 40 18 Q47 12, 50 6Z"/>
-                <path d="M56 38 Q59 43, 64 48 Q59 53, 56 58 Q53 53, 48 48 Q53 43, 56 38Z"/>
-              </svg>
-              AI-проверка
-            </button>
-            @endif
-
-{{-- Пропустить / Вернуть --}}
-  @if(!$isSkipped)
-    <button type="submit"
-            formaction="{{ route('mentor.review.task.skip', [$submission, $tid]) }}"
-            formmethod="POST"
-            onclick="return confirm('Пропустить задание? Оно уйдёт администратору.');"
-            class="px-3 py-2 rounded-lg border hover:bg-gray-50 text-amber-700 border-amber-300">
-      Пропустить задание
-    </button>
-  @else
-    <button type="submit"
-            formaction="{{ route('mentor.review.task.unskip', [$submission, $tid]) }}"
-            formmethod="POST"
-            class="px-3 py-2 rounded-lg border hover:bg-gray-50 text-emerald-700 border-emerald-300">
-      Вернуть на проверку
-    </button>
-  @endif
-
-            {{-- Кнопки «Сохранить» нет: правки уходят на сервер автоматически
-                 (см. autosave в скрипте ниже), тут только статус. --}}
-            <span class="save-status text-xs text-gray-500"></span>
-          </div>
-
-          {{-- Галочка согласия справа --}}
-          <div class="ml-auto">
-            <label class="inline-flex items-center gap-2 text-sm text-gray-700 consent-wrap {{ $needConsent ? '' : 'hidden' }}">
-              <input type="checkbox" class="consent-checkbox rounded" data-task="{{ $tid }}">
-              Я согласен с AI-экспертом
-            </label>
-          </div>
-        </div>
-      </form>
+      </div>
 
       {{-- Оверлей загрузки AI --}}
-      <div class="ai-loading-overlay hidden absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center rounded-2xl z-20">
-        <svg class="animate-spin h-8 w-8 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <div class="ai-loading-overlay hidden absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-white bg-opacity-70">
+        <svg class="h-8 w-8 animate-spin text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
         </svg>
       </div>
     </div>
   @empty
-    <div class="rounded-xl border border-gray-200 bg-white p-4 text-gray-600">
-      Письменных заданий нет.
-    </div>
+    <div class="rounded-2xl border border-gray-200 bg-white p-4 text-gray-600">Письменных заданий нет.</div>
   @endforelse
 
   {{-- Итоговые действия --}}
-  <div class="mt-4 flex flex-wrap items-center justify-end gap-2">
+  <div class="flex flex-wrap items-center justify-end gap-2 pt-2">
     <form action="{{ route('mentor.review.finish', $submission) }}" method="post" id="finish-form">
       @csrf
       <button type="submit"
-        class="finish-btn px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+        class="finish-btn rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 disabled:opacity-50"
         @if(!$allManualClosed) disabled title="Завершение доступно, когда все задания проверены или отправлены в отказ" @endif
       >Завершить проверку</button>
     </form>
     <form action="{{ route('mentor.review.finish_next', $submission) }}" method="post" id="finish-next-form">
       @csrf
       <button type="submit"
-        class="finish-next-btn px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+        class="finish-next-btn rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 disabled:opacity-50"
         @if(!$allManualClosed) disabled title="Доступно, когда все задания проверены или отправлены в отказ" @endif
       >Завершить и взять следующую</button>
     </form>
@@ -715,8 +679,61 @@ document.addEventListener('DOMContentLoaded', () => {
     totalNowEl.textContent = String(sum);
   }
   // На любой ввод: AI-черновик ставит балл программно и шлёт input на форму, а не на поле.
-  document.addEventListener('input', updateTotal);
+  document.addEventListener('input', () => {
+    updateTotal();
+    document.querySelectorAll('.review-card').forEach(paintScoreButtons);
+  });
   updateTotal();
+
+  // Баллы кнопками 0…max: источник правды — поле .score-input (на нём висят
+  // автосейв и валидация), кнопки только ставят в него значение.
+  function paintScoreButtons(card) {
+    const input = card.querySelector('.score-input');
+    card.querySelectorAll('.score-btn').forEach((b) => {
+      const on = input && input.value !== '' && b.dataset.value === input.value;
+      b.classList.toggle('bg-indigo-600', on);
+      b.classList.toggle('text-white', on);
+      b.classList.toggle('hover:bg-gray-50', !on);
+    });
+  }
+  document.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('.score-btn');
+    if (!btn) return;
+    const input = btn.closest('.review-card')?.querySelector('.score-input');
+    if (!input || input.disabled) return;
+    input.value = btn.dataset.value;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  document.querySelectorAll('.review-card').forEach(paintScoreButtons);
+
+  // Вкладки справки (Текст / Образец / Критерии / …): открыта максимум одна, повторный клик закрывает.
+  document.addEventListener('click', (ev) => {
+    const tab = ev.target.closest('.card-tab');
+    if (!tab) return;
+    const card = tab.closest('.review-card');
+    const panel = card.querySelector(`.card-tab-panel[data-tab="${tab.dataset.tab}"]`);
+    const wasOpen = panel && !panel.classList.contains('hidden');
+    card.querySelectorAll('.card-tab-panel').forEach((p) => p.classList.add('hidden'));
+    card.querySelectorAll('.card-tab').forEach((t) => t.classList.remove('bg-gray-900', 'text-white', 'border-gray-900'));
+    if (panel && !wasOpen) {
+      panel.classList.remove('hidden');
+      tab.classList.add('bg-gray-900', 'text-white', 'border-gray-900');
+    }
+  });
+
+  // Свернуть/развернуть карточку (проверенные при загрузке страницы свёрнуты).
+  function setCollapsed(card, collapsed) {
+    card.dataset.collapsed = collapsed ? '1' : '0';
+    card.querySelector('.card-body')?.classList.toggle('hidden', collapsed);
+    card.querySelector('.card-summary')?.classList.toggle('hidden', !collapsed);
+    card.querySelector('.card-chevron')?.classList.toggle('rotate-180', !collapsed);
+  }
+  document.addEventListener('click', (ev) => {
+    const head = ev.target.closest('.card-toggle');
+    if (!head) return;
+    const card = head.closest('.review-card');
+    setCollapsed(card, card.dataset.collapsed !== '1');
+  });
 
   function updateProgressCount() {
     updateTotal();
@@ -736,10 +753,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function cardSetState(card, state){
     if (card.dataset.skipped === '1') return;
     card.dataset.state = state;
-    card.classList.remove('border-gray-200','border-blue-400','border-green-400');
-    if (state === 'done')      card.classList.add('border-green-400');
-    else if (state === 'editing') card.classList.add('border-blue-400');
-    else                        card.classList.add('border-gray-200');
+    // Статус — цветной полоской слева (border-l-4 у карточки).
+    card.classList.remove('border-l-gray-200','border-l-blue-400','border-l-green-400');
+    if (state === 'done')      card.classList.add('border-l-green-400');
+    else if (state === 'editing') card.classList.add('border-l-blue-400');
+    else                        card.classList.add('border-l-gray-200');
     updateProgressCount();
   }
 
@@ -964,6 +982,25 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    // «Принять» в панели ИИ: подставить черновик ИИ и сразу сохранить.
+    // Нажатие кнопки — и есть согласие с ИИ, поэтому идём через
+    // onAnyFieldEdited() (он снимает требование галочки).
+    const acceptBtn = card.querySelector('.ai-accept');
+    if (acceptBtn) acceptBtn.addEventListener('click', () => {
+      if (scoreVisible) scoreVisible.value = acceptBtn.dataset.score || '';
+      if (reasonEl)  reasonEl.value  = acceptBtn.dataset.reason || '';
+      if (commentEl) commentEl.value = acceptBtn.dataset.comment || '';
+      [reasonEl, commentEl].forEach((el) => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } });
+      onAnyFieldEdited();
+      paintScoreButtons(card);
+      if (canSave) {
+        form.__mentorReviewSave();
+        acceptBtn.classList.add('hidden');
+      } else if (statusEl) {
+        statusEl.textContent = 'У черновика ИИ нет балла — укажите баллы вручную';
+      }
+    });
+
     syncScoreToHidden();
     updateSaveAvailability();
 
@@ -1157,11 +1194,22 @@ document.addEventListener('DOMContentLoaded', () => {
           panel.querySelector('.ai-empty')?.classList.add('hidden');
 
           const scoreDiv = panel.querySelector('.ai-score-display');
-          scoreDiv.textContent = 'Рекомендованные баллы: ' + (data.score ?? '—');
+          scoreDiv.textContent = 'ИИ: ' + (data.score ?? '—') + ' из ' + (scoreInput ? scoreInput.dataset.max : '—');
           scoreDiv.classList.remove('hidden');
 
           panel.querySelector('.ai-review').classList.toggle('hidden', !data.needs_review);
-          panel.querySelector('.ai-review-reason').textContent = data.review_reason || '';
+          const reasonLine = panel.querySelector('.ai-review-reason');
+          reasonLine.textContent = data.review_reason || '';
+          reasonLine.classList.toggle('hidden', !(data.needs_review && data.review_reason));
+
+          // «Принять» — с данными свежего черновика
+          const acceptBtn = panel.querySelector('.ai-accept');
+          if (acceptBtn) {
+            acceptBtn.dataset.score   = data.score ?? '';
+            acceptBtn.dataset.reason  = data.rationale ?? '';
+            acceptBtn.dataset.comment = data.comment ?? '';
+            acceptBtn.classList.remove('hidden');
+          }
 
           const list = panel.querySelector('.ai-elements-list');
           list.replaceChildren(...(data.elements || []).map((el) => {

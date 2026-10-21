@@ -66,6 +66,23 @@ class SubmissionReviewPageTest extends TestCase
             ->assertSee('⏱ 3 мин')->assertSee('подсказка открыта')
             ->assertSee('Образцовый ответ про налоги')->assertSee('Вспомни признаки налога')
             ->assertSee('№19: 17%')
-            ->assertSee('data-auto="1"', false)->assertSee('из 4');
+            ->assertSee('data-auto="1"', false)->assertSee('из 4')
+            // Новое оформление: номер ЕГЭ в заголовке, баллы кнопками 0…3,
+            // справка вкладками, первая часть таблицей, непроверенное — развёрнуто.
+            ->assertSee('№19')
+            ->assertSee('data-value="3"', false)->assertDontSee('data-value="4"', false)
+            ->assertSee('data-tab="exemplar"', false)->assertSee('data-tab="criteria"', false)
+            ->assertSee('Первая часть (автопроверка)')
+            ->assertSee('data-collapsed="0"', false);
+
+        // Проверенное задание при открытии страницы свёрнуто в строку с баллом и обоснованием.
+        $submission->update(['per_task_results' => [
+            (string) $auto->id => ['score' => 1],
+            (string) $w->id    => ['score' => 2, 'reason' => 'Два примера из трёх'],
+        ]]);
+        $this->actingAs($admin)->get(route('mentor.submissions.show', $submission))
+            ->assertOk()
+            ->assertSee('data-collapsed="1"', false)
+            ->assertSee('2/3')->assertSee('Два примера из трёх');
     }
 }
