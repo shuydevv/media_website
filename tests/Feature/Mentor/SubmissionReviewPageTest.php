@@ -73,7 +73,8 @@ class SubmissionReviewPageTest extends TestCase
             ->assertSee('data-value="3"', false)->assertDontSee('data-value="4"', false)
             ->assertSee('data-tab="exemplar"', false)->assertSee('data-tab="criteria"', false)
             ->assertSee('Первая часть (автопроверка)')
-            ->assertSee('data-collapsed="0"', false);
+            ->assertSee('data-collapsed="0"', false)
+            ->assertSee('Не проверено')->assertDontSee('<span class="text-xs text-gray-400">из', false);
 
         // Проверенное задание при открытии страницы свёрнуто в строку с баллом и обоснованием.
         $submission->update(['per_task_results' => [
@@ -83,6 +84,7 @@ class SubmissionReviewPageTest extends TestCase
         $this->actingAs($admin)->get(route('mentor.submissions.show', $submission))
             ->assertOk()
             ->assertSee('data-collapsed="1"', false)
-            ->assertSee('2/3')->assertSee('Два примера из трёх');
+            ->assertSee('2/3')->assertSee('Два примера из трёх')
+            ->assertSee('Сохранено');
     }
 }

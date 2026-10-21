@@ -356,6 +356,12 @@
       $collapsed = $initialState === 'done';
       $stripe = $isSkipped ? 'border-l-red-300' : ($initialState === 'done' ? 'border-l-green-400' : 'border-l-gray-200');
       $tabCls = 'card-tab rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:bg-gray-50';
+      // Статус словами в заголовке (дальше обновляет JS, см. renderStatus()).
+      [$statusText, $statusCls] = match (true) {
+          $initialState === 'done' => ['Сохранено', 'bg-green-50 text-green-700'],
+          $hasAi                   => ['Черновик ИИ — не принят', 'bg-indigo-50 text-indigo-700'],
+          default                  => ['Не проверено', 'bg-gray-100 text-gray-600'],
+      };
     @endphp
 
     <div
@@ -363,11 +369,14 @@
       data-state="{{ $initialState }}"
       data-skipped="{{ $isSkipped ? '1' : '0' }}"
       data-collapsed="{{ $collapsed ? '1' : '0' }}"
+      data-ai-draft="{{ $hasAi && $initialState !== 'done' ? '1' : '0' }}"
+      data-dirty="0"
     >
       {{-- Заголовок: номер ЕГЭ, статус; клик сворачивает/разворачивает --}}
       <button type="button" class="card-toggle flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-gray-50">
         <span class="text-base font-semibold text-gray-900">№{{ $t->number ?? ($t->order ?? ($i+1)) }}</span>
         <span class="text-xs text-gray-500">макс. {{ $maxScore }}</span>
+        <span class="card-status rounded-full px-2 py-0.5 text-xs font-medium {{ $statusCls }} {{ $isSkipped ? 'hidden' : '' }}">{{ $statusText }}</span>
         @if($isSkipped)
           <span class="rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">Пропущено</span>
         @endif
@@ -399,7 +408,7 @@
           @endif
 
           <div>
-            <div class="mb-1 text-xs font-medium uppercase tracking-wide text-gray-400">Ответ ученика</div>
+            <div class="mb-1 text-sm font-medium text-gray-700">Ответ ученика</div>
             <div class="whitespace-pre-wrap rounded-xl bg-gray-50 px-3 py-3 text-[15px] leading-relaxed text-gray-900">{{ $studentAns !== '' ? $studentAns : '—' }}</div>
           </div>
 
@@ -492,11 +501,11 @@
               <span class="ai-review rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900 {{ !empty($aiDraft['needs_review']) ? '' : 'hidden' }}"
                     title="{{ $aiDraft['review_reason'] ?? '' }}">⚠ проверьте сами</span>
               <button type="button"
-                      class="ai-accept ml-auto rounded-lg bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700 {{ $hasAi && $initialState !== 'done' ? '' : 'hidden' }}"
+                      class="ai-accept ml-auto rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 {{ $hasAi && $initialState !== 'done' ? '' : 'hidden' }}"
                       data-score="{{ is_numeric($aiScore) ? $aiScore : '' }}"
                       data-reason="{{ $aiRationaleFull }}"
                       data-comment="{{ $aiCommentFull }}"
-                      title="Подставить черновик ИИ и сохранить">Принять</button>
+                      title="Сохранить балл, обоснование и комментарий ИИ как оценку куратора">Принять оценку ИИ</button>
             </div>
             <div class="ai-review-reason mt-1 text-xs text-amber-900 {{ !empty($aiDraft['review_reason']) && !empty($aiDraft['needs_review']) ? '' : 'hidden' }}">{{ $aiDraft['review_reason'] ?? '' }}</div>
             <details class="ai-elements mt-1 {{ !empty($aiDraft['elements']) ? '' : 'hidden' }}">
@@ -527,7 +536,6 @@
               data-max="{{ $maxScore }}"
               value="{{ is_numeric($curScore) ? $curScore : '' }}"
             >
-            <span class="text-xs text-gray-400">из {{ $maxScore }}</span>
           </div>
 
           <form
@@ -542,8 +550,8 @@
             <input type="hidden" name="score" id="score-{{ $tid }}" value="{{ is_numeric($curScore) ? $curScore : '' }}">
 
             <div>
-              <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-400">Обоснование баллов</label>
-              <textarea name="reason" rows="2" class="smart-textarea w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-indigo-300 focus:ring-indigo-200" placeholder="По критериям экзамена: почему именно такие баллы">{{ $curReason }}</textarea>
+              <label class="mb-1 block text-sm font-medium text-gray-700">Обоснование баллов</label>
+              <textarea name="reason" rows="2" class="smart-textarea w-full resize-none overflow-hidden rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-indigo-300 focus:ring-indigo-200" placeholder="По критериям экзамена: почему именно такие баллы">{{ $curReason }}</textarea>
               @if(!empty($quickPhrases['reason']))
                 <div class="mt-1.5 flex flex-wrap gap-1.5">
                   @foreach($quickPhrases['reason'] as $phrase)
@@ -554,8 +562,8 @@
             </div>
 
             <div>
-              <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-400">Комментарий ученику</label>
-              <textarea name="comment" rows="3" class="smart-textarea w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-indigo-300 focus:ring-indigo-200" placeholder="Понятный комментарий для ученика">{{ $curComment }}</textarea>
+              <label class="mb-1 block text-sm font-medium text-gray-700">Комментарий ученику</label>
+              <textarea name="comment" rows="3" class="smart-textarea w-full resize-none overflow-hidden rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-indigo-300 focus:ring-indigo-200" placeholder="Понятный комментарий для ученика">{{ $curComment }}</textarea>
               @if(!empty($quickPhrases['comment']))
                 <div class="mt-1.5 flex flex-wrap gap-1.5">
                   @foreach($quickPhrases['comment'] as $phrase)
@@ -584,8 +592,8 @@
                         formaction="{{ route('mentor.review.task.skip', [$submission, $tid]) }}"
                         formmethod="POST"
                         onclick="return confirm('Пропустить задание? Оно уйдёт администратору.');"
-                        class="rounded-lg border border-amber-200 px-2.5 py-1 text-xs text-amber-700 hover:bg-amber-50">
-                  Пропустить
+                        class="text-xs text-gray-500 underline decoration-dotted hover:text-amber-700">
+                  Пропустить задание
                 </button>
               @else
                 <button type="submit"
@@ -601,7 +609,7 @@
               <span class="save-status text-xs text-gray-500"></span>
 
               {{-- Галочка согласия справа --}}
-              <label class="consent-wrap ml-auto inline-flex items-center gap-2 text-xs text-gray-700 {{ $needConsent ? '' : 'hidden' }}">
+              <label class="consent-wrap ml-auto inline-flex items-center gap-2 text-xs text-gray-700 {{ $needConsent && !($hasAi && $initialState !== 'done') ? '' : 'hidden' }}">
                 <input type="checkbox" class="consent-checkbox rounded" data-task="{{ $tid }}">
                 Я согласен с AI-экспертом
               </label>
@@ -656,6 +664,40 @@ document.addEventListener('DOMContentLoaded', () => {
     ev.preventDefault();
     ev.returnValue = '';
   });
+
+  // Высота полей под текст. Считаем не только при загрузке: веб-шрифт
+  // приходит позже и переносит текст иначе (комментарий обрезался с
+  // прокруткой), а у свёрнутых карточек высоты нет вовсе — их пропускаем
+  // и досчитываем при разворачивании.
+  function autoSize(el) {
+    if (!el || el.offsetParent === null) return;
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }
+  function autoSizeAll() { document.querySelectorAll('.smart-textarea').forEach(autoSize); }
+  window.addEventListener('load', autoSizeAll);
+  window.addEventListener('resize', autoSizeAll);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(autoSizeAll);
+
+  // Статус карточки словами в заголовке — чтобы было видно, оценка это,
+  // нетронутый черновик ИИ или несохранённая правка.
+  const STATUS = {
+    saved:   ['Сохранено',                 'bg-green-50 text-green-700'],
+    dirty:   ['Не сохранено',              'bg-amber-50 text-amber-800'],
+    aiDraft: ['Черновик ИИ — не принят',   'bg-indigo-50 text-indigo-700'],
+    todo:    ['Не проверено',              'bg-gray-100 text-gray-600'],
+  };
+  function renderStatus(card) {
+    const chip = card.querySelector('.card-status');
+    if (!chip) return;
+    let key = 'todo';
+    if (card.dataset.dirty === '1')          key = 'dirty';
+    else if (card.dataset.state === 'done')  key = 'saved';
+    else if (card.dataset.aiDraft === '1')   key = 'aiDraft';
+    const hide = card.dataset.skipped === '1';
+    chip.className = 'card-status rounded-full px-2 py-0.5 text-xs font-medium ' + STATUS[key][1] + (hide ? ' hidden' : '');
+    chip.textContent = STATUS[key][0];
+  }
 
   const progressCountEl = document.getElementById('progress-count');
   function isCardClosed(card) {
@@ -727,6 +769,7 @@ document.addEventListener('DOMContentLoaded', () => {
     card.querySelector('.card-body')?.classList.toggle('hidden', collapsed);
     card.querySelector('.card-summary')?.classList.toggle('hidden', !collapsed);
     card.querySelector('.card-chevron')?.classList.toggle('rotate-180', !collapsed);
+    if (!collapsed) card.querySelectorAll('.smart-textarea').forEach(autoSize);
   }
   document.addEventListener('click', (ev) => {
     const head = ev.target.closest('.card-toggle');
@@ -758,6 +801,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (state === 'done')      card.classList.add('border-l-green-400');
     else if (state === 'editing') card.classList.add('border-l-blue-400');
     else                        card.classList.add('border-l-gray-200');
+    renderStatus(card);
     updateProgressCount();
   }
 
@@ -848,9 +892,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // остаётся «несохранённой» до следующего автосейва.
         if (versionAtSend === editVersion) {
           dirtyTasks.delete(taskId);
+          card.dataset.dirty = '0';
           clearDraft();
-          if (statusEl) statusEl.textContent = 'Сохранено';
+          if (statusEl) statusEl.textContent = '';
         }
+        renderStatus(card);
       } catch (e) {
         console.error(e);
         if (statusEl) statusEl.textContent = 'Ошибка сохранения, попробуйте ещё раз';
@@ -917,9 +963,12 @@ document.addEventListener('DOMContentLoaded', () => {
       // их, если это осмысленно (например, работа оценена без комментария).
       canSave = validScore && consentOk;
 
+      // «Заполняется» — только когда куратор сам что-то поменял: подставленный
+      // при загрузке черновик ИИ ещё не оценка (раньше карточка с черновиком
+      // сразу выглядела как начатая проверка).
       if (form.dataset.hasDb !== '1') {
-        if (canSave) cardSetState(card, 'editing');
-        else         cardSetState(card, 'idle');
+        if (canSave && dirtyTasks.has(taskId)) cardSetState(card, 'editing');
+        else                                   cardSetState(card, 'idle');
       }
 
       markCardValidity(card, canSave);
@@ -930,11 +979,17 @@ document.addEventListener('DOMContentLoaded', () => {
         consentWrap.classList.add('hidden');
         if (consentChk) consentChk.checked = false;
       }
-      syncScoreToHidden();
-      updateSaveAvailability();
-
+      // Любая правка — это уже оценка куратора, а не нетронутый черновик ИИ:
+      // кнопка «Принять» больше не нужна, дальше работает автосохранение.
       editVersion++;
       dirtyTasks.add(taskId);
+      card.dataset.dirty = '1';
+      card.dataset.aiDraft = '0';
+      card.querySelector('.ai-accept')?.classList.add('hidden');
+
+      syncScoreToHidden();
+      updateSaveAvailability();
+      renderStatus(card);
       writeDraft();
       if (statusEl) {
         statusEl.textContent = canSave ? '' : 'Укажите баллы — без них задание не сохранится';
@@ -964,7 +1019,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     [reasonEl, commentEl].forEach(el => {
       if (!el) return;
-      const resize = () => { el.style.height = 'auto'; el.style.height = (el.scrollHeight) + 'px'; };
+      const resize = () => autoSize(el);
       resize();
       el.addEventListener('input', resize);
       el.addEventListener('input', onAnyFieldEdited);
@@ -990,7 +1045,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (scoreVisible) scoreVisible.value = acceptBtn.dataset.score || '';
       if (reasonEl)  reasonEl.value  = acceptBtn.dataset.reason || '';
       if (commentEl) commentEl.value = acceptBtn.dataset.comment || '';
-      [reasonEl, commentEl].forEach((el) => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } });
+      [reasonEl, commentEl].forEach(autoSize);
       onAnyFieldEdited();
       paintScoreButtons(card);
       if (canSave) {
@@ -1015,7 +1070,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (reasonEl && reasonEl.value.trim() === '' && draft.reason)          { reasonEl.value = draft.reason; restored = true; }
       if (commentEl && commentEl.value.trim() === '' && draft.comment)       { commentEl.value = draft.comment; restored = true; }
       if (restored) {
-        [reasonEl, commentEl].forEach((el) => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } });
+        [reasonEl, commentEl].forEach(autoSize);
         onAnyFieldEdited();
         if (statusEl && canSave) statusEl.textContent = 'Восстановлен черновик';
       }
@@ -1222,11 +1277,19 @@ document.addEventListener('DOMContentLoaded', () => {
           panel.querySelector('.ai-elements').classList.toggle('hidden', !(data.elements || []).length);
         }
 
-        // показать галочку согласия
-        const consentWrap = form.querySelector('.consent-wrap');
-        const consentChk  = consentWrap ? consentWrap.querySelector('.consent-checkbox') : null;
-        if (consentWrap) consentWrap.classList.remove('hidden');
-        if (consentChk)  consentChk.checked = false;
+        // Свежий черновик ИИ ещё не оценка: согласие с ним — кнопка «Принять»
+        // (раньше для этого была отдельная галочка).
+        card.dataset.aiDraft = '1';
+        card.dataset.dirty = '0';
+        [reasonEl, commentEl].forEach((el) => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } });
+        if (form.dataset.hasDb !== '1') {
+          card.dataset.state = 'idle';
+        }
+        const chip = card.querySelector('.card-status');
+        if (chip) {
+          chip.className = 'card-status rounded-full px-2 py-0.5 text-xs font-medium bg-indigo-50 text-indigo-700';
+          chip.textContent = 'Черновик ИИ — не принят';
+        }
 
         // триггеры локальной валидации
         form.dispatchEvent(new Event('input', { bubbles: true }));
