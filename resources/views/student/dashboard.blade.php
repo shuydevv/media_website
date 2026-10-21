@@ -72,7 +72,7 @@
         .fish-feed-ripple {
             position: absolute;
             border-radius: 9999px;
-            background: rgba(39, 39, 42, .12);
+            background: rgb(var(--c-zinc-800, 39 39 42) / .12);
             transform: scale(0);
             pointer-events: none;
             animation: fish-ripple-wave .5s ease-out forwards;
@@ -98,7 +98,7 @@
             gap: 1px;
             padding: 6px 14px;
             border-radius: 10px;
-            background: rgba(17, 24, 39, .82);
+            background: rgb(var(--c-gray-900, 17 24 39) / .82);
             color: #fff;
             text-align: center;
             pointer-events: none;
@@ -126,7 +126,7 @@
             max-width: 170px;
             border-radius: 16px;
             background: #fff;
-            color: #18181b;
+            color: rgb(var(--c-zinc-900, 24 24 27));
             font-size: 13px;
             line-height: 1.35;
             font-weight: 500;
@@ -235,7 +235,7 @@
             padding: 8px 12px;
         }
         .fish-bubble.is-quiet {
-            color: #52525b;
+            color: rgb(var(--c-zinc-600, 82 82 91));
         }
         /* Крестик — кружок на правом верхнем углу облачка. На ПК виден при
            наведении на облачко, на телефоне (наведения нет) — всегда. */
@@ -250,12 +250,12 @@
             justify-content: center;
             border-radius: 9999px;
             background: #fff;
-            color: #71717a;
+            color: rgb(var(--c-zinc-500, 113 113 122));
             box-shadow: 0 1px 4px rgba(15, 23, 42, .25);
             transition: opacity .15s ease, color .15s ease;
         }
         .fish-bubble-close:hover {
-            color: #18181b;
+            color: rgb(var(--c-zinc-900, 24 24 27));
         }
         /* У нижнего облачка хвостик сверху справа — крестик уходит в
            нижний правый угол, чтобы не сливаться с хвостиком. */

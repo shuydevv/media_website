@@ -22,9 +22,9 @@
     gap: 6px;
     padding: 6px 12px;
     border-radius: 10px;
-    border: 1px solid #e4e4e7;
-    background: #fafafa;
-    color: #3f3f46;
+    border: 1px solid rgb(var(--c-zinc-200, 228 228 231));
+    background: rgb(var(--c-zinc-50, 250 250 250));
+    color: rgb(var(--c-zinc-700, 63 63 70));
     font-variant-numeric: tabular-nums;
     font-weight: 600;
     white-space: nowrap;

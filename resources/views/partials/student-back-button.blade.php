@@ -22,16 +22,16 @@
         justify-content: center;
         border-radius: 8px;
         background: #fff;
-        border: 1px solid #e5e7eb;
+        border: 1px solid rgb(var(--c-gray-200, 229 231 235));
         box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
-        color: #3f3f46;
+        color: rgb(var(--c-zinc-700, 63 63 70));
         text-decoration: none;
         transition: color .15s ease, background-color .15s ease;
         z-index: 20;
     }
     #student-back-button:hover {
-        color: #18181b;
-        background: #f9fafb;
+        color: rgb(var(--c-zinc-900, 24 24 27));
+        background: rgb(var(--c-gray-50, 249 250 251));
     }
 </style>
 <a id="student-back-button" href="@yield('back_url')" aria-label="Назад">

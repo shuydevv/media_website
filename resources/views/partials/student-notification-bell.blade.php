@@ -26,16 +26,16 @@
         justify-content: center;
         border-radius: 8px;
         background: #fff;
-        border: 1px solid #e5e7eb;
+        border: 1px solid rgb(var(--c-gray-200, 229 231 235));
         box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
-        color: #71717a; /* zinc-500 */
+        color: rgb(var(--c-zinc-500, 113 113 122)); /* zinc-500 */
         text-decoration: none;
         transition: color .15s ease, background-color .15s ease;
         z-index: 20;
     }
     #student-notification-bell:hover {
         color: #b45309;
-        background: #f9fafb;
+        background: rgb(var(--c-gray-50, 249 250 251));
     }
     #student-notification-bell svg {
         width: 20px;
@@ -66,7 +66,7 @@
         max-height: 420px;
         overflow-y: auto;
         background: #fff;
-        border: 1px solid #e5e7eb;
+        border: 1px solid rgb(var(--c-gray-200, 229 231 235));
         border-radius: 12px;
         box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
         z-index: 30;
@@ -76,20 +76,20 @@
     }
     #notif-panel-header {
         padding: 12px 14px;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid rgb(var(--c-gray-100, 243 244 246));
         font-size: 14px;
         font-weight: 500;
-        color: #18181b; /* zinc-900 */
+        color: rgb(var(--c-zinc-900, 24 24 27)); /* zinc-900 */
     }
     #notif-panel-empty {
         padding: 24px 14px;
         text-align: center;
-        color: #a1a1aa; /* zinc-400 */
+        color: rgb(var(--c-zinc-400, 161 161 170)); /* zinc-400 */
         font-size: 13px;
     }
     .notif-panel-item {
         position: relative;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid rgb(var(--c-gray-100, 243 244 246));
     }
     .notif-panel-item:last-child {
         border-bottom: none;
@@ -108,7 +108,7 @@
         font: inherit;
     }
     .notif-panel-item-btn:hover {
-        background: #f9fafb;
+        background: rgb(var(--c-gray-50, 249 250 251));
     }
     .notif-panel-item.unread .notif-panel-item-btn {
         background: #fffbeb;
@@ -116,16 +116,16 @@
     .notif-panel-item-title {
         font-size: 13px;
         font-weight: 500;
-        color: #18181b; /* zinc-900 */
+        color: rgb(var(--c-zinc-900, 24 24 27)); /* zinc-900 */
         margin-bottom: 2px;
     }
     .notif-panel-item-body {
         font-size: 12px;
-        color: #71717a; /* zinc-500 */
+        color: rgb(var(--c-zinc-500, 113 113 122)); /* zinc-500 */
     }
     .notif-panel-item-time {
         font-size: 11px;
-        color: #a1a1aa; /* zinc-400 */
+        color: rgb(var(--c-zinc-400, 161 161 170)); /* zinc-400 */
         margin-top: 4px;
     }
     .notif-panel-item-delete-form {
@@ -143,7 +143,7 @@
         border-radius: 6px;
         border: none;
         background: transparent;
-        color: #a1a1aa; /* zinc-400 */
+        color: rgb(var(--c-zinc-400, 161 161 170)); /* zinc-400 */
         cursor: pointer;
         font-size: 15px;
         line-height: 1;
@@ -155,7 +155,7 @@
     }
     #notif-panel-footer {
         padding: 10px 14px;
-        border-top: 1px solid #f3f4f6;
+        border-top: 1px solid rgb(var(--c-gray-100, 243 244 246));
     }
     #notif-panel-footer a {
         display: block;

@@ -105,7 +105,7 @@
         text-align: center;
         padding: 12px 4px;
         border-radius: 18px;
-        color: #6b7280;
+        color: rgb(var(--c-gray-500, 107 114 128));
         text-decoration: none;
         transition: color .15s ease, background-color .2s ease, transform .15s ease;
     }
@@ -158,7 +158,7 @@
             inset 0 0 0 1px rgba(255, 255, 255, .3);
         font-size: 13px;
         font-weight: 500;
-        color: #374151;
+        color: rgb(var(--c-gray-700, 55 65 81));
         cursor: pointer;
         transition: color .15s ease, background-color .2s ease, transform .15s ease;
     }

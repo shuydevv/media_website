@@ -36,7 +36,7 @@
             display: inline-flex;
             padding: 4px;
             gap: 2px;
-            background: #f3f4f6;
+            background: rgb(var(--c-gray-100, 243 244 246));
             border-radius: 12px;
         }
         .profile-tab-btn {
@@ -44,18 +44,18 @@
             border-radius: 9px;
             font-size: 14px;
             font-weight: 500;
-            color: #71717a; /* zinc-500 */
+            color: rgb(var(--c-zinc-500, 113 113 122)); /* zinc-500 */
             background: transparent;
             border: none;
             cursor: pointer;
             transition: color .15s ease, background-color .15s ease, box-shadow .15s ease;
         }
         .profile-tab-btn:hover {
-            color: #18181b; /* zinc-900 */
+            color: rgb(var(--c-zinc-900, 24 24 27)); /* zinc-900 */
         }
         .profile-tab-btn.profile-tab-btn-active {
             background: #fff;
-            color: #18181b; /* zinc-900 */
+            color: rgb(var(--c-zinc-900, 24 24 27)); /* zinc-900 */
             box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
         }
         .profile-tab-panel[hidden] {
@@ -101,7 +101,7 @@
             position: absolute;
             top: 6px;
             right: 6px;
-            background: rgba(17, 24, 39, .75);
+            background: rgb(var(--c-gray-900, 17 24 39) / .75);
             color: #fff;
             font-size: 22px;
             line-height: 1;
@@ -125,19 +125,19 @@
             font-size: 12px;
             font-weight: 500;
             color: #fff;
-            background: rgba(17, 24, 39, .85);
+            background: rgb(var(--c-gray-900, 17 24 39) / .85);
             cursor: pointer;
             transition: background-color .15s ease;
         }
         .fish-bg-buy-btn:hover {
-            background: rgba(17, 24, 39, .95);
+            background: rgb(var(--c-gray-900, 17 24 39) / .95);
         }
         .fish-bg-buy-btn:disabled {
-            background: rgba(107, 114, 128, .5);
+            background: rgb(var(--c-gray-500, 107 114 128) / .5);
             cursor: not-allowed;
         }
         .fish-bg-buy-btn:disabled:hover {
-            background: rgba(107, 114, 128, .5);
+            background: rgb(var(--c-gray-500, 107 114 128) / .5);
         }
 
         /* Фоны на десктопе — сетка 3 в ряд (fish-bg-grid-desktop), на
@@ -176,7 +176,7 @@
         .fish-bg-modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(17, 24, 39, .5);
+            background: rgb(var(--c-gray-900, 17 24 39) / .5);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -197,12 +197,12 @@
         .fish-bg-modal-title {
             font-size: 16px;
             font-weight: 500;
-            color: #18181b; /* zinc-900 */
+            color: rgb(var(--c-zinc-900, 24 24 27)); /* zinc-900 */
             margin-bottom: 8px;
         }
         .fish-bg-modal-text {
             font-size: 14px;
-            color: #52525b; /* zinc-600 */
+            color: rgb(var(--c-zinc-600, 82 82 91)); /* zinc-600 */
             margin-bottom: 20px;
         }
         .fish-bg-modal-actions {
@@ -220,18 +220,18 @@
             transition: background-color .15s ease;
         }
         .fish-bg-modal-cancel {
-            background: #f4f4f5; /* zinc-100 */
-            color: #3f3f46; /* zinc-700 */
+            background: rgb(var(--c-zinc-100, 244 244 245)); /* zinc-100 */
+            color: rgb(var(--c-zinc-700, 63 63 70)); /* zinc-700 */
         }
         .fish-bg-modal-cancel:hover {
-            background: #e4e4e7; /* zinc-200 */
+            background: rgb(var(--c-zinc-200, 228 228 231)); /* zinc-200 */
         }
         .fish-bg-modal-confirm {
-            background: #18181b;
+            background: rgb(var(--c-zinc-900, 24 24 27));
             color: #fff;
         }
         .fish-bg-modal-confirm:hover {
-            background: #27272a;
+            background: rgb(var(--c-zinc-800, 39 39 42));
         }
 
         /* Аксессуары — вторая косметическая категория, без картинок (нет
@@ -249,7 +249,7 @@
             width: 56px;
             height: 56px;
             border-radius: 9999px;
-            border: 2px solid #e4e4e7; /* zinc-200 */
+            border: 2px solid rgb(var(--c-zinc-200, 228 228 231)); /* zinc-200 */
             background: #fff;
             font-size: 24px;
             line-height: 1;
@@ -273,7 +273,7 @@
             bottom: -4px;
             right: -4px;
             font-size: 13px;
-            background: rgba(17, 24, 39, .75);
+            background: rgb(var(--c-gray-900, 17 24 39) / .75);
             border-radius: 9999px;
             padding: 1px 3px;
             line-height: 1;

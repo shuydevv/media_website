@@ -118,7 +118,7 @@
         display: block;
         border-radius: 1rem;
         background: #fff;
-        border: 1px solid #e4e4e7;
+        border: 1px solid rgb(var(--c-zinc-200, 228 228 231));
         padding: 1.25rem;
     }
     @media (max-width: 480px) {
@@ -152,16 +152,16 @@
     .mock-chart-score {
         font-size: 2.1rem;
         font-weight: 700;
-        color: #18181b;
+        color: rgb(var(--c-zinc-900, 24 24 27));
     }
     .mock-chart-score-max {
         font-size: 1rem;
         font-weight: 500;
-        color: #a1a1aa;
+        color: rgb(var(--c-zinc-400, 161 161 170));
     }
     .mock-chart-score-label {
         font-size: .75rem;
-        color: #a1a1aa;
+        color: rgb(var(--c-zinc-400, 161 161 170));
         margin-top: 6px;
     }
 
@@ -177,7 +177,7 @@
         align-items: center;
         gap: .5rem;
         font-size: .8rem;
-        color: #52525b;
+        color: rgb(var(--c-zinc-600, 82 82 91));
     }
     .mock-legend-dot {
         width: 9px;
@@ -191,7 +191,7 @@
     }
     .mock-legend-value {
         font-weight: 600;
-        color: #18181b;
+        color: rgb(var(--c-zinc-900, 24 24 27));
     }
 
     .mock-cta {

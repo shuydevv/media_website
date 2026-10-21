@@ -461,7 +461,7 @@
       // плавно зеленеет, а приземлившись, так же плавно остывает до обычного
       // вида заполненного слота. Раньше он становился зелёным в момент
       // клика и белым в момент посадки — два резких скачка.
-      var WHITE = { backgroundColor: '#ffffff', borderColor: '#d4d4d8', color: '#18181b' };   // как у кнопки варианта
+      var WHITE = { backgroundColor: '#ffffff', borderColor: 'rgb(var(--c-zinc-300, 212 212 216))', color: 'rgb(var(--c-zinc-900, 24 24 27))' };   // как у кнопки варианта
       var GREEN = { backgroundColor: '#ecfdf5', borderColor: '#6ee7b7', color: '#065f46' };   // emerald-50 / 300 / 800
 
       var chip = document.createElement('div');
@@ -845,7 +845,7 @@
       // Квиз пройден: оставшиеся варианты не исчезают, а плавно гаснут.
       var faded = card && !changed ? card.querySelectorAll('.term-option-faded') : [];
       if (faded.length && gs()) {
-        gs().from(faded, { color: '#18181b', borderColor: '#d4d4d8', duration: 0.6, ease: 'power1.out', clearProps: 'color,borderColor' });
+        gs().from(faded, { color: 'rgb(var(--c-zinc-900, 24 24 27))', borderColor: 'rgb(var(--c-zinc-300, 212 212 216))', duration: 0.6, ease: 'power1.out', clearProps: 'color,borderColor' });
       }
 
       animateProgress(prev);

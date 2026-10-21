@@ -56,7 +56,7 @@
       <div id="term-hud" class="flex items-center gap-2 xl:flex-col xl:gap-3 xl:text-center">
         <div class="relative shrink-0 w-24 h-24 rounded-full bg-white shadow-lg xl:w-40 xl:h-40 xl:bg-transparent xl:shadow-none">
           <svg class="hidden xl:block absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100" aria-hidden="true">
-            <circle cx="50" cy="50" r="46" fill="none" stroke="#f3f4f6" stroke-width="5"></circle>
+            <circle cx="50" cy="50" r="46" fill="none" class="stroke-gray-100" stroke-width="5"></circle>
             <circle id="term-ring" cx="50" cy="50" r="46" fill="none" stroke="#3b82f6" stroke-width="5" stroke-linecap="round"
                     data-length="{{ $ringLength }}" data-percent="{{ $percent }}"
                     stroke-dasharray="{{ $ringLength }}" stroke-dashoffset="{{ round($ringLength * (1 - $percent / 100), 2) }}"></circle>
