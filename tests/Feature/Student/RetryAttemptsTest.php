@@ -380,6 +380,28 @@ class RetryAttemptsTest extends TestCase
             ->assertOk()
             ->assertSee('Попытки:')
             ->assertSee(route('student.submissions.show', $second), false)
-            ->assertSee('В зачёте последняя попытка');
+            ->assertDontSee('В зачёте последняя попытка');
+    }
+
+    /** @test */
+    public function overdue_attempt_without_manual_tasks_shows_score_not_review()
+    {
+        // Сдана после дедлайна — статус expired, но проверять куратору нечего.
+        $student = $this->student();
+        $hw = $this->homework($student, ['due_at' => now()->subDay()]);
+        $this->autoTask($hw, 1, '12');
+
+        $first = $this->start($student, $hw);
+        $this->answer($student, $first, 1, '00');
+        $this->submit($student, $first);
+        $second = $this->start($student, $hw, '?retry=1');
+        $this->answer($student, $second, 1, '12');
+        $this->submit($student, $second);
+        $this->assertSame('expired', $second->status);
+
+        $this->actingAs($student)->get(route('student.submissions.show', $second))
+            ->assertOk()
+            ->assertSee('Проверено')
+            ->assertDontSee('на проверке');
     }
 }

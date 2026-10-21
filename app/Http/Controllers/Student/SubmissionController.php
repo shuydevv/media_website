@@ -747,7 +747,19 @@ class SubmissionController extends Controller
             // По id, а не created_at: две попытки, сданные в одну секунду,
             // иначе шли бы в случайном порядке, и «последняя» определялась бы неверно.
             ->orderByDesc('id')
-            ->get(['id', 'attempt_no', 'autocheck_score', 'total_score', 'status', 'created_at']);
+            ->get(['id', 'attempt_no', 'autocheck_score', 'total_score', 'status', 'per_task_results', 'created_at']);
+
+        // Ждёт ли попытка куратора — по ручным заданиям, а не по статусу:
+        // сданная после дедлайна попытка получает expired, даже когда
+        // проверять нечего (та же логика, что у «Статус» в заголовке).
+        $manualIds = $tasks->reject(fn (HomeworkTask $t) => $t->isAutoGradable())->pluck('id');
+        $awaitingReview = $attempts->mapWithKeys(fn (Submission $a) => [
+            $a->id => $a->status !== 'checked' && $manualIds->contains(function ($tid) use ($a) {
+                $row = ($a->per_task_results ?? [])[$tid] ?? [];
+
+                return ! array_key_exists('score', $row) || ! empty($row['skipped']);
+            }),
+        ]);
 
         // Начатая, но не сданная следующая попытка — на странице результата
         // плашка «Продолжить / Отменить», а сама домашка по-прежнему считается
@@ -765,7 +777,7 @@ class SubmissionController extends Controller
             ? app(MistakesRetry::class)->redoCount($submission, $this->orderedTasks($submission->homework_id))
             : 0;
 
-        return view('student.submissions.show', compact('submission', 'homework', 'attempts', 'retryInProgress', 'redoCount'));
+        return view('student.submissions.show', compact('submission', 'homework', 'attempts', 'awaitingReview', 'retryInProgress', 'redoCount'));
     }
 
     /**

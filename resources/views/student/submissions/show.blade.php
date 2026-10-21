@@ -223,12 +223,9 @@ $totalScore = ($submission->status === 'checked' && !is_null($submission->total_
            @if($isCurrent) aria-current="page" @endif
            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm {{ $isCurrent ? 'border-apple-blue-500 bg-apple-blue-50 text-apple-blue-700 sans-medium' : 'border-zinc-200 text-zinc-600 hover:bg-zinc-50' }}">
           № {{ $att->attempt_no ?? $loop->iteration }}
-          <span class="{{ $isCurrent ? 'text-apple-blue-600' : 'text-zinc-400' }}">· {{ $att->status === 'checked' ? (int) $att->total_score . ' б.' : 'на проверке' }}</span>
+          <span class="{{ $isCurrent ? 'text-apple-blue-600' : 'text-zinc-400' }}">· {{ ($awaitingReview[$att->id] ?? false) ? 'на проверке' : (int) $att->total_score . ' б.' }}</span>
         </a>
       @endforeach
-      @if($attempts->first()->id !== $submission->id)
-        <span class="sans text-xs text-zinc-400 ml-1">В зачёте последняя попытка</span>
-      @endif
     </div>
   @endif
 
