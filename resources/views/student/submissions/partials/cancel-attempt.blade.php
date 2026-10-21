@@ -2,9 +2,12 @@
      Подтверждение обязательно — кнопка стоит рядом с навигацией визарда, и
      случайное нажатие стёрло бы все ответы попытки. Форма внутри модалки —
      обычная, без htmx: после отмены уходим со страницы визарда целиком.
-     Подключается и в визарде (htmx-фрагмент), и на странице результата. --}}
+     Подключается и в визарде (htmx-фрагмент), и на странице результата.
+     $buttonClass — внешний вид кнопки, если рядом с ней другие кнопки
+     (на странице результата); по умолчанию — маленькая кнопка визарда. --}}
 @php
   $cancelModalId = 'cancel-attempt-modal-' . $submission->id;
+  $buttonClass = $buttonClass ?? 'inline-flex items-center px-3 py-1.5 rounded-lg border border-zinc-300 text-xs sm:text-sm text-rose-600 hover:bg-rose-50 whitespace-nowrap';
   $cancelText = $isMock
       ? 'Ответы этой попытки удалятся, и она не будет засчитана. Пробник можно будет начать заново.'
       : 'Ответы этой попытки удалятся. В зачёте останется прошлая попытка.';
@@ -14,7 +17,7 @@
 
 <button type="button"
         data-cancel-attempt-open="{{ $cancelModalId }}"
-        class="inline-flex items-center px-3 py-1.5 rounded-lg border border-zinc-300 text-xs sm:text-sm text-rose-600 hover:bg-rose-50 whitespace-nowrap">
+        class="{{ $buttonClass }}">
   Отменить попытку
 </button>
 

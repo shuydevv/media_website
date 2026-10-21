@@ -108,13 +108,14 @@ class RetryAttemptsTest extends TestCase
 
         $this->actingAs($student)->get(route('student.homeworks.index'))
             ->assertOk()
-            ->assertSee('Проверено')
+            ->assertViewHas('rows', fn ($rows) => $rows->first()['status'] === 'checked')
+            ->assertViewHas('activeTab', 'done')
             ->assertSee('Начата попытка № 2')
-            ->assertDontSee('Не выполнено');
+            ->assertDontSee('В процессе');
 
         $this->actingAs($student)->get(route('student.submissions.show', $first))
             ->assertOk()
-            ->assertSee('Попытка № 2 начата, но ещё не отправлена')
+            ->assertSee('Продолжить попытку № 2')
             ->assertSee('Отменить попытку');
     }
 
@@ -403,5 +404,35 @@ class RetryAttemptsTest extends TestCase
             ->assertOk()
             ->assertSee('Проверено')
             ->assertDontSee('на проверке');
+    }
+
+    /** @test */
+    public function overdue_homework_list_awaits_review_only_with_filled_written_answers()
+    {
+        // Пустое письменное закрыто нулём при сдаче — куратору нечего проверять.
+        $student = $this->student();
+        $hw = $this->homework($student, ['due_at' => now()->subDay()]);
+        $this->autoTask($hw, 1, '12');
+        $this->manualTask($hw, 2);
+        $s = $this->start($student, $hw);
+        $this->answer($student, $s, 1, '12');
+        $this->assertSame('expired', $this->submit($student, $s)->status);
+
+        $this->actingAs($student)->get(route('student.homeworks.index'))
+            ->assertViewHas('rows', fn ($rows) => $rows->first()['status'] === 'checked');
+
+        // Письменное заполнено — ждёт куратора.
+        $student2 = $this->student();
+        $hw2 = $this->homework($student2, ['due_at' => now()->subDay()]);
+        $this->autoTask($hw2, 1, '12');
+        $this->manualTask($hw2, 2);
+        $s2 = $this->start($student2, $hw2);
+        $this->answer($student2, $s2, 1, '12');
+        $this->answer($student2, $s2, 2, 'Развёрнутый ответ');
+        $this->submit($student2, $s2);
+
+        $this->actingAs($student2)->get(route('student.homeworks.index'))
+            ->assertViewHas('rows', fn ($rows) => $rows->first()['status'] === 'pending_review')
+            ->assertViewHas('activeTab', 'review');
     }
 }

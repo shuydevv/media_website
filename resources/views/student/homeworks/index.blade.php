@@ -19,144 +19,169 @@
             return $many;
         }
     }
+
+    $tabs = [
+        'todo'   => 'Нужно сделать',
+        'review' => 'На проверке',
+        'done'   => 'Сделано',
+    ];
+    $emptyText = [
+        'todo'   => 'Всё сделано — новых домашек пока нет 🎉',
+        'review' => 'Сейчас ничего не ждёт проверки куратора.',
+        'done'   => 'Сданных домашек пока нет.',
+    ];
 @endphp
 
 @section('content')
-<div class="max-w-4xl mx-auto px-4 py-6">
+<div class="max-w-6xl mx-auto px-4 py-6">
 
-    <h1 class="sans-medium text-xl md:text-3xl mb-4 sm:mb-6 text-zinc-900">Домашки</h1>
+    <h1 class="text-xl md:text-2xl font-medium text-zinc-900 mb-4">Домашки</h1>
 
-    <div class="flex flex-wrap gap-2 mb-6" id="hw-filters">
-        <button type="button" data-filter="todo" class="hw-filter-btn px-3 py-1.5 rounded-full text-sm border">Нужно сделать</button>
-        <button type="button" data-filter="review" class="hw-filter-btn px-3 py-1.5 rounded-full text-sm border">На проверке</button>
-        <button type="button" data-filter="done" class="hw-filter-btn px-3 py-1.5 rounded-full text-sm border">Сделано</button>
-    </div>
+    <x-ui.tabs class="mb-6">
+        @foreach($tabs as $key => $label)
+            <x-ui.tab data-filter="{{ $key }}" :active="$activeTab === $key">
+                {{ $label }}
+                <span class="tabular-nums text-zinc-400">{{ $tabCounts[$key] }}</span>
+            </x-ui.tab>
+        @endforeach
+    </x-ui.tabs>
 
-    @if($rows->isEmpty())
-        <x-ui.card class="text-zinc-600 text-center">
-            Домашек в очереди нет 🎉
-        </x-ui.card>
-    @else
-        <div class="flex flex-col gap-3" id="hw-list">
-            @foreach($rows as $row)
-                @php
-                    $hw = $row['homework'];
-                    $status = $row['status'];
+    {{-- Пустая вкладка — своё сообщение, а не пустой экран. --}}
+    @foreach($tabs as $key => $label)
+        @if($tabCounts[$key] === 0)
+            <div data-empty="{{ $key }}" class="{{ $activeTab === $key ? '' : 'hidden' }}">
+                <x-ui.card class="text-zinc-500 text-center">{{ $emptyText[$key] }}</x-ui.card>
+            </div>
+        @endif
+    @endforeach
 
-                    $badgeMap = [
-                        'not_started'    => ['label' => 'Не выполнено', 'class' => 'bg-gray-100 text-gray-700'],
-                        'in_progress'    => ['label' => 'В процессе', 'class' => 'bg-blue-50 text-blue-700'],
-                        'overdue'        => ['label' => 'Просрочено', 'class' => 'bg-rose-50 text-rose-700'],
-                        'pending_review' => ['label' => 'На проверке', 'class' => 'bg-amber-50 text-amber-700'],
-                        'checked'        => ['label' => 'Проверено', 'class' => 'bg-emerald-50 text-emerald-700'],
-                    ];
-                    $badge = $badgeMap[$status];
+    <div class="flex flex-col gap-3" id="hw-list">
+        @foreach($rows as $row)
+            @php
+                $hw = $row['homework'];
+                $status = $row['status'];
 
-                    $filterGroup = match ($status) {
-                        'not_started', 'in_progress', 'overdue' => 'todo',
-                        'pending_review' => 'review',
-                        'checked' => 'done',
-                    };
+                // Метка статуса — только когда она что-то добавляет: на вкладках
+                // «На проверке» и «Сделано» статус и так понятен.
+                $badge = match ($status) {
+                    'in_progress' => ['tone' => 'blue', 'label' => 'В процессе'],
+                    'overdue'     => ['tone' => 'red',  'label' => 'Просрочено'],
+                    default       => null,
+                };
 
-                    $dueText = null;
-                    if ($hw->due_at) {
-                        $days = now()->startOfDay()->diffInDays($hw->due_at->copy()->startOfDay(), false);
-                        if ($status === 'overdue') {
-                            // Именно $status, а не голое "$days < 0" — дедлайн мог
-                            // пройти ещё ДО зачисления ученика на курс, тогда
-                            // Homework::isOverdueFor() уже не считает её просроченной
-                            // (см. HomeworkController::index()), и подпись не должна
-                            // противоречить бейджу над ней.
-                            $dueText = 'просрочено ' . abs($days) . ' ' . ru_plural(abs($days), 'день', 'дня', 'дней') . ' назад';
-                        } elseif ($days === 0) {
-                            $dueText = 'сегодня';
-                        } elseif ($days === 1) {
-                            $dueText = 'завтра';
-                        } elseif ($days > 1) {
-                            $dueText = 'через ' . $days . ' ' . ru_plural($days, 'день', 'дня', 'дней');
-                        }
-                        // $days < 0 и статус не 'overdue' — дедлайн в прошлом, но не
-                        // по вине ученика (см. комментарий выше), подписи не будет.
+                // Срок: подпись только если он есть; близкий — оранжевым, просроченный — красным.
+                $dueText = null;
+                $dueClass = 'text-zinc-500';
+                if ($hw->due_at) {
+                    $days = now()->startOfDay()->diffInDays($hw->due_at->copy()->startOfDay(), false);
+                    if ($status === 'overdue') {
+                        // Именно $status, а не голое "$days < 0" — дедлайн мог
+                        // пройти ещё ДО зачисления ученика на курс, тогда
+                        // Homework::isOverdueFor() уже не считает её просроченной
+                        // (см. HomeworkController::index()), и подпись не должна
+                        // противоречить метке над ней.
+                        $dueText = 'Срок прошёл ' . abs($days) . ' ' . ru_plural(abs($days), 'день', 'дня', 'дней') . ' назад';
+                        $dueClass = 'text-apple-red-650';
+                    } elseif (in_array($status, ['not_started', 'in_progress'], true) && $days >= 0) {
+                        $dueText = 'Срок: ' . match (true) {
+                            $days === 0 => 'сегодня',
+                            $days === 1 => 'завтра',
+                            default => 'через ' . $days . ' ' . ru_plural($days, 'день', 'дня', 'дней'),
+                        };
+                        if ($days <= 1) $dueClass = 'text-apple-orange-700';
                     }
+                }
 
-                    $actionLabel = match ($status) {
-                        'not_started' => 'Начать',
-                        'in_progress' => 'Продолжить',
-                        'overdue' => 'Сдать',
-                        'pending_review' => 'Посмотреть',
-                        'checked' => 'Результат',
-                    };
+                $progressText = $status === 'in_progress' && $row['tasks_count'] > 0
+                    ? 'Решено ' . $row['answered'] . ' из ' . $row['tasks_count']
+                    : null;
 
-                    $actionUrl = (in_array($status, ['pending_review', 'checked'], true) && $row['submission'] && Route::has('student.submissions.show'))
-                        ? route('student.submissions.show', $row['submission'])
-                        : (Route::has('student.submissions.create') ? route('student.submissions.create', $hw) : '#');
-                @endphp
+                // «ДЗ — …» на странице «Домашки» лишнее.
+                $title = preg_replace('/^\s*(ДЗ|Домашнее задание)\s*[—–-]\s*/u', '', (string) $hw->title) ?: $hw->title;
 
-                <x-ui.card-link href="{{ $actionUrl }}"
-                   data-group="{{ $filterGroup }}"
-                   class="hw-card">
-                    {{-- w-full — иначе внешний flex у x-ui.card-link сжимал бы
-                         этот блок только до ширины его самой длинной строки, и
-                         заголовок домашки строкой ниже truncate-ился раньше
-                         правого края карточки, хотя место под ним было
-                         свободно (ссылка "Начать →" мешала только верхней
-                         строке, но ужимала всю колонку целиком). Метка
-                         действия теперь в одной строке с бейджем статуса, а не
-                         отдельным элементом сбоку от всей колонки. --}}
-                    <div class="min-w-0 w-full">
-                        <div class="flex items-center justify-between gap-2 mb-1">
-                            <div class="flex items-center gap-2 flex-wrap min-w-0">
-                                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium {{ $badge['class'] }}">{{ $badge['label'] }}</span>
-                                <span class="text-xs text-zinc-400 truncate">{{ $row['course_title'] }}</span>
-                                @if($row['retry_in_progress'])
-                                    <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">Начата попытка № {{ $row['retry_in_progress']->attempt_no }}</span>
-                                @endif
-                            </div>
-                            <span class="shrink-0 text-sm font-medium text-amber-700 whitespace-nowrap">{{ $actionLabel }} →</span>
-                        </div>
-                        <div class="font-medium text-zinc-900 truncate">{{ $hw->title }}</div>
-                        <div class="text-sm text-zinc-500 mt-0.5">
-                            @if($dueText)
-                                Срок: {{ $dueText }}
-                            @else
-                                Без срока
-                            @endif
-                            @if($status === 'checked' && $row['score'] !== null)
-                                &middot; {{ $row['score'] }}/{{ $row['max_score'] }} баллов
-                            @endif
-                        </div>
+                // Балл сданной — маленьким кольцом, цвет как на странице результата.
+                $showScore = $status === 'checked' && $row['score'] !== null && $row['max_score'] > 0;
+                if ($showScore) {
+                    $pct = (int) min(100, max(0, round($row['score'] * 100 / $row['max_score'])));
+                    [$ringColor, $ringTrack] = $pct >= 80 ? ['text-apple-green-500', 'stroke-apple-green-100']
+                        : ($pct >= 50 ? ['text-apple-orange-500', 'stroke-apple-orange-100']
+                        : ['text-apple-red-450', 'stroke-apple-red-100']);
+                    $ringLen = 2 * M_PI * 15;
+                }
+
+                $actionUrl = (in_array($status, ['pending_review', 'checked'], true) && $row['submission'] && Route::has('student.submissions.show'))
+                    ? route('student.submissions.show', $row['submission'])
+                    : (Route::has('student.submissions.create') ? route('student.submissions.create', $hw) : '#');
+            @endphp
+
+            <x-ui.card-link href="{{ $actionUrl }}"
+               data-group="{{ $row['group'] }}"
+               class="hw-card items-center {{ $row['group'] === $activeTab ? '' : 'hidden' }}">
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2 flex-wrap mb-1">
+                        @if($badge)
+                            <x-ui.badge :tone="$badge['tone']">{{ $badge['label'] }}</x-ui.badge>
+                        @endif
+                        @if($row['retry_in_progress'])
+                            <x-ui.badge tone="blue">Начата попытка № {{ $row['retry_in_progress']->attempt_no }}</x-ui.badge>
+                        @endif
+                        <span class="text-xs text-zinc-400">{{ $row['course_title'] }}</span>
                     </div>
-                </x-ui.card-link>
-            @endforeach
-        </div>
-    @endif
-</div>
+                    <div class="font-medium text-zinc-900 break-words">{{ $title }}</div>
+                    @if($dueText || $progressText)
+                        <div class="text-sm mt-1 flex flex-wrap gap-x-2">
+                            @if($progressText)<span class="text-zinc-500">{{ $progressText }}</span>@endif
+                            @if($dueText && $progressText)<span class="text-zinc-300">·</span>@endif
+                            @if($dueText)<span class="{{ $dueClass }}">{{ $dueText }}</span>@endif
+                        </div>
+                    @endif
+                </div>
 
-<style>
-    .hw-filter-btn { border-color: #e5e7eb; color: #6b7280; background: #fff; }
-    .hw-filter-btn.is-active { background: #18181b; color: #fff; border-color: #18181b; }
-</style>
+                @if($showScore)
+                    <div class="shrink-0 flex items-center gap-2" title="{{ $row['score'] }} из {{ $row['max_score'] }} {{ ru_plural($row['max_score'], 'балла', 'баллов', 'баллов') }}">
+                        <span class="text-sm font-medium text-zinc-900 tabular-nums">{{ $row['score'] }}<span class="text-zinc-400">/{{ $row['max_score'] }}</span></span>
+                        <svg viewBox="0 0 36 36" class="w-8 h-8 -rotate-90" aria-hidden="true">
+                            <circle cx="18" cy="18" r="15" fill="none" stroke-width="5" class="{{ $ringTrack }}" />
+                            <circle cx="18" cy="18" r="15" fill="none" stroke-width="5" stroke-linecap="round"
+                                    stroke="currentColor" class="{{ $ringColor }}"
+                                    stroke-dasharray="{{ round($ringLen * $pct / 100, 2) }} {{ round($ringLen, 2) }}" />
+                        </svg>
+                    </div>
+                @endif
+            </x-ui.card-link>
+        @endforeach
+    </div>
+</div>
 
 <script>
 (function () {
-    var buttons = document.querySelectorAll('.hw-filter-btn');
-    var cards = document.querySelectorAll('#hw-list .hw-card');
-    if (!buttons.length) return;
+    // Вкладки: классы активной/неактивной — те же, что в x-ui.tab. Выбранная
+    // пишется в адрес (?tab=), чтобы «назад» со страницы домашки её не сбрасывал.
+    var ACTIVE = ['bg-white', 'text-zinc-900', 'shadow-sm', 'font-medium'];
+    var IDLE = ['text-zinc-500', 'hover:text-zinc-900'];
+    var buttons = document.querySelectorAll('[data-filter]');
 
     function applyFilter(filter) {
-        cards.forEach(function (card) {
-            card.style.display = card.dataset.group === filter ? '' : 'none';
+        document.querySelectorAll('#hw-list .hw-card').forEach(function (card) {
+            card.classList.toggle('hidden', card.dataset.group !== filter);
+        });
+        document.querySelectorAll('[data-empty]').forEach(function (el) {
+            el.classList.toggle('hidden', el.dataset.empty !== filter);
         });
         buttons.forEach(function (btn) {
-            btn.classList.toggle('is-active', btn.dataset.filter === filter);
+            var on = btn.dataset.filter === filter;
+            btn.classList.remove.apply(btn.classList, on ? IDLE : ACTIVE);
+            btn.classList.add.apply(btn.classList, on ? ACTIVE : IDLE);
+            btn.setAttribute('aria-pressed', on ? 'true' : 'false');
         });
+        var url = new URL(window.location.href);
+        url.searchParams.set('tab', filter);
+        history.replaceState(null, '', url);
     }
 
     buttons.forEach(function (btn) {
         btn.addEventListener('click', function () { applyFilter(btn.dataset.filter); });
     });
-
-    applyFilter('todo');
 })();
 </script>
 @endsection

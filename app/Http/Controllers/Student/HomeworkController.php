@@ -72,12 +72,19 @@ class HomeworkController extends Controller
                 // finishSubmit() сначала считает checked/pending по итогам
                 // проверки, а потом затирает это на 'expired', если срок вышел —
                 // сам факт "было ли это авто-проверено" в status уже не виден.
-                // Пересчитываем по тем же правилам, что и контроллер сдачи, и
-                // кладём в ту же категорию, что и вовремя сданные.
-                $hasManualTasks = $hw->tasks->contains(
-                    fn ($t) => in_array($t->type, HomeworkTask::MANUAL_TYPES, true)
-                );
-                $status = $hasManualTasks ? 'pending_review' : 'checked';
+                // Ждёт куратора, только если есть письменное задание без его
+                // оценки: пустые ответы закрываются нулём ещё при сдаче, и
+                // проверять там нечего (та же логика, что и на странице результата).
+                $perTask = $submission->per_task_results ?? [];
+                $awaitsMentor = $hw->tasks->contains(function ($t) use ($perTask) {
+                    if (! in_array($t->type, HomeworkTask::MANUAL_TYPES, true)) {
+                        return false;
+                    }
+                    $row = $perTask[$t->id] ?? [];
+
+                    return ! array_key_exists('score', $row) || ! empty($row['skipped']);
+                });
+                $status = $awaitsMentor ? 'pending_review' : 'checked';
             } else {
                 $status = 'pending_review'; // 'pending' и любые легаси-значения
             }
@@ -90,6 +97,11 @@ class HomeworkController extends Controller
                 'score' => $submission?->total_score,
                 'max_score' => $hw->tasks->sum('max_score'),
                 'retry_in_progress' => $finished && $inProgress ? $inProgress : null,
+                // Для начатой домашки — сколько заданий уже с ответом.
+                'answered' => $status === 'in_progress'
+                    ? collect($submission->answers ?? [])->filter(fn ($a) => trim((string) $a) !== '')->count()
+                    : null,
+                'tasks_count' => $hw->tasks->count(),
             ];
         });
 
@@ -98,6 +110,21 @@ class HomeworkController extends Controller
         $priority = ['in_progress' => 0, 'overdue' => 1, 'not_started' => 2, 'pending_review' => 3, 'checked' => 4];
         $rows = $rows->sortBy(fn ($row) => $priority[$row['status']])->values();
 
-        return view('student.homeworks.index', ['rows' => $rows]);
+        // Вкладки: количество в каждой и какая открыта. Открываем запрошенную
+        // (?tab= — её же JS пишет в адрес, чтобы «назад» не сбрасывал выбор),
+        // иначе первую непустую — а не пустое «Нужно сделать».
+        $groupOf = fn ($status) => match ($status) {
+            'not_started', 'in_progress', 'overdue' => 'todo',
+            'pending_review' => 'review',
+            'checked' => 'done',
+        };
+        $rows = $rows->map(fn ($row) => $row + ['group' => $groupOf($row['status'])]);
+        $tabCounts = collect(['todo', 'review', 'done'])
+            ->mapWithKeys(fn ($g) => [$g => $rows->where('group', $g)->count()]);
+        $activeTab = $tabCounts->has(request('tab'))
+            ? request('tab')
+            : ($tabCounts->filter()->keys()->first() ?? 'todo');
+
+        return view('student.homeworks.index', compact('rows', 'tabCounts', 'activeTab'));
     }
 }

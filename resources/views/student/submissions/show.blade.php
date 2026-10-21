@@ -176,21 +176,6 @@
     </div>
   @endif
 
-  @if($retryInProgress)
-    <div class="mb-4 rounded-xl border border-apple-blue-200 bg-apple-blue-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-      <div class="text-sm text-apple-blue-800">
-        Попытка № {{ $retryInProgress->attempt_no }} начата, но ещё не отправлена. Пока её не отправишь, в зачёте остаётся эта.
-      </div>
-      <div class="flex items-center gap-2 shrink-0">
-        <x-ui.button href="{{ route('student.submissions.create', $homework) }}" variant="accent" size="sm" class="!bg-apple-blue-500 hover:!bg-apple-blue-600 !py-2">
-          Продолжить
-        </x-ui.button>
-        @if($retryInProgress->canBeCancelled())
-          @include('student.submissions.partials.cancel-attempt', ['submission' => $retryInProgress, 'isMock' => ($homework->type ?? null) === 'mock'])
-        @endif
-      </div>
-    </div>
-  @endif
 
   {{-- ===== Заголовок страницы: название, статус, попытки ===== --}}
   <div class="mb-4">
@@ -288,8 +273,25 @@
       </div>
 
       <div class="flex flex-col gap-3 w-full md:w-auto shrink-0">
-        @if(!$retryInProgress && $attemptsLeft > 0)
-          {{-- На ПК кнопки в ряд, на телефоне — каждая на всю ширину, друг под другом. --}}
+        {{-- На ПК кнопки в ряд, на телефоне — каждая на всю ширину, друг под другом. --}}
+        @if($retryInProgress)
+          {{-- Следующая попытка начата, но не отправлена — до отправки в зачёте эта. --}}
+          <div class="flex flex-col md:flex-row gap-2">
+            <a href="{{ route('student.submissions.create', $homework) }}"
+               title="Пока попытка не отправлена, в зачёте остаётся эта"
+               class="group inline-flex items-center justify-center gap-2.5 min-h-12 px-5 rounded-xl bg-apple-blue-500 hover:bg-apple-blue-600 text-white font-medium whitespace-nowrap transition">
+              Продолжить попытку № {{ $retryInProgress->attempt_no }}
+              <x-icon name="arrow-narrow-right" class="w-5 h-5 shrink-0 transition-transform group-hover:translate-x-0.5" />
+            </a>
+            @if($retryInProgress->canBeCancelled())
+              @include('student.submissions.partials.cancel-attempt', [
+                'submission' => $retryInProgress,
+                'isMock' => ($homework->type ?? null) === 'mock',
+                'buttonClass' => 'inline-flex items-center justify-center min-h-12 px-5 rounded-xl bg-zinc-100 hover:bg-apple-red-50 text-apple-red-650 font-medium whitespace-nowrap transition',
+              ])
+            @endif
+          </div>
+        @elseif($attemptsLeft > 0)
           <div class="flex flex-col md:flex-row gap-2">
             @if($redoCount > 0)
               {{-- На подложке — сколько заданий придётся решить заново. --}}
