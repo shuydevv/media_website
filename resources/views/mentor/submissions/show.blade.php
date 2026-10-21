@@ -7,7 +7,7 @@
 
 @php
   /** @var \App\Models\Submission $submission */
-  $submission->loadMissing(['user','homework.lesson.courseSession.course']);
+  $submission->loadMissing(['user','homework.course','homework.lesson.courseSession.course']);
 
   $user = auth()->user();
   $isAdmin  = (int) $user->role === \App\Models\User::ROLE_ADMIN;
@@ -52,6 +52,26 @@
   $aiFrozenHash = $submission->ai_frozen_hash ?? [];
   $aiEnabled    = app(\App\Service\Homework\ClaudeGrader::class)->isEnabled();
 
+  // Контекст работы: курс/урок, когда сдана и успела ли к дедлайну.
+  $course      = $homework->course ?? $homework->lesson?->courseSession?->course;
+  $lesson      = $homework->lesson;
+  $submittedAt = $submission->submitted_at;
+  $dueAt       = $homework->due_at;
+  $lateHours   = ($submittedAt && $dueAt && $submittedAt->gt($dueAt)) ? (int) ceil($dueAt->diffInMinutes($submittedAt) / 60) : 0;
+  $lateText    = $lateHours >= 24 ? 'на ' . intdiv($lateHours, 24) . ' дн.' : 'на ' . $lateHours . ' ч';
+
+  // Карточка ученика: курсы, средний результат, слабые номера.
+  $studentSummary = $student ? app(\App\Service\Homework\StudentReviewSummary::class)->for($student, $submission) : null;
+
+  // Время на задание и подсказка — пишутся при решении (Student\SubmissionController, task_meta).
+  $taskMeta = $submission->task_meta ?? [];
+  $formatSeconds = fn (int $s) => $s < 60 ? 'меньше минуты' : (intdiv($s, 60) . ' мин');
+
+  // Итог «сейчас»: автопроверка + баллы письменной части, выставленные на странице
+  // (пересчитывается в JS по мере проверки, см. updateTotal()).
+  $autoScoreNow = (int) ($submission->autocheck_score ?? 0);
+  $totalMax     = $autoTasks->sum(fn ($t) => (int) ($t->max_score ?? 1)) + $manualTasks->sum(fn ($t) => (int) ($t->max_score ?? 3));
+
   $get = function($arr, $id, $key, $def=null) {
       return $arr[$id][$key] ?? $def;
   };
@@ -93,12 +113,66 @@
     <div>
       <h1 class="text-2xl font-bold mb-1">Проверка домашней работы</h1>
       <div class="text-sm text-gray-600">
-        Ученик: <span class="font-medium text-gray-800">{{ $student?->name ?? ('ID '.$student?->id) }}</span>
+        Ученик: <span class="font-medium text-gray-800">{{ $student?->full_name ?? ('ID '.$submission->user_id) }}</span>
         <span class="mx-2">•</span>
         Работа: <span class="font-medium text-gray-800">{{ $homework->title ?? 'Без названия' }}</span>
         <span class="mx-2">•</span>
         Попытка № {{ $submission->attempt_no ?? 1 }}
       </div>
+      <div class="mt-1 text-sm text-gray-600">
+        @if($course)
+          Курс: <span class="text-gray-800">{{ $course->title }}</span>
+        @endif
+        @if($lesson)
+          <span class="mx-2">•</span>Урок: <span class="text-gray-800">{{ $lesson->title }}</span>
+        @endif
+      </div>
+      <div class="mt-1 text-sm text-gray-600">
+        Сдано: <span class="text-gray-800">{{ $submittedAt?->format('d.m.Y H:i') ?? '—' }}</span>
+        @if($dueAt)
+          <span class="mx-2">•</span>Дедлайн: <span class="text-gray-800">{{ $dueAt->format('d.m.Y H:i') }}</span>
+          @if($lateHours > 0)
+            <span class="ml-2 inline-flex rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-xs text-red-700">с опозданием {{ $lateText }}</span>
+          @elseif($submittedAt)
+            <span class="ml-2 inline-flex rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-xs text-green-700">вовремя</span>
+          @endif
+        @endif
+      </div>
+
+      {{-- Мини-карточка ученика --}}
+      @if($studentSummary)
+        <div class="mt-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+            @if($studentSummary['courses'])
+              <span>Курсы: <span class="text-gray-900">{{ implode(', ', $studentSummary['courses']) }}</span></span>
+            @endif
+            <span>Проверено работ: <span class="text-gray-900">{{ $studentSummary['checked'] }}</span></span>
+            @if($studentSummary['recent_percent'] !== null)
+              <span>
+                Средний результат за последние {{ $studentSummary['recent_count'] }}:
+                <span class="font-semibold {{ $studentSummary['recent_percent'] < 50 ? 'text-red-700' : ($studentSummary['recent_percent'] < 75 ? 'text-amber-700' : 'text-green-700') }}">{{ $studentSummary['recent_percent'] }}%</span>
+              </span>
+            @endif
+            @if($isAdmin)
+              <a href="{{ route('admin.user.show', $student) }}" class="underline text-gray-600 hover:text-gray-900">Профиль ученика</a>
+            @endif
+          </div>
+          @if($studentSummary['numbers'])
+            <div class="mt-2 flex flex-wrap items-center gap-1.5">
+              <span class="text-xs text-gray-500">По номерам (письменная часть):</span>
+              @foreach($studentSummary['numbers'] as $n)
+                <span class="rounded-full border px-2 py-0.5 text-xs {{ $n['weak'] ? 'border-red-200 bg-red-50 text-red-700 font-medium' : 'border-gray-200 bg-white text-gray-600' }}"
+                      title="Набрано {{ $n['score'] }} из {{ $n['max'] }} за {{ $n['count'] }} отв.">
+                  №{{ $n['number'] }}: {{ $n['percent'] }}%
+                </span>
+              @endforeach
+            </div>
+            @if(collect($studentSummary['numbers'])->contains('weak', true))
+              <div class="mt-1 text-xs text-red-700">Красным — слабые места (меньше 60% баллов хотя бы за 2 ответа): на них стоит обратить внимание в комментарии.</div>
+            @endif
+          @endif
+        </div>
+      @endif
 
       @if($newerRetry)
         <div class="mt-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800 px-3 py-2 text-sm">
@@ -126,6 +200,10 @@
     <div class="shrink-0 flex flex-col items-end gap-2">
       <div class="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium">
         Проверено: <span id="progress-count">{{ $manualClosedCount }}</span> из {{ $manualTotal }}
+      </div>
+      <div class="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium"
+           title="Автопроверка ({{ $autoScoreNow }}) + баллы, выставленные за письменную часть">
+        Итог сейчас: <span id="total-now" data-auto="{{ $autoScoreNow }}">—</span> из {{ $totalMax }}
       </div>
 
       <div class="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm">
@@ -360,12 +438,53 @@
       </div>
       @endif
 
+      @php
+        $meta      = $taskMeta[(string) $tid] ?? [];
+        $exemplar  = trim((string) ($t->answer ?? ''));
+        $explain   = trim((string) ($t->explanation ?? ''));
+        $hintText  = trim((string) ($t->hint ?? ''));
+      @endphp
       <div class="mb-4">
-        <div class="text-xs text-gray-500 mb-1">Ответ ученика</div>
+        <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
+          <div class="text-xs text-gray-500">Ответ ученика</div>
+          @if(isset($meta['seconds']) || !empty($meta['hint']))
+            <div class="flex flex-wrap gap-1.5 text-xs">
+              @if(isset($meta['seconds']))
+                <span class="rounded-full border border-gray-200 bg-white px-2 py-0.5 text-gray-600" title="Сколько времени задание было открыто у ученика">⏱ {{ $formatSeconds((int) $meta['seconds']) }}</span>
+              @endif
+              @if(!empty($meta['hint']))
+                <span class="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-amber-800">💡 подсказка открыта</span>
+              @endif
+            </div>
+          @endif
+        </div>
         <div class="whitespace-pre-wrap rounded-xl border border-gray-100 bg-gray-50 px-3 py-3 text-sm">
           {{ $studentAns !== '' ? $studentAns : '—' }}
         </div>
       </div>
+
+      @if($exemplar !== '' || $explain !== '' || $hintText !== '')
+        <details class="mb-4 rounded-xl border border-green-100 bg-green-50 px-3 py-2 text-sm" open>
+          <summary class="cursor-pointer select-none text-green-800">Образцовый ответ</summary>
+          <div class="mt-2 space-y-2 text-gray-800">
+            @if($exemplar !== '')
+              <div class="whitespace-pre-wrap">{{ $exemplar }}</div>
+            @endif
+            @if($explain !== '')
+              <div>
+                <div class="text-xs text-gray-500 mb-1">Пояснение</div>
+                <div class="whitespace-pre-wrap">{{ $explain }}</div>
+              </div>
+            @endif
+            @if($hintText !== '')
+              <div>
+                <div class="text-xs text-gray-500 mb-1">Подсказка, которую видел ученик</div>
+                <div class="whitespace-pre-wrap">{{ $hintText }}</div>
+              </div>
+            @endif
+          </div>
+        </details>
+      @endif
 
       @php
         $prevRow = $prevPerTask[$tid] ?? null;
@@ -584,7 +703,23 @@ document.addEventListener('DOMContentLoaded', () => {
   // висела у куратора вечно. Поэтому доступность пересчитываем здесь, на
   // каждом изменении состояния карточек.
   const finishBtns = document.querySelectorAll('.finish-btn, .finish-next-btn');
+  // «Итог сейчас»: автопроверка + баллы, введённые в карточках письменной части.
+  const totalNowEl = document.getElementById('total-now');
+  function updateTotal() {
+    if (!totalNowEl) return;
+    let sum = parseInt(totalNowEl.dataset.auto || '0', 10);
+    document.querySelectorAll('.score-input').forEach((inp) => {
+      const v = parseInt(inp.value, 10);
+      if (!Number.isNaN(v)) sum += v;
+    });
+    totalNowEl.textContent = String(sum);
+  }
+  // На любой ввод: AI-черновик ставит балл программно и шлёт input на форму, а не на поле.
+  document.addEventListener('input', updateTotal);
+  updateTotal();
+
   function updateProgressCount() {
+    updateTotal();
     const cards = document.querySelectorAll('.review-card');
     let closed = 0;
     cards.forEach((c) => { if (isCardClosed(c)) closed++; });

@@ -531,4 +531,14 @@ class User extends Authenticatable implements MustVerifyEmail
 
         return Storage::url($this->avatar);
     }
+
+    /**
+     * «Имя Фамилия» из профиля; если ученик их не заполнил — name (логин),
+     * затем «Ученик #id». Тот же порядок, что в admin/users и CRM.
+     */
+    public function getFullNameAttribute(): string
+    {
+        return trim(($this->first_name ?? '') . ' ' . ($this->last_name ?? ''))
+            ?: ($this->name ?: 'Ученик #' . $this->id);
+    }
 }
