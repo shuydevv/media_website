@@ -192,9 +192,12 @@
     </div>
   @endif
 
-  {{-- ===== Итог: статус, общий балл, действие, карта заданий ===== --}}
-  <x-ui.card class="mb-8 !p-5 sm:!p-6">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+  {{-- ===== Заголовок страницы: название, статус, попытки ===== --}}
+  <div class="mb-4">
+    <h1 class="text-xl md:text-2xl font-medium text-zinc-900">
+      {{ $homework->title ?? 'Домашнее задание' }}
+    </h1>
+    <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-2">
         <x-ui.badge :tone="$hasPendingManual ? 'orange' : 'green'">
           @if($hasPendingManual)
@@ -224,35 +227,59 @@
         </div>
       @endif
     </div>
+  </div>
 
-    <h1 class="mt-4 text-xl md:text-2xl font-medium text-zinc-900">
-      {{ $homework->title ?? 'Домашнее задание' }}
-    </h1>
+  {{-- ===== Итог: кольцо с баллом, вердикт, действие, карта заданий ===== --}}
+  @php
+    // Цвет кольца — оценка результата. Пока письменная часть не проверена,
+    // балл неполный: нейтральный синий, а не «красный» за непроверенное.
+    $ringColor = $hasPendingManual ? 'text-apple-blue-500'
+      : ($totalPct >= 80 ? 'text-apple-green-500' : ($totalPct >= 50 ? 'text-apple-orange-500' : 'text-apple-red-450'));
+    $ringLen = 2 * M_PI * 42;
 
-    <div class="mt-5 flex flex-col md:flex-row md:items-end justify-between gap-6">
-      <div class="min-w-0 flex-1">
-        <div class="flex items-baseline flex-wrap gap-x-2">
-          <span class="text-5xl font-medium text-zinc-900 tabular-nums leading-none">{{ $totalScore }}</span>
-          <span class="text-base text-zinc-500">
-            из {{ $totalMax }} {{ $plural($totalMax, ['балла', 'баллов', 'баллов']) }} · {{ $totalPct }}%
-            @if($hasPendingManual)<span class="text-zinc-400">· пока без письменной части</span>@endif
-          </span>
+    $tasksTotal = $taskRows->count();
+    $allCorrect = !$hasPendingManual && $errorCount === 0;
+    if ($hasPendingManual) {
+        $verdict = 'Ждём проверку куратора';
+    } elseif ($allCorrect) {
+        $verdict = 'Без ошибок';
+    } else {
+        $verdict = $errorCount . ' ' . $plural($errorCount, ['задание', 'задания', 'заданий']) . ' с ошибками';
+    }
+  @endphp
+  <x-ui.card class="mb-8 !p-5 sm:!p-6">
+    <div class="flex flex-wrap items-center gap-x-6 gap-y-5">
+      <div class="relative w-24 h-24 sm:w-28 sm:h-28 shrink-0">
+        <svg viewBox="0 0 100 100" class="w-full h-full -rotate-90" aria-hidden="true">
+          <circle cx="50" cy="50" r="42" fill="none" stroke-width="10" class="stroke-zinc-100" />
+          <circle cx="50" cy="50" r="42" fill="none" stroke-width="10" stroke-linecap="round"
+                  stroke="currentColor" class="{{ $ringColor }}"
+                  stroke-dasharray="{{ round($ringLen * $totalPct / 100, 2) }} {{ round($ringLen, 2) }}" />
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+          <span class="text-2xl sm:text-3xl font-medium text-zinc-900 leading-none tabular-nums">{{ $totalScore }}</span>
+          <span class="mt-1 text-xs text-zinc-500 tabular-nums">из {{ $totalMax }}</span>
         </div>
+      </div>
 
-        <div class="mt-4 h-2 max-w-md rounded-full bg-zinc-100 overflow-hidden">
-          <div class="h-full rounded-full bg-apple-blue-500" style="width: {{ $totalPct }}%"></div>
-        </div>
-
-        <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-zinc-600">
-          @foreach($legend as $st => $label)
-            @if($counts[$st] > 0)
-              <span class="inline-flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full {{ $tone[$st]['dot'] }}"></span>
-                {{ $label }}: <span class="font-medium text-zinc-900 tabular-nums">{{ $counts[$st] }}</span>
-              </span>
-            @endif
-          @endforeach
-        </div>
+      <div class="flex-1 min-w-[10rem]">
+        <div class="text-lg sm:text-xl font-medium text-zinc-900">{{ $verdict }}</div>
+        @if($allCorrect)
+          <div class="mt-1 text-sm text-zinc-500">
+            Верно {{ $tasksTotal }} из {{ $tasksTotal }} {{ $plural($tasksTotal, ['задания', 'заданий', 'заданий']) }}
+          </div>
+        @else
+          <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-zinc-600">
+            @foreach($legend as $st => $label)
+              @if($counts[$st] > 0)
+                <span class="inline-flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full {{ $tone[$st]['dot'] }}"></span>
+                  {{ $label }}: <span class="font-medium text-zinc-900 tabular-nums">{{ $counts[$st] }}</span>
+                </span>
+              @endif
+            @endforeach
+          </div>
+        @endif
       </div>
 
       <div class="flex flex-col gap-2 w-full md:w-auto md:items-end shrink-0">
@@ -267,7 +294,8 @@
               Перерешать всю работу
             </a>
           @else
-            <x-ui.button href="{{ route('student.submissions.create', $homework) }}?retry=1" variant="accent" size="sm" class="!bg-apple-blue-500 hover:!bg-apple-blue-600">
+            {{-- Без ошибок перерешивать незачем — кнопка не должна звать первой. --}}
+            <x-ui.button href="{{ route('student.submissions.create', $homework) }}?retry=1" :variant="$allCorrect ? 'secondary' : 'accent'" size="sm" class="{{ $allCorrect ? '' : '!bg-apple-blue-500 hover:!bg-apple-blue-600' }}">
               Перерешать работу
             </x-ui.button>
           @endif
@@ -275,7 +303,7 @@
             {{ $attemptsLeft === 1 ? 'Осталась 1 попытка' : 'Осталось попыток: ' . $attemptsLeft }}
           </div>
         @else
-          <div class="text-sm text-zinc-500 text-center md:text-right">Попытки закончились</div>
+          <div class="text-sm text-zinc-400 text-center md:text-right">Попытки закончились</div>
         @endif
       </div>
     </div>
@@ -287,8 +315,9 @@
       </div>
     @endif
 
-    {{-- Карта заданий: цвет — статус, клик ведёт к разбору задания. Тестовую
-         и письменную части подписываем, только когда в работе есть обе. --}}
+    {{-- Карта заданий: цвет — статус, клик ведёт к разбору задания (балл —
+         во всплывающей подсказке). Тестовую и письменную части подписываем,
+         только когда в работе есть обе. --}}
     @if($taskRows->isNotEmpty())
       @php
         $groups = $taskRows->groupBy(fn($r) => $r->isManual ? 'manual' : 'auto');
@@ -305,11 +334,8 @@
               @foreach($groups[$g] as $r)
                 <a href="#task-{{ $r->tid }}" data-task-link
                    title="Задание {{ $r->no }}: {{ $r->status === 'wait' ? 'ждёт проверки' : $r->score . ' из ' . $r->max }}"
-                   class="{{ $tone[$r->status]['tile'] }} w-11 h-11 rounded-xl flex flex-col items-center justify-center hover:ring-2 hover:ring-zinc-300 transition">
-                  <span class="text-sm font-medium leading-none tabular-nums">{{ $r->no }}</span>
-                  @if($r->max > 1 && $r->status !== 'wait')
-                    <span class="text-xs leading-none mt-1 opacity-75 tabular-nums">{{ $r->score }}/{{ $r->max }}</span>
-                  @endif
+                   class="{{ $tone[$r->status]['tile'] }} w-10 h-10 rounded-xl flex items-center justify-center text-sm font-medium tabular-nums hover:ring-2 hover:ring-zinc-300 transition">
+                  {{ $r->no }}
                 </a>
               @endforeach
             </div>
