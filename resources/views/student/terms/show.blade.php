@@ -9,7 +9,7 @@
 <div class="max-w-3xl mx-auto px-3 sm:px-4 py-5 sm:py-6">
   <x-ui.page-header title="Термин" :back="route('student.terms.index')" backLabel="К тренажёру" />
 
-  <div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6">
+  <div class="rounded-2xl border border-gray-200 bg-white card-surface p-4 sm:p-6">
     @include('student.terms.partials.term-card', ['term' => $term])
 
     <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between gap-3 text-sm text-zinc-500">

@@ -170,9 +170,12 @@
       <div class="text-sm text-zinc-500 mb-3">Откроется, когда изучишь все термины предыдущего уровня.</div>
     @endif
 
-    <div class="space-y-4 {{ $locked ? 'opacity-60' : '' }}">
+    {{-- Закрытый уровень приглушаем внутри карточки, а не всю карточку:
+         полупрозрачная карточка сливается с фоновым узором кабинета. --}}
+    <div class="space-y-4">
       @foreach($level['sections'] as $sectionNumber => $sectionTerms)
         <x-ui.card>
+          <div class="{{ $locked ? 'opacity-60' : '' }}">
           <div class="flex items-baseline justify-between gap-3 mb-3">
             <div class="sans-medium text-sm text-zinc-500">{{ $sections[$sectionNumber] ?? 'Раздел '.$sectionNumber }}</div>
             <div class="text-xs text-zinc-400 whitespace-nowrap">{{ $sectionTerms->filter(fn ($t) => $progress->has($t->id))->count() }} из {{ $sectionTerms->count() }}</div>
@@ -197,6 +200,7 @@
                 @endif
               </div>
             @endforeach
+          </div>
           </div>
         </x-ui.card>
       @endforeach

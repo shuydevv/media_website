@@ -132,7 +132,7 @@
     </div>
   @endif
 
-  <div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6">
+  <div class="rounded-2xl border border-gray-200 bg-white card-surface p-4 sm:p-6">
     <div class="flex items-center justify-between gap-3 mb-4 sm:mb-5">
       <div class="flex items-center gap-2 sm:gap-3 min-w-0">
         <span class="shrink-0 inline-block px-2 py-0.5 text-xs rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700 whitespace-nowrap" title="Номер задания в ЕГЭ">

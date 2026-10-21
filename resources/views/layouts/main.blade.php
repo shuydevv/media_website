@@ -72,7 +72,7 @@
     </head>
     <body class="{{ request()->routeIs('student.*') ? 'pb-20 student-portal' : '' }}">
         @include('partials.impersonation-banner')
-        <div class="relative border-b ">
+        <div id="site-header" class="relative border-b ">
             {{-- Обычный <style>, не Tailwind-классы (max-w-6xl/p-4 и т.п.) —
                  в этом браузере часть Tailwind-классов ненадёжно
                  применяется, уже несколько раз ловили на этом хедере и на
@@ -82,6 +82,23 @@
                  центрироваться (и он, и лого — position: absolute, высоту
                  строки не формируют). --}}
             <style>
+                /* В кабинете шапка — то же стекло, что нижнее меню
+                   (#student-bottom-nav в partials/student-bottom-nav):
+                   полупрозрачный градиент + blur/saturate размывают фоновый
+                   узор (.student-portal::before в app.css), блик по кромке.
+                   Внешняя тень — едва заметная, с малым размытием (у меню
+                   она мягче и шире). Обоснование каждого слоя — там же. */
+                .student-portal #site-header {
+                    z-index: 30;
+                    border-bottom: 1.5px solid rgba(255, 255, 255, .85);
+                    background: linear-gradient(180deg, rgba(255, 255, 255, .78), rgba(255, 255, 255, .55));
+                    -webkit-backdrop-filter: blur(28px) saturate(180%);
+                    backdrop-filter: blur(28px) saturate(180%);
+                    box-shadow:
+                        0 1px 3px rgba(0, 0, 0, .04),
+                        inset 0 1px 1px rgba(255, 255, 255, .9),
+                        inset 0 0 0 1px rgba(255, 255, 255, .3);
+                }
                 #site-header-row {
                     position: relative;
                     max-width: 72rem;

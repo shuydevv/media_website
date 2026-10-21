@@ -14,7 +14,9 @@
 ])
 
 @php
-    $toneClasses = $highlighted ? 'bg-amber-50/40 border-amber-200' : 'bg-white border-gray-200';
+    // #FFFDF7 — amber-50 на 40% поверх белого, но непрозрачный: полупрозрачная
+    // карточка сливается с фоновым узором кабинета.
+    $toneClasses = $highlighted ? 'bg-[#FFFDF7] border-amber-200' : 'bg-white border-gray-200 card-surface';
 
     $classes = "w-full text-left flex items-start justify-between gap-4 rounded-2xl border {$toneClasses} p-4 sm:p-5 hover:border-amber-300 hover:shadow-sm transition";
 @endphp

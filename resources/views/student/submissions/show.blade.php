@@ -417,7 +417,7 @@
     {{-- Верно решённые свёрнуты: ученику на этой странице нужны прежде всего ошибки. --}}
     <div id="task-{{ $tid }}" data-task-card data-status="{{ $status }}"
          class="scroll-mt-6 mb-3 {{ $defaultFilter === 'errors' && !$isError ? 'hidden' : '' }}">
-      <details class="group rounded-2xl border border-gray-200 bg-white" @if($status !== 'ok') open @endif>
+      <details class="group rounded-2xl border border-gray-200 bg-white card-surface" @if($status !== 'ok') open @endif>
         <summary class="flex items-center justify-between gap-3 cursor-pointer list-none p-4 sm:px-5 [&::-webkit-details-marker]:hidden">
           <span class="flex items-center gap-2 min-w-0">
             <x-icon name="chevron-right" class="w-4 h-4 text-zinc-400 shrink-0 transition-transform group-open:rotate-90" />

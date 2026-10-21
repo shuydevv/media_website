@@ -151,10 +151,58 @@ h1, h2 {
    (.font-oktyabrina), поэтому побеждал бы и здесь, несмотря на порядок. */
 .student-portal {
     color: #27272a; /* zinc-800 */
+    background-color: #F6FCFF; /* голубоватый — под фоновым узором ниже */
 }
 .student-portal h1:not(.font-oktyabrina),
 .student-portal h2:not(.font-oktyabrina) {
     font-family: 'sans';
+}
+
+/* Белые карточки кабинета на голубоватом фоне: серая рамка gray-200 на нём
+   выглядит чужой, поэтому рамка — в тон фона, а «отрыв» от фона даёт мягкая
+   тень, тонированная в синий узора, а не в чёрный.
+   .card-surface — сама карточка (x-ui.card, x-ui.card-link и ручные
+   rounded-2xl border bg-white); .card-line — линии внутри карточки
+   (разделители, пунктирные пустые блоки, обводка мелких кнопок).
+   В @layer components — чтобы hover-утилиты рамки и тени
+   (x-ui.card-link) по-прежнему перебивали. Только в кабинете: x-ui.card
+   используется и в админке. */
+@layer components {
+    .student-portal .card-surface {
+        border-color: #DCEAF3;
+        box-shadow:
+            0 1px 2px rgba(11, 102, 162, .05),
+            0 4px 16px rgba(11, 102, 162, .06);
+    }
+    .student-portal .card-line {
+        border-color: #E2EEF6;
+    }
+}
+
+/* Фоновый узор кабинета: плитка 1024px показывается по 512px (2× для ретины).
+   pattern.webp — контурный рисунок из pattern_white.svg (корень проекта):
+   белая подложка переведена в прозрачность попиксельно (color-to-alpha).
+   В векторе белое не убрать — там белые фигуры поверх синих силуэтов
+   и образуют линии.
+   Путь относительный (resources/img), как у шрифтов выше: Vite сам кладёт
+   файл в сборку. Абсолютный '/img/...' не годится — в dev CSS отдаётся с
+   :5173, и браузер ищет картинку там же, получая 404.
+   Псевдоэлемент, а не background на body, чтобы приглушить узор opacity,
+   не трогая контент; fixed — не едет при скролле. z-index:-1 кладёт его над
+   цветом фона body, но под всем содержимым. */
+.student-portal::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: url('../img/pattern.webp');
+    background-repeat: repeat;
+    background-size: 512px 512px;
+    opacity: 0.15;
 }
 
 .image-bg:before {

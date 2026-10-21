@@ -1,6 +1,7 @@
 {{--
     x-ui.card — статичная карточка-контейнер, эталон — карточка 1 (маскот)
-    на дашборде: rounded-2xl border bg-white p-5, без тени. Для кликабельной
+    на дашборде: rounded-2xl border bg-white p-5. В кабинете тон white
+    получает .card-surface (app.css): рамка в тон фона + мягкая синеватая тень. Для кликабельной
     карточки-строки (список/ссылка на всю карточку) см. x-ui.card-link —
     та же геометрия, но с hover-состоянием, отдельный компонент.
 
@@ -13,7 +14,7 @@
 
 @php
     $tones = [
-        'white' => 'bg-white border-gray-200',
+        'white' => 'bg-white border-gray-200 card-surface',
         'blue'  => 'bg-blue-50 border-blue-200',
         'gray'  => 'bg-gray-50 border-gray-200',
     ];

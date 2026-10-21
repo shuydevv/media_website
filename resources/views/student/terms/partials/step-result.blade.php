@@ -26,7 +26,7 @@
 @endphp
 
 <div id="term-result" data-corm="{{ $isFree ? 0 : $corm }}"
-     class="rounded-2xl border border-gray-200 bg-white p-5 sm:p-8 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:gap-10">
+     class="rounded-2xl border border-gray-200 bg-white card-surface p-5 sm:p-8 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:gap-10">
 
   {{-- 1. Итог (на широком экране — по центру своей колонки по высоте) --}}
   <div class="min-w-0 lg:flex lg:flex-col lg:justify-center">
@@ -110,8 +110,8 @@
       @endif
 
       {{-- Кнопки. На телефоне — закреплены внизу экрана, поэтому ниже место под них. --}}
-      <div class="fixed inset-x-0 bottom-0 z-30 border-t border-gray-200 bg-white/95 backdrop-blur px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]
-                  lg:static lg:border-0 lg:bg-transparent lg:backdrop-blur-none lg:p-0 lg:mt-4">
+      <div class="fixed inset-x-0 bottom-0 z-30 border-t border-gray-200 bg-white px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]
+                  lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:mt-4">
         <div class="max-w-3xl mx-auto lg:max-w-none flex flex-col gap-2 lg:flex-row lg:items-center">
           <x-ui.button href="{{ route('student.terms.index') }}" variant="accent" block class="text-sm sm:text-base whitespace-nowrap lg:w-auto lg:px-8">К тренажёру</x-ui.button>
           @if($secondary)

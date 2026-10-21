@@ -1009,13 +1009,13 @@
 
     <div class="w-full md:mb-16 mb-12">
     <x-ui.card class="max-w-6xl mx-auto">
-        <div class="flex justify-between items-center gap-2 mb-4 border-b border-gray-200 pb-2 px-1">
+        <div class="flex justify-between items-center gap-2 mb-4 border-b border-gray-200 card-line pb-2 px-1">
             <h2 class="sans-medium text-base md:text-2xl md:tracking-wide text-zinc-900 whitespace-nowrap"><x-icon name="calendar" class="inline-block relative bottom-0.5 mr-1 w-4 h-4 md:w-5 md:h-5" /> Расписание уроков</h2>
             <div class="flex gap-2 shrink-0">
-                <button id="swiper-prev" class="w-8 h-8 md:w-9 md:h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white" disabled aria-label="Предыдущие дни">
+                <button id="swiper-prev" class="w-8 h-8 md:w-9 md:h-9 rounded-lg border border-gray-200 card-line bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white" disabled aria-label="Предыдущие дни">
                     <x-icon name="chevron-left" class="w-4 h-4" />
                 </button>
-                <button id="swiper-next" class="w-8 h-8 md:w-9 md:h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white" aria-label="Следующие дни">
+                <button id="swiper-next" class="w-8 h-8 md:w-9 md:h-9 rounded-lg border border-gray-200 card-line bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white" aria-label="Следующие дни">
                     <x-icon name="chevron-right" class="w-4 h-4" />
                 </button>
             </div>
@@ -1043,7 +1043,7 @@
       </div>
 
       @if (empty($day['items']))
-        <div class="border border-dashed border-gray-300 rounded-2xl px-3 py-4 text-left text-zinc-600 space-y-2">
+        <div class="border border-dashed border-gray-300 card-line rounded-2xl px-3 py-4 text-left text-zinc-600 space-y-2">
           <div class="flex items-center gap-2 text-xs">
             <x-icon name="sun" class="w-4 h-4 text-zinc-400 shrink-0" />
             <span class="tracking-wide text-zinc-500">Выходной</span>

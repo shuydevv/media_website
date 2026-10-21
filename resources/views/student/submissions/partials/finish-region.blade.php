@@ -55,7 +55,7 @@
     </div>
   @endif
 
-  <div class="rounded-2xl border border-gray-200 bg-white divide-y">
+  <div class="rounded-2xl border border-gray-200 bg-white card-surface divide-y">
     @php $carriedCount = 0; @endphp
     @foreach($tasks as $i => $t)
       @php

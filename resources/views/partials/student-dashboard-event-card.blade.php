@@ -75,7 +75,7 @@
         </div>
     @endif
 @else
-    <div class="h-full min-w-0 flex items-center justify-center text-center text-zinc-500 text-sm rounded-2xl border border-dashed border-gray-200 px-3 py-3">
+    <div class="h-full min-w-0 flex items-center justify-center text-center text-zinc-500 text-sm rounded-2xl border border-dashed border-gray-200 card-line px-3 py-3">
         {{ $emptyText }}
     </div>
 @endif

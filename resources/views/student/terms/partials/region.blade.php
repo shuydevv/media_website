@@ -88,7 +88,7 @@
          часть), а не номера вопросов: очередь меняется, когда термин
          возвращается на круг. Серия верных подряд — только для азарта,
          корма не даёт; пока её нет, плашка скрыта. --}}
-    <div id="term-bottom-strip" class="xl:hidden fixed z-30 inset-x-0 bottom-0 border-t border-gray-200 bg-white/95 backdrop-blur px-4 pt-2.5 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+    <div id="term-bottom-strip" class="xl:hidden fixed z-30 inset-x-0 bottom-0 border-t border-gray-200 bg-white px-4 pt-2.5 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
       <div class="max-w-3xl mx-auto">
         <div class="flex items-center justify-between gap-3 min-h-[1.5rem]">
           <div data-progress-label class="text-sm text-zinc-600 whitespace-nowrap">{{ $progressLabel }}</div>
@@ -104,12 +104,12 @@
          чуть уже и на 6px выше предыдущей. --}}
     <div class="relative" style="padding-top: {{ $stackDepth * 6 }}px;">
       @for($i = $stackDepth; $i >= 1; $i--)
-        <div class="term-stack-layer absolute rounded-2xl border border-gray-200 bg-white"
+        <div class="term-stack-layer absolute rounded-2xl border border-gray-200 bg-white card-surface"
              style="left: {{ $i * 10 }}px; right: {{ $i * 10 }}px; top: {{ ($stackDepth - $i) * 6 }}px; bottom: {{ $i * 6 }}px;" aria-hidden="true"></div>
       @endfor
 
       <div id="term-card" data-key="{{ $cardKey }}" data-flash="{{ $flash }}" data-step="{{ $step }}"
-           class="relative rounded-2xl border border-gray-200 bg-white p-4 sm:p-6">
+           class="relative rounded-2xl border border-gray-200 bg-white card-surface p-4 sm:p-6">
         @include('student.terms.partials.step-'.$step)
 
         @if($autoNext)
