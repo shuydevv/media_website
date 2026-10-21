@@ -81,10 +81,4 @@ class MistakesRetry
 
         return $plan;
     }
-
-    /** Сколько заданий пришлось бы перерешать — для кнопки на странице результата. */
-    public function redoCount(Submission $previous, iterable $tasks): int
-    {
-        return count($this->plan($previous, $tasks)['redo']);
-    }
 }

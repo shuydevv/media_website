@@ -233,9 +233,16 @@
   @php
     // Цвет кольца — оценка результата. Пока письменная часть не проверена,
     // балл неполный: нейтральный синий, а не «красный» за непроверенное.
-    $ringColor = $hasPendingManual ? 'text-apple-blue-500'
-      : ($totalPct >= 80 ? 'text-apple-green-500' : ($totalPct >= 50 ? 'text-apple-orange-500' : 'text-apple-red-450'));
+    // Дорожка кольца — светлый оттенок того же цвета.
+    [$ringColor, $ringTrack] = $hasPendingManual ? ['text-apple-blue-500', 'stroke-apple-blue-100']
+      : ($totalPct >= 80 ? ['text-apple-green-500', 'stroke-apple-green-100']
+      : ($totalPct >= 50 ? ['text-apple-orange-500', 'stroke-apple-orange-100']
+      : ['text-apple-red-450', 'stroke-apple-red-100']));
     $ringLen = 2 * M_PI * 42;
+
+    // Номера заданий, которые уйдут в «Перерешать ошибки», — прямо на кнопке.
+    $redoNos = $taskRows->whereIn('tid', $redoTaskIds ?? [])->pluck('no')->values();
+    $attemptsUsed = $attempts_allowed - $attemptsLeft;
 
     $tasksTotal = $taskRows->count();
     $allCorrect = !$hasPendingManual && $errorCount === 0;
@@ -251,7 +258,7 @@
     <div class="flex flex-wrap items-center gap-x-6 gap-y-5">
       <div class="relative w-24 h-24 sm:w-28 sm:h-28 shrink-0">
         <svg viewBox="0 0 100 100" class="w-full h-full -rotate-90" aria-hidden="true">
-          <circle cx="50" cy="50" r="42" fill="none" stroke-width="10" class="stroke-zinc-100" />
+          <circle cx="50" cy="50" r="42" fill="none" stroke-width="10" class="{{ $ringTrack }}" />
           <circle cx="50" cy="50" r="42" fill="none" stroke-width="10" stroke-linecap="round"
                   stroke="currentColor" class="{{ $ringColor }}"
                   stroke-dasharray="{{ round($ringLen * $totalPct / 100, 2) }} {{ round($ringLen, 2) }}" />
@@ -282,28 +289,61 @@
         @endif
       </div>
 
-      <div class="flex flex-col gap-2 w-full md:w-auto md:items-end shrink-0">
+      <div class="flex flex-col gap-3 w-full md:w-72 shrink-0">
         @if($retryInProgress)
           {{-- Продолжить/отменить — в плашке над результатом. --}}
         @elseif($attemptsLeft > 0)
           @if($redoCount > 0)
-            <x-ui.button href="{{ route('student.submissions.create', $homework) }}?retry=1&mode=mistakes" variant="accent" size="sm" class="!bg-apple-blue-500 hover:!bg-apple-blue-600" title="Верно решённые задания перенесутся в новую попытку">
-              Перерешать ошибки ({{ $redoCount }})
-            </x-ui.button>
-            <a href="{{ route('student.submissions.create', $homework) }}?retry=1" class="text-sm text-zinc-500 hover:text-zinc-900 text-center md:text-right py-1">
-              Перерешать всю работу
+            {{-- Кнопка-карточка: какие именно задания придётся решить заново. --}}
+            <a href="{{ route('student.submissions.create', $homework) }}?retry=1&mode=mistakes"
+               aria-label="Перерешать ошибки: {{ $redoNos->count() === 1 ? 'задание' : 'задания' }} {{ $redoNos->implode(', ') }}"
+               title="Верно решённые задания перенесутся в новую попытку"
+               class="group flex items-center gap-3 rounded-2xl bg-apple-blue-500 hover:bg-apple-blue-600 text-white pl-4 pr-3 py-3 shadow-sm shadow-apple-blue-500/30 transition">
+              <span class="min-w-0 flex-1">
+                <span class="block font-medium">Перерешать ошибки</span>
+                <span class="mt-2 flex flex-wrap gap-1">
+                  @foreach($redoNos->take(7) as $no)
+                    <span class="w-6 h-6 rounded-md bg-white/20 text-xs font-medium flex items-center justify-center tabular-nums">{{ $no }}</span>
+                  @endforeach
+                  @if($redoNos->count() > 7)
+                    <span class="h-6 px-1.5 rounded-md bg-white/10 text-xs flex items-center">+{{ $redoNos->count() - 7 }}</span>
+                  @endif
+                </span>
+              </span>
+              <x-icon name="arrow-narrow-right" class="w-5 h-5 shrink-0 transition-transform group-hover:translate-x-0.5" />
+            </a>
+            <a href="{{ route('student.submissions.create', $homework) }}?retry=1"
+               class="group inline-flex items-center justify-center md:justify-start gap-1 text-sm text-zinc-500 hover:text-zinc-900">
+              или всю работу заново
+              <x-icon name="arrow-narrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </a>
           @else
-            {{-- Без ошибок перерешивать незачем — кнопка не должна звать первой. --}}
-            <x-ui.button href="{{ route('student.submissions.create', $homework) }}?retry=1" :variant="$allCorrect ? 'secondary' : 'accent'" size="sm" class="{{ $allCorrect ? '' : '!bg-apple-blue-500 hover:!bg-apple-blue-600' }}">
-              Перерешать работу
-            </x-ui.button>
+            {{-- Ошибок нет — перерешивать незачем, поэтому кнопка спокойная. --}}
+            <a href="{{ route('student.submissions.create', $homework) }}?retry=1"
+               class="group flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-900 pl-4 pr-3 py-3 transition">
+              <span class="min-w-0 flex-1">
+                <span class="block font-medium">Перерешать работу</span>
+                <span class="block mt-0.5 text-xs text-zinc-500">все {{ $tasksTotal }} {{ $plural($tasksTotal, ['задание', 'задания', 'заданий']) }} заново</span>
+              </span>
+              <x-icon name="arrow-narrow-right" class="w-5 h-5 shrink-0 text-zinc-400 transition-transform group-hover:translate-x-0.5" />
+            </a>
           @endif
-          <div class="text-xs text-zinc-400 text-center md:text-right">
-            {{ $attemptsLeft === 1 ? 'Осталась 1 попытка' : 'Осталось попыток: ' . $attemptsLeft }}
+        @endif
+
+        {{-- Попытки точками: закрашены потраченные. --}}
+        @if(!$retryInProgress)
+          <div class="flex items-center justify-center {{ $attemptsLeft === 0 ? 'md:justify-end' : 'md:justify-start' }} gap-2 text-xs text-zinc-500">
+            <span class="flex items-center gap-1" aria-hidden="true">
+              @for($i = 0; $i < $attempts_allowed; $i++)
+                <span class="w-2 h-2 rounded-full {{ $i < $attemptsUsed ? 'bg-zinc-400' : 'border border-zinc-300' }}"></span>
+              @endfor
+            </span>
+            @if($attemptsLeft === 0)
+              Попытки закончились
+            @else
+              {{ $attemptsLeft === 1 ? 'Осталась 1 попытка' : 'Осталось попыток: ' . $attemptsLeft }}
+            @endif
           </div>
-        @else
-          <div class="text-sm text-zinc-400 text-center md:text-right">Попытки закончились</div>
         @endif
       </div>
     </div>

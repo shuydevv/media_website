@@ -235,8 +235,8 @@ class RetryAttemptsTest extends TestCase
         $this->assertSame(4, (int) $first->total_score);
 
         $this->actingAs($student)->get(route('student.submissions.show', $first))
-            ->assertSee('Перерешать ошибки (1)')
-            ->assertSee('Перерешать всю работу');
+            ->assertSee('Перерешать ошибки: задание 2')
+            ->assertSee('или всю работу заново');
 
         $balance = (int) $student->refresh()->fish_corm_balance;
 
