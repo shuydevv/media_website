@@ -1,13 +1,21 @@
 #!/usr/bin/env bash
 #
 # Zero(ish)-downtime deploy for Laravel via atomic symlink switch.
-# Run as the `deploy` user on the target server.
+# Runs as the `deploy` user on the target server; started as root, it
+# re-runs itself as deploy (env overrides are not carried over then).
 #
 # Env overrides (all optional):
 #   BRANCH=main REPO=... APP=/var/www/poltav RELEASES_TO_KEEP=5
 #   HEALTHCHECK_URL=https://poltav.example.com/up PHP_FPM_SERVICE=php8.2-fpm
 #
 set -euo pipefail
+
+# From root the release and its .env would end up root:600 (php can't read
+# it → config:cache without APP_KEY → 500), and root has no deploy key for
+# the git clone.
+if [ "$(id -u)" -eq 0 ]; then
+  exec sudo -u deploy -i bash "$(readlink -f "$0")" "$@"
+fi
 
 APP="${APP:-/var/www/poltav}"
 RELEASES="$APP/releases"
