@@ -54,6 +54,9 @@ class SendInboundLead implements ShouldQueue
             $parsed['telegram'] !== null => 'Контакт: <a href="https://t.me/'.e($parsed['telegram']).'">@'.e($parsed['telegram']).'</a>',
             default => 'Контакт: <code>'.e($parsed['phone']).'</code>',
         };
+        if ($lead->form) {
+            $lines[] = 'Форма: '.e($lead->form);
+        }
 
         try {
             (new AdminTopics(TelegramApi::funnel()))

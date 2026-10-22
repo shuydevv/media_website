@@ -13,7 +13,8 @@ use Illuminate\Support\Facades\Validator;
  * форма) → inbound_leads → своя тема сайта в админ-группе бота воронки
  * (SendInboundLead). Сайты и их ключи — config/inbound_leads.php.
  *
- * Поля: key (или заголовок X-Lead-Key), name, method, contact; website —
+ * Поля: key (или заголовок X-Lead-Key), name, method, contact, form (с какой
+ * формы на сайте — как назовёт сайт); website —
  * ловушка для ботов, на сайте должно быть скрыто и пустое.
  *
  * Всегда JSON, без редиректов: отправляют из JS или PHP с чужого домена.
@@ -36,6 +37,7 @@ class InboundLeadController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'method' => ['nullable', 'string', 'max:50'],
             'contact' => ['required', 'string', 'max:100'],
+            'form' => ['nullable', 'string', 'max:100'],
         ], [
             'name.required' => 'Укажите имя',
             'contact.required' => 'Укажите телефон или Telegram',
@@ -47,6 +49,7 @@ class InboundLeadController extends Controller
 
         $lead = InboundLead::create([
             'site' => $site,
+            'form' => isset($data['form']) ? trim($data['form']) : null,
             'name' => trim($data['name']),
             'method' => isset($data['method']) ? trim($data['method']) : null,
             'contact' => trim($data['contact']),

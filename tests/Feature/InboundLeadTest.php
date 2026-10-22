@@ -37,12 +37,14 @@ class InboundLeadTest extends TestCase
             'name' => 'Иван',
             'method' => 'Telegram',
             'contact' => '@ivanov',
+            'form' => 'Попап — тарифы',
         ], ['X-Lead-Key' => 'secret-landing'])
             ->assertOk()
             ->assertJson(['ok' => true]);
 
         $lead = InboundLead::sole();
         $this->assertSame('landing', $lead->site);
+        $this->assertSame('Попап — тарифы', $lead->form);
         $this->assertNotNull($lead->sent_at);
         $this->assertSame(77, (int) DB::table('telegram_service_topics')->where('key', 'site_landing')->value('topic_id'));
 
@@ -51,6 +53,7 @@ class InboundLeadTest extends TestCase
             && $r['message_thread_id'] === 77
             && $r['disable_notification'] === false
             && str_contains($r['text'], 'Иван')
+            && str_contains($r['text'], 'Форма: Попап — тарифы')
             && str_contains($r['text'], 'href="https://t.me/ivanov"'));
     }
 

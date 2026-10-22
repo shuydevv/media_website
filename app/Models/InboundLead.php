@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class InboundLead extends Model
 {
-    protected $fillable = ['site', 'name', 'method', 'contact', 'sent_at'];
+    protected $fillable = ['site', 'form', 'name', 'method', 'contact', 'sent_at'];
 
     protected $casts = [
         'sent_at' => 'datetime',
