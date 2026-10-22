@@ -27,3 +27,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('/telegram/webhook', \App\Http\Controllers\Telegram\WebhookController::class)
     ->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class.':api')
     ->name('telegram.webhook');
+
+// Заявки с других моих сайтов (App\Http\Controllers\InboundLeadController):
+// шлют из браузера с чужого домена — поэтому здесь, без CSRF; CORS для api/*
+// открыт в config/cors.php. Сайт узнаётся по ключу из config/inbound_leads.php.
+Route::post('/inbound-lead', [\App\Http\Controllers\InboundLeadController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('inbound-lead.store');

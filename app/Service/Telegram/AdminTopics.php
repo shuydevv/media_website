@@ -127,11 +127,12 @@ class AdminTopics
     /**
      * Сообщение в служебную тему группы (не тему человека): лента стартов
      * без звука, заявки с сайта — со звуком. Тема заводится при первой
-     * записи; если её удалили руками — заводится заново.
+     * записи; если её удалили руками — заводится заново. $topicName — для
+     * тем не из списка в serviceTopic (заявки с других сайтов).
      *
      * @throws TelegramApiException
      */
-    public function postToService(string $key, string $html, bool $silent): ?array
+    public function postToService(string $key, string $html, bool $silent, ?string $topicName = null): ?array
     {
         $chatId = self::adminChatId();
         if (! $chatId) {
@@ -144,14 +145,14 @@ class AdminTopics
         ]);
 
         try {
-            return $send($this->serviceTopic($key));
+            return $send($this->serviceTopic($key, $topicName));
         } catch (TelegramApiException $e) {
             if (! $e->isTopicMissing()) {
                 throw $e;
             }
             DB::table('telegram_service_topics')->where('key', $key)->delete();
 
-            return $send($this->serviceTopic($key));
+            return $send($this->serviceTopic($key, $topicName));
         }
     }
 
@@ -220,7 +221,7 @@ class AdminTopics
         }
     }
 
-    private function serviceTopic(string $key): int
+    private function serviceTopic(string $key, ?string $topicName = null): int
     {
         $names = [
             'starts' => '📥 Старты',
@@ -228,7 +229,7 @@ class AdminTopics
             'liked' => '🔥 Понравилось',
         ];
 
-        return Cache::lock("telegram-service-topic-{$key}", 20)->block(15, function () use ($key, $names) {
+        return Cache::lock("telegram-service-topic-{$key}", 20)->block(15, function () use ($key, $names, $topicName) {
             $id = DB::table('telegram_service_topics')->where('key', $key)->value('topic_id');
             if ($id) {
                 return (int) $id;
@@ -236,7 +237,7 @@ class AdminTopics
 
             $topic = $this->api->call('createForumTopic', [
                 'chat_id' => self::adminChatId(),
-                'name' => $names[$key] ?? $key,
+                'name' => $names[$key] ?? $topicName ?? $key,
             ]);
             DB::table('telegram_service_topics')->insert([
                 'key' => $key,
