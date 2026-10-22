@@ -34,7 +34,7 @@
                  "Стоимость: N", чтобы не звучать как призыв к действию. --}}
             <button type="submit" class="fish-bg-buy-btn" data-bg-label="{{ $label }}" data-bg-price="{{ $price }}" {{ $canAfford ? '' : 'disabled' }}>
                 {{ $canAfford ? 'Купить за ' . $price : 'Стоимость: ' . $price }}
-                <img src="{{ asset('img/pizza.svg') }}" alt="" class="w-4 h-4 inline-block align-text-bottom ml-0.5">
+                <img src="{{ asset('img/burger.svg') }}" alt="" class="w-4 h-4 inline-block align-text-bottom ml-0.5">
             </button>
         </form>
     </div>

@@ -88,7 +88,7 @@
             filter: grayscale(65%);
             opacity: .55;
         }
-        /* Иконка пиццы в кнопке "Купить за" — не фон-превью, не должна
+        /* Иконка корма (бургер) в кнопке "Купить за" — не фон-превью, не должна
            затемняться/сереть или проваливаться на новую строку от общего
            правила ".fish-bg-thumb-wrap img" выше. */
         .fish-bg-buy-btn img {
@@ -327,7 +327,7 @@
                     <span class="sans-medium text-lg text-zinc-900">Фон</span>
                     <span class="text-sm text-zinc-500 inline-flex items-center gap-1">
                         Корм:
-                        <img src="{{ asset('img/pizza.svg') }}" alt="" class="w-5 h-5 inline-block">
+                        <img src="{{ asset('img/burger.svg') }}" alt="" class="w-5 h-5 inline-block">
                         <span class="text-base font-medium text-zinc-900">{{ $fishBalance }}</span>
                     </span>
                 </div>

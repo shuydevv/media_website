@@ -9,7 +9,7 @@
      экрана (на месте полоски прогресса; меню платформы здесь скрыто).
 
      Крючки для скрипта в session.blade.php: #term-result (data-corm) —
-     пицца летит к рыбе и та ест, за 3 корма конфетти; [data-result-dot] —
+     бургер летит к рыбе и та ест, за 3 корма конфетти; [data-result-dot] —
      кружки появляются по одному. У свободной тренировки корма нет. --}}
 @php
   $isFree = $session->kind === \App\Models\TermSession::KIND_FREE;
@@ -54,7 +54,7 @@
         <div id="term-result-corm"
              class="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 sans-medium text-base {{ $corm > 0 ? 'bg-amber-50 text-amber-800' : 'bg-gray-100 text-zinc-500' }}">
           @if($corm > 0)
-            +{{ $corm }} <img src="{{ asset('img/pizza.svg') }}" alt="корм" class="w-5 h-5">
+            +{{ $corm }} <img src="{{ asset('img/burger.svg') }}" alt="корм" class="w-5 h-5">
           @else
             без корма
           @endif

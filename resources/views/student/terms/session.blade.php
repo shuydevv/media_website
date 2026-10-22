@@ -43,7 +43,7 @@
 @push('page-scripts')
 <script>
 (function () {
-  var PIZZA_SRC = @json(asset('img/pizza.svg'));
+  var BURGER_SRC = @json(asset('img/burger.svg'));
   var app = document.getElementById('terms-app');
   if (!app) return;
 
@@ -655,7 +655,7 @@
     }
   }
 
-  /* ---------- итог: пицца летит к рыбе, за 3 корма — конфетти ---------- */
+  /* ---------- итог: бургер летит к рыбе, за 3 корма — конфетти ---------- */
 
   function confetti() {
     var g = gs();
@@ -708,18 +708,18 @@
     var eaten = 0;
     for (var i = 0; i < corm; i++) {
       (function (n) {
-        var pizza = document.createElement('img');
-        pizza.src = PIZZA_SRC;
-        pizza.alt = '';
-        pizza.style.cssText = 'position:fixed;width:28px;height:28px;pointer-events:none;z-index:60;opacity:0;';
-        document.body.appendChild(pizza);
+        var burger = document.createElement('img');
+        burger.src = BURGER_SRC;
+        burger.alt = '';
+        burger.style.cssText = 'position:fixed;width:28px;height:28px;pointer-events:none;z-index:60;opacity:0;';
+        document.body.appendChild(burger);
 
         g.delayedCall(0.6 + n * 0.28, function () {
           // Координаты берём в момент старта: страница могла прокрутиться.
           var from = badge.getBoundingClientRect();
           var to = mascot.getBoundingClientRect();
-          g.set(pizza, { left: from.left + 8, top: from.top + 6, opacity: 1 });
-          g.to(pizza, {
+          g.set(burger, { left: from.left + 8, top: from.top + 6, opacity: 1 });
+          g.to(burger, {
             left: to.left + to.width / 2 - 14,
             top: to.top + to.height / 2 - 14,
             rotation: 360,
@@ -727,7 +727,7 @@
             duration: 0.55,
             ease: 'power2.in',
             onComplete: function () {
-              pizza.remove();
+              burger.remove();
               setMood(mascot, mascot.dataset.eatingSrc);
               g.fromTo(mascot, { scale: 1 }, { scale: 1.12, duration: 0.12, yoyo: true, repeat: 1, clearProps: 'transform' });
               if (navigator.vibrate) navigator.vibrate(10);

@@ -21,12 +21,10 @@
     $trainers ??= auth()->check() ? app(\App\Service\Trainers\TrainerHub::class)->forUser(auth()->user()) : null;
     $trainersUrl = $trainers['url'] ?? null;
 @endphp
-{{-- data-balance / data-to-level читает скрипт кормления на дашборде:
-     что сказать рыбе после очередного кусочка («всё съедено», «ещё кусочек —
-     и я вырасту»). --}}
+{{-- data-balance читает скрипт кормления на дашборде: кончился ли корм
+     («всё съедено»). --}}
 <div id="fish-card" class="flex-1 flex flex-col min-w-0"
-     data-balance="{{ $fishBalance }}"
-     data-to-level="{{ $fishProgress['isMax'] ? '' : max(0, $fishProgress['needed'] - $fishProgress['current']) }}">
+     data-balance="{{ $fishBalance }}">
     <div class="sans-medium text-xs uppercase tracking-wide text-zinc-400 mb-3">Уровень {{ $fishLevel }} · {{ $fishLevelName }}</div>
 
     <div class="flex-1 flex flex-col">
@@ -49,7 +47,7 @@
         <div class="mt-auto pt-5">
             <div class="text-sm text-zinc-600 mb-4 flex items-center gap-1">
                 Корм:
-                <img src="{{ asset('img/pizza.svg') }}" alt="" class="w-5 h-5 inline-block">
+                <img src="{{ asset('img/burger.svg') }}" alt="" class="w-5 h-5 inline-block">
                 <span class="font-medium text-zinc-900">{{ $fishBalance }}</span>
             </div>
             <div class="fish-buttons {{ $trainersUrl ? 'grid grid-cols-2 gap-2' : '' }}">
@@ -58,7 +56,7 @@
                         hx-target="#fish-card"
                         hx-swap="outerHTML"
                         :disabled="$fishBalance <= 0">
-                    <img src="{{ asset('img/pizza.svg') }}" alt="" class="w-6 h-6 inline-block mr-1.5 align-text-bottom">
+                    <img src="{{ asset('img/burger.svg') }}" alt="" class="w-6 h-6 inline-block mr-1.5 align-text-bottom">
                     Покормить
                 </x-ui.button>
                 {{-- Пока тренажёр один, кнопка ведёт прямо в него; счётчик —

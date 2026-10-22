@@ -535,10 +535,11 @@
         });
 
         // Рыба говорит во время кормления (фразы — config/fish_speech.php,
-        // 'feeding'). Нажатия с паузой меньше 2 секунд — одна серия: облачко
-        // появляется на первом, держится, пока кормят, и меняет текст только
-        // на ступенях серии (1-е, 3-е, 6-е, 10-е и дальше каждое 4-е). Корм
-        // кончился или вырос уровень — своя фраза, держится дольше. Обычная
+        // 'feeding'). Нажатия с паузой меньше 2 секунд — одна серия: на 1-2
+        // нажатия рыба молчит, облачко появляется на 3-м, держится, пока
+        // кормят, и меняет текст только на ступенях серии (3-е, 5-е, 8-е и
+        // дальше каждое 4-е). Вырос уровень — своя фраза, держится дольше;
+        // корм кончился — тоже, но только если серия была от 3 нажатий. Обычная
         // реплика на время серии прячется и потом возвращается — кроме
         // «покорми меня»: рыбу уже покормили.
         var fishTalk = (function () {
@@ -634,12 +635,9 @@
                     }
                     if (Date.now() < lockedUntil) { hold(Math.max(2000, lockedUntil - Date.now())); return; }
 
-                    var card = document.getElementById('fish-card');
-                    var toLevel = card ? parseInt(card.dataset.toLevel, 10) : NaN;
-                    var pool = count === 1 ? (toLevel > 0 && toLevel <= 3 ? 'first_near_level' : 'first')
-                        : count === 3 ? 'third'
-                        : count === 6 ? 'sixth'
-                        : (count >= 10 && (count - 10) % 4 === 0) ? 'tenth'
+                    var pool = count === 3 ? 'third'
+                        : count === 5 ? 'fifth'
+                        : (count >= 8 && (count - 8) % 4 === 0) ? 'many'
                         : null;
                     if (pool) say(pick(pool), 2000);
                     else hold(2000);
@@ -647,6 +645,7 @@
                 // Ответ сервера: корм кончился.
                 empty: function () {
                     if (Date.now() < lockedUntil) return; // только что вырос уровень — это важнее
+                    if (count < 3) return; // на разовое кормление рыба молчит
                     var url = stage.dataset.trainersUrl;
                     say(pick(url ? 'empty_trainer' : 'empty'), url ? 4000 : 2500, url || null);
                     lockedUntil = Date.now() + (url ? 4000 : 2500);
