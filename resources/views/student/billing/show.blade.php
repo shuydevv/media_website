@@ -7,7 +7,7 @@
 @endphp
 
 @section('content')
-<div class="max-w-3xl mx-auto px-4 py-6">
+<div class="max-w-6xl mx-auto px-4 py-6">
     <h1 class="sans-medium text-xl md:text-3xl mb-4 sm:mb-6 text-zinc-900">Оплата курсов</h1>
 
     @if (session('success'))

@@ -6,7 +6,7 @@
 @section('title', 'Банк заданий — Школа Полтавского')
 
 @section('content')
-<div class="max-w-4xl mx-auto px-4 py-6">
+<div class="max-w-6xl mx-auto px-4 py-6">
   <h1 class="sans-medium text-xl md:text-3xl mb-4 sm:mb-6 text-zinc-900">Банк заданий</h1>
 
   <form method="get" class="flex flex-wrap gap-2 mb-6">

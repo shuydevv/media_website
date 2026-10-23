@@ -27,6 +27,7 @@ class ProfileController extends Controller
         // С $user — чтобы купленный сезонный фон был виден и вне сезона.
         $fishBackgrounds = $fish->availableBackgrounds($user);
         $fishAccessories = $fish->availableAccessories();
+        $fishFoods = $fish->availableFoods();
 
         return view('student.profile.show', [
             'user' => $user,
@@ -48,6 +49,15 @@ class ProfileController extends Controller
                 ->all(),
             'fishAccessoryPrices' => collect(array_keys($fishAccessories))
                 ->mapWithKeys(fn (string $slug) => [$slug => $fish->accessoryPrice($slug)])
+                ->all(),
+            'fishFood' => $user->fish_food ?: config('fish.default_food'),
+            'fishFoods' => $fishFoods,
+            'fishUnlockedFoods' => $fish->unlockedFoodsFor($user),
+            'fishFoodPrices' => collect(array_keys($fishFoods))
+                ->mapWithKeys(fn (string $slug) => [$slug => $fish->foodPrice($slug)])
+                ->all(),
+            'fishFoodMinLevels' => collect(array_keys($fishFoods))
+                ->mapWithKeys(fn (string $slug) => [$slug => $fish->foodMinLevel($slug)])
                 ->all(),
             'fishBalance' => (int) $user->fish_corm_balance,
         ]);
@@ -188,6 +198,43 @@ class ProfileController extends Controller
             'already_unlocked' => back()->with('success', 'Этот аксессуар уже открыт.'),
             'insufficient' => back()->withErrors(['fish_accessory' => 'Недостаточно корма, чтобы открыть этот аксессуар.']),
             default => back()->with('success', 'Аксессуар открыт и выбран.'),
+        };
+    }
+
+    /**
+     * Выбор среди уже открытой еды (бесплатной или ранее купленной) —
+     * покупка отдельным действием, см. purchaseFood(). Та же пара методов,
+     * что и у фонов/аксессуаров выше.
+     */
+    public function selectFood(Request $request, FishFoodService $fish)
+    {
+        $user = auth()->user();
+        $unlocked = $fish->unlockedFoodsFor($user);
+
+        $data = $request->validate([
+            'fish_food' => ['required', 'string', Rule::in($unlocked)],
+        ]);
+
+        $user->fish_food = $data['fish_food'];
+        $user->save();
+
+        return back()->with('success', 'Еда выбрана.');
+    }
+
+    public function purchaseFood(Request $request, FishFoodService $fish)
+    {
+        $data = $request->validate([
+            'fish_food' => ['required', 'string', Rule::in(array_keys($fish->availableFoods()))],
+        ]);
+
+        $user = auth()->user();
+        $slug = $data['fish_food'];
+
+        return match ($fish->purchaseFood($user, $slug)) {
+            'already_unlocked' => back()->with('success', 'Эта еда уже открыта.'),
+            'level' => back()->withErrors(['fish_food' => 'Эта еда откроется, когда акула вырастет до '.$fish->foodMinLevel($slug).' уровня.']),
+            'insufficient' => back()->withErrors(['fish_food' => 'Недостаточно корма, чтобы открыть эту еду.']),
+            default => back()->with('success', 'Еда открыта и выбрана.'),
         };
     }
 

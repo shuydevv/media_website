@@ -3,7 +3,7 @@
 @section('title', 'Профиль — Школа Полтавского')
 
 @section('content')
-<div class="max-w-4xl mx-auto px-4 py-6">
+<div class="max-w-6xl mx-auto px-4 py-6">
     <h1 class="sans-medium text-xl md:text-3xl mb-4 sm:mb-6 text-zinc-900">Профиль</h1>
 
     @if (session('success'))
@@ -74,8 +74,9 @@
             background: none;
             line-height: 0;
         }
+        /* Рамка выбора — 3px, как у кружков еды (fish-acc-chip-selected). */
         .fish-bg-thumb-btn.fish-bg-thumb-selected {
-            border-width: 6px;
+            border-width: 3px;
             border-color: #3b82f6;
         }
         .fish-bg-thumb-wrap {
@@ -83,10 +84,14 @@
             border-radius: 12px;
             overflow: hidden;
         }
+        /* Закрытый фон — в цвете, как закрытая еда: картинку нужно видеть,
+           чтобы решить, покупать ли. Не хватает корма — бледнее. */
         .fish-bg-thumb-wrap img {
             display: block;
-            filter: grayscale(65%);
-            opacity: .55;
+            opacity: .8;
+        }
+        .fish-bg-thumb-wrap.fish-bg-poor > img {
+            opacity: .5;
         }
         /* Иконка корма (бургер) в кнопке "Купить за" — не фон-превью, не должна
            затемняться/сереть или проваливаться на новую строку от общего
@@ -97,32 +102,48 @@
             opacity: 1;
             vertical-align: middle;
         }
+        /* Замок — тот же светлый кружок, что у еды (.fish-food-lock-badge),
+           только крупнее под размер плитки. */
         .fish-bg-lock-badge {
             position: absolute;
-            top: 6px;
-            right: 6px;
-            background: rgb(var(--c-gray-900, 17 24 39) / .75);
-            color: #fff;
-            font-size: 22px;
-            line-height: 1;
-            padding: 4px 8px;
-            border-radius: 8px;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 9999px;
+            background: rgb(var(--c-zinc-100, 244 244 245));
+            border: 1px solid rgb(var(--c-zinc-300, 212 212 216));
+            color: rgb(var(--c-zinc-700, 63 63 70));
         }
+        /* На всю ширину плитки + центрирование флексом, а не left:50% +
+           translateX(-50%): у абсолютного блока с left:50% браузер
+           ограничивает ширину половиной плитки, и кнопка с широким шрифтом
+           не помещалась — иконка корма упиралась в край. */
         .fish-bg-buy-form {
             position: absolute;
-            left: 50%;
+            left: 8px;
+            right: 8px;
             bottom: 8px;
-            transform: translateX(-50%);
+            display: flex;
+            justify-content: center;
             margin: 0;
         }
+        /* inline-flex, а не inline-block: иначе иконка корма выпирала за
+           низ кнопки (у плитки line-height: 0 от .fish-bg-thumb-btn). */
         .fish-bg-buy-btn {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
             width: auto;
             white-space: nowrap;
             border: none;
             border-radius: 9999px;
-            padding: 6px 14px;
-            font-size: 12px;
+            padding: 8px 16px;
+            font-size: 13px;
+            line-height: 18px;
             font-weight: 500;
             color: #fff;
             background: rgb(var(--c-gray-900, 17 24 39) / .85);
@@ -132,12 +153,14 @@
         .fish-bg-buy-btn:hover {
             background: rgb(var(--c-gray-900, 17 24 39) / .95);
         }
-        .fish-bg-buy-btn:disabled {
-            background: rgb(var(--c-gray-500, 107 114 128) / .5);
+        .fish-bg-buy-btn:disabled,
+        .fish-bg-buy-btn:disabled:hover {
+            background: rgb(255 255 255 / .85);
+            color: rgb(var(--c-zinc-500, 113 113 122));
             cursor: not-allowed;
         }
-        .fish-bg-buy-btn:disabled:hover {
-            background: rgb(var(--c-gray-500, 107 114 128) / .5);
+        .fish-bg-buy-btn:disabled img {
+            opacity: .5;
         }
 
         /* Фоны на десктопе — сетка 3 в ряд (fish-bg-grid-desktop), на
@@ -150,6 +173,16 @@
            на скрытом (display:none) контейнере он не может измерить ширину. */
         .fish-bg-swiper {
             display: none;
+        }
+        @media (min-width: 768px) {
+            .fish-bg-grid-desktop {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+        @media (min-width: 1024px) {
+            .fish-bg-grid-desktop {
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+            }
         }
         @media (max-width: 480px) {
             .profile-card {
@@ -164,10 +197,6 @@
             .fish-bg-buy-btn {
                 padding: 8px 18px;
                 font-size: 14px;
-            }
-            .fish-bg-lock-badge {
-                font-size: 24px;
-                padding: 5px 9px;
             }
         }
 
@@ -268,6 +297,42 @@
         .fish-acc-chip:disabled {
             cursor: not-allowed;
         }
+        /* Еда — тот же чип, но закрытая не обесцвечивается: картинку нужно
+           хорошо видеть, чтобы решить, покупать ли. Закрытость показывают
+           светлый замок в углу и цена под названием; не хватает корма —
+           картинка бледнее, цена серая. */
+        .fish-food-item {
+            width: 88px;
+        }
+        .fish-acc-chip.fish-food-chip {
+            width: 76px;
+            height: 76px;
+        }
+        /* Закрытая еда — пунктирная рамка и серая подложка, картинка
+           бледнее (но в цвете), чтобы с первого взгляда отличалась от уже
+           открытой. */
+        .fish-acc-chip.fish-food-locked {
+            border-style: dashed;
+            border-color: rgb(var(--c-zinc-300, 212 212 216));
+            background: rgb(var(--c-zinc-50, 250 250 250));
+        }
+        .fish-food-locked img {
+            opacity: .6;
+        }
+        .fish-food-lock-badge {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 9999px;
+            background: rgb(var(--c-zinc-100, 244 244 245));
+            border: 1px solid rgb(var(--c-zinc-300, 212 212 216));
+            color: rgb(var(--c-zinc-700, 63 63 70));
+        }
         .fish-acc-lock-badge {
             position: absolute;
             bottom: -4px;
@@ -322,16 +387,33 @@
                 </div>
             </form>
 
+            {{-- Еда — чем кормить акулу. Тот же чип-ряд, что у аксессуаров
+                 (fish-acc-*), но с картинками из public/img/food. Выбранная
+                 еда становится иконкой корма во всём интерфейсе. --}}
             <div>
                 <div class="flex items-center justify-between mb-4">
-                    <span class="sans-medium text-lg text-zinc-900">Фон</span>
+                    <span class="sans-medium text-lg text-zinc-900">Еда</span>
                     <span class="text-sm text-zinc-500 inline-flex items-center gap-1">
                         Корм:
-                        <img src="{{ asset('img/burger.svg') }}" alt="" class="w-5 h-5 inline-block">
+                        <img src="{{ auth()->user()->fish_food_icon_url }}" alt="" class="w-5 h-5 inline-block">
                         <span class="text-base font-medium text-zinc-900">{{ $fishBalance }}</span>
                     </span>
                 </div>
-                {{-- Десктоп: сетка 3 в ряд. --}}
+                <div class="fish-acc-grid">
+                    @foreach ($fishFoods as $slug => $label)
+                        <div class="fish-food-item">
+                            @include('student.partials.profile-fish-food-item')
+                        </div>
+                    @endforeach
+                </div>
+                @error('fish_food')
+                    <span class="mt-1 block text-xs text-red-600">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="mt-8">
+                <div class="sans-medium text-lg text-zinc-900 mb-4">Фон</div>
+                {{-- Десктоп: сетка 3–5 в ряд по ширине. --}}
                 <div class="fish-bg-grid-desktop grid grid-cols-3 gap-5 w-full">
                     @foreach ($fishBackgrounds as $slug => $label)
                         <div>
@@ -388,6 +470,18 @@
     <div id="fish-bg-buy-modal" class="fish-bg-modal-overlay" hidden>
         <div class="fish-bg-modal">
             <div class="fish-bg-modal-title">Купить фон?</div>
+            <div class="fish-bg-modal-text"></div>
+            <div class="fish-bg-modal-actions">
+                <button type="button" class="fish-bg-modal-btn fish-bg-modal-cancel">Отмена</button>
+                <button type="button" class="fish-bg-modal-btn fish-bg-modal-confirm">Купить</button>
+            </div>
+        </div>
+    </div>
+
+    {{-- Подтверждение покупки еды — та же модалка-паттерн, что у фонов. --}}
+    <div id="fish-food-buy-modal" class="fish-bg-modal-overlay" hidden>
+        <div class="fish-bg-modal">
+            <div class="fish-bg-modal-title">Открыть еду?</div>
             <div class="fish-bg-modal-text"></div>
             <div class="fish-bg-modal-actions">
                 <button type="button" class="fish-bg-modal-btn fish-bg-modal-cancel">Отмена</button>
@@ -697,6 +791,47 @@
             if (!btn) return;
             evt.preventDefault();
             openModal(btn.closest('form'), btn.dataset.accLabel || '', btn.dataset.accPrice || '');
+        });
+
+        cancelBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', function (evt) {
+            if (evt.target === modal) closeModal();
+        });
+        document.addEventListener('keydown', function (evt) {
+            if (evt.key === 'Escape' && !modal.hidden) closeModal();
+        });
+        confirmBtn.addEventListener('click', function () {
+            if (pendingForm) pendingForm.submit();
+            closeModal();
+        });
+    })();
+
+    // Подтверждение покупки еды — тот же паттерн, своя модалка/pendingForm.
+    (function () {
+        var modal = document.getElementById('fish-food-buy-modal');
+        if (!modal) return;
+
+        var textEl = modal.querySelector('.fish-bg-modal-text');
+        var cancelBtn = modal.querySelector('.fish-bg-modal-cancel');
+        var confirmBtn = modal.querySelector('.fish-bg-modal-confirm');
+        var pendingForm = null;
+
+        function openModal(form, label, price) {
+            pendingForm = form;
+            textEl.textContent = 'Открыть «' + label + '» за ' + price + ' корма?';
+            modal.hidden = false;
+        }
+
+        function closeModal() {
+            modal.hidden = true;
+            pendingForm = null;
+        }
+
+        document.addEventListener('click', function (evt) {
+            var btn = evt.target.closest('.fish-food-locked');
+            if (!btn) return;
+            evt.preventDefault();
+            openModal(btn.closest('form'), btn.dataset.foodLabel || '', btn.dataset.foodPrice || '');
         });
 
         cancelBtn.addEventListener('click', closeModal);

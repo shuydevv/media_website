@@ -12,7 +12,7 @@
 @endphp
 
 @section('content')
-<div class="max-w-3xl mx-auto px-3 sm:px-4 py-5 sm:py-6">
+<div class="max-w-6xl mx-auto px-3 sm:px-4 py-5 sm:py-6">
 
   <div class="flex items-center justify-between gap-3 mb-4">
     <h1 class="sans-medium text-lg sm:text-xl text-zinc-900">Банк заданий</h1>

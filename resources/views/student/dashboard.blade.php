@@ -745,22 +745,34 @@
             var mascot = document.getElementById('greeting-mascot');
             if (!mascot || typeof window.gsap === 'undefined') return;
 
-            // Крошки корма, сыплющиеся на маскота — та же техника, что и у
-            // конфетти на странице результата домашки (много мелких div-ов,
-            // каждый со своим GSAP-твином и случайными размером/цветом/
+            // Еда, сыплющаяся на маскота — та же техника, что и у
+            // конфетти на странице результата домашки (много мелких
+            // элементов, каждый со своим GSAP-твином и случайными размером/
             // траекторией), только контейнер — сам #greeting-mascot
             // (position:relative; overflow:hidden), а не весь экран.
+            // Картинка — выбранная в профиле еда (data-crumb-src на
+            // #fish-card), без неё — прежние цветные крошки.
+            var fishCard = document.getElementById('fish-card');
+            var crumbSrc = fishCard ? fishCard.dataset.crumbSrc : '';
             var crumbColors = ['#D97706', '#B45309', '#F59E0B', '#92400E'];
-            var crumbCount = 22;
+            var crumbCount = crumbSrc ? 10 : 22;
             var w = mascot.clientWidth;
             var h = mascot.clientHeight;
 
             for (var i = 0; i < crumbCount; i++) {
-                var crumb = document.createElement('div');
-                var size = 3 + Math.random() * 4;
-                var color = crumbColors[Math.floor(Math.random() * crumbColors.length)];
-                var startX = Math.random() * w;
-                crumb.style.cssText = 'position:absolute; top:-8px; left:' + startX + 'px; width:' + size + 'px; height:' + size + 'px; background:' + color + '; border-radius:' + (Math.random() > .5 ? '50%' : '2px') + '; pointer-events:none; z-index:5; opacity:0;';
+                var crumb;
+                if (crumbSrc) {
+                    var size = 16 + Math.random() * 10;
+                    crumb = document.createElement('img');
+                    crumb.src = crumbSrc;
+                    crumb.alt = '';
+                    crumb.style.cssText = 'position:absolute; top:-' + Math.ceil(size) + 'px; left:' + (Math.random() * (w - size)) + 'px; width:' + size + 'px; height:' + size + 'px; pointer-events:none; z-index:5; opacity:0;';
+                } else {
+                    var size = 3 + Math.random() * 4;
+                    var color = crumbColors[Math.floor(Math.random() * crumbColors.length)];
+                    crumb = document.createElement('div');
+                    crumb.style.cssText = 'position:absolute; top:-8px; left:' + (Math.random() * w) + 'px; width:' + size + 'px; height:' + size + 'px; background:' + color + '; border-radius:' + (Math.random() > .5 ? '50%' : '2px') + '; pointer-events:none; z-index:5; opacity:0;';
+                }
                 mascot.appendChild(crumb);
 
                 (function (el) {

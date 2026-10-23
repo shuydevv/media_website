@@ -400,6 +400,10 @@ Route::middleware(['auth'])->prefix('student')->name('student.')->group(function
         ->name('profile.accessory.select');
     Route::post('/profile/accessory/purchase', [\App\Http\Controllers\Student\ProfileController::class, 'purchaseAccessory'])
         ->name('profile.accessory.purchase');
+    Route::post('/profile/food/select', [\App\Http\Controllers\Student\ProfileController::class, 'selectFood'])
+        ->name('profile.food.select');
+    Route::post('/profile/food/purchase', [\App\Http\Controllers\Student\ProfileController::class, 'purchaseFood'])
+        ->name('profile.food.purchase');
     Route::post('/profile/avatar', [\App\Http\Controllers\Student\ProfileController::class, 'updateAvatar'])
         ->name('profile.avatar.update');
     Route::delete('/profile/avatar', [\App\Http\Controllers\Student\ProfileController::class, 'removeAvatar'])

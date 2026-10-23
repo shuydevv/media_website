@@ -22,9 +22,11 @@
     $trainersUrl = $trainers['url'] ?? null;
 @endphp
 {{-- data-balance читает скрипт кормления на дашборде: кончился ли корм
-     («всё съедено»). --}}
+     («всё съедено»); data-crumb-src — картинка падающей на маскота еды
+     (выбирается в профиле, см. config('fish.foods')). --}}
 <div id="fish-card" class="flex-1 flex flex-col min-w-0"
-     data-balance="{{ $fishBalance }}">
+     data-balance="{{ $fishBalance }}"
+     data-crumb-src="{{ auth()->user()->fish_food_crumb_url }}">
     <div class="sans-medium text-xs uppercase tracking-wide text-zinc-400 mb-3">Уровень {{ $fishLevel }} · {{ $fishLevelName }}</div>
 
     <div class="flex-1 flex flex-col">
@@ -47,7 +49,7 @@
         <div class="mt-auto pt-5">
             <div class="text-sm text-zinc-600 mb-4 flex items-center gap-1">
                 Корм:
-                <img src="{{ asset('img/burger.svg') }}" alt="" class="w-5 h-5 inline-block">
+                <img src="{{ auth()->user()->fish_food_icon_url }}" alt="" class="w-5 h-5 inline-block">
                 <span class="font-medium text-zinc-900">{{ $fishBalance }}</span>
             </div>
             <div class="fish-buttons {{ $trainersUrl ? 'grid grid-cols-2 gap-2' : '' }}">
@@ -56,7 +58,7 @@
                         hx-target="#fish-card"
                         hx-swap="outerHTML"
                         :disabled="$fishBalance <= 0">
-                    <img src="{{ asset('img/burger.svg') }}" alt="" class="w-6 h-6 inline-block mr-1.5 align-text-bottom">
+                    <img src="{{ auth()->user()->fish_food_icon_url }}" alt="" class="w-6 h-6 inline-block mr-1.5 align-text-bottom">
                     Покормить
                 </x-ui.button>
                 {{-- Пока тренажёр один, кнопка ведёт прямо в него; счётчик —

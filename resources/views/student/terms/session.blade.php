@@ -43,7 +43,7 @@
 @push('page-scripts')
 <script>
 (function () {
-  var BURGER_SRC = @json(asset('img/burger.svg'));
+  var BURGER_SRC = @json(auth()->user()->fish_food_crumb_url);
   var app = document.getElementById('terms-app');
   if (!app) return;
 

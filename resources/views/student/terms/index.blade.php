@@ -87,14 +87,14 @@
       <h1 class="sans-medium text-2xl md:text-3xl text-zinc-900 min-w-0">Тренажёр терминов</h1>
       <div class="hidden md:flex shrink-0 text-sm text-zinc-600 items-center gap-1">
         Корм:
-        <img src="{{ asset('img/burger.svg') }}" alt="" class="w-5 h-5 inline-block">
+        <img src="{{ auth()->user()->fish_food_icon_url }}" alt="" class="w-5 h-5 inline-block">
         <span class="font-medium text-zinc-900">{{ $cormBalance }}</span>
       </div>
     </div>
     <div class="mt-2 text-sm text-zinc-500">Поможет идеально ответить на 18 задание и прокачать знания для аргументов</div>
     <div class="md:hidden mt-2 text-sm text-zinc-600 flex items-center gap-1">
       Корм:
-      <img src="{{ asset('img/burger.svg') }}" alt="" class="w-5 h-5 inline-block">
+      <img src="{{ auth()->user()->fish_food_icon_url }}" alt="" class="w-5 h-5 inline-block">
       <span class="font-medium text-zinc-900">{{ $cormBalance }}</span>
     </div>
   </div>

@@ -465,6 +465,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'fish_corm_balance', 'fish_total_fed', 'fish_last_active_date', 'fish_milestones',
         'fish_name', 'fish_background', 'fish_unlocked_backgrounds',
         'fish_accessory', 'fish_unlocked_accessories',
+        'fish_food', 'fish_unlocked_foods',
     ];
 
     /**
@@ -492,6 +493,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'fish_milestones' => 'array',
         'fish_unlocked_backgrounds' => 'array',
         'fish_unlocked_accessories' => 'array',
+        'fish_unlocked_foods' => 'array',
     ];
 
     public function sendEmailVerificationNotification()
@@ -530,6 +532,24 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         return Storage::url($this->avatar);
+    }
+
+    /**
+     * Иконка выбранной еды для акулы — ею рисуется корм во всех местах UI
+     * (см. config('fish.foods'), FishFoodService::foodImageUrl()).
+     */
+    public function getFishFoodIconUrlAttribute(): string
+    {
+        return app(\App\Service\FishFoodService::class)->foodImageUrl($this->fish_food);
+    }
+
+    /**
+     * Картинка падающих на маскота кусочков выбранной еды (у снюса — своя,
+     * у остальных — сама иконка), см. FishFoodService::foodCrumbUrl().
+     */
+    public function getFishFoodCrumbUrlAttribute(): string
+    {
+        return app(\App\Service\FishFoodService::class)->foodCrumbUrl($this->fish_food);
     }
 
     /**

@@ -6,7 +6,7 @@
 @section('title', $term->title.' — Школа Полтавского')
 
 @section('content')
-<div class="max-w-3xl mx-auto px-3 sm:px-4 py-5 sm:py-6">
+<div class="max-w-6xl mx-auto px-3 sm:px-4 py-5 sm:py-6">
   <x-ui.page-header title="Термин" :back="route('student.terms.index')" backLabel="К тренажёру" />
 
   <div class="rounded-2xl border border-gray-200 bg-white card-surface p-4 sm:p-6">

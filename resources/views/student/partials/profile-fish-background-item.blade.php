@@ -20,7 +20,7 @@
         </button>
     </form>
 @else
-    <div class="fish-bg-thumb-wrap">
+    <div class="fish-bg-thumb-wrap {{ $canAfford ? '' : 'fish-bg-poor' }}">
         <img src="{{ asset('img/mascot/background/'.$slug.'.jpg') }}" alt="{{ $label }}" class="w-full aspect-square object-cover">
         <span class="fish-bg-lock-badge"><x-icon name="lock-01" class="w-4 h-4" /></span>
         <form method="POST" action="{{ route('student.profile.background.purchase') }}" class="fish-bg-buy-form">
@@ -30,11 +30,11 @@
                  "уверены?" перед реальной покупкой — см. скрипт внизу
                  profile/show.blade.php. Не хватает корма — кнопка неактивна
                  (disabled уже блокирует клик и submit нативно, модалка
-                 просто никогда не откроется) и текст меняется на
-                 "Стоимость: N", чтобы не звучать как призыв к действию. --}}
+                 просто никогда не откроется), становится светлой и
+                 показывает только цену, как у закрытой еды. --}}
             <button type="submit" class="fish-bg-buy-btn" data-bg-label="{{ $label }}" data-bg-price="{{ $price }}" {{ $canAfford ? '' : 'disabled' }}>
-                {{ $canAfford ? 'Купить за ' . $price : 'Стоимость: ' . $price }}
-                <img src="{{ asset('img/burger.svg') }}" alt="" class="w-4 h-4 inline-block align-text-bottom ml-0.5">
+                {{ $canAfford ? 'Купить за ' . $price : $price }}
+                <img src="{{ auth()->user()->fish_food_icon_url }}" alt="" class="w-4 h-4">
             </button>
         </form>
     </div>

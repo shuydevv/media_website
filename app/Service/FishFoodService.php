@@ -520,6 +520,122 @@ class FishFoodService
         return array_values(array_unique(array_merge($free, $purchased)));
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Еда для акулы — третья косметическая категория, тот же принцип, что и
+    | у аксессуаров выше (список в конфиге fish.foods, бесплатные + платные).
+    | Выбранная еда — это иконка корма во всём UI и падающие при кормлении
+    | кусочки, на экономику (суммы корма) не влияет.
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * @return array<string, string> slug => подпись
+     */
+    public function availableFoods(): array
+    {
+        return collect(config('fish.foods', []))
+            ->map(fn (array $f) => $f['label'] ?? '')
+            ->all();
+    }
+
+    public function foodPrice(string $slug): int
+    {
+        return (int) (config("fish.foods.{$slug}.price") ?? 0);
+    }
+
+    /**
+     * С какого уровня акулы еду можно купить (config 'min_level'), 1 — сразу.
+     */
+    public function foodMinLevel(string $slug): int
+    {
+        return (int) (config("fish.foods.{$slug}.min_level") ?? 1);
+    }
+
+    /**
+     * Неизвестный/удалённый из конфига слаг (или null — ещё не выбирал)
+     * отрисуется едой по умолчанию.
+     */
+    public function foodImageUrl(?string $slug = null): string
+    {
+        return asset('img/food/'.$this->resolveFood($slug).'.svg');
+    }
+
+    public function foodCrumbUrl(?string $slug = null): string
+    {
+        $slug = $this->resolveFood($slug);
+
+        return asset('img/food/'.(config("fish.foods.{$slug}.crumb") ?? $slug).'.svg');
+    }
+
+    private function resolveFood(?string $slug): string
+    {
+        return $slug && config("fish.foods.{$slug}") ? $slug : config('fish.default_food', 'burger');
+    }
+
+    public function isFoodUnlocked(User $user, string $slug): bool
+    {
+        if (in_array($slug, config('fish.free_foods', []), true)) {
+            return true;
+        }
+
+        return in_array($slug, $user->fish_unlocked_foods ?? [], true);
+    }
+
+    /**
+     * Покупка еды — та же атомарная схема под блокировкой строки
+     * пользователя, что и у purchaseBackground()/purchaseAccessory() выше.
+     *
+     * @return string 'already_unlocked'|'level'|'insufficient'|'purchased'
+     */
+    public function purchaseFood(User $user, string $slug): string
+    {
+        if ($this->isFoodUnlocked($user, $slug)) {
+            return 'already_unlocked';
+        }
+
+        // Уровень только растёт (fish_total_fed не уменьшается), поэтому
+        // проверки до блокировки строки достаточно.
+        if ($this->levelFor((int) $user->fish_total_fed) < $this->foodMinLevel($slug)) {
+            return 'level';
+        }
+
+        $price = $this->foodPrice($slug);
+
+        return $this->withLockedUser($user, function (User $locked) use ($slug, $price) {
+            $unlocked = $locked->fish_unlocked_foods ?? [];
+
+            if (in_array($slug, config('fish.free_foods', []), true) || in_array($slug, $unlocked, true)) {
+                return 'already_unlocked';
+            }
+
+            if ((int) $locked->fish_corm_balance < $price) {
+                return 'insufficient';
+            }
+
+            $unlocked[] = $slug;
+
+            $locked->fish_corm_balance = (int) $locked->fish_corm_balance - $price;
+            $locked->fish_unlocked_foods = array_values(array_unique($unlocked));
+            // Сразу выбираем купленную еду — та же логика, что и у фонов.
+            $locked->fish_food = $slug;
+            $locked->save();
+
+            return 'purchased';
+        });
+    }
+
+    /**
+     * @return string[]
+     */
+    public function unlockedFoodsFor(User $user): array
+    {
+        $free = config('fish.free_foods', []);
+        $purchased = $user->fish_unlocked_foods ?? [];
+
+        return array_values(array_unique(array_merge($free, $purchased)));
+    }
+
     public function levelFor(int $totalFed): int
     {
         $levels = config('fish.levels');
