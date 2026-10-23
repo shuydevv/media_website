@@ -450,6 +450,87 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Постоянная ссылка для входа без пароля (Auth\LoginLinkController) —
+     * только для учеников: аккаунты админов и кураторов слишком ценны,
+     * чтобы держать к ним вход в одной ссылке.
+     */
+    public function canUseLoginLink(): bool
+    {
+        return $this->isStudent();
+    }
+
+    /**
+     * Выпускает новую ссылку; старая сразу перестаёт работать (хэш
+     * перезаписан). Возвращает сам токен.
+     */
+    public function issueLoginToken(): string
+    {
+        $token = Str::random(48);
+
+        $this->forceFill([
+            'login_token' => $token,
+            'login_token_hash' => hash('sha256', $token),
+            'login_token_used_at' => null,
+            'login_token_used_agent' => null,
+        ])->save();
+
+        return $token;
+    }
+
+    public function revokeLoginToken(): void
+    {
+        $this->forceFill([
+            'login_token' => null,
+            'login_token_hash' => null,
+            'login_token_used_at' => null,
+            'login_token_used_agent' => null,
+        ])->save();
+    }
+
+    public static function findByLoginToken(string $token): ?self
+    {
+        return static::where('login_token_hash', hash('sha256', $token))->first();
+    }
+
+    public function getLoginLinkUrlAttribute(): ?string
+    {
+        return $this->login_token ? route('auth.login-link', ['token' => $this->login_token]) : null;
+    }
+
+    /**
+     * Грубое «с какого устройства» для строки «последний вход по ссылке» —
+     * ученику достаточно отличить свой телефон от чужого компьютера.
+     */
+    public function getLoginTokenUsedDeviceAttribute(): ?string
+    {
+        $agent = (string) $this->login_token_used_agent;
+        if ($agent === '') {
+            return null;
+        }
+
+        $os = match (true) {
+            str_contains($agent, 'iPhone') => 'iPhone',
+            str_contains($agent, 'iPad') => 'iPad',
+            str_contains($agent, 'Android') => 'Android',
+            str_contains($agent, 'Windows') => 'Windows',
+            str_contains($agent, 'Mac OS') => 'Mac',
+            str_contains($agent, 'Linux') => 'Linux',
+            default => null,
+        };
+        $browser = match (true) {
+            str_contains($agent, 'YaBrowser') => 'Яндекс Браузер',
+            str_contains($agent, 'Edg/') => 'Edge',
+            str_contains($agent, 'OPR/') => 'Opera',
+            str_contains($agent, 'Firefox') => 'Firefox',
+            str_contains($agent, 'Chrome') => 'Chrome',
+            str_contains($agent, 'Safari') => 'Safari',
+            default => null,
+        };
+
+        return implode(', ', array_filter([$os, $browser])) ?: 'неизвестное устройство';
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -476,6 +557,8 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'login_token',
+        'login_token_hash',
     ];
 
     /**
@@ -494,6 +577,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'fish_unlocked_backgrounds' => 'array',
         'fish_unlocked_accessories' => 'array',
         'fish_unlocked_foods' => 'array',
+        'login_token' => 'encrypted',
+        'login_token_used_at' => 'datetime',
     ];
 
     public function sendEmailVerificationNotification()

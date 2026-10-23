@@ -408,6 +408,10 @@ Route::middleware(['auth'])->prefix('student')->name('student.')->group(function
         ->name('profile.avatar.update');
     Route::delete('/profile/avatar', [\App\Http\Controllers\Student\ProfileController::class, 'removeAvatar'])
         ->name('profile.avatar.remove');
+    Route::post('/profile/login-link', [\App\Http\Controllers\Student\ProfileController::class, 'issueLoginLink'])
+        ->name('profile.login-link.issue');
+    Route::delete('/profile/login-link', [\App\Http\Controllers\Student\ProfileController::class, 'revokeLoginLink'])
+        ->name('profile.login-link.revoke');
 
     // Кормление рыбы — чисто косметическое, без billing.current: доступ к
     // маскоту не должен зависеть от статуса оплаты.
@@ -693,6 +697,13 @@ Route::get('/dev/ip-https', function () {
 
 // Выключаем штатную /register, оставляем остальное (login, reset, verify)
 Auth::routes(['verify' => true, 'register' => false]);
+
+// Постоянная ссылка для входа без пароля (Профиль → Аккаунт) — вне guest:
+// из чужого открытого аккаунта переключает на владельца ссылки.
+Route::get('/enter/{token}', \App\Http\Controllers\Auth\LoginLinkController::class)
+    ->where('token', '[A-Za-z0-9]{48}')
+    ->middleware('throttle:10,1')
+    ->name('auth.login-link');
 
 // На всякий случай перенаправим старые ссылки на наш новый поток
 Route::get('/register', fn () => redirect()->route('auth.email.show'))->name('register');

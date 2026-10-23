@@ -85,6 +85,30 @@ class ProfileController extends Controller
         return back()->with('success', 'Данные сохранены.');
     }
 
+    /**
+     * Выпустить (или перевыпустить) постоянную ссылку для входа без пароля —
+     * старая сразу перестаёт работать. Сам вход — Auth\LoginLinkController.
+     */
+    public function issueLoginLink()
+    {
+        $user = auth()->user();
+        abort_unless($user->canUseLoginLink(), 403);
+
+        $hadLink = (bool) $user->login_token_hash;
+        $user->issueLoginToken();
+
+        return back()->with('success', $hadLink
+            ? 'Ссылка для входа перевыпущена, старая больше не работает.'
+            : 'Ссылка для входа создана.');
+    }
+
+    public function revokeLoginLink()
+    {
+        auth()->user()->revokeLoginToken();
+
+        return back()->with('success', 'Вход по ссылке отключён.');
+    }
+
     public function updateNotifications(Request $request)
     {
         $visibleSlugs = NotificationPreferenceRegistry::visibleSlugs();

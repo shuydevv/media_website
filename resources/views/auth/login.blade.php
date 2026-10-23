@@ -10,6 +10,12 @@
     </div>
   @endif
 
+  @if (session('status'))
+    <div class="mb-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+      {{ session('status') }}
+    </div>
+  @endif
+
   <div class="bg-white border rounded-2xl p-6 shadow-sm">
     <h1 class="text-2xl font-semibold sans mb-2">{{ __('Вход в аккаунт') }}</h1>
 

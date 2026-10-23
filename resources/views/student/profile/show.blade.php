@@ -640,6 +640,64 @@
                 </form>
             </x-ui.card>
 
+            {{-- Вход без пароля — постоянная личная ссылка (Auth\LoginLinkController).
+                 Только ученикам, см. User::canUseLoginLink(). --}}
+            @if ($user->canUseLoginLink())
+                <x-ui.card class="profile-card">
+                    <div class="sans-medium text-lg text-zinc-900 mb-1">Вход без пароля</div>
+                    <p class="text-sm text-zinc-500 mb-4">
+                        Личная ссылка: открываете её — и вы сразу в кабинете, пароль не нужен.
+                        Удобно сохранить в закладки или в «Избранное» в Телеграм.
+                        Никому её не пересылайте — по ней можно войти в ваш аккаунт.
+                    </p>
+
+                    @if ($user->login_link_url)
+                        <div class="flex flex-col sm:flex-row gap-2 max-w-xl">
+                            <input type="text" id="login-link-url" readonly value="{{ $user->login_link_url }}"
+                                   class="w-full border rounded-lg px-3 py-2 text-sm text-zinc-700 bg-gray-50 input-focus"
+                                   onfocus="this.select()">
+                            <x-ui.button size="sm" id="login-link-copy" class="shrink-0">
+                                Скопировать
+                            </x-ui.button>
+                        </div>
+
+                        <p class="text-xs text-zinc-500 mt-2">
+                            @if ($user->login_token_used_at)
+                                Последний вход по ссылке: {{ $user->login_token_used_at->timezone($user->timezone ?: 'Europe/Moscow')->translatedFormat('j F Y, H:i') }}
+                                ({{ $user->login_token_used_device }})
+                            @else
+                                По этой ссылке ещё не входили.
+                            @endif
+                        </p>
+
+                        <div class="flex flex-wrap items-center gap-4 mt-4">
+                            <form method="POST" action="{{ route('student.profile.login-link.issue') }}"
+                                  onsubmit="return confirm('Старая ссылка перестанет работать. Перевыпустить?')">
+                                @csrf
+                                <button type="submit" class="text-sm text-zinc-700 hover:text-zinc-900 underline underline-offset-2 transition">
+                                    Перевыпустить ссылку
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ route('student.profile.login-link.revoke') }}"
+                                  onsubmit="return confirm('Отключить вход по ссылке?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-sm text-zinc-500 hover:text-red-600 transition">
+                                    Отключить
+                                </button>
+                            </form>
+                        </div>
+                    @else
+                        <form method="POST" action="{{ route('student.profile.login-link.issue') }}">
+                            @csrf
+                            <x-ui.button type="submit" size="sm">
+                                Создать ссылку для входа
+                            </x-ui.button>
+                        </form>
+                    @endif
+                </x-ui.card>
+            @endif
+
             {{-- Уведомления --}}
             <x-ui.card class="profile-card">
                 <div class="sans-medium text-lg text-zinc-900 mb-1">Уведомления</div>
@@ -717,6 +775,29 @@
         var saved = null;
         try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) {}
         activate(saved || 'character');
+    })();
+
+    (function () {
+        var btn = document.getElementById('login-link-copy');
+        var input = document.getElementById('login-link-url');
+        if (!btn || !input) return;
+
+        btn.addEventListener('click', function () {
+            var done = function () {
+                var label = btn.textContent;
+                btn.textContent = 'Скопировано';
+                setTimeout(function () { btn.textContent = label; }, 2000);
+            };
+            // clipboard API есть только в secure context — на http-деве
+            // откатываемся на execCommand.
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(input.value).then(done);
+            } else {
+                input.select();
+                document.execCommand('copy');
+                done();
+            }
+        });
     })();
 
     // Подтверждение покупки фона — сам клик по "Купить" форму не отправляет,
