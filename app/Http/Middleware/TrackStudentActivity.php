@@ -36,11 +36,12 @@ class TrackStudentActivity
         $slot = intdiv($now->hour * 60 + $now->minute, UserActivityDay::SLOT_MINUTES);
         $key = "activity:{$user->id}:{$now->toDateString()}:{$slot}";
 
-        if (! Cache::add($key, 1, UserActivityDay::SLOT_MINUTES * 60)) {
-            return $response;
-        }
-
+        // Аналитика не должна ронять запрос ученика — ни кэш, ни БД.
         try {
+            if (! Cache::add($key, 1, UserActivityDay::SLOT_MINUTES * 60)) {
+                return $response;
+            }
+
             DB::table('user_activity_days')->upsert(
                 [[
                     'user_id' => $user->id,
@@ -53,7 +54,6 @@ class TrackStudentActivity
                 ['active_slots' => DB::raw('active_slots + 1'), 'last_seen_at' => $now]
             );
         } catch (\Throwable $e) {
-            // Аналитика не должна ронять запрос ученика.
             report($e);
         }
 

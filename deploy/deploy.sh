@@ -9,6 +9,15 @@
 #
 set -euo pipefail
 
+# Деплой идёт от root, а artisan-команды ниже (migrate --isolated берёт
+# cache-lock, queue:restart пишет ключ) создают подпапки в
+# storage/framework/cache/data. С umask 022 они выходят root:www-data 0755 —
+# php-fpm (www-data) не может создать в них вложенную папку, mkdir в
+# FileStore молча падает, и Cache::add() у учеников, чей ключ попал в такую
+# папку, валится 500 "fopen(...): No such file or directory" (23.10.2026,
+# TrackStudentActivity). 002 даёт группе w-бит на всё, что создаём.
+umask 0002
+
 APP="${APP:-/var/www/poltav}"
 RELEASES="$APP/releases"
 SHARED="$APP/shared"
@@ -155,6 +164,11 @@ php artisan view:cache
 [ -L public/storage ] || php artisan storage:link
 
 php artisan queue:restart
+
+# Страховка к umask выше: всё, что artisan от root успел насоздавать в
+# framework/ и bootstrap/cache, отдаём группе www-data на запись.
+chgrp -R www-data "$NEW/storage/framework" "$NEW/bootstrap/cache"
+chmod -R g+w "$NEW/storage/framework" "$NEW/bootstrap/cache"
 
 php artisan up
 
