@@ -10,18 +10,19 @@
     $unlocked = in_array($slug, $fishUnlockedBackgrounds, true);
     $price = $fishBackgroundPrices[$slug] ?? 20;
     $canAfford = ($fishBalance ?? 0) >= $price;
+    $image = app(\App\Service\FishFoodService::class)->backgroundImageUrl($slug);
 @endphp
 @if ($unlocked)
     <form method="POST" action="{{ route('student.profile.background.select') }}">
         @csrf
         <input type="hidden" name="fish_background" value="{{ $slug }}">
         <button type="submit" class="fish-bg-thumb-btn {{ $fishBackground === $slug ? 'fish-bg-thumb-selected' : '' }}">
-            <img src="{{ asset('img/mascot/background/'.$slug.'.jpg') }}" alt="{{ $label }}" class="w-full aspect-square object-cover">
+            <img src="{{ $image }}" alt="{{ $label }}" class="w-full aspect-square object-cover">
         </button>
     </form>
 @else
     <div class="fish-bg-thumb-wrap {{ $canAfford ? '' : 'fish-bg-poor' }}">
-        <img src="{{ asset('img/mascot/background/'.$slug.'.jpg') }}" alt="{{ $label }}" class="w-full aspect-square object-cover">
+        <img src="{{ $image }}" alt="{{ $label }}" class="w-full aspect-square object-cover">
         <span class="fish-bg-lock-badge"><x-icon name="lock-01" class="w-4 h-4" /></span>
         <form method="POST" action="{{ route('student.profile.background.purchase') }}" class="fish-bg-buy-form">
             @csrf

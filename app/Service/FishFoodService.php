@@ -242,9 +242,8 @@ class FishFoodService
             }
 
             foreach ($states as $candidate) {
-                $relative = "img/mascot/level-{$level}/{$slug}_{$candidate}.png";
-                if (file_exists(public_path($relative))) {
-                    return asset($relative);
+                if ($url = $this->imageUrl("img/mascot/level-{$level}/{$slug}_{$candidate}", ['webp', 'png'])) {
+                    return $url;
                 }
             }
         }
@@ -267,7 +266,23 @@ class FishFoodService
     {
         $slug = $slug ?? config('fish.default_background');
 
-        return asset("img/mascot/background/{$slug}.jpg");
+        return $this->imageUrl("img/mascot/background/{$slug}", ['webp', 'jpg']) ?? asset("img/mascot/background/{$slug}.jpg");
+    }
+
+    /**
+     * Первый существующий вариант картинки. WebP рядом с исходником
+     * (PNG/JPG) в 5–20 раз легче — на слабом интернете это заметно;
+     * исходник — запасной, пока WebP не положили.
+     */
+    private function imageUrl(string $base, array $extensions): ?string
+    {
+        foreach ($extensions as $ext) {
+            if (file_exists(public_path("{$base}.{$ext}"))) {
+                return asset("{$base}.{$ext}");
+            }
+        }
+
+        return null;
     }
 
     /**

@@ -104,8 +104,10 @@
       @php
         $status = $overview[$kind]['status'];
         $isDone = in_array($status, ['done', 'done_today', 'all_learned']);
-        $file = 'img/mascot/terms/'.['review' => 'repeating', 'learn' => 'new_exercise', 'free' => 'free_session'][$kind].'.jpg';
-        $image = file_exists(public_path($file)) ? asset($file) : null;
+        // WebP рядом с JPG — легче; JPG — запасной.
+        $base = 'img/mascot/terms/'.['review' => 'repeating', 'learn' => 'new_exercise', 'free' => 'free_session'][$kind];
+        $file = collect([$base.'.webp', $base.'.jpg'])->first(fn ($f) => file_exists(public_path($f)));
+        $image = $file ? asset($file) : null;
       @endphp
       <x-ui.card class="flex flex-col min-w-0">
         <div class="aspect-[16/9] rounded-xl bg-gray-100 overflow-hidden flex items-center justify-center mb-4">
