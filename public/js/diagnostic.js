@@ -119,8 +119,9 @@
         var c = character(id);
         if (c && c.avatar) return el('img', { class: 'avatar', src: c.avatar, alt: '' });
         var name = c ? c.name : (fallbackName || '?');
-        return el('span', { class: 'avatar' + (c && c.emoji ? ' emoji' : ''), style: c && c.color ? 'background:' + c.color : null,
-            text: c && c.emoji ? c.emoji : name.charAt(0) });
+        // Без кружка: эмодзи (пока нет арта) — сам по себе; буква — на кружке его цвета.
+        if (c && c.emoji) return el('span', { class: 'avatar emoji', text: c.emoji });
+        return el('span', { class: 'avatar', style: c && c.color ? 'background:' + c.color : null, text: name.charAt(0) });
     }
 
     function say(text, tone, mood) {
@@ -202,6 +203,14 @@
             if (!n) return;
             if (enter === 'slide') n.classList.add('enter');
             if (enter === 'rise') { n.classList.add('rise'); n.style.animationDelay = (i++ * 0.12) + 's'; }
+            if (enter) {
+                n.addEventListener('animationend', function done(ev) {
+                    if (ev.target !== n) return;
+                    n.classList.remove('enter', 'rise');
+                    n.style.animationDelay = '';
+                    n.removeEventListener('animationend', done);
+                });
+            }
             $screen.appendChild(n);
         });
         $bar.innerHTML = '';
@@ -458,6 +467,11 @@
                 : 'До твоей цели ' + r.target + ' не хватает ~' + r.to_target + ' ' + plural(r.to_target, 'балла', 'баллов', 'баллов') + '.' }),
         ]));
 
+        // Профиль по блокам — сразу под баллом: смотрится эффектно. Оси — в порядке блоков теста.
+        var order = s.progress.blocks.map(function (b) { return b.key; });
+        var axes = r.gains.slice().sort(function (a, b) { return order.indexOf(a.key) - order.indexOf(b.key); });
+        nodes.push(section('Профиль по блокам', [radar(axes)]));
+
         var good = r.gains.filter(function (g) { return g.gain <= 0; });
         if (good.length) {
             nodes.push(section('Сильные стороны', [el('div', { class: 'chips' }, good.map(function (g) {
@@ -484,11 +498,6 @@
             nodes.push(el('p', { class: 'muted small', text: '🎲 ' + r.guessed + ' ' + plural(r.guessed, 'верный ответ', 'верных ответа', 'верных ответов')
                 + ' ты дал наугад — в этих темах знания шаткие.' }));
         }
-
-        // Профиль по блокам — второстепенно, свёрнут. Оси — в порядке блоков теста.
-        var order = s.progress.blocks.map(function (b) { return b.key; });
-        var axes = r.gains.slice().sort(function (a, b) { return order.indexOf(a.key) - order.indexOf(b.key); });
-        nodes.push(el('details', { class: 'profile' }, [el('summary', { text: 'Профиль по блокам' }), radar(axes)]));
 
         var bar = [];
         if (s.improve) {
@@ -525,15 +534,18 @@
      */
     function scale(r, nowLabel) {
         var pos = function (v) { return Math.max(0, Math.min(100, v)) + '%'; };
-        var marks = [];
+        var rows = [];   // в каждой строке — где уже стоят подписи
         var bar = el('div', { class: 'scale' }, [
             el('i', { class: 'band', style: 'left:' + pos(r.low) + ';width:0', 'data-width': (r.high - r.low) + '%' }),
         ]);
+        // Подпись — в первую строку, где рядом ничего нет («потенциал 66+» шириной около
+        // четверти шкалы); три подписи рядом — в три строки.
         var label = function (at, text, cls) {
-            // «потенциал 66+» — шириной около четверти шкалы: ближе — во вторую строку.
-            var clash = marks.some(function (m) { return Math.abs(m - at) < 24; });
-            marks.push(at);
-            bar.appendChild(el('span', { class: 'lbl' + (clash ? ' alt' : '') + (cls ? ' ' + cls : ''), style: 'left:' + pos(Math.max(6, Math.min(94, at))), text: text }));
+            var row = 0;
+            while (rows[row] && rows[row].some(function (m) { return Math.abs(m - at) < 24; })) row++;
+            (rows[row] = rows[row] || []).push(at);
+            bar.appendChild(el('span', { class: 'lbl' + (cls ? ' ' + cls : ''), style: 'left:' + pos(Math.max(6, Math.min(94, at))) + ';top:' + (20 + row * 16) + 'px', text: text }));
+            bar.style.marginBottom = (44 + (rows.length - 1) * 16) + 'px';
         };
         label((r.low + r.high) / 2, nowLabel);
         if (r.target !== null) {
@@ -548,7 +560,9 @@
     }
 
     /**
-     * Радар по блокам: значение блока — по уровню (0–3 → 10/35/65/90%, ТЗ 2.4).
+     * Радар по блокам: значение — точность блока с весом по сложности
+     * (BlockRun::accuracy): ошибки видны, даже если дошёл до сложного уровня.
+     * У вершин — точки, у подписей — проценты; слабые блоки — цветом ошибки.
      * Длинные подписи — в две строки.
      */
     function radar(gains) {
@@ -558,13 +572,13 @@
             Object.keys(attrs || {}).forEach(function (k) { n.setAttribute(k, attrs[k]); });
             return n;
         };
-        var share = [0.1, 0.35, 0.65, 0.9];
-        var cx = 170, cy = 108, R = 78, n = gains.length;
+        var value = function (g) { return Math.max(0.06, Math.min(1, g.accuracy !== undefined ? g.accuracy : [0.1, 0.35, 0.65, 0.9][g.level])); };
+        var cx = 170, cy = 112, R = 80, n = gains.length;
         var point = function (i, k) {
             var a = -Math.PI / 2 + i * 2 * Math.PI / n;
             return [cx + Math.cos(a) * R * k, cy + Math.sin(a) * R * k];
         };
-        var root = svg('svg', { viewBox: '0 0 340 210', class: 'radar', role: 'img', 'aria-label': 'Профиль по блокам' });
+        var root = svg('svg', { viewBox: '0 0 340 226', class: 'radar', role: 'img', 'aria-label': 'Профиль по блокам' });
         [0.33, 0.66, 1].forEach(function (k) {
             root.appendChild(svg('polygon', { class: 'grid', points: gains.map(function (g, i) { return point(i, k).join(','); }).join(' ') }));
         });
@@ -573,19 +587,26 @@
             root.appendChild(svg('line', { class: 'grid', x1: cx, y1: cy, x2: end[0], y2: end[1] }));
             var at = point(i, 1.2);
             var anchor = Math.abs(at[0] - cx) < 8 ? 'middle' : (at[0] > cx ? 'start' : 'end');
-            var label = svg('text', { x: at[0], y: at[1], 'text-anchor': anchor, 'dominant-baseline': 'middle' });
+            var label = svg('text', { x: at[0], y: at[1], 'text-anchor': anchor, 'dominant-baseline': 'middle', class: g.gain > 0 ? 'weak' : null });
             var words = g.title.split(' ');
             var lines = g.title.length > 12 && words.length > 1
                 ? [words.slice(0, Math.ceil(words.length / 2)).join(' '), words.slice(Math.ceil(words.length / 2)).join(' ')]
                 : [g.title];
+            lines.push(Math.round(value(g) * 100) + '%');
             lines.forEach(function (line, j) {
-                var t = svg('tspan', { x: at[0], dy: j === 0 ? (lines.length > 1 ? '-0.6em' : '0') : '1.2em' });
+                var t = svg('tspan', { x: at[0], dy: j === 0 ? (-(lines.length - 1) * 0.6) + 'em' : '1.2em', class: j === lines.length - 1 ? 'pct' : null });
                 t.textContent = line;
                 label.appendChild(t);
             });
             root.appendChild(label);
         });
-        root.appendChild(svg('polygon', { class: 'shape', points: gains.map(function (g, i) { return point(i, share[g.level] || 0.1).join(','); }).join(' ') }));
+        var shape = svg('g', { class: 'shape-g' });
+        shape.appendChild(svg('polygon', { class: 'shape', points: gains.map(function (g, i) { return point(i, value(g)).join(','); }).join(' ') }));
+        gains.forEach(function (g, i) {
+            var p = point(i, value(g));
+            shape.appendChild(svg('circle', { class: 'vertex' + (g.gain > 0 ? ' weak' : ''), cx: p[0], cy: p[1], r: 4.5 }));
+        });
+        root.appendChild(shape);
         return root;
     }
 
@@ -613,14 +634,26 @@
         })();
     }
 
+    /**
+     * Ответ на «Хочешь улучшить?»: как после верного ответа в задании — экран
+     * уезжает вниз к реплике акулы, полоска отсчёта, потом (на «Да» в Telegram)
+     * — обратно в чат, где дальше пишет Александр.
+     */
     function improve(yes) {
         $bar.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
         api(CFG.urls.improve, { yes: yes }).then(function (r) {
             if (r.status !== 200) return fail();
             state.improve = r.data.improve;
-            renderResult(state, true);
-            // В Telegram — обратно в чат: там дальше пишет Александр.
-            if (inTelegram && yes) setTimeout(function () { tg.close(); }, 1500);
+            [].forEach.call($screen.querySelectorAll('.center-link'), function (n) { n.remove(); });
+            var text = state.improve === 'yes' ? SAY.improveYes : SAY.improveNo;
+            $screen.appendChild(sayTyping(text, null, 'happy', 'hop'));
+            var ms = 3000, typing = reducedMotion ? 0 : 450;
+            $bar.innerHTML = '';
+            $bar.appendChild(countdownBar(ms, typing));
+            autoAdvance(function () {
+                if (inTelegram && state.improve === 'yes') return tg.close();
+                renderResult(state, true);
+            }, ms, typing);
         }, function () { fail(); });
     }
 
@@ -878,6 +911,10 @@
                 q.cards.forEach(function (c) {
                     var n = el('button', { class: 'tag drag' + (c.from ? ' case' : ''), type: 'button' },
                         c.from ? [el('b', { text: c.from }), el('span', { text: c.text })] : [c.text]);
+                    // За пальцем едет копия в <body>, а не сама карточка: у position: fixed
+                    // внутри анимированного контейнера свой отсчёт координат, и карточка
+                    // прыгала вниз-вправо. Копия стоит ровно там, где была карточка, и
+                    // сдвигается на смещение пальца; отпустил — плавно ложится на место.
                     var drag = null;
                     n.addEventListener('pointerdown', function (e) {
                         if (ui.locked) return;
@@ -890,11 +927,13 @@
                             if (Math.abs(e.clientX - drag.x0) + Math.abs(e.clientY - drag.y0) < 8) return;
                             var r = n.getBoundingClientRect();
                             drag.moved = true;
-                            drag.ox = drag.x0 - r.left;
-                            drag.oy = drag.y0 - r.top;
+                            drag.rect = r;
+                            drag.ghost = n.cloneNode(true);
+                            drag.ghost.classList.add('dragging');
+                            drag.ghost.style.cssText = 'left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + r.height + 'px';
+                            document.body.appendChild(drag.ghost);
+                            n.style.visibility = 'hidden';
                             selected = null;
-                            n.style.width = r.width + 'px';
-                            n.classList.add('dragging');
                             // Место карточки — пустой рамкой сразу, ещё до того, как отпустили.
                             if (!placed[c.id]) slots[c.id].classList.add('empty');
                             drag.alive = true;
@@ -903,8 +942,7 @@
                         }
                         drag.x = e.clientX;
                         drag.y = e.clientY;
-                        n.style.left = (e.clientX - drag.ox) + 'px';
-                        n.style.top = (e.clientY - drag.oy) + 'px';
+                        drag.ghost.style.transform = 'translate3d(' + (e.clientX - drag.x0) + 'px,' + (e.clientY - drag.y0) + 'px,0) rotate(-2deg) scale(1.04)';
                         hover(zoneAt(e.clientX, e.clientY));
                     });
                     var drop = function (e, cancelled) {
@@ -915,11 +953,19 @@
                         d.alive = false;
                         cancelAnimationFrame(d.raf);
                         n.suppressClick = true;
-                        n.classList.remove('dragging');
-                        n.style.left = n.style.top = n.style.width = '';
                         hover(null);
                         var target = cancelled ? placed[c.id] || null : zoneAt(e.clientX, e.clientY);
                         put(c.id, target);
+                        // Копия долетает до нового места карточки и исчезает.
+                        var to = n.getBoundingClientRect();
+                        var ghost = d.ghost;
+                        var land = function () { ghost.remove(); n.style.visibility = ''; };
+                        if (reducedMotion) return land();
+                        ghost.classList.add('landing');
+                        ghost.style.transform = 'translate3d(' + (to.left - d.rect.left) + 'px,' + (to.top - d.rect.top) + 'px,0)';
+                        ghost.style.width = to.width + 'px';
+                        ghost.style.height = to.height + 'px';
+                        setTimeout(land, 190);
                     };
                     n.addEventListener('pointerup', function (e) { drop(e, false); });
                     n.addEventListener('pointercancel', function (e) { drop(e, true); });
@@ -1000,7 +1046,7 @@
                     picker.appendChild(el('div', { class: 'counter', text: 'Чем заменить?' }));
                     var row = el('div', { class: 'pool' });
                     byId[id].options.forEach(function (opt) {
-                        row.appendChild(el('button', { class: 'tag' + (opt === word(id) ? ' sel' : ''), type: 'button', text: opt === byId[id].shown ? opt + ' (оставить)' : opt, onclick: function () {
+                        row.appendChild(el('button', { class: 'tag' + (opt === word(id) ? ' sel' : ''), type: 'button', text: opt, onclick: function () {
                             if (opt === byId[id].shown) delete chosen[id]; else chosen[id] = opt;
                             touched = true;
                             spots[id].textContent = word(id);

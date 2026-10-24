@@ -163,10 +163,12 @@ class DiagnosticRunner
 
         $high = [];
         $low = [];
+        $accuracy = [];
         foreach (array_keys(config('diagnostic.blocks')) as $block) {
             $answers = $this->blockAnswers($attempt, $block);
             $high[$block] = BlockRun::result($answers);
             $low[$block] = BlockRun::result($answers, true);
+            $accuracy[$block] = BlockRun::accuracy($answers);
         }
 
         $attempt->forceFill([
@@ -176,6 +178,7 @@ class DiagnosticRunner
             'levels_low' => $low,
             'result' => $this->model->compute($high, $low) + [
                 'guessed' => DiagnosticAnswer::where('diagnostic_attempt_id', $attempt->id)->where('correct', true)->where('guess', true)->count(),
+                'accuracy' => $accuracy,
             ],
             'status' => DiagnosticAttempt::STATUS_FINISHED,
             'finished_at' => now(),
@@ -301,7 +304,9 @@ class DiagnosticRunner
             'to_target' => $attempt->target_score !== null ? max(0, $attempt->target_score - $mid) : null,
             'near_target' => $attempt->target_score !== null && $r['high'] >= $attempt->target_score,
             'gains' => array_values(array_map(
-                fn ($key) => ['key' => $key, 'title' => $blocks[$key]['title'], 'gain' => $r['gains'][$key], 'level' => $attempt->levels[$key] ?? 0],
+                // accuracy — для профиля; у прохождений до неё — по уровню.
+                fn ($key) => ['key' => $key, 'title' => $blocks[$key]['title'], 'gain' => $r['gains'][$key], 'level' => $attempt->levels[$key] ?? 0,
+                    'accuracy' => $r['accuracy'][$key] ?? [0.1, 0.35, 0.65, 0.9][$attempt->levels[$key] ?? 0]],
                 array_keys($r['gains']),
             )),
             'weak' => array_map(fn ($key) => $blocks[$key]['title'], $r['weak']),

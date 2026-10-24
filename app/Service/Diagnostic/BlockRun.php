@@ -60,6 +60,22 @@ final class BlockRun
     }
 
     /**
+     * Точность блока для профиля на итоге: доля верного с весом по сложности
+     * (верный сложный весит втрое больше лёгкого). Уровень (result) говорит,
+     * до какой ступени дошёл, а точность — сколько при этом ошибся: путь
+     * Л✓ С✓ Сл✗ Сл✓ — уровень 3, но точность 6/9 ≈ 67%, а не «всё заполнено».
+     *
+     * @param  list<array{level: int, correct: bool}>  $answers
+     */
+    public static function accuracy(array $answers): float
+    {
+        $total = array_sum(array_column($answers, 'level'));
+        $right = array_sum(array_map(fn ($a) => $a['correct'] ? $a['level'] : 0, $answers));
+
+        return $total > 0 ? round($right / $total, 3) : 0.0;
+    }
+
+    /**
      * @param  list<array{level: int, correct: bool, guess?: bool}>  $answers
      * @param  bool  $confidentOnly  не считать верные ответы с «Наугад»
      */

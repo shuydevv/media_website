@@ -49,6 +49,19 @@ class BlockRunTest extends TestCase
         $this->assertFalse(BlockRun::closedByErrors([['correct' => false], ['correct' => true], ['correct' => false], ['correct' => true]]));
     }
 
+    public function test_accuracy_shows_mistakes_even_at_top_level(): void
+    {
+        $answers = [
+            ['level' => 1, 'correct' => true], ['level' => 2, 'correct' => true],
+            ['level' => 3, 'correct' => false], ['level' => 3, 'correct' => true],
+        ];
+
+        $this->assertSame(3, BlockRun::result($answers));
+        $this->assertEqualsWithDelta(6 / 9, BlockRun::accuracy($answers), 0.001);
+        $this->assertSame(1.0, BlockRun::accuracy(array_map(fn ($a) => ['correct' => true] + $a, $answers)));
+        $this->assertSame(0.0, BlockRun::accuracy([['level' => 1, 'correct' => false], ['level' => 1, 'correct' => false]]));
+    }
+
     public function test_guessed_correct_answers_do_not_count_for_lower_bound(): void
     {
         $answers = [
