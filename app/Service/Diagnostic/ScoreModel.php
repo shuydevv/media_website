@@ -62,10 +62,14 @@ final class ScoreModel
             $lifted[$block] = BlockRun::HARD;
         }
 
+        $high = (int) min(100, round($to));
+
         return [
             'low' => (int) max(0, round($from)),
-            'high' => (int) min(100, round($to)),
-            'potential' => (int) min(100, round($this->testScore($lifted))),
+            'high' => $high,
+            // Не ниже верха диапазона: у того, кому подтягивать нечего, балл
+            // «подтянув слабые блоки» без запаса ±spread вышел бы меньше «сейчас».
+            'potential' => (int) max($high, min(100, round($this->testScore($lifted)))),
             'gains' => $gains,
             'weak' => $weak,
         ];

@@ -71,6 +71,7 @@ Route::group(['prefix' => 'diag'], function () {
         Route::post('/improve', [$c, 'improve'])->name('diag.improve');
         Route::post('/restart', [$c, 'restart'])->name('diag.restart');
     });
+    Route::post('/api/log', [$c, 'clientError'])->middleware('throttle:20,1')->name('diag.log');
 });
 Route::group(['namespace' => 'App\Http\Controllers\Post', 'prefix' => 'posts'], function () {
     Route::get('/', 'IndexController')->name('post.index');

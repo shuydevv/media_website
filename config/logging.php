@@ -70,6 +70,14 @@ return [
             'days' => 14,
         ],
 
+        // Ошибки в Mini App диагностики со стороны ученика (DiagnosticController::clientError).
+        'diag_client' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/diag-client.log'),
+            'level' => 'debug',
+            'days' => 30,
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),

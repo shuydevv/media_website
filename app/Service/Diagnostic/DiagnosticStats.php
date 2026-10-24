@@ -30,6 +30,9 @@ final class DiagnosticStats
         'blocked' => 'Заблокировали',
     ];
 
+    /** Прохождение без движения дольше — считаем брошенным (ещё может вернуться: «Продолжим?» через 3 ч). */
+    public const DROPOUT_AFTER_MINUTES = 60;
+
     public function __construct(private readonly ?CarbonInterface $from = null, private readonly ?CarbonInterface $to = null)
     {
     }
@@ -71,6 +74,58 @@ final class DiagnosticStats
             ->all();
     }
 
+    /**
+     * Где бросают: последнее прохождение контакта не закончено и стоит
+     * дольше DROPOUT_AFTER_MINUTES. Этап — анкета (класс), блок с номером
+     * вопроса в нём (блоки идут в случайном порядке — считаем по теме) или
+     * экран цели. По вопросам — на каком вопросе банка закрыли.
+     *
+     * @return array{total: int, stages: list<array{label: string, n: int, positions: array<int, int>}>, questions: array<string, int>}
+     */
+    public static function dropOffs(Collection $contacts, ?CarbonInterface $now = null): array
+    {
+        $before = ($now ?? now())->copy()->subMinutes(self::DROPOUT_AFTER_MINUTES);
+        $dropped = $contacts->map(fn ($c) => $c->diagnosticAttempts->sortByDesc('id')->first())
+            ->filter(fn ($a) => $a && $a->status === 'active' && $a->updated_at->lte($before))
+            ->values();
+
+        $answered = $dropped->isEmpty() ? collect() : DiagnosticAnswer::whereIn('diagnostic_attempt_id', $dropped->pluck('id'))
+            ->selectRaw('diagnostic_attempt_id, block, COUNT(*) as n')
+            ->groupBy('diagnostic_attempt_id', 'block')
+            ->get()
+            ->groupBy('diagnostic_attempt_id');
+
+        $blocks = config('diagnostic.blocks');
+        $stages = ['grade' => ['label' => 'Анкета (класс)', 'n' => 0, 'positions' => []]];
+        foreach ($blocks as $key => $block) {
+            $stages[$key] = ['label' => $block['title'], 'n' => 0, 'positions' => []];
+        }
+        $stages['target'] = ['label' => 'Экран цели (перед итогом)', 'n' => 0, 'positions' => []];
+        $questions = [];
+
+        foreach ($dropped as $a) {
+            $order = $a->block_order ?? [];
+            if ($a->grade === null) {
+                $stage = 'grade';
+            } elseif ($a->block_index >= count($order) || ! isset($stages[$order[$a->block_index]])) {
+                $stage = 'target';
+            } else {
+                $stage = $order[$a->block_index];
+                $position = 1 + (int) ($answered->get($a->id)?->firstWhere('block', $stage)?->n ?? 0);
+                $stages[$stage]['positions'][$position] = ($stages[$stage]['positions'][$position] ?? 0) + 1;
+                if ($a->current_question_id) {
+                    $questions[$a->current_question_id] = ($questions[$a->current_question_id] ?? 0) + 1;
+                }
+            }
+            $stages[$stage]['n']++;
+        }
+        foreach ($stages as &$s) {
+            ksort($s['positions']);
+        }
+
+        return ['total' => $dropped->count(), 'stages' => array_values($stages), 'questions' => $questions];
+    }
+
     /** Последнее законченное прохождение каждого контакта. @return Collection<int, DiagnosticAttempt> */
     public static function finished(Collection $contacts): Collection
     {
@@ -102,9 +157,12 @@ final class DiagnosticStats
      * По вопросам банка: сколько раз задан, доля верных и «Наугад», среднее
      * время ответа — то, чем потом калибруется реальная сложность.
      *
+     * $alsoIds — вопросы без ответов, которые всё равно показать (на них
+     * бросили тест, не ответив ни разу).
+     *
      * @return list<array{id: string, prompt: string, block: string, level: int, mechanic: string, shown: int, correct: int, guess: int, ms: ?int}>
      */
-    public function questions(Collection $contacts): array
+    public function questions(Collection $contacts, array $alsoIds = []): array
     {
         $attemptIds = $contacts->flatMap(fn ($c) => $c->diagnosticAttempts->pluck('id'))->all();
         if ($attemptIds === []) {
@@ -116,6 +174,13 @@ final class DiagnosticStats
             ->selectRaw('question_id, block, level, mechanic, COUNT(*) as shown, SUM(correct) as correct_n, SUM(guess) as guess_n, AVG(answer_ms) as ms')
             ->groupBy('question_id', 'block', 'level', 'mechanic')
             ->get();
+
+        $rows = $rows->concat(collect($alsoIds)->diff($rows->pluck('question_id'))->map(function ($id) use ($bank) {
+            $q = $bank->get($id) ?? [];
+
+            return (object) ['question_id' => $id, 'block' => $q['block'] ?? '', 'level' => $q['level'] ?? 0, 'mechanic' => $q['mechanic'] ?? '',
+                'shown' => 0, 'correct_n' => 0, 'guess_n' => 0, 'ms' => null];
+        }));
 
         return $rows->map(fn ($r) => [
             'id' => $r->question_id,

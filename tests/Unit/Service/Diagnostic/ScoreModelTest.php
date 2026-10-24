@@ -73,4 +73,13 @@ class ScoreModelTest extends TestCase
         $this->assertSame([], $r['weak']);
         $this->assertLessThanOrEqual(100, $r['high']);
     }
+
+    public function test_potential_is_never_below_current_upper_bound(): void
+    {
+        // Подтягивать нечего: балл «подтянув слабые» без запаса ±3 — ниже верха диапазона.
+        $levels = ['a' => 3, 'b' => 3, 'c' => 3];
+        $r = $this->model([0 => 0, 58 => 80])->compute($levels, $levels);
+
+        $this->assertGreaterThanOrEqual($r['high'], $r['potential']);
+    }
 }

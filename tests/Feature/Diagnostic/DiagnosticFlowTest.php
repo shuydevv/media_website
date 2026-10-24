@@ -36,6 +36,18 @@ class DiagnosticFlowTest extends TestCase
         Http::fake(['*' => Http::response(['ok' => true, 'result' => ['message_id' => 1, 'message_thread_id' => 9]])]);
     }
 
+    public function test_client_error_is_logged(): void
+    {
+        $log = \Mockery::mock();
+        $log->shouldReceive('warning')->once()->with('js: x is undefined', \Mockery::on(fn ($ctx) => $ctx['platform'] === 'android' && $ctx['extra']['line'] === 12));
+        \Illuminate\Support\Facades\Log::shouldReceive('channel')->with('diag_client')->andReturn($log);
+
+        $this->postJson('/diag/api/log', ['kind' => 'js', 'message' => 'x is undefined', 'extra' => ['line' => 12], 'platform' => 'android'])
+            ->assertOk();
+        $this->assertContains('diag/api/log', (new \ReflectionProperty(\App\Http\Middleware\VerifyCsrfToken::class, 'except'))->getDefaultValue(),
+            'просроченный CSRF — тоже ошибка, о которой надо узнать');
+    }
+
     public function test_page_opens(): void
     {
         $this->get('/diag')->assertOk()->assertSee('telegram-web-app.js', false)->assertSee('js/diagnostic.js', false);

@@ -12,6 +12,7 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        // Ошибки Mini App диагностики: просроченный CSRF — тоже ошибка, о ней надо узнать.
+        'diag/api/log',
     ];
 }

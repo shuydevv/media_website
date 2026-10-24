@@ -7,6 +7,7 @@ use App\Models\DiagnosticAttempt;
 use App\Models\TelegramContact;
 use App\Service\Diagnostic\AnswerChecker;
 use App\Service\Diagnostic\DiagnosticRunner;
+use App\Service\Diagnostic\DiagnosticStats;
 use App\Service\Diagnostic\QuestionBank;
 use App\Service\Telegram\DiagBot;
 use App\Service\Telegram\TelegramBots;
@@ -222,6 +223,54 @@ class DiagBotTest extends TestCase
             && str_contains($r['text'], '🧪 Диагностика: запустили 1 · прошли 0'));
     }
 
+    public function test_mini_app_opened_by_direct_link_keeps_ad_label(): void
+    {
+        $this->postJson('/diag/api/session', ['init_data' => $this->initData(4242, ['start_param' => 'tiktok_1'])])->assertOk();
+
+        $this->assertSame('tiktok_1', TelegramContact::forBot(TelegramBots::DIAG)->where('telegram_user_id', 4242)->sole()->source);
+    }
+
+    public function test_waiting_diag_lead_alerts_admin_after_15_minutes_lesson_after_2_hours(): void
+    {
+        $this->travelTo(now()->setTime(12, 0));
+        $waiting = ['topic_id' => 77, 'last_user_message_at' => now()->subMinutes(20)];
+        $this->contact(601, $waiting);
+        TelegramContact::create(['topic_id' => 78] + $waiting + ['bot' => TelegramBots::LESSON, 'lesson' => 'cho', 'telegram_user_id' => 602,
+            'link_token' => Str::random(16), 'started_at' => now(), 'last_start_at' => now()]);
+
+        $this->artisan('telegram:remind-unanswered')->assertSuccessful();
+        $this->artisan('telegram:remind-unanswered')->assertSuccessful();
+
+        $alert = fn (Request $r) => str_contains((string) ($r['text'] ?? ''), 'Ждёт ответа уже 20 мин');
+        $this->assertSame(1, $this->countSent('sendMessage', $alert), 'диагностика — через 15 мин, один раз');
+        $this->assertSame(0, Http::recorded(fn (Request $r) => str_contains($r->url(), 'lesson-token'))->count(), 'урок — только через 2 ч');
+    }
+
+    public function test_drop_offs_by_stage_and_question(): void
+    {
+        $this->openSession(701);                    // бросил на анкете
+        $this->openSession(702);                    // бросил на втором вопросе первого блока
+        $state = $this->callApi('profile', ['grade' => '11'])->json();
+        $bank = QuestionBank::fromConfig();
+        $state = $this->callApi('answer', ['question_id' => $state['question']['id'],
+            'answer' => AnswerChecker::solution($bank->get($state['question']['id']))])->json('state');
+        $this->openSession(703);                    // ещё проходит — не брошено
+
+        $attempt = DiagnosticAttempt::where('token', $this->attemptToken)->sole();
+        DiagnosticAttempt::where('id', '!=', $attempt->id)->update(['updated_at' => now()->subHours(2)]);
+
+        $stats = new DiagnosticStats();
+        $drop = DiagnosticStats::dropOffs($stats->contacts());
+        $stages = collect($drop['stages'])->keyBy('label');
+        $first = DiagnosticAttempt::whereHas('contact', fn ($q) => $q->where('telegram_user_id', 702))->sole();
+
+        $this->assertSame(2, $drop['total']);
+        $this->assertSame(1, $stages['Анкета (класс)']['n']);
+        $this->assertSame([2 => 1], $stages[config('diagnostic.blocks.'.$first->block_order[0].'.title')]['positions']);
+        $this->assertSame([$state['question']['id'] => 1], $drop['questions']);
+        $this->assertContains($state['question']['id'], array_column($stats->questions($stats->contacts(), array_keys($drop['questions'])), 'id'));
+    }
+
     // ---------- помощники ----------
 
     private ?string $attemptToken = null;
@@ -314,9 +363,9 @@ class DiagBotTest extends TestCase
         ]];
     }
 
-    private function initData(int $userId): string
+    private function initData(int $userId, array $extra = []): string
     {
-        $fields = [
+        $fields = $extra + [
             'auth_date' => (string) time(),
             'user' => json_encode(['id' => $userId, 'first_name' => 'Аня'], JSON_UNESCAPED_UNICODE),
         ];

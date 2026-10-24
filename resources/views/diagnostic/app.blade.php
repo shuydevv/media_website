@@ -255,7 +255,8 @@
         /* Итог — без карточек: блоки разделены отступами и заголовками. */
         .hero { text-align: center; margin: 14px 0 6px; }
         .score { font-size: 52px; font-weight: 800; text-align: center; margin: 0; line-height: 1.1; }
-        .hero-note { margin: 4px 0 0; }
+        .hero-note { margin: 6px 0 0; font-weight: 600; }
+        .goal { display: inline-block; margin-bottom: 4px; padding: 6px 14px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 15px; }
         .res-sec { margin: 22px 0; }
         .res-sec h3 { font-size: 15px; margin: 0 0 8px; }
         .chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -264,6 +265,7 @@
         .gain .track { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
         .gain .track i { display: block; height: 100%; background: var(--accent); transition: width .7s cubic-bezier(.2, .8, .2, 1); }
         .gain b { color: var(--accent); }
+        .gain.review small { color: var(--hint); font-size: 13px; }
         .gain-part2 { padding: 10px 12px; border-radius: 12px; background: var(--paper); border-left: 4px solid var(--sun); }
         /* Шкала 0–100: диапазон «сейчас», чёрточка — цель, кружок — потенциал. */
         .scale { position: relative; height: 10px; border-radius: 5px; background: var(--line); margin: 22px 6px 44px; text-align: left; }
@@ -351,8 +353,40 @@
             target: @json(route('diag.target')),
             improve: @json(route('diag.improve')),
             restart: @json(route('diag.restart')),
+            log: @json(route('diag.log')),
         },
     };
+
+    // Ошибки у ученика — на сервер (DiagnosticController::clientError). До
+    // основного скрипта и на старом JS: ловит и то, что он не загрузился.
+    // Не больше 10 за открытие; повтор того же текста не шлём.
+    (function () {
+        var sent = 0, seen = {};
+        window.diagReport = function (kind, message, extra) {
+            message = String(message || '').slice(0, 2000);
+            if (!message || seen[kind + message] || sent >= 10) return;
+            seen[kind + message] = true;
+            sent++;
+            try {
+                var tg = window.Telegram && window.Telegram.WebApp;
+                fetch(window.DIAG.urls.log, {
+                    method: 'POST', keepalive: true, credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ kind: kind, message: message, extra: extra || null, attempt: window.DIAG.attempt || null,
+                        platform: tg ? tg.platform : null, version: tg ? tg.version : null })
+                })['catch'](function () {});
+            } catch (e) {}
+        };
+        window.addEventListener('error', function (e) {
+            var t = e.target;
+            if (t && t !== window && (t.src || t.href)) return window.diagReport('resource', 'не загрузился ' + (t.src || t.href));
+            window.diagReport('js', e.message, { src: e.filename, line: e.lineno, col: e.colno, stack: e.error && e.error.stack ? String(e.error.stack).slice(0, 1500) : null });
+        }, true);
+        window.addEventListener('unhandledrejection', function (e) {
+            var r = e.reason;
+            window.diagReport('promise', r && r.message ? r.message : String(r), { stack: r && r.stack ? String(r.stack).slice(0, 1500) : null });
+        });
+    })();
 </script>
 <script src="{{ asset('js/diagnostic.js') }}?v={{ filemtime(public_path('js/diagnostic.js')) }}"></script>
 </body>

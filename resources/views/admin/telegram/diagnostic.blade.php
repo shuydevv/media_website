@@ -75,6 +75,32 @@
     </x-ui.table>
 @endif
 
+<h2 class="sans-medium text-lg text-zinc-900 mb-1">Где бросают</h2>
+<p class="text-sm text-zinc-500 mb-2">Начали и не закончили: последнее прохождение стоит больше {{ \App\Service\Diagnostic\DiagnosticStats::DROPOUT_AFTER_MINUTES }} минут (через 3 часа бот напомнит «Продолжим?» — часть вернётся). Блоки идут в случайном порядке, поэтому — по теме и номеру вопроса в блоке.</p>
+@if ($dropOffs['total'] === 0)
+    <x-ui.empty class="mb-6">Брошенных прохождений нет</x-ui.empty>
+@else
+    <x-ui.table class="mb-6">
+        <thead><tr><th>Где закрыли</th><th>Сколько</th><th>На каком вопросе блока</th></tr></thead>
+        <tbody>
+            @foreach ($dropOffs['stages'] as $stage)
+                @continue($stage['n'] === 0)
+                <tr>
+                    <td data-primary>{{ $stage['label'] }}</td>
+                    <td data-label="Сколько" class="tabular-nums">{{ $stage['n'] }} <span class="text-zinc-400">· {{ $pct($stage['n'], $dropOffs['total']) }}</span></td>
+                    <td data-label="На каком вопросе блока" class="text-sm">
+                        @forelse ($stage['positions'] as $position => $n)
+                            {{ $position }}-й — {{ $n }}@if (! $loop->last) · @endif
+                        @empty
+                            <span class="text-zinc-400">—</span>
+                        @endforelse
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </x-ui.table>
+@endif
+
 <h2 class="sans-medium text-lg text-zinc-900 mb-2">Результаты</h2>
 @if ($results['count'] === 0)
     <x-ui.empty class="mb-6">Тест до конца ещё никто не прошёл</x-ui.empty>
@@ -134,12 +160,12 @@
 @endif
 
 <h2 class="sans-medium text-lg text-zinc-900 mb-1">Вопросы</h2>
-<p class="text-sm text-zinc-500 mb-2">Как часто задаётся вопрос и сколько на нём верных. По этим цифрам после 200–300 прохождений видна реальная сложность: «лёгкий» с 30% верных стоит перенести выше.</p>
+<p class="text-sm text-zinc-500 mb-2">Как часто задаётся вопрос и сколько на нём верных. По этим цифрам после 200–300 прохождений видна реальная сложность: «лёгкий» с 30% верных стоит перенести выше. «Бросили» — сколько человек закрыли тест на этом вопросе: много — вопрос слишком сложный, длинный или непонятный.</p>
 @if ($questions === [])
     <x-ui.empty>Ответов пока нет</x-ui.empty>
 @else
     <x-ui.table>
-        <thead><tr><th>Вопрос</th><th>Блок · уровень</th><th>Задан</th><th>Верно</th><th>Наугад</th><th>Время</th></tr></thead>
+        <thead><tr><th>Вопрос</th><th>Блок · уровень</th><th>Задан</th><th>Верно</th><th>Наугад</th><th>Время</th><th>Бросили</th></tr></thead>
         <tbody>
             @foreach ($questions as $q)
                 <tr>
@@ -149,6 +175,7 @@
                     <td data-label="Верно" class="tabular-nums">{{ $q['correct'] }}%</td>
                     <td data-label="Наугад" class="tabular-nums">{{ $q['guess'] }}%</td>
                     <td data-label="Время" class="tabular-nums">{{ $q['ms'] !== null ? round($q['ms'] / 1000).' с' : '—' }}</td>
+                    <td data-label="Бросили" class="tabular-nums">{{ $dropOffs['questions'][$q['id']] ?? 0 }}</td>
                 </tr>
             @endforeach
         </tbody>

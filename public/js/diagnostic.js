@@ -221,10 +221,20 @@
     function api(url, body) {
         var headers = { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf };
         if (token) headers['X-Diag-Attempt'] = token;
+        var where = url.replace(/^.*\/api\//, '');
         return fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body || {}), credentials: 'same-origin' })
             .then(function (r) {
+                // 409 — устаревший ответ, 403 — открыли не из Telegram: это не поломки.
+                if (r.status >= 500 || r.status === 419 || r.status === 422 || r.status === 404) report('api', where + ' → ' + r.status);
                 return r.json().catch(function () { return {}; }).then(function (data) { return { status: r.status, data: data }; });
+            }, function (e) {
+                report('network', where + ': ' + (e && e.message ? e.message : 'нет сети'));
+                throw e;
             });
+    }
+
+    function report(kind, message, extra) {
+        if (window.diagReport) window.diagReport(kind, message, extra);
     }
 
     function fail(text) {
@@ -260,6 +270,7 @@
     function render(s) {
         state = s;
         token = s.attempt || token;
+        CFG.attempt = token;
         renderProgress(s);
         if (s.screen === 'profile') return renderProfile(s);
         if (s.screen === 'question') {
@@ -457,14 +468,16 @@
         var headline = SAY['result_' + kind].replace('{potential}', r.potential);
         var nodes = [say(headline, null, kind === 'weak' ? 'think' : 'happy')];
 
+        // Цель — над баллом: сразу видно, сколько до неё.
         var score = el('div', { class: 'score', text: '~' + r.low + '–' + r.high });
         nodes.push(el('div', { class: 'hero' }, [
+            r.target === null ? null : el('div', { class: 'goal', text: '🎯 Твоя цель — ' + r.target }),
             score,
             el('div', { class: 'muted', text: 'тестовых баллов ЕГЭ' + (strong ? '' : ' — сейчас') }),
-            scale(r, strong ? 'ты' : 'сейчас'),
             r.target === null ? null : el('p', { class: 'hero-note', text: r.near_target
-                ? 'Ты рядом со своей целью ' + r.target + '.'
-                : 'До твоей цели ' + r.target + ' не хватает ~' + r.to_target + ' ' + plural(r.to_target, 'балла', 'баллов', 'баллов') + '.' }),
+                ? 'Ты рядом со своей целью 💪'
+                : 'До цели не хватает ~' + r.to_target + ' ' + plural(r.to_target, 'балла', 'баллов', 'баллов') }),
+            scale(r, strong ? 'ты' : 'сейчас'),
         ]));
 
         // Профиль по блокам — сразу под баллом: смотрится эффектно. Оси — в порядке блоков теста.
@@ -472,15 +485,11 @@
         var axes = r.gains.slice().sort(function (a, b) { return order.indexOf(a.key) - order.indexOf(b.key); });
         nodes.push(section('Профиль по блокам', [radar(axes)]));
 
-        var good = r.gains.filter(function (g) { return g.gain <= 0; });
-        if (good.length) {
-            nodes.push(section('Сильные стороны', [el('div', { class: 'chips' }, good.map(function (g) {
-                return el('span', { class: 'chip-ok', text: '✓ ' + g.title });
-            }))]));
-        }
-
-        // Точки роста: блоки с «+N баллов»; у сильного — вторая часть (её тест не проверяет).
+        // Сильные блоки видно на профиле — отдельные плашки не нужны.
+        // Точки роста: блоки с «+N баллов»; дошёл до сложного, но с ошибками
+        // (точность ниже 80%) — «стоит повторить»; у сильного — ещё вторая часть.
         var gains = r.gains.filter(function (g) { return g.gain > 0; });
+        var review = r.gains.filter(function (g) { return g.gain <= 0 && g.accuracy !== undefined && g.accuracy < 0.8; });
         var max = gains.reduce(function (m, g) { return Math.max(m, g.gain); }, 1);
         var growth = gains.map(function (g) {
             return el('div', { class: 'gain' }, [
@@ -488,6 +497,12 @@
                 el('b', { text: '+' + g.gain }),
                 el('div', { class: 'track' }, [el('i', { style: 'width:0', 'data-width': Math.round(g.gain / max * 100) + '%' })]),
             ]);
+        });
+        review.forEach(function (g) {
+            growth.push(el('div', { class: 'gain review' }, [
+                el('span', { text: g.title }),
+                el('small', { text: 'были ошибки — стоит повторить' }),
+            ]));
         });
         growth.push(el('div', { class: strong ? 'gain-part2' : 'muted small', text: strong
             ? 'Вторая часть ЕГЭ и критерии — тест их не проверяет, а это около половины баллов.'
