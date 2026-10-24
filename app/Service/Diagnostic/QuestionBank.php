@@ -71,6 +71,12 @@ final class QuestionBank
         return $this->questions[$id] ?? null;
     }
 
+    /** @return array<string, array> id → вопрос */
+    public function all(): array
+    {
+        return $this->questions;
+    }
+
     public static function hash(array $q): string
     {
         return substr(sha1(json_encode($q, JSON_UNESCAPED_UNICODE)), 0, 12);

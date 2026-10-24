@@ -305,6 +305,7 @@ class DiagnosticRunner
                 array_keys($r['gains']),
             )),
             'weak' => array_map(fn ($key) => $blocks[$key]['title'], $r['weak']),
+            'weak_acc' => array_map(fn ($key) => $blocks[$key]['accusative'] ?? $blocks[$key]['title'], $r['weak']),
             'guessed' => $r['guessed'] ?? 0,
         ];
     }

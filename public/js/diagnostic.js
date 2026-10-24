@@ -40,8 +40,12 @@
         streak: '🔥 {n} подряд!',
         growth: '{block} — твоя точка роста 🎯\nИдём дальше!',
         target: 'Последний вопрос перед результатом: на сколько баллов хочешь сдать?',
-        resultIntro: 'Готово! Вот что получилось 👇',
-        improve: 'Хочешь улучшить свои знания?',
+        // Итог — по типу результата (renderResult). result_strong — слова автора.
+        result_strong: 'Ты хорошо знаешь базовую теорию! Вот столько ты сможешь набрать, при условии, что умеешь решать задания второй части и знаешь критерии 👇',
+        result_medium: 'Хорошая база! Есть пара точек роста — и ты на {potential}+ 💪',
+        result_weak: 'Есть над чем поработать — и это быстро закрывается 💪',
+        improve_weak: 'Хочешь подтянуть {blocks}?',
+        btn_strong: 'Хочу разобраться с этим',
         improveYes: 'Отлично! Возвращаю тебя в чат — там тебе напишут 🙂',
         improveNo: 'Окей! Результат сохранился. Захочешь — пиши в чат бота.',
         open: 'Открой диагностику через бота в Telegram — по кнопке «Пройти диагностику».',
@@ -56,8 +60,8 @@
     var pendingExplainMs = null;
     var shownProgress = -1;   // какой блок уже залит в прогрессе — чтобы новый заливался плавно
     var celebrated = false;   // конфетти — один раз на итог
-    var introTimer = null;    // автопереход с заставки блока к заданию
-    var introSkip = null;     // тап по заставке — сразу дальше
+    var autoTimer = null;     // автопереход: с заставки блока и после верного ответа
+    var autoSkip = null;      // тап по экрану — сразу дальше
 
     var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -136,14 +140,39 @@
         var img = who ? avatar(who) : mascot(mood || 'idle');
         var node = el('div', { class: 'say' }, [img, bubble]);
         var reveal = function () {
+            // Успели уйти на следующий экран за время «печатает…» — ни текста,
+            // ни прокрутки: иначе новый вопрос открылся бы прокрученным вниз.
+            if (!node.isConnected) return;
             bubble.className = 'bubble' + (tone ? ' ' + tone : '');
             bubble.textContent = text;
             if (extra) bubble.appendChild(extra);
             if (react) img.classList.add(react);
-            node.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' });
+            // Экран плавно уезжает в самый низ — к реплике.
+            window.scrollTo({ top: document.documentElement.scrollHeight, behavior: reducedMotion ? 'auto' : 'smooth' });
         };
         if (reducedMotion) reveal(); else setTimeout(reveal, 450);
         return node;
+    }
+
+    /**
+     * Через ms (плюс delay — пока «печатает…») сам вызвать go; тап по экрану —
+     * сразу. Полоска .countdown в нижней панели бежит синхронно.
+     */
+    function autoAdvance(go, ms, delay) {
+        cancelAuto();
+        var once = function () { cancelAuto(); go(); };
+        autoSkip = once;
+        $screen.addEventListener('click', once);
+        autoTimer = setTimeout(once, ms + delay);
+    }
+
+    function cancelAuto() {
+        clearTimeout(autoTimer);
+        if (autoSkip) { $screen.removeEventListener('click', autoSkip); autoSkip = null; }
+    }
+
+    function countdownBar(ms, delay) {
+        return el('div', { class: 'countdown' }, [el('i', { style: 'animation-duration:' + ms + 'ms;animation-delay:' + delay + 'ms' })]);
     }
 
     function toast(text) {
@@ -165,9 +194,8 @@
 
     /** enter — как появляется экран: 'slide' (вопрос), 'rise' (по очереди снизу) или ничего. */
     function show(nodes, barNodes, enter) {
-        // Новый экран отменяет переход с заставки блока (например, «Заново» во время неё).
-        clearTimeout(introTimer);
-        if (introSkip) { $screen.removeEventListener('click', introSkip); introSkip = null; }
+        // Новый экран отменяет отложенный автопереход (например, «Заново» во время отсчёта).
+        cancelAuto();
         $screen.innerHTML = '';
         var i = 0;
         nodes.forEach(function (n) {
@@ -244,9 +272,10 @@
                     if (r.status !== 200) return fail();
                     render(r.data);
                 }, function () { fail(); });
-            }, 'ghost'));
+            }, 'choice'));
         });
-        show([say(SAY.hello, null, 'happy'), say(SAY.grade, null, 'think'), grades], [], 'rise');
+        // Варианты — внизу, в панели у края экрана: не сливаются с репликами акулы.
+        show([say(SAY.hello, null, 'happy'), say(SAY.grade, null, 'think')], [grades], 'rise');
     }
 
     function renderBlockIntro(s) {
@@ -261,7 +290,6 @@
             shownBlock = p.index;
             renderQuestion(s.question);   // show() внутри снимет таймер и тап
         };
-        var fill = el('i', { style: 'animation-duration:' + ms + 'ms' });
         show([
             el('div', { class: 'center' }, [
                 mascot('think', 'bob'),
@@ -269,10 +297,8 @@
                 el('div', { class: 'big', text: block.title }),
             ]),
             first ? say(SAY.go) : null,
-        ], [el('div', { class: 'countdown' }, [fill])], 'rise');
-        introSkip = go;
-        $screen.addEventListener('click', go);
-        introTimer = setTimeout(go, ms);
+        ], [countdownBar(ms, 0)], 'rise');
+        autoAdvance(go, ms, 0);
     }
 
     function renderQuestion(q) {
@@ -343,8 +369,9 @@
         var meme = typeof res.meme === 'string' && /^(https:\/\/|\/)/.test(res.meme) ? el('img', { class: 'meme', src: res.meme, alt: '' }) : null;
         // Говорит персонаж (тот, кто прав в «Кто прав?», или explain_by) — иначе рыба.
         var who = character(res.explain_by) ? res.explain_by : null;
+        var text = who ? (res.correct ? '✅ ' : '❌ ') + nameOf(who) + ': ' + res.explain : (res.correct ? pick(SAY.ok) : pick(SAY.bad)) + '\n' + res.explain;
         $screen.appendChild(sayTyping(
-            who ? (res.correct ? '✅ ' : '❌ ') + nameOf(who) + ': ' + res.explain : (res.correct ? pick(SAY.ok) : pick(SAY.bad)) + '\n' + res.explain,
+            text,
             res.correct ? 'ok' : 'bad',
             res.correct ? 'happy' : 'sad',
             res.correct ? 'hop' : 'tilt',
@@ -354,12 +381,23 @@
         if (res.correct && res.streak >= 3) toast(SAY.streak.replace('{n}', res.streak));
 
         var shownAt = Date.now();
-        $bar.innerHTML = '';
-        $bar.appendChild(button('Дальше', function () {
+        var next = function () {
             pendingExplainMs = Date.now() - shownAt;
             if (res.block.closed_by_errors) return renderGrowth(res);
             render(res.state);
-        }));
+        };
+        $bar.innerHTML = '';
+        if (res.correct) {
+            // Верно — без лишнего клика: пара секунд прочитать (по длине текста)
+            // и сам переход; отсчёт — после «печатает…». Тап — сразу дальше.
+            var ms = Math.min(5000, Math.max(2500, 1200 + text.length * 35));
+            var typing = reducedMotion ? 0 : 450;
+            $bar.appendChild(countdownBar(ms, typing));
+            autoAdvance(next, ms, typing);
+        } else {
+            // Неверно — разбор читают сколько нужно, дальше — кнопкой.
+            $bar.appendChild(button('Дальше', next));
+        }
     }
 
     // Блок закрыт двумя ошибками — не «провал», а точка роста (ТЗ, 5.3).
@@ -389,72 +427,120 @@
         ], 'rise');
     }
 
+    /**
+     * Итог — под тип результата (ТЗ, раздел 7):
+     *   сильный (нет блоков с прибавкой) — «хорошо знаешь базовую теорию», балл —
+     *     при условии, что умеешь вторую часть; кнопка «Хочу разобраться с этим»;
+     *   средний / слабый — вывод акулы, точки роста с «+N баллов», вопрос «Хочешь
+     *     подтянуть право и экономику?».
+     * Сверху вниз: вывод → балл и шкала (сейчас · цель · потенциал) → сильные
+     * стороны чипами → точки роста → профиль по блокам (свёрнут) → вопрос.
+     * Без карточек: блоки разделены отступами и заголовками.
+     */
     function renderResult(s, quiet) {
         var r = s.result;
-        var nodes = [say(SAY.resultIntro, null, 'happy')];
+        var strong = r.weak.length === 0;
+        var mid = Math.round((r.low + r.high) / 2);
+        var kind = strong ? 'strong' : (mid < 50 ? 'weak' : 'medium');
+        var headline = SAY['result_' + kind].replace('{potential}', r.potential);
+        var nodes = [say(headline, null, kind === 'weak' ? 'think' : 'happy')];
 
         var score = el('div', { class: 'score', text: '~' + r.low + '–' + r.high });
-        nodes.push(el('div', { class: 'card' }, [
-            el('div', { class: 'muted', text: 'Сейчас ты можешь набрать' }),
+        nodes.push(el('div', { class: 'hero' }, [
             score,
-            el('div', { class: 'muted', text: 'тестовых баллов ЕГЭ' }),
-            r.target === null ? null : el('p', { text: r.near_target
-                ? 'Ты рядом со своей целью ' + r.target + ' — дальше всё решает вторая часть.'
+            el('div', { class: 'muted', text: 'тестовых баллов ЕГЭ' + (strong ? '' : ' — сейчас') }),
+            scale(r, strong ? 'ты' : 'сейчас'),
+            r.target === null ? null : el('p', { class: 'hero-note', text: r.near_target
+                ? 'Ты рядом со своей целью ' + r.target + '.'
                 : 'До твоей цели ' + r.target + ' не хватает ~' + r.to_target + ' ' + plural(r.to_target, 'балла', 'баллов', 'баллов') + '.' }),
         ]));
 
-        // Оси радара — в порядке блоков теста, а не по потерям: так форма читается.
-        var order = s.progress.blocks.map(function (b) { return b.key; });
-        var axes = r.gains.slice().sort(function (a, b) { return order.indexOf(a.key) - order.indexOf(b.key); });
-        nodes.push(el('div', { class: 'card' }, [el('p', { class: 'section-title', text: 'Твой профиль по блокам' }), radar(axes)]));
+        var good = r.gains.filter(function (g) { return g.gain <= 0; });
+        if (good.length) {
+            nodes.push(section('Сильные стороны', [el('div', { class: 'chips' }, good.map(function (g) {
+                return el('span', { class: 'chip-ok', text: '✓ ' + g.title });
+            }))]));
+        }
 
+        // Точки роста: блоки с «+N баллов»; у сильного — вторая часть (её тест не проверяет).
         var gains = r.gains.filter(function (g) { return g.gain > 0; });
         var max = gains.reduce(function (m, g) { return Math.max(m, g.gain); }, 1);
-        var losses = el('div', { class: 'card' }, [el('p', { class: 'section-title', text: 'Где ты теряешь баллы' })]);
-        gains.forEach(function (g) {
-            losses.appendChild(el('div', { class: 'gain' }, [
+        var growth = gains.map(function (g) {
+            return el('div', { class: 'gain' }, [
                 el('span', { text: g.title }),
                 el('b', { text: '+' + g.gain }),
                 el('div', { class: 'track' }, [el('i', { style: 'width:0', 'data-width': Math.round(g.gain / max * 100) + '%' })]),
-            ]));
+            ]);
         });
-        r.gains.filter(function (g) { return g.gain <= 0; }).forEach(function (g) {
-            losses.appendChild(el('div', { class: 'muted', text: '✓ ' + g.title + ' — крепко' }));
-        });
-        nodes.push(losses);
+        growth.push(el('div', { class: strong ? 'gain-part2' : 'muted small', text: strong
+            ? 'Вторая часть ЕГЭ и критерии — тест их не проверяет, а это около половины баллов.'
+            : 'И вторая часть ЕГЭ — её тест не проверяет, а это около половины баллов.' }));
+        nodes.push(section(strong ? 'Что проверить дальше' : 'Точки роста', growth));
 
-        if (r.weak.length) {
-            nodes.push(el('div', { class: 'card' }, [
-                el('p', { class: 'section-title', text: 'Потенциал: ' + r.potential + '+' }),
-                el('div', { text: 'Если подтянуть ' + (r.weak.length > 1 ? 'блоки ' : 'блок ')
-                    + r.weak.map(function (t) { return '«' + t + '»'; }).join(' и ') + '.' }),
-            ]));
-        }
         if (r.guessed > 0) {
-            nodes.push(el('div', { class: 'card', text: '🎲 ' + r.guessed + ' ' + plural(r.guessed, 'верный ответ', 'верных ответа', 'верных ответов')
+            nodes.push(el('p', { class: 'muted small', text: '🎲 ' + r.guessed + ' ' + plural(r.guessed, 'верный ответ', 'верных ответа', 'верных ответов')
                 + ' ты дал наугад — в этих темах знания шаткие.' }));
         }
-        nodes.push(el('div', { class: 'card muted', text: 'Вторую часть ЕГЭ мы не проверяли, а это около половины баллов.' }));
+
+        // Профиль по блокам — второстепенно, свёрнут. Оси — в порядке блоков теста.
+        var order = s.progress.blocks.map(function (b) { return b.key; });
+        var axes = r.gains.slice().sort(function (a, b) { return order.indexOf(a.key) - order.indexOf(b.key); });
+        nodes.push(el('details', { class: 'profile' }, [el('summary', { text: 'Профиль по блокам' }), radar(axes)]));
 
         var bar = [];
         if (s.improve) {
             nodes.push(say(s.improve === 'yes' ? SAY.improveYes : SAY.improveNo));
             bar.push(button('↺ Пройти ещё раз', function () { restart(false); }, 'ghost'));
         } else {
-            nodes.push(say(SAY.improve));
+            if (!strong) nodes.push(say(SAY.improve_weak.replace('{blocks}', joinAnd(r.weak_acc || r.weak)), null, 'think'));
             bar.push(button('Пока нет', function () { improve(false); }, 'ghost'));
-            bar.push(button('Да, хочу', function () { improve(true); }));
+            bar.push(button(strong ? SAY.btn_strong : 'Да, хочу', function () { improve(true); }));
             // Пройти заново можно и не отвечая на вопрос — итог этого раза сохранится.
             nodes.push(el('div', { class: 'center-link' }, [el('button', { class: 'link', type: 'button', text: '↺ Пройти заново', onclick: function () { restart(false); } })]));
         }
         show(nodes, bar, quiet ? null : 'rise');
-        // Полоски потерь заливаются, когда их карточка уже появилась.
+        // Полоски заливаются, когда их блок уже появился.
         setTimeout(function () {
-            [].forEach.call($screen.querySelectorAll('.track i'), function (i) { i.style.width = i.getAttribute('data-width'); });
+            [].forEach.call($screen.querySelectorAll('.track i, .scale .band'), function (i) { i.style.width = i.getAttribute('data-width'); });
         }, quiet || reducedMotion ? 0 : 600);
         if (quiet) return;
         countUp(score, r.low, r.high);
         if (!celebrated) { celebrated = true; setTimeout(confetti, 700); }
+    }
+
+    function section(title, children) {
+        return el('div', { class: 'res-sec' }, [el('h3', { text: title })].concat(children));
+    }
+
+    function joinAnd(list) {
+        return list.length > 1 ? list.slice(0, -1).join(', ') + ' и ' + list[list.length - 1] : (list[0] || '');
+    }
+
+    /**
+     * Шкала 0–100: полоса — диапазон «сейчас», чёрточка — цель, кружок —
+     * потенциал (если он выше). Подписи, что оказались рядом, — во второй строке.
+     */
+    function scale(r, nowLabel) {
+        var pos = function (v) { return Math.max(0, Math.min(100, v)) + '%'; };
+        var marks = [];
+        var bar = el('div', { class: 'scale' }, [
+            el('i', { class: 'band', style: 'left:' + pos(r.low) + ';width:0', 'data-width': (r.high - r.low) + '%' }),
+        ]);
+        var label = function (at, text, cls) {
+            var clash = marks.some(function (m) { return Math.abs(m - at) < 14; });
+            marks.push(at);
+            bar.appendChild(el('span', { class: 'lbl' + (clash ? ' alt' : '') + (cls ? ' ' + cls : ''), style: 'left:' + pos(Math.max(6, Math.min(94, at))), text: text }));
+        };
+        label((r.low + r.high) / 2, nowLabel);
+        if (r.target !== null) {
+            bar.appendChild(el('i', { class: 'tick', style: 'left:' + pos(r.target) }));
+            label(r.target, 'цель ' + r.target);
+        }
+        if (r.weak.length && r.potential > r.high) {
+            bar.appendChild(el('i', { class: 'dot', style: 'left:' + pos(r.potential) }));
+            label(r.potential, 'потенциал ' + r.potential + '+', 'pot');
+        }
+        return bar;
     }
 
     /**
@@ -609,8 +695,8 @@
                 card.appendChild(zone);
                 card.appendChild(hint);
                 var row = el('div', { class: 'grades' }, [
-                    button('👎 ' + no, function () { choose(false); }, 'ghost'),
-                    button(yes + ' 👍', function () { choose(true); }, 'ghost'),
+                    button('👎 ' + no, function () { choose(false); }, 'choice'),
+                    button(yes + ' 👍', function () { choose(true); }, 'choice'),
                 ]);
                 card.appendChild(row);
                 return {
@@ -727,59 +813,154 @@
             },
         },
 
-        // Корзины: тап по карточке → тап по корзине; тап по разложенной — вернуть.
+        // Корзины: карточку перетаскивают пальцем в группу (или тап по карточке,
+        // потом по группе — запасной способ). У каждой карточки своё место в
+        // пуле: взятая оставляет пустую рамку того же размера, остальные не
+        // сдвигаются — не надо заново искать глазами, где какая. Вынутая из
+        // группы возвращается на своё место.
         // Оформление cases — карточки как сообщения людей (from на карточке).
         buckets: {
             build: function (q, card) {
                 var placed = {};      // карточка → корзина
-                var selected = null;
+                var order = [];       // в каком порядке карточки легли в корзины
+                var selected = null;  // запасной способ: выбранная тапом карточка
                 var cards = {};
-                var pool = el('div', { class: 'pool' });
+                var slots = {};
                 var zones = {};
+                var pool = el('div', { class: 'pool slots' });
+
                 var redraw = function () {
-                    pool.innerHTML = '';
-                    Object.keys(zones).forEach(function (b) { zones[b].pool.innerHTML = ''; zones[b].node.classList.toggle('target', selected !== null); });
-                    q.cards.forEach(function (c) {
-                        var n = cards[c.id];
-                        n.classList.toggle('sel', selected === c.id);
-                        (placed[c.id] ? zones[placed[c.id]].pool : pool).appendChild(n);
+                    Object.keys(zones).forEach(function (b) {
+                        zones[b].pool.innerHTML = '';
+                        zones[b].node.classList.toggle('target', selected !== null);
                     });
+                    q.cards.forEach(function (c) {
+                        cards[c.id].classList.toggle('sel', selected === c.id);
+                        slots[c.id].classList.toggle('empty', !!placed[c.id]);
+                        if (!placed[c.id] && cards[c.id].parentNode !== slots[c.id]) slots[c.id].appendChild(cards[c.id]);
+                    });
+                    order.forEach(function (id) { zones[placed[id]].pool.appendChild(cards[id]); });
                     refreshSubmit();
                 };
+                // bucket null — домой, на своё место в пуле.
+                var put = function (id, bucket) {
+                    order = order.filter(function (x) { return x !== id; });
+                    if (bucket) { placed[id] = bucket; order.push(id); } else delete placed[id];
+                    selected = null;
+                    haptic();
+                    redraw();
+                };
+                var zoneAt = function (x, y) {
+                    for (var hit = document.elementFromPoint(x, y); hit && hit !== document.body; hit = hit.parentNode) {
+                        if (hit.getAttribute && hit.getAttribute('data-bucket')) return hit.getAttribute('data-bucket');
+                    }
+                    return null;
+                };
+                var hover = function (bucket) {
+                    Object.keys(zones).forEach(function (b) { zones[b].node.classList.toggle('over', b === bucket); });
+                };
+
+                // Тянешь карточку к краю экрана — страница сама едет: нижние группы
+                // на телефоне за краем.
+                var edgeScroll = function (d) {
+                    if (!d || !d.moved) return;
+                    var edge = 80, dy = 0;
+                    if (d.y > window.innerHeight - edge) dy = Math.ceil((d.y - (window.innerHeight - edge)) / 6);
+                    else if (d.y < edge) dy = -Math.ceil((edge - d.y) / 6);
+                    if (dy) { window.scrollBy(0, dy); hover(zoneAt(d.x, d.y)); }
+                    d.raf = requestAnimationFrame(function () { edgeScroll(d.alive ? d : null); });
+                };
+
                 q.cards.forEach(function (c) {
-                    cards[c.id] = el('button', { class: 'tag' + (c.from ? ' case' : ''), type: 'button', onclick: function (e) {
-                        e.stopPropagation();
+                    var n = el('button', { class: 'tag drag' + (c.from ? ' case' : ''), type: 'button' },
+                        c.from ? [el('b', { text: c.from }), el('span', { text: c.text })] : [c.text]);
+                    var drag = null;
+                    n.addEventListener('pointerdown', function (e) {
                         if (ui.locked) return;
-                        if (placed[c.id]) { delete placed[c.id]; selected = null; }
-                        else selected = selected === c.id ? null : c.id;
+                        drag = { x0: e.clientX, y0: e.clientY, moved: false };
+                        n.setPointerCapture(e.pointerId);
+                    });
+                    n.addEventListener('pointermove', function (e) {
+                        if (!drag) return;
+                        if (!drag.moved) {
+                            if (Math.abs(e.clientX - drag.x0) + Math.abs(e.clientY - drag.y0) < 8) return;
+                            var r = n.getBoundingClientRect();
+                            drag.moved = true;
+                            drag.ox = drag.x0 - r.left;
+                            drag.oy = drag.y0 - r.top;
+                            selected = null;
+                            n.style.width = r.width + 'px';
+                            n.classList.add('dragging');
+                            // Место карточки — пустой рамкой сразу, ещё до того, как отпустили.
+                            if (!placed[c.id]) slots[c.id].classList.add('empty');
+                            drag.alive = true;
+                            haptic();
+                            edgeScroll(drag);
+                        }
+                        drag.x = e.clientX;
+                        drag.y = e.clientY;
+                        n.style.left = (e.clientX - drag.ox) + 'px';
+                        n.style.top = (e.clientY - drag.oy) + 'px';
+                        hover(zoneAt(e.clientX, e.clientY));
+                    });
+                    var drop = function (e, cancelled) {
+                        if (!drag) return;
+                        var d = drag;
+                        drag = null;
+                        if (!d.moved) return;   // не тянули — это тап, его разберёт click
+                        d.alive = false;
+                        cancelAnimationFrame(d.raf);
+                        n.suppressClick = true;
+                        n.classList.remove('dragging');
+                        n.style.left = n.style.top = n.style.width = '';
+                        hover(null);
+                        var target = cancelled ? placed[c.id] || null : zoneAt(e.clientX, e.clientY);
+                        put(c.id, target);
+                    };
+                    n.addEventListener('pointerup', function (e) { drop(e, false); });
+                    n.addEventListener('pointercancel', function (e) { drop(e, true); });
+                    n.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        if (n.suppressClick) { n.suppressClick = false; return; }
+                        if (ui.locked) return;
+                        if (placed[c.id]) return put(c.id, null);
+                        selected = selected === c.id ? null : c.id;
                         haptic();
                         redraw();
-                    } }, c.from ? [el('b', { text: c.from }), el('span', { text: c.text })] : [c.text]);
+                    });
+                    cards[c.id] = n;
+                    slots[c.id] = el('div', { class: 'slot' }, [n]);
+                    pool.appendChild(slots[c.id]);
                 });
+
                 var list = el('div', { class: 'buckets' });
                 q.buckets.forEach(function (b) {
                     var inner = el('div', { class: 'pool' });
-                    var node = el('div', { class: 'bucket', onclick: function () {
+                    var node = el('div', { class: 'bucket', 'data-bucket': b.id, onclick: function () {
                         if (ui.locked || selected === null) return;
-                        placed[selected] = b.id;
-                        selected = null;
-                        haptic();
-                        redraw();
+                        put(selected, b.id);
                     } }, [el('h4', { text: b.title }), inner]);
                     zones[b.id] = { node: node, pool: inner };
                     list.appendChild(node);
                 });
-                card.appendChild(el('div', { class: 'counter', text: 'Нажми на карточку, потом на группу' }));
+                card.appendChild(el('div', { class: 'counter', text: 'Перетащи каждую карточку в её группу' }));
                 card.appendChild(pool);
                 card.appendChild(list);
                 redraw();
                 return {
+                    // Место карточки — её размер на экране: пустая рамка потом его держит.
+                    ready: function () {
+                        q.cards.forEach(function (c) {
+                            slots[c.id].style.width = cards[c.id].offsetWidth + 'px';
+                            slots[c.id].style.height = cards[c.id].offsetHeight + 'px';
+                        });
+                    },
                     complete: function () { return Object.keys(placed).length === q.cards.length; },
                     value: function () { return { mapping: placed }; },
                     reveal: function (sol) {
                         var titles = {};
                         q.buckets.forEach(function (b) { titles[b.id] = b.title; });
-                        Object.keys(zones).forEach(function (b) { zones[b].node.classList.remove('target'); });
+                        Object.keys(zones).forEach(function (b) { zones[b].node.classList.remove('target', 'over'); });
                         q.cards.forEach(function (c) {
                             var n = cards[c.id];
                             n.disabled = true;
@@ -883,6 +1064,8 @@
         try {
             tg.ready();
             tg.expand();
+            // Перетаскивание карточек вниз не должно сворачивать Mini App.
+            if (tg.disableVerticalSwipes && tg.isVersionAtLeast && tg.isVersionAtLeast('7.7')) tg.disableVerticalSwipes();
             if (inTelegram) document.documentElement.classList.add('tg');
         } catch (e) { /* старый клиент Telegram */ }
     }

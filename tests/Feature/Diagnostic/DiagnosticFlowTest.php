@@ -164,7 +164,7 @@ class DiagnosticFlowTest extends TestCase
 
         $state = $this->openSession(['init_data' => $this->initData(555)])->assertOk()->assertJsonPath('in_telegram', true)->json();
         $this->attempt = $state['attempt'];
-        $question = $this->call_('profile', ['grade' => 'parent'])->json('question.id');
+        $question = $this->call_('profile', ['grade' => 'graduate'])->json('question.id');
 
         // Закрыл и открыл заново — тот же вопрос того же прохождения.
         $this->attempt = null;
@@ -227,21 +227,15 @@ class DiagnosticFlowTest extends TestCase
     public function test_who_explanation_is_voiced_by_the_right_speaker(): void
     {
         $this->openSession();
-        $state = $this->call_('profile', ['grade' => '11'])->json();
-        // Проходим, пока не встретится «Кто прав?»: пояснение говорит тот, кто прав.
-        $bank = QuestionBank::fromConfig();
-        $checked = false;
-        while ($state['screen'] === 'question') {
-            $q = $bank->get($state['question']['id']);
-            $res = $this->call_('answer', ['question_id' => $q['id'], 'answer' => $this->right($q['id'])])->json();
-            if (($q['skin'] ?? null) === 'who') {
-                $right = collect($q['speakers'])->firstWhere('id', $q['correct']);
-                $this->assertSame($right['who'], $res['explain_by']);
-                $checked = true;
-            }
-            $state = $res['state'];
-        }
-        $this->assertTrue($checked, 'в банке есть «Кто прав?» на пути «всё верно»');
+        $this->call_('profile', ['grade' => '11']);
+        // Текущим ставим «Кто прав?» из банка — на случайном пути его может не быть.
+        $q = collect(QuestionBank::fromConfig()->all())->firstWhere('skin', 'who');
+        DiagnosticAttempt::where('token', $this->attempt)->update(['current_question_id' => $q['id']]);
+
+        $res = $this->call_('answer', ['question_id' => $q['id'], 'answer' => $this->right($q['id'])])->assertOk()->json();
+
+        $right = collect($q['speakers'])->firstWhere('id', $q['correct']);
+        $this->assertSame($right['who'], $res['explain_by']);
     }
 
     public function test_api_needs_attempt_token(): void
