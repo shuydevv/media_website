@@ -138,6 +138,9 @@ class DiagnosticRunner
             return [
                 'correct' => $correct,
                 'explain' => $correct ? $question['explain_correct'] : $question['explain_wrong'],
+                // Кто говорит пояснение: в «Кто прав?» — тот, кто прав; иначе —
+                // explain_by из банка; пусто — рыба.
+                'explain_by' => $this->explainBy($question),
                 'meme' => $question['meme'] ?? null,
                 'solution' => AnswerChecker::solution($question),
                 'streak' => $attempt->streak,
@@ -180,6 +183,26 @@ class DiagnosticRunner
         ])->save();
     }
 
+    /**
+     * «Начать заново» посреди теста: незаконченное прохождение закрывается
+     * (abandoned — в статистике видно, что бросил), начинается новое.
+     * Законченное не трогаем — его итог остаётся в истории.
+     */
+    public function restart(DiagnosticAttempt $attempt, ?string $platform = null): DiagnosticAttempt
+    {
+        if (! $attempt->isFinished()) {
+            $attempt->forceFill(['status' => DiagnosticAttempt::STATUS_ABANDONED, 'current_question_id' => null])->save();
+        }
+
+        $new = $this->start($attempt->contact, $attempt->entry ?? 'anonymous', $platform ?? $attempt->platform);
+        // Класс второй раз не спрашиваем — и у анонимного прохождения, где контакта нет.
+        if ($new->grade === null && $attempt->grade !== null) {
+            $new->forceFill(['grade' => $attempt->grade])->save();
+        }
+
+        return $new;
+    }
+
     /** «Хочешь улучшить свои знания?» — ответ один на прохождение, второй источник ничего не меняет. */
     public function improve(DiagnosticAttempt $attempt, bool $yes, string $source): bool
     {
@@ -219,6 +242,19 @@ class DiagnosticRunner
         }
 
         return null;
+    }
+
+    private function explainBy(array $question): ?string
+    {
+        if (($question['skin'] ?? null) === 'who') {
+            foreach ($question['speakers'] ?? [] as $speaker) {
+                if ((string) $speaker['id'] === (string) $question['correct']) {
+                    return $speaker['who'] ?? null;
+                }
+            }
+        }
+
+        return $question['explain_by'] ?? null;
     }
 
     /** @return list<array{level: int, correct: bool, guess: bool}> */

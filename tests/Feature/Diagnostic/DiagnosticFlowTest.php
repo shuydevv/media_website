@@ -197,6 +197,52 @@ class DiagnosticFlowTest extends TestCase
         $this->assertSame('10', DiagnosticAttempt::latest('id')->first()->grade, 'класс не спрашиваем второй раз');
     }
 
+    public function test_restart_mid_test_abandons_attempt_and_starts_fresh(): void
+    {
+        $this->openSession();
+        $state = $this->call_('profile', ['grade' => '11'])->json();
+        $this->call_('answer', ['question_id' => $state['question']['id'], 'answer' => ['x' => 1]]);
+        $old = $this->attempt;
+
+        $new = $this->call_('restart', [])->assertOk()->assertJsonPath('screen', 'question')->json();
+
+        $this->assertNotSame($old, $new['attempt']);
+        $this->assertSame(DiagnosticAttempt::STATUS_ABANDONED, DiagnosticAttempt::where('token', $old)->value('status'));
+        $this->assertSame(0, $new['progress']['index']);
+        $this->assertSame('11', DiagnosticAttempt::where('token', $new['attempt'])->value('grade'), 'класс не спрашиваем второй раз');
+    }
+
+    public function test_restart_after_result_keeps_finished_attempt(): void
+    {
+        $this->finishedAttempt();
+        $old = $this->attempt;
+
+        $this->call_('restart', [])->assertOk();
+
+        $this->assertSame(DiagnosticAttempt::STATUS_FINISHED, DiagnosticAttempt::where('token', $old)->value('status'));
+        $this->assertSame(2, DiagnosticAttempt::count());
+    }
+
+    public function test_who_explanation_is_voiced_by_the_right_speaker(): void
+    {
+        $this->openSession();
+        $state = $this->call_('profile', ['grade' => '11'])->json();
+        // Проходим, пока не встретится «Кто прав?»: пояснение говорит тот, кто прав.
+        $bank = QuestionBank::fromConfig();
+        $checked = false;
+        while ($state['screen'] === 'question') {
+            $q = $bank->get($state['question']['id']);
+            $res = $this->call_('answer', ['question_id' => $q['id'], 'answer' => $this->right($q['id'])])->json();
+            if (($q['skin'] ?? null) === 'who') {
+                $right = collect($q['speakers'])->firstWhere('id', $q['correct']);
+                $this->assertSame($right['who'], $res['explain_by']);
+                $checked = true;
+            }
+            $state = $res['state'];
+        }
+        $this->assertTrue($checked, 'в банке есть «Кто прав?» на пути «всё верно»');
+    }
+
     public function test_api_needs_attempt_token(): void
     {
         $this->postJson('/diag/api/profile', ['grade' => '11'])->assertForbidden();

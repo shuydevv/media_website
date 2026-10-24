@@ -139,15 +139,6 @@
         .bucket.target { border-color: var(--accent); }
         .bucket h4 { margin: 0 0 6px; font-size: 14px; }
         .bucket .pool { margin: 0; }
-        .gap-text { line-height: 2.2; }
-        .gap {
-            display: inline-block; min-width: 88px; border-bottom: 2px solid var(--accent); padding: 0 6px; margin: 0 2px;
-            text-align: center; cursor: pointer; line-height: 1.6; border-radius: 6px 6px 0 0;
-        }
-        .gap.filled { background: var(--bg); }
-        .gap.ok { background: var(--ok-bg); border-color: var(--ok); }
-        .gap.bad { background: var(--bad-bg); border-color: var(--bad); }
-        .gap .fix { color: var(--ok); font-size: 13px; }
 
         /* Переходы и итог. */
         .center { text-align: center; padding: 28px 8px; }
@@ -180,9 +171,9 @@
         @keyframes shake { 20% { transform: translateX(-6px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
 
         /* Рыба: радуется — подпрыгивает, сочувствует — наклоняет голову, на вводе блока — покачивается. */
-        .say img.hop { animation: hop .5s ease-out; }
+        .say .hop { animation: hop .5s ease-out; }
         @keyframes hop { 30% { transform: translateY(-9px) rotate(-6deg); } 60% { transform: translateY(0) rotate(3deg); } }
-        .say img.tilt { animation: tilt .6s ease-in-out; }
+        .say .tilt { animation: tilt .6s ease-in-out; }
         @keyframes tilt { 40% { transform: rotate(-12deg) translateY(2px); } }
         .bob { animation: bob 3s ease-in-out infinite; }
         @keyframes bob { 50% { transform: translateY(-6px); } }
@@ -226,6 +217,36 @@
 
         .meme { display: block; max-width: 100%; border-radius: 12px; margin-top: 8px; }
 
+        /* «Заново» в шапке и под итогом — неброской ссылкой. */
+        .top-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+        .link { border: 0; background: none; padding: 6px 0; color: var(--hint); font-size: 13px; cursor: pointer; }
+        .link:active { color: var(--accent); }
+        .center-link { text-align: center; margin: 4px 0 8px; }
+
+        /* Персонажи: реплики, пост, ответ «на листке». */
+        .say .avatar { width: 44px; height: 44px; font-size: 18px; }
+        .speech-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; }
+        /* place-items сбросить: свежий Chrome применяет justify-items и к блочной вёрстке. */
+        .swipe-card.chat { display: block; place-items: normal; text-align: left; font-weight: 500; }
+        .swipe-card.chat .speech-head { font-weight: 600; }
+        .card > .speaker { margin-bottom: 12px; }
+        .options.sheet { background: var(--bg); border-radius: 12px; padding: 6px; gap: 2px; }
+        .options.sheet .opt { border-radius: 8px; }
+        .tag.case { display: flex; flex-direction: column; gap: 2px; }
+        .tag.case b { font-size: 12px; color: var(--hint); font-weight: 600; }
+
+        /* «Найди и исправь»: все спорные слова подчёркнуты одинаково. */
+        .post { background: var(--bg); border-radius: 14px; padding: 12px 14px; }
+        .post-text { line-height: 1.9; }
+        .spot { border-bottom: 2px dotted var(--accent); cursor: pointer; padding: 0 1px; border-radius: 4px 4px 0 0; }
+        .spot.sel { background: color-mix(in srgb, var(--accent) 15%, transparent); }
+        .spot.changed { border-bottom-style: solid; font-weight: 600; }
+        .spot.ok { background: var(--ok-bg); border-bottom: 2px solid var(--ok); }
+        .spot.bad { background: var(--bad-bg); border-bottom: 2px solid var(--bad); }
+        .spot .fix { color: var(--ok); font-size: 13px; }
+        .picker { margin-top: 10px; animation: rise .2s ease-out both; }
+        .picker[hidden] { display: none; }
+
         /* Кому движение мешает (настройка системы) — всё сразу, без анимаций. */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -237,7 +258,10 @@
 <div id="app">
     <header class="top" id="top" hidden>
         <div class="segments" id="segments"></div>
-        <div class="top-label" id="top-label"></div>
+        <div class="top-row">
+            <div class="top-label" id="top-label"></div>
+            <button class="link" id="restart" type="button">↺ Заново</button>
+        </div>
     </header>
     <main id="screen">
         <div class="center"><img src="{{ $mascot }}" alt=""><p class="muted">Загружаю…</p></div>
@@ -250,12 +274,15 @@
         // Рыба по настроению — пока везде одна заглушка; придёт арт —
         // заменить пути в DiagnosticController::page(), код трогать не нужно.
         mascots: @json($mascots),
+        // Персонажи вопросов — config/diagnostic.php, characters.
+        characters: @json($characters),
         urls: {
             session: @json(route('diag.session')),
             profile: @json(route('diag.profile')),
             answer: @json(route('diag.answer')),
             target: @json(route('diag.target')),
             improve: @json(route('diag.improve')),
+            restart: @json(route('diag.restart')),
         },
     };
 </script>

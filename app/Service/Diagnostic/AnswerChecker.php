@@ -11,11 +11,17 @@ namespace App\Service\Diagnostic;
  *   single  — {id: "b"}
  *   multi   — {ids: ["a", "c"]}           засчитывается точное множество
  *   buckets — {mapping: {card: bucket}}   засчитывается только 100%
- *   chips   — {gaps: {"1": chip}}         все пропуски верно
+ *   fix     — {spots: {spot: слово}}      «Найди и исправь»: каждое
+ *             спорное место текста должно стоять верно; не тронутое — как
+ *             было показано (shown). Угадать трудно: надо и найти ошибки,
+ *             и выбрать замену из похожих терминов.
+ *
+ * Пропуски в тексте (chips) убраны: по смыслу и грамматике подходило одно
+ * слово, угадывалось слишком легко.
  */
 final class AnswerChecker
 {
-    public const MECHANICS = ['swipe', 'single', 'multi', 'buckets', 'chips'];
+    public const MECHANICS = ['swipe', 'single', 'multi', 'buckets', 'fix'];
 
     public static function check(array $q, array $answer): bool
     {
@@ -24,7 +30,7 @@ final class AnswerChecker
             'single' => isset($answer['id']) && (string) $answer['id'] === (string) $q['correct'],
             'multi' => self::sameSet((array) ($answer['ids'] ?? []), $q['correct']),
             'buckets' => self::sameMap((array) ($answer['mapping'] ?? []), $q['mapping']),
-            'chips' => self::sameMap((array) ($answer['gaps'] ?? []), $q['answers']),
+            'fix' => self::fixed((array) ($answer['spots'] ?? []), $q['spots']),
             default => false,
         };
     }
@@ -37,7 +43,7 @@ final class AnswerChecker
             'single' => ['id' => $q['correct']],
             'multi' => ['ids' => array_values($q['correct'])],
             'buckets' => ['mapping' => $q['mapping']],
-            'chips' => ['gaps' => $q['answers']],
+            'fix' => ['spots' => array_column($q['spots'], 'correct', 'id')],
             default => [],
         };
     }
@@ -45,9 +51,26 @@ final class AnswerChecker
     /** Вопрос без ключей ответа и пояснений — то, что уходит на страницу до ответа. */
     public static function publicView(array $q): array
     {
-        return array_diff_key($q, array_flip([
+        $view = array_diff_key($q, array_flip([
             'answer', 'correct', 'mapping', 'answers', 'explain_correct', 'explain_wrong', 'block', 'level',
         ]));
+        if (isset($view['spots'])) {
+            $view['spots'] = array_map(fn ($s) => array_diff_key($s, ['correct' => true]), $view['spots']);
+        }
+
+        return $view;
+    }
+
+    private static function fixed(array $given, array $spots): bool
+    {
+        foreach ($spots as $spot) {
+            $chosen = (string) ($given[$spot['id']] ?? $spot['shown']);
+            if ($chosen !== (string) $spot['correct']) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static function sameSet(array $given, array $expected): bool

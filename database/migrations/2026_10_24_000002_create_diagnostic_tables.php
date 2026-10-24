@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('token', 32)->unique();
             $table->foreignId('telegram_contact_id')->nullable()->constrained()->nullOnDelete();
 
-            $table->string('status', 12)->default('active'); // active | finished
+            $table->string('status', 12)->default('active'); // active | finished | abandoned
             $table->string('entry', 12)->nullable(); // miniapp | link | anonymous
             $table->string('platform', 24)->nullable(); // Telegram.WebApp.platform
 

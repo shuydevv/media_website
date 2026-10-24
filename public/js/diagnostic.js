@@ -7,7 +7,9 @@
  *
  * Экраны: profile → [вводный экран блока] → question → feedback → … →
  * target → result. Механики вопросов — RENDER ниже (swipe, single, multi,
- * buckets, chips), у каждой: нарисовать, собрать ответ, подсветить решение.
+ * buckets, fix), у каждой: нарисовать, собрать ответ, подсветить решение.
+ * Персонажи вопросов (Лёха, Маша, Кира — config diagnostic.characters) —
+ * CFG.characters; пояснение после ответа может говорить персонаж (explain_by).
  *
  * Движение — сдержанное, по одному короткому на событие: карточка вопроса
  * въезжает, верно — вспышка и рыба подпрыгивает, неверно — встряска и рыба
@@ -97,6 +99,23 @@
         return el('img', { src: (CFG.mascots && CFG.mascots[mood]) || CFG.mascot, alt: '', class: cls || null });
     }
 
+    function character(id) {
+        return (id && CFG.characters && CFG.characters[id]) || null;
+    }
+
+    function nameOf(id, fallback) {
+        var c = character(id);
+        return c ? c.name : (fallback || '');
+    }
+
+    /** Аватар персонажа: картинка, если есть, иначе кружок с буквой его цвета. */
+    function avatar(id, fallbackName) {
+        var c = character(id);
+        if (c && c.avatar) return el('img', { class: 'avatar', src: c.avatar, alt: '' });
+        var name = c ? c.name : (fallbackName || '?');
+        return el('span', { class: 'avatar', style: c && c.color ? 'background:' + c.color : null, text: name.charAt(0) });
+    }
+
     function say(text, tone, mood) {
         return el('div', { class: 'say' }, [
             mascot(mood || 'idle'),
@@ -109,9 +128,9 @@
      * возвращается сразу (место в ленте занято), текст появляется через
      * delay мс; extra — что дописать в пузырь (мем).
      */
-    function sayTyping(text, tone, mood, react, extra) {
+    function sayTyping(text, tone, mood, react, extra, who) {
         var bubble = el('div', { class: 'bubble' }, [el('span', { class: 'typing' }, [el('i'), el('i'), el('i')])]);
-        var img = mascot(mood || 'idle');
+        var img = who ? avatar(who) : mascot(mood || 'idle');
         var node = el('div', { class: 'say' }, [img, bubble]);
         var reveal = function () {
             bubble.className = 'bubble' + (tone ? ' ' + tone : '');
@@ -243,7 +262,11 @@
         if (q.character) {
             card.appendChild(el('div', { class: 'character' }, [el('span', { class: 'avatar', text: q.character.charAt(0) }), q.character]));
         }
-        if (q.mechanic !== 'swipe') card.appendChild(el('p', { class: 'prompt', text: q.prompt }));
+        if (q.skin === 'debate' && q.from) {
+            card.appendChild(el('div', { class: 'speaker' }, [avatar(q.from), el('div', { class: 'bubble' }, [el('b', { text: nameOf(q.from) + ': ' }), q.prompt])]));
+        } else if (q.mechanic !== 'swipe') {
+            card.appendChild(el('p', { class: 'prompt', text: q.prompt }));
+        }
         if (q.task) card.appendChild(el('p', { class: 'task', text: 'Задание: ' + q.task }));
         ui.card = card;
         ui.api = mech.build(q, card);
@@ -292,12 +315,15 @@
 
         // Мем — картинка из банка (поле meme: путь от корня сайта или https-адрес).
         var meme = typeof res.meme === 'string' && /^(https:\/\/|\/)/.test(res.meme) ? el('img', { class: 'meme', src: res.meme, alt: '' }) : null;
+        // Говорит персонаж (тот, кто прав в «Кто прав?», или explain_by) — иначе рыба.
+        var who = character(res.explain_by) ? res.explain_by : null;
         $screen.appendChild(sayTyping(
-            (res.correct ? pick(SAY.ok) : pick(SAY.bad)) + '\n' + res.explain,
+            who ? (res.correct ? '✅ ' : '❌ ') + nameOf(who) + ': ' + res.explain : (res.correct ? pick(SAY.ok) : pick(SAY.bad)) + '\n' + res.explain,
             res.correct ? 'ok' : 'bad',
             res.correct ? 'happy' : 'sad',
             res.correct ? 'hop' : 'tilt',
-            meme
+            meme,
+            who
         ));
         if (res.correct && res.streak >= 3) toast(SAY.streak.replace('{n}', res.streak));
 
@@ -387,11 +413,13 @@
         var bar = [];
         if (s.improve) {
             nodes.push(say(s.improve === 'yes' ? SAY.improveYes : SAY.improveNo));
-            bar.push(button('Пройти ещё раз', restart, 'ghost'));
+            bar.push(button('↺ Пройти ещё раз', function () { restart(false); }, 'ghost'));
         } else {
             nodes.push(say(SAY.improve));
             bar.push(button('Пока нет', function () { improve(false); }, 'ghost'));
             bar.push(button('Да, хочу', function () { improve(true); }));
+            // Пройти заново можно и не отвечая на вопрос — итог этого раза сохранится.
+            nodes.push(el('div', { class: 'center-link' }, [el('button', { class: 'link', type: 'button', text: '↺ Пройти заново', onclick: function () { restart(false); } })]));
         }
         show(nodes, bar, quiet ? null : 'rise');
         // Полоски потерь заливаются, когда их карточка уже появилась.
@@ -480,11 +508,27 @@
         }, function () { fail(); });
     }
 
-    function restart() {
-        shownBlock = -1;
-        shownProgress = -1;
-        celebrated = false;
-        start(true);
+    /**
+     * «Начать заново»: посреди теста ($ask) — с подтверждением, прохождение
+     * закрывается как брошенное; после итога — сразу, итог остаётся в истории.
+     */
+    function restart(ask) {
+        var go = function () {
+            api(CFG.urls.restart, { platform: tg ? tg.platform : null }).then(function (r) {
+                if (r.status !== 200) return fail();
+                shownBlock = -1;
+                shownProgress = -1;
+                celebrated = false;
+                render(r.data);
+            }, function () { fail(); });
+        };
+        if (!ask) return go();
+        var question = 'Начать диагностику заново? Ответы этого раза не сохранятся.';
+        if (inTelegram && tg.showConfirm && tg.isVersionAtLeast && tg.isVersionAtLeast('6.2')) {
+            tg.showConfirm(question, function (ok) { if (ok) go(); });
+        } else if (window.confirm(question)) {
+            go();
+        }
     }
 
     // ---------- механики ----------
@@ -499,12 +543,18 @@
 
     var RENDER = {
         // Карточка «верно/неверно»: свайп вправо — верно, влево — неверно.
+        // Оформление chat — утверждение приходит сообщением персонажа (from).
         swipe: {
             build: function (q, card) {
                 card.classList.remove('card');
-                var c = el('div', { class: 'swipe-card', text: q.prompt });
+                var chat = q.skin === 'chat' && q.from;
+                var c = el('div', { class: 'swipe-card' + (chat ? ' chat' : '') }, chat
+                    ? [el('div', { class: 'speech-head' }, [avatar(q.from), el('b', { text: nameOf(q.from) })]), el('div', { text: q.prompt })]
+                    : [q.prompt]);
                 var zone = el('div', { class: 'swipe-zone' }, [c]);
                 var answer = null;
+                var yes = chat ? 'Это правда' : 'Верно';
+                var no = chat ? 'Это не так' : 'Неверно';
                 var choose = function (v) {
                     if (ui.locked) return;
                     answer = v;
@@ -529,12 +579,12 @@
                 c.addEventListener('pointerup', end);
                 c.addEventListener('pointercancel', end);
 
-                var hint = el('div', { class: 'swipe-hint' }, [el('span', { text: '← Неверно' }), el('span', { text: 'Верно →' })]);
+                var hint = el('div', { class: 'swipe-hint' }, [el('span', { text: '← ' + no }), el('span', { text: yes + ' →' })]);
                 card.appendChild(zone);
                 card.appendChild(hint);
                 var row = el('div', { class: 'grades' }, [
-                    button('👎 Неверно', function () { choose(false); }, 'ghost'),
-                    button('Верно 👍', function () { choose(true); }, 'ghost'),
+                    button('👎 ' + no, function () { choose(false); }, 'ghost'),
+                    button(yes + ' 👍', function () { choose(true); }, 'ghost'),
                 ]);
                 card.appendChild(row);
                 return {
@@ -545,7 +595,7 @@
                         c.classList.add(sol.value === answer ? 'yes' : 'no');
                         row.remove();
                         hint.remove();
-                        card.appendChild(el('p', { class: 'muted', text: 'Правильно: ' + (sol.value ? 'верно' : 'неверно') }));
+                        card.appendChild(el('p', { class: 'muted', text: 'Правильно: ' + (sol.value ? yes : no).toLowerCase() }));
                     },
                 };
             },
@@ -570,8 +620,8 @@
                     };
                     if (q.skin === 'who') {
                         node = el('div', { class: 'speaker', onclick: onclick }, [
-                            el('span', { class: 'avatar', text: o.name.charAt(0) }),
-                            el('div', { class: 'bubble' }, [el('b', { text: o.name + ': ' }), o.text]),
+                            avatar(o.who, o.name),
+                            el('div', { class: 'bubble' }, [el('b', { text: nameOf(o.who, o.name) + ': ' }), o.text]),
                         ]);
                     } else {
                         node = optionButton(o.text, onclick);
@@ -596,7 +646,9 @@
             },
         },
 
-        // Множество: все верные суждения, «N из M» (pick), ошибки в ответе ученика (fragments).
+        // Множество: все верные суждения, «N из M» (pick), «Помоги выиграть спор»
+        // (debate — просьба персонажа над вариантами), «Ты эксперт ЕГЭ»
+        // (fragments — ответ персонажа, отметить, за что снять баллы).
         multi: {
             build: function (q, card) {
                 var chosen = {};
@@ -606,9 +658,12 @@
                 var updateCounter = function () {
                     counter.textContent = q.pick
                         ? 'Выбрано ' + count() + ' из ' + q.pick
-                        : (q.skin === 'fragments' ? 'Отмечено ошибок: ' + count() : 'Выбери все верные · выбрано ' + count());
+                        : (q.skin === 'fragments' ? 'Снимаешь баллы за: ' + count() : 'Выбери все верные · выбрано ' + count());
                 };
-                var list = el('div', { class: 'options' });
+                if (q.skin === 'fragments' && q.from) {
+                    card.appendChild(el('div', { class: 'speech-head' }, [avatar(q.from), el('b', { text: nameOf(q.from) + ' отвечает:' })]));
+                }
+                var list = el('div', { class: 'options' + (q.skin === 'fragments' ? ' sheet' : '') });
                 q.options.forEach(function (o) {
                     var node = optionButton(o.text, function () {
                         if (ui.locked) return;
@@ -646,6 +701,7 @@
         },
 
         // Корзины: тап по карточке → тап по корзине; тап по разложенной — вернуть.
+        // Оформление cases — карточки как сообщения людей (from на карточке).
         buckets: {
             build: function (q, card) {
                 var placed = {};      // карточка → корзина
@@ -664,14 +720,14 @@
                     refreshSubmit();
                 };
                 q.cards.forEach(function (c) {
-                    cards[c.id] = el('button', { class: 'tag', type: 'button', onclick: function (e) {
+                    cards[c.id] = el('button', { class: 'tag' + (c.from ? ' case' : ''), type: 'button', onclick: function (e) {
                         e.stopPropagation();
                         if (ui.locked) return;
                         if (placed[c.id]) { delete placed[c.id]; selected = null; }
                         else selected = selected === c.id ? null : c.id;
                         haptic();
                         redraw();
-                    } }, [c.text]);
+                    } }, c.from ? [el('b', { text: c.from }), el('span', { text: c.text })] : [c.text]);
                 });
                 var list = el('div', { class: 'buckets' });
                 q.buckets.forEach(function (b) {
@@ -709,60 +765,70 @@
             },
         },
 
-        // Пропуски в тексте: тап по чипу заполняет первый пустой, тап по пропуску — очищает.
-        chips: {
+        // «Найди и исправь»: пост персонажа, спорные слова подчёркнуты одинаково —
+        // какие из них ошибочны, не видно. Тап по слову → выбор из похожих
+        // терминов (текущее слово среди них — «оставить как есть»).
+        fix: {
             build: function (q, card) {
-                var filled = {};      // пропуск → чип
-                var gaps = {};
-                var chipNodes = {};
-                var texts = {};
-                q.chips.forEach(function (c) { texts[c.id] = c.text; });
-                var text = el('div', { class: 'gap-text' });
-                q.text.split(/(\{\{\d+\}\})/).forEach(function (part) {
-                    var m = part.match(/^\{\{(\d+)\}\}$/);
-                    if (!m) return text.appendChild(document.createTextNode(part));
-                    var key = m[1];
-                    gaps[key] = el('span', { class: 'gap', onclick: function () {
-                        if (ui.locked || !filled[key]) return;
-                        delete filled[key];
-                        haptic();
-                        redraw();
-                    } }, [' ']);
-                    text.appendChild(gaps[key]);
-                });
-                var pool = el('div', { class: 'pool' });
-                q.chips.forEach(function (c) {
-                    chipNodes[c.id] = el('button', { class: 'tag', type: 'button', text: c.text, onclick: function () {
-                        if (ui.locked) return;
-                        var empty = Object.keys(gaps).filter(function (k) { return !filled[k]; })[0];
-                        if (!empty) return haptic('bad');
-                        filled[empty] = c.id;
-                        haptic();
-                        redraw();
-                    } });
-                    pool.appendChild(chipNodes[c.id]);
-                });
-                var used = function () { var u = {}; Object.keys(filled).forEach(function (k) { u[filled[k]] = true; }); return u; };
-                var redraw = function () {
-                    var u = used();
-                    Object.keys(gaps).forEach(function (k) {
-                        gaps[k].textContent = filled[k] ? texts[filled[k]] : ' ';
-                        gaps[k].classList.toggle('filled', !!filled[k]);
+                var chosen = {};       // место → слово, только изменённые
+                var touched = false;
+                var open = null;
+                var spots = {};
+                var byId = {};
+                q.spots.forEach(function (s) { byId[s.id] = s; });
+                var word = function (id) { return chosen[id] !== undefined ? chosen[id] : byId[id].shown; };
+
+                var picker = el('div', { class: 'picker', hidden: 'hidden' });
+                var openPicker = function (id) {
+                    if (ui.locked) return;
+                    open = open === id ? null : id;
+                    Object.keys(spots).forEach(function (k) { spots[k].classList.toggle('sel', k === open); });
+                    picker.innerHTML = '';
+                    if (open === null) { picker.hidden = true; return; }
+                    picker.appendChild(el('div', { class: 'counter', text: 'Чем заменить?' }));
+                    var row = el('div', { class: 'pool' });
+                    byId[id].options.forEach(function (opt) {
+                        row.appendChild(el('button', { class: 'tag' + (opt === word(id) ? ' sel' : ''), type: 'button', text: opt === byId[id].shown ? opt + ' (оставить)' : opt, onclick: function () {
+                            if (opt === byId[id].shown) delete chosen[id]; else chosen[id] = opt;
+                            touched = true;
+                            spots[id].textContent = word(id);
+                            spots[id].classList.toggle('changed', chosen[id] !== undefined);
+                            haptic();
+                            openPicker(id);   // закрыть
+                            refreshSubmit();
+                        } }));
                     });
-                    Object.keys(chipNodes).forEach(function (id) { chipNodes[id].style.display = u[id] ? 'none' : ''; });
-                    refreshSubmit();
+                    picker.appendChild(row);
+                    picker.hidden = false;
+                    haptic();
                 };
-                card.appendChild(text);
-                card.appendChild(pool);
+
+                var text = el('div', { class: 'post-text' });
+                q.text.split(/(\{\{\w+\}\})/).forEach(function (part) {
+                    var m = part.match(/^\{\{(\w+)\}\}$/);
+                    if (!m || !byId[m[1]]) return text.appendChild(document.createTextNode(part));
+                    var id = m[1];
+                    spots[id] = el('span', { class: 'spot', role: 'button', tabindex: '0', text: byId[id].shown, onclick: function () { openPicker(id); } });
+                    text.appendChild(spots[id]);
+                });
+
+                var post = el('div', { class: 'post' }, [
+                    q.from ? el('div', { class: 'speech-head' }, [avatar(q.from), el('b', { text: nameOf(q.from) })]) : null,
+                    text,
+                ]);
+                card.appendChild(post);
+                card.appendChild(picker);
+                card.appendChild(el('div', { class: 'counter', text: 'Нажми на подчёркнутое слово, чтобы заменить. Ошибок может быть несколько.' }));
                 return {
-                    complete: function () { return Object.keys(filled).length === Object.keys(gaps).length; },
-                    value: function () { return { gaps: filled }; },
+                    complete: function () { return touched; },
+                    value: function () { return { spots: chosen }; },
                     reveal: function (sol) {
-                        pool.remove();
-                        Object.keys(gaps).forEach(function (k) {
-                            var ok = filled[k] === sol.gaps[k];
-                            gaps[k].classList.add(ok ? 'ok' : 'bad');
-                            if (!ok) gaps[k].appendChild(el('span', { class: 'fix', text: ' → ' + texts[sol.gaps[k]] }));
+                        picker.remove();
+                        Object.keys(spots).forEach(function (id) {
+                            var ok = word(id) === sol.spots[id];
+                            spots[id].classList.remove('sel', 'changed');
+                            spots[id].classList.add(ok ? 'ok' : 'bad');
+                            if (!ok) spots[id].appendChild(el('span', { class: 'fix', text: ' → ' + sol.spots[id] }));
                         });
                     },
                 };
@@ -783,6 +849,8 @@
             render(r.data);
         }, function () { fail(); });
     }
+
+    document.getElementById('restart').addEventListener('click', function () { restart(true); });
 
     if (tg) {
         try {

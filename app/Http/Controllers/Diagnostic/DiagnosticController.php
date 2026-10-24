@@ -43,6 +43,9 @@ class DiagnosticController extends Controller
         return view('diagnostic.app', [
             'mascot' => $placeholder,
             'mascots' => ['idle' => $placeholder, 'happy' => $placeholder, 'think' => $placeholder, 'sad' => $placeholder],
+            'characters' => collect(config('diagnostic.characters'))
+                ->map(fn ($c) => ['name' => $c['name'], 'color' => $c['color'], 'avatar' => $c['avatar'] ? asset($c['avatar']) : null])
+                ->all(),
         ]);
     }
 
@@ -147,6 +150,18 @@ class DiagnosticController extends Controller
         }
 
         return response()->json($runner->state($attempt));
+    }
+
+    /** «Начать заново» — посреди теста или после итога. */
+    public function restart(Request $request, DiagnosticRunner $runner): JsonResponse
+    {
+        $old = $this->attempt($request);
+        $attempt = $runner->restart($old, $request->string('platform')->toString() ?: null);
+        $this->notifyBot($attempt->contact, fn (DiagBot $bot) => $bot->opened($attempt->contact, $attempt, true));
+
+        $response = response()->json($runner->state($attempt) + ['in_telegram' => $attempt->entry === 'miniapp']);
+
+        return $attempt->contact ? $response : $response->withCookie(cookie(self::ANON_COOKIE, $attempt->token, 60 * 24 * 30));
     }
 
     public function improve(Request $request, DiagnosticRunner $runner): JsonResponse

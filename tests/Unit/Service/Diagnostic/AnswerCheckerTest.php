@@ -43,13 +43,26 @@ class AnswerCheckerTest extends TestCase
         $this->assertFalse(AnswerChecker::check($q, ['mapping' => ['c1' => 'x']]));
     }
 
-    public function test_chips_with_numeric_gap_keys(): void
+    public function test_fix_needs_every_spot_right_untouched_counts_as_shown(): void
     {
-        // JSON {"1": "k1"} в PHP — целые ключи; со страницы приходят так же.
-        $q = ['mechanic' => 'chips', 'answers' => json_decode('{"1":"k1","2":"k3"}', true)];
+        $q = ['mechanic' => 'fix', 'spots' => [
+            ['id' => 'a', 'shown' => 'объекты', 'correct' => 'субъекты', 'options' => ['субъекты', 'объекты']],
+            ['id' => 'b', 'shown' => 'рождения', 'correct' => 'рождения', 'options' => ['рождения', '14 лет']],
+        ]];
 
-        $this->assertTrue(AnswerChecker::check($q, ['gaps' => json_decode('{"2":"k3","1":"k1"}', true)]));
-        $this->assertFalse(AnswerChecker::check($q, ['gaps' => ['1' => 'k3', '2' => 'k1']]));
+        $this->assertTrue(AnswerChecker::check($q, ['spots' => ['a' => 'субъекты']]), 'верное место можно не трогать');
+        $this->assertFalse(AnswerChecker::check($q, ['spots' => []]), 'ошибку не исправил');
+        $this->assertFalse(AnswerChecker::check($q, ['spots' => ['a' => 'субъекты', 'b' => '14 лет']]), 'испортил верное');
+        $this->assertSame(['spots' => ['a' => 'субъекты', 'b' => 'рождения']], AnswerChecker::solution($q));
+    }
+
+    public function test_public_view_of_fix_hides_correct_words(): void
+    {
+        $view = AnswerChecker::publicView(['id' => 'x', 'mechanic' => 'fix', 'prompt' => '?',
+            'spots' => [['id' => 'a', 'shown' => 'объекты', 'correct' => 'субъекты', 'options' => ['субъекты', 'объекты']]]]);
+
+        $this->assertArrayNotHasKey('correct', $view['spots'][0]);
+        $this->assertSame('объекты', $view['spots'][0]['shown']);
     }
 
     public function test_public_view_hides_the_key(): void

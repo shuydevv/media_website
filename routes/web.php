@@ -69,6 +69,7 @@ Route::group(['prefix' => 'diag'], function () {
         Route::post('/answer', [$c, 'answer'])->name('diag.answer');
         Route::post('/target', [$c, 'target'])->name('diag.target');
         Route::post('/improve', [$c, 'improve'])->name('diag.improve');
+        Route::post('/restart', [$c, 'restart'])->name('diag.restart');
     });
 });
 Route::group(['namespace' => 'App\Http\Controllers\Post', 'prefix' => 'posts'], function () {

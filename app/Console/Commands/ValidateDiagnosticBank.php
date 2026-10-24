@@ -26,7 +26,7 @@ class ValidateDiagnosticBank extends Command
             return self::FAILURE;
         }
 
-        $errors = $bank->validate(array_keys(config('diagnostic.blocks')));
+        $errors = $bank->validate(array_keys(config('diagnostic.blocks')), array_keys(config('diagnostic.characters')));
         foreach ($errors as $error) {
             $this->line("  ✗ {$error}");
         }

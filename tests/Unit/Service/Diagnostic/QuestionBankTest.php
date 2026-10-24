@@ -11,7 +11,7 @@ class QuestionBankTest extends TestCase
     {
         $bank = QuestionBank::fromFile(dirname(__DIR__, 4).'/docs/diagnostic/questions.json');
 
-        $this->assertSame([], $bank->validate(['society', 'economy', 'social', 'politics', 'law']));
+        $this->assertSame([], $bank->validate(['society', 'economy', 'social', 'politics', 'law'], ['lesha', 'masha', 'kira']));
     }
 
     public function test_rules(): void
@@ -25,17 +25,30 @@ class QuestionBankTest extends TestCase
             'h' => $q('h', 3, 'single', ['options' => [['id' => 'a'], ['id' => 'b']], 'correct' => 'a']),
             'm' => $q('m', 3, 'multi', ['options' => [['id' => 'a']], 'correct' => ['z']]),
             'b' => $q('b', 2, 'buckets', ['buckets' => [['id' => 'x']], 'cards' => [['id' => 'c1'], ['id' => 'c2']], 'mapping' => ['c1' => 'x']]),
-            'c' => $q('c', 2, 'chips', ['text' => '{{1}} и {{2}}', 'chips' => [['id' => 'k']], 'answers' => ['1' => 'k']]),
+            'c' => $q('c', 2, 'chips', ['text' => '{{1}}', 'chips' => [['id' => 'k']], 'answers' => ['1' => 'k']]),
+            'f' => $q('f', 3, 'fix', ['text' => '{{a}} и {{b}}', 'spots' => [
+                ['id' => 'a', 'shown' => 'x', 'correct' => 'y', 'options' => ['x', 'y']],
+                ['id' => 'b', 'shown' => 'x', 'correct' => 'y', 'options' => ['x', 'y']]]]),
+            'w' => $q('w', 1, 'single', ['skin' => 'who', 'from' => 'nobody',
+                'speakers' => [['id' => 'p', 'who' => 'petya', 'text' => '…'], ['id' => 'm', 'who' => 'masha', 'text' => '…']], 'correct' => 'p']),
+            'd' => $q('d', 3, 'multi', ['skin' => 'debate', 'options' => [['id' => 'a']], 'correct' => ['a']]),
+            'k' => $q('k', 2, 'buckets', ['skin' => 'odd', 'buckets' => [['id' => 'x']], 'cards' => [['id' => 'c1']], 'mapping' => ['c1' => 'x']]),
         ]);
 
-        $errors = implode("\n", $bank->validate(['law']));
+        $errors = implode("\n", $bank->validate(['law'], ['masha']));
 
         $this->assertStringContainsString('«s2»: свайп — только на лёгком', $errors);
         $this->assertStringContainsString('«h»: на сложном уровне — только multi', $errors);
         $this->assertStringContainsString('«m»: correct', $errors);
         $this->assertStringContainsString('«b»: mapping', $errors);
-        $this->assertStringContainsString('«c»: в text пропуски', $errors);
-        $this->assertStringContainsString('Блок law, уровень 1: вопросов 0', $errors);
+        $this->assertStringContainsString('«c»: пропуски (chips) больше не используем', $errors);
+        $this->assertStringContainsString('«f»: нужно хотя бы одно верное место', $errors);
+        $this->assertStringContainsString('«w»: нет персонажа petya', $errors);
+        $this->assertStringContainsString('«w»: нет персонажа nobody', $errors);
+        $this->assertStringContainsString('«d»: у оформления debate нужен from', $errors);
+        $this->assertStringContainsString('«k»: у buckets нет оформления odd', $errors);
+        $this->assertStringNotContainsString('«f»: на сложном уровне', $errors, 'fix — можно на сложном');
+        $this->assertStringContainsString('Блок law, уровень 1: вопросов 1', $errors);
     }
 
     public function test_pick_prefers_unseen_and_skips_used(): void

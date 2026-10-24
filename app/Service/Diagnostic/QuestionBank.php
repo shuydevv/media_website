@@ -19,6 +19,21 @@ final class QuestionBank
     /** Сколько вопросов одного уровня может понадобиться за прохождение блока (BlockRun). */
     public const MIN_PER_LEVEL = 2;
 
+    /**
+     * Оформления механик (поле skin; без skin — обычное). Проверка ответа от
+     * оформления не зависит — меняется только подача (ТЗ, раздел 6).
+     */
+    public const SKINS = [
+        'swipe' => ['chat'],                       // «Чат класса»: утверждение — сообщение персонажа (from)
+        'single' => ['case', 'odd', 'who'],         // мини-кейс, «Найди лишнее», «Кто прав?»
+        'multi' => ['fragments', 'debate'],         // «Ты эксперт ЕГЭ», «Помоги выиграть спор»
+        'buckets' => ['cases'],                     // «Разрули ситуации»: карточки — сообщения людей
+        'fix' => [],
+    ];
+
+    /** Механики сложного уровня — где угадать почти нельзя. */
+    public const HARD_MECHANICS = ['multi', 'fix'];
+
     /** @param  array<string, array>  $questions  id → вопрос */
     public function __construct(private readonly array $questions)
     {
@@ -87,9 +102,10 @@ final class QuestionBank
 
     /**
      * @param  string[]  $blocks  ключи блоков из конфига
+     * @param  string[]|null  $characters  ключи персонажей (config diagnostic.characters); null — не проверять
      * @return string[] ошибки; пусто — банк годится
      */
-    public function validate(array $blocks): array
+    public function validate(array $blocks, ?array $characters = null): array
     {
         $errors = [];
         $count = [];
@@ -109,6 +125,11 @@ final class QuestionBank
                 $errors[] = "{$at}: уровень должен быть 1, 2 или 3";
             }
             $mechanic = $q['mechanic'] ?? '';
+            if ($mechanic === 'chips') {
+                $errors[] = "{$at}: пропуски (chips) больше не используем — угадываются; замените на fix («Найди и исправь»)";
+
+                continue;
+            }
             if (! in_array($mechanic, AnswerChecker::MECHANICS, true)) {
                 $errors[] = "{$at}: неизвестная механика {$mechanic}";
 
@@ -120,8 +141,22 @@ final class QuestionBank
             if ($mechanic === 'swipe' && $level !== BlockRun::EASY) {
                 $errors[] = "{$at}: свайп — только на лёгком уровне";
             }
-            if ($level === BlockRun::HARD && $mechanic !== 'multi') {
-                $errors[] = "{$at}: на сложном уровне — только multi";
+            if ($level === BlockRun::HARD && ! in_array($mechanic, self::HARD_MECHANICS, true)) {
+                $errors[] = "{$at}: на сложном уровне — только multi или fix";
+            }
+            $skin = $q['skin'] ?? null;
+            if ($skin !== null && ! in_array($skin, self::SKINS[$mechanic], true)) {
+                $errors[] = "{$at}: у {$mechanic} нет оформления {$skin}";
+            }
+            if ($characters !== null) {
+                foreach ($this->characterRefs($q) as $ref) {
+                    if (! in_array($ref, $characters, true)) {
+                        $errors[] = "{$at}: нет персонажа {$ref} (config diagnostic.characters)";
+                    }
+                }
+            }
+            if (in_array($skin, ['chat', 'debate', 'fragments'], true) && ! isset($q['from'])) {
+                $errors[] = "{$at}: у оформления {$skin} нужен from — чьё это сообщение";
             }
 
             foreach ($this->mechanicErrors($q) as $error) {
@@ -153,6 +188,9 @@ final class QuestionBank
                 return is_bool($q['answer'] ?? null) ? [] : ['answer должен быть true или false'];
 
             case 'single':
+                if (($q['skin'] ?? null) === 'who' && array_filter((array) ($q['speakers'] ?? []), fn ($sp) => ! isset($sp['who']) && ! isset($sp['name']))) {
+                    return ['у каждого в speakers нужен who (персонаж) или name'];
+                }
                 $options = ($q['skin'] ?? null) === 'who' ? $ids('speakers') : $ids('options');
 
                 return in_array((string) ($q['correct'] ?? ''), $options, true) && count($options) >= 2
@@ -182,18 +220,48 @@ final class QuestionBank
                 return $keys === $cards && array_diff(array_map('strval', $mapping), $buckets) === []
                     ? [] : ['mapping должен разложить каждую карточку в существующую корзину'];
 
-            case 'chips':
-                preg_match_all('/\{\{(\d+)\}\}/', (string) ($q['text'] ?? ''), $m);
-                $gaps = $m[1];
-                $answers = (array) ($q['answers'] ?? []);
-                $keys = array_map('strval', array_keys($answers));
-                sort($gaps);
-                sort($keys);
+            case 'fix':
+                preg_match_all('/\{\{(\w+)\}\}/u', (string) ($q['text'] ?? ''), $m);
+                $places = $m[1];
+                $spots = (array) ($q['spots'] ?? []);
+                $spotIds = $ids('spots');
+                sort($places);
+                sort($spotIds);
+                if ($places === [] || $places !== $spotIds) {
+                    return ['в text места {{id}}, в spots — по одному на каждое место'];
+                }
+                $errors = [];
+                foreach ($spots as $spot) {
+                    $options = array_map('strval', (array) ($spot['options'] ?? []));
+                    if (count($options) < 2 || ! in_array((string) ($spot['shown'] ?? ''), $options, true) || ! in_array((string) ($spot['correct'] ?? ''), $options, true)) {
+                        $errors[] = "место {$spot['id']}: shown и correct должны быть среди options (хотя бы 2 варианта)";
+                    }
+                }
+                // Без ошибки в тексте искать нечего; без верных мест — ошибки видны сразу.
+                $wrong = count(array_filter($spots, fn ($sp) => ($sp['shown'] ?? null) !== ($sp['correct'] ?? null)));
+                if ($wrong === 0) {
+                    $errors[] = 'хотя бы одно место должно быть с ошибкой (shown ≠ correct)';
+                }
+                if ($wrong === count($spots)) {
+                    $errors[] = 'нужно хотя бы одно верное место (shown = correct) — иначе ошибки не надо искать';
+                }
 
-                return $gaps !== [] && $gaps === $keys && array_diff(array_map('strval', $answers), $ids('chips')) === []
-                    ? [] : ['в text пропуски {{N}}, answers — chip для каждого пропуска'];
+                return $errors;
         }
 
         return [];
+    }
+
+    /** @return string[] ключи персонажей, на которых ссылается вопрос */
+    private function characterRefs(array $q): array
+    {
+        $refs = array_filter([$q['from'] ?? null, $q['explain_by'] ?? null]);
+        foreach ((array) ($q['speakers'] ?? []) as $sp) {
+            if (isset($sp['who'])) {
+                $refs[] = $sp['who'];
+            }
+        }
+
+        return array_values(array_unique(array_map('strval', $refs)));
     }
 }

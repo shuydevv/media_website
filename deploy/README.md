@@ -245,7 +245,10 @@ cd /var/www/poltav/current && php artisan queue:retry all
 
    `APP_URL` должен быть боевым https-доменом — из него строятся адрес
    webhook-а и персональные ссылки на урок `/go/…`. После правки `.env` —
-   `php artisan config:cache` и `sudo systemctl restart poltav-queue`.
+   `deploy`: релиз держит свою **копию** `shared/.env` (deploy.sh копирует её
+   при выкладке), так что `config:cache` в `current/` новых строк не увидит.
+   Дописывать в `shared/.env` — через `>>`, не пересоздавая файл (права
+   `deploy:www-data 640`).
 
 5. **Webhook:** `php artisan telegram:webhook` — заодно ставит описание бота над кнопкой «Запустить» (`config/telegram_funnel.php`, `profile`; после правки текста — запустить команду ещё раз). Состояние —
    `telegram:webhook --info`, снять — `--delete`.
@@ -276,7 +279,8 @@ cd /var/www/poltav/current && php artisan queue:retry all
    ```
 
    `DIAG_ALLOW_ANONYMOUS` на проде не ставить: без Telegram тест не пускает.
-   Потом — `php artisan config:cache` и `sudo systemctl restart poltav-queue`.
+   Потом — `deploy` (релиз забирает копию `shared/.env` только при выкладке,
+   см. раздел 8, шаг 4).
 4. **Webhook:** `php artisan telegram:webhook diag` — адрес
    `/api/telegram/webhook/diag`, заодно описание бота (`config/telegram_diag.php`,
    `profile`).

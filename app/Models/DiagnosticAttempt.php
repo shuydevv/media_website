@@ -16,6 +16,9 @@ class DiagnosticAttempt extends Model
 
     public const STATUS_FINISHED = 'finished';
 
+    /** Начал заново посреди теста — это прохождение брошено (DiagnosticRunner::restart). */
+    public const STATUS_ABANDONED = 'abandoned';
+
     protected $guarded = ['id'];
 
     protected $casts = [
