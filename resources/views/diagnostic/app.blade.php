@@ -91,8 +91,12 @@
         .chip-guess.on { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
 
         .options { display: grid; gap: 8px; }
+        /* Вопрос — без карточки, прямо на экране; плашки — у вариантов. */
+        .q { margin: 4px 0 12px; }
+        .q > .prompt { font-size: 18px; margin: 4px 0 14px; }
+        .q > .task { margin: -6px 0 14px; }
         .opt {
-            text-align: left; border: 2px solid transparent; background: var(--bg); border-radius: 12px; padding: 12px 14px;
+            text-align: left; border: 2px solid transparent; background: var(--card); border-radius: 12px; padding: 12px 14px;
             cursor: pointer; transition: border-color .15s, background .15s;
         }
         .opt.sel { border-color: var(--accent); }
@@ -107,7 +111,7 @@
 
         /* «Кто прав?» — реплики персонажей. */
         .speaker { display: flex; gap: 10px; align-items: flex-start; }
-        .speaker .bubble { background: var(--bg); flex: 1; }
+        .speaker .bubble { background: var(--card); flex: 1; }
         .speaker.sel .bubble { outline: 2px solid var(--accent); }
         .speaker.ok .bubble { outline: 2px solid var(--ok); background: var(--ok-bg); }
         .speaker.bad .bubble { outline: 2px solid var(--bad); background: var(--bad-bg); }
@@ -127,7 +131,7 @@
         /* Корзины и чипы. */
         .pool { display: flex; flex-wrap: wrap; gap: 8px; min-height: 10px; margin: 6px 0 12px; }
         .tag {
-            border: 2px solid var(--line); background: var(--bg); border-radius: 10px; padding: 8px 10px; font-size: 14px; cursor: pointer;
+            border: 2px solid var(--line); background: var(--card); border-radius: 10px; padding: 8px 10px; font-size: 14px; cursor: pointer;
             text-align: left;
         }
         .tag.sel { border-color: var(--accent); }
@@ -217,6 +221,12 @@
 
         .meme { display: block; max-width: 100%; border-radius: 12px; margin-top: 8px; }
 
+        /* Заставка блока: тонкая полоска до автоперехода к заданию (длительность — из JS). */
+        .countdown { flex: 1; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; margin: 8px 0; }
+        .countdown i { display: block; height: 100%; width: 100%; background: var(--accent); transform-origin: left;
+            animation: countdown linear both; }
+        @keyframes countdown { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
         /* «Заново» в шапке и под итогом — неброской ссылкой. */
         .top-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
         .link { border: 0; background: none; padding: 6px 0; color: var(--hint); font-size: 13px; cursor: pointer; }
@@ -229,14 +239,22 @@
         /* place-items сбросить: свежий Chrome применяет justify-items и к блочной вёрстке. */
         .swipe-card.chat { display: block; place-items: normal; text-align: left; font-weight: 500; }
         .swipe-card.chat .speech-head { font-weight: 600; }
-        .card > .speaker { margin-bottom: 12px; }
-        .options.sheet { background: var(--bg); border-radius: 12px; padding: 6px; gap: 2px; }
-        .options.sheet .opt { border-radius: 8px; }
+        .q > .speaker { margin-bottom: 14px; }
+        /* Ответ персонажа и пост — цитатой: полоска его цвета слева, без подложки. */
+        .options.sheet { gap: 0; padding-left: 12px; border-left: 3px solid var(--quote, var(--accent)); }
+        .options.sheet .opt { background: none; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: 12px 4px; }
+        .options.sheet .opt:last-child { border-bottom: 0; }
+        .options.sheet .opt.sel { background: var(--bad-bg); }
+        .options.sheet .opt.ok { background: var(--ok-bg); }
+        .options.sheet .opt.bad { background: var(--bad-bg); }
+        .options.sheet .opt.missed { background: none; box-shadow: inset 3px 0 0 var(--ok); }
+        .avatar.emoji { font-size: 17px; }
+        .say .avatar.emoji { font-size: 24px; }
         .tag.case { display: flex; flex-direction: column; gap: 2px; }
         .tag.case b { font-size: 12px; color: var(--hint); font-weight: 600; }
 
         /* «Найди и исправь»: все спорные слова подчёркнуты одинаково. */
-        .post { background: var(--bg); border-radius: 14px; padding: 12px 14px; }
+        .post { padding: 2px 0 2px 12px; border-left: 3px solid var(--quote, var(--accent)); }
         .post-text { line-height: 1.9; }
         .spot { border-bottom: 2px dotted var(--accent); cursor: pointer; padding: 0 1px; border-radius: 4px 4px 0 0; }
         .spot.sel { background: color-mix(in srgb, var(--accent) 15%, transparent); }

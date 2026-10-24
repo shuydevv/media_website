@@ -11,7 +11,7 @@ class QuestionBankTest extends TestCase
     {
         $bank = QuestionBank::fromFile(dirname(__DIR__, 4).'/docs/diagnostic/questions.json');
 
-        $this->assertSame([], $bank->validate(['society', 'economy', 'social', 'politics', 'law'], ['lesha', 'masha', 'kira']));
+        $this->assertSame([], $bank->validate(['society', 'economy', 'social', 'politics', 'law'], ['squid', 'turtle', 'puffer']));
     }
 
     public function test_rules(): void
@@ -30,12 +30,12 @@ class QuestionBankTest extends TestCase
                 ['id' => 'a', 'shown' => 'x', 'correct' => 'y', 'options' => ['x', 'y']],
                 ['id' => 'b', 'shown' => 'x', 'correct' => 'y', 'options' => ['x', 'y']]]]),
             'w' => $q('w', 1, 'single', ['skin' => 'who', 'from' => 'nobody',
-                'speakers' => [['id' => 'p', 'who' => 'petya', 'text' => '…'], ['id' => 'm', 'who' => 'masha', 'text' => '…']], 'correct' => 'p']),
+                'speakers' => [['id' => 'p', 'who' => 'petya', 'text' => '…'], ['id' => 'm', 'who' => 'turtle', 'text' => '…']], 'correct' => 'p']),
             'd' => $q('d', 3, 'multi', ['skin' => 'debate', 'options' => [['id' => 'a']], 'correct' => ['a']]),
             'k' => $q('k', 2, 'buckets', ['skin' => 'odd', 'buckets' => [['id' => 'x']], 'cards' => [['id' => 'c1']], 'mapping' => ['c1' => 'x']]),
         ]);
 
-        $errors = implode("\n", $bank->validate(['law'], ['masha']));
+        $errors = implode("\n", $bank->validate(['law'], ['turtle']));
 
         $this->assertStringContainsString('«s2»: свайп — только на лёгком', $errors);
         $this->assertStringContainsString('«h»: на сложном уровне — только multi', $errors);

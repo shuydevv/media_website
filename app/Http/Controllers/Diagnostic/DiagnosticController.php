@@ -36,15 +36,18 @@ class DiagnosticController extends Controller
 
     public function page()
     {
-        // Рыба по настроению: idle — обычная, happy — верно/итог, think —
-        // вопрос/вводный экран, sad — ошибка/точка роста. Пока везде заглушка.
-        $placeholder = asset('img/fish-level-2.svg');
+        // Ведущая — маленькая акула платформы (арт — public/img/mascot/level-2,
+        // для диагностики — обрезанные лёгкие копии в img/diagnostic): idle —
+        // обычная, happy — верно/итог, think — вопрос/вводный экран, sad —
+        // ошибка/точка роста.
+        $shark = fn (string $mood) => asset("img/diagnostic/shark-{$mood}.webp");
 
         return view('diagnostic.app', [
-            'mascot' => $placeholder,
-            'mascots' => ['idle' => $placeholder, 'happy' => $placeholder, 'think' => $placeholder, 'sad' => $placeholder],
+            'mascot' => $shark('idle'),
+            'mascots' => ['idle' => $shark('idle'), 'happy' => $shark('happy'), 'think' => $shark('think'), 'sad' => $shark('sad')],
             'characters' => collect(config('diagnostic.characters'))
-                ->map(fn ($c) => ['name' => $c['name'], 'color' => $c['color'], 'avatar' => $c['avatar'] ? asset($c['avatar']) : null])
+                ->map(fn ($c) => ['name' => $c['name'], 'emoji' => $c['emoji'] ?? null, 'color' => $c['color'],
+                    'avatar' => $c['avatar'] ? asset($c['avatar']) : null])
                 ->all(),
         ]);
     }

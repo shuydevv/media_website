@@ -8,7 +8,7 @@
  * Экраны: profile → [вводный экран блока] → question → feedback → … →
  * target → result. Механики вопросов — RENDER ниже (swipe, single, multi,
  * buckets, fix), у каждой: нарисовать, собрать ответ, подсветить решение.
- * Персонажи вопросов (Лёха, Маша, Кира — config diagnostic.characters) —
+ * Персонажи вопросов (кальмар Кеша, черепаха Тося, фугу Пыша — config diagnostic.characters) —
  * CFG.characters; пояснение после ответа может говорить персонаж (explain_by).
  *
  * Движение — сдержанное, по одному короткому на событие: карточка вопроса
@@ -29,10 +29,10 @@
     var $bar = document.getElementById('bar');
     var $top = document.getElementById('top');
 
-    // Реплики маскота — ЗАГЛУШКИ, согласовать с автором (правила голоса
-    // рыбы — config/fish_speech.php: без рода, не стыдим, коротко).
+    // Реплики ведущей-акулы — ЗАГЛУШКИ, согласовать с автором (правила голоса
+    // маскота — config/fish_speech.php: без рода, не стыдим, коротко).
     var SAY = {
-        hello: 'Привет! Я помогу понять, где ты уже крут в обществознании, а где можно добрать баллы 🐟\nЭто займёт минут 10.',
+        hello: 'Привет! Я помогу понять, где ты уже крут в обществознании, а где можно добрать баллы 🦈\nЭто займёт минут 10.',
         grade: 'Для начала: ты в каком классе?',
         go: 'Поехали! Отвечай как знаешь — если сомневаешься, нажми «🎲 Наугад» перед ответом.',
         ok: ['Верно! ✅', 'Точно! ✅', 'Есть! ✅'],
@@ -56,6 +56,8 @@
     var pendingExplainMs = null;
     var shownProgress = -1;   // какой блок уже залит в прогрессе — чтобы новый заливался плавно
     var celebrated = false;   // конфетти — один раз на итог
+    var introTimer = null;    // автопереход с заставки блока к заданию
+    var introSkip = null;     // тап по заставке — сразу дальше
 
     var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -108,12 +110,13 @@
         return c ? c.name : (fallback || '');
     }
 
-    /** Аватар персонажа: картинка, если есть, иначе кружок с буквой его цвета. */
+    /** Аватар персонажа: картинка, если есть; иначе эмодзи (или буква) на кружке его цвета. */
     function avatar(id, fallbackName) {
         var c = character(id);
         if (c && c.avatar) return el('img', { class: 'avatar', src: c.avatar, alt: '' });
         var name = c ? c.name : (fallbackName || '?');
-        return el('span', { class: 'avatar', style: c && c.color ? 'background:' + c.color : null, text: name.charAt(0) });
+        return el('span', { class: 'avatar' + (c && c.emoji ? ' emoji' : ''), style: c && c.color ? 'background:' + c.color : null,
+            text: c && c.emoji ? c.emoji : name.charAt(0) });
     }
 
     function say(text, tone, mood) {
@@ -162,6 +165,9 @@
 
     /** enter — как появляется экран: 'slide' (вопрос), 'rise' (по очереди снизу) или ничего. */
     function show(nodes, barNodes, enter) {
+        // Новый экран отменяет переход с заставки блока (например, «Заново» во время неё).
+        clearTimeout(introTimer);
+        if (introSkip) { $screen.removeEventListener('click', introSkip); introSkip = null; }
         $screen.innerHTML = '';
         var i = 0;
         nodes.forEach(function (n) {
@@ -232,6 +238,8 @@
         Object.keys(s.grades).forEach(function (key) {
             grades.appendChild(button(s.grades[key], function () {
                 haptic();
+                // Один ответ: на медленной сети второй тап не шлёт второй запрос.
+                grades.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
                 api(CFG.urls.profile, { grade: key }).then(function (r) {
                     if (r.status !== 200) return fail();
                     render(r.data);
@@ -245,6 +253,15 @@
         var p = s.progress;
         var block = p.blocks[p.index];
         var first = p.index === 0;
+        // Без лишнего клика: заставка держится немного и сама переходит к
+        // заданию; на первом блоке дольше — там совет про «Наугад». Тап по
+        // экрану — сразу дальше. Полоска внизу показывает, сколько осталось.
+        var ms = first ? 3500 : 1800;
+        var go = function () {
+            shownBlock = p.index;
+            renderQuestion(s.question);   // show() внутри снимет таймер и тап
+        };
+        var fill = el('i', { style: 'animation-duration:' + ms + 'ms' });
         show([
             el('div', { class: 'center' }, [
                 mascot('think', 'bob'),
@@ -252,13 +269,18 @@
                 el('div', { class: 'big', text: block.title }),
             ]),
             first ? say(SAY.go) : null,
-        ], [button('Поехали', function () { shownBlock = p.index; renderQuestion(s.question); })], 'rise');
+        ], [el('div', { class: 'countdown' }, [fill])], 'rise');
+        introSkip = go;
+        $screen.addEventListener('click', go);
+        introTimer = setTimeout(go, ms);
     }
 
     function renderQuestion(q) {
         ui = { q: q, guess: false, shownAt: Date.now(), locked: false };
         var mech = RENDER[q.mechanic];
-        var card = el('div', { class: 'card' });
+        // Без карточки-контейнера: вопрос один на экране, лишняя рамка только
+        // отнимает ширину. Плашки — у того, на что нажимают.
+        var card = el('div', { class: 'q' });
         if (q.character) {
             card.appendChild(el('div', { class: 'character' }, [el('span', { class: 'avatar', text: q.character.charAt(0) }), q.character]));
         }
@@ -309,9 +331,13 @@
     function renderFeedback(res) {
         haptic(res.correct ? 'ok' : 'bad');
         ui.api.reveal(res.solution);
-        // Свайп-карточка без рамки .card — анимируем саму карточку.
-        var target = ui.card.querySelector('.swipe-card') || ui.card;
-        play(target, res.correct ? 'flash-ok' : 'shake');
+        // Верно — вспышка у свайп-карточки или у верных плашек; неверно — встряска вопроса.
+        if (res.correct) {
+            var lit = ui.card.querySelector('.swipe-card') ? [ui.card.querySelector('.swipe-card')] : [].slice.call(ui.card.querySelectorAll('.ok'));
+            lit.forEach(function (n) { play(n, 'flash-ok'); });
+        } else {
+            play(ui.card, 'shake');
+        }
 
         // Мем — картинка из банка (поле meme: путь от корня сайта или https-адрес).
         var meme = typeof res.meme === 'string' && /^(https:\/\/|\/)/.test(res.meme) ? el('img', { class: 'meme', src: res.meme, alt: '' }) : null;
@@ -663,7 +689,8 @@
                 if (q.skin === 'fragments' && q.from) {
                     card.appendChild(el('div', { class: 'speech-head' }, [avatar(q.from), el('b', { text: nameOf(q.from) + ' отвечает:' })]));
                 }
-                var list = el('div', { class: 'options' + (q.skin === 'fragments' ? ' sheet' : '') });
+                var list = el('div', { class: 'options' + (q.skin === 'fragments' ? ' sheet' : ''),
+                    style: q.skin === 'fragments' && character(q.from) ? '--quote:' + character(q.from).color : null });
                 q.options.forEach(function (o) {
                     var node = optionButton(o.text, function () {
                         if (ui.locked) return;
@@ -812,7 +839,7 @@
                     text.appendChild(spots[id]);
                 });
 
-                var post = el('div', { class: 'post' }, [
+                var post = el('div', { class: 'post', style: character(q.from) ? '--quote:' + character(q.from).color : null }, [
                     q.from ? el('div', { class: 'speech-head' }, [avatar(q.from), el('b', { text: nameOf(q.from) })]) : null,
                     text,
                 ]);
