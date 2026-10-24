@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin\Telegram\Contacts;
 use App\Http\Controllers\Controller;
 use App\Models\TelegramContact;
 use App\Service\Telegram\AdminTopics;
-use App\Service\Telegram\TelegramApi;
 use App\Service\Telegram\TelegramApiException;
+use App\Service\Telegram\TelegramBots;
 
 /**
  * «Начать диалог» с тем, кто ничего не писал: заводим ему тему в
@@ -23,7 +23,7 @@ class StartDialogController extends Controller
             return back()->with('error', 'Человек заблокировал бота — написать ему через бота нельзя.');
         }
 
-        $topics = new AdminTopics(TelegramApi::funnel());
+        $topics = new AdminTopics(TelegramBots::api($contact->bot));
         $existed = (bool) $contact->topic_id;
 
         try {

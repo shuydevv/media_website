@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
+ * Сценарий бота lesson (TelegramBots). Он же «главный» бот в общей
+ * админ-группе: отвечает на /chatid и /emoji, ведёт служебные темы.
+ *
  * Воронка пробного урока (исходный путь — «TG инструкция.md»):
  *
  *   /start <урок>_<метка> → приветствие с уроком, через ~5 с бонусный
@@ -46,8 +49,11 @@ use Illuminate\Support\Str;
  * отправки по задачам RunFunnelStep — по одной на задачу, чтобы повтор
  * упавшей не слал человеку дубль.
  */
-class FunnelBot
+class FunnelBot implements BotScenario
 {
+    /** Контакты этого сценария — telegram_contacts.bot (TelegramBots). */
+    public const BOT = TelegramBots::LESSON;
+
     /** Поле с моментом отправки → шаг; разбирает SendTelegramReminders. */
     public const DUE_STEPS = [
         'reminder_due_at' => ['reminder', []],
@@ -66,9 +72,14 @@ class FunnelBot
 
     public static function make(): self
     {
-        $api = TelegramApi::funnel();
+        $api = TelegramApi::forBot(self::BOT);
 
         return new self($api, new AdminTopics($api));
+    }
+
+    public function dueSteps(): array
+    {
+        return self::DUE_STEPS;
     }
 
     public function handleUpdate(array $update): void
@@ -324,7 +335,7 @@ class FunnelBot
         // Пишет без /start — например, запускал бота до того, как появилась
         // эта таблица. Заводим контакт молча, без приветствия: человек уже
         // разговаривает, дальше — живой ответ.
-        $contact = TelegramContact::where('telegram_user_id', $from['id'])->first()
+        $contact = TelegramContact::forBot(self::BOT)->where('telegram_user_id', $from['id'])->first()
             ?? $this->createContact($from, config('telegram_funnel.default_lesson'), null);
 
         $now = now();
@@ -359,7 +370,7 @@ class FunnelBot
         }
 
         $parsed = StartParam::parse($param, FunnelLessons::codes(), config('telegram_funnel.default_lesson'));
-        $contact = TelegramContact::where('telegram_user_id', $from['id'])->first();
+        $contact = TelegramContact::forBot(self::BOT)->where('telegram_user_id', $from['id'])->first();
 
         if (! $contact) {
             $contact = $this->createContact($from, $parsed['lesson'], $parsed['source']);
@@ -392,7 +403,7 @@ class FunnelBot
      */
     private function handleLeadStart(array $from, SiteLead $lead): void
     {
-        $contact = TelegramContact::where('telegram_user_id', $from['id'])->first();
+        $contact = TelegramContact::forBot(self::BOT)->where('telegram_user_id', $from['id'])->first();
         if (! $contact) {
             $contact = $this->createContact($from, config('telegram_funnel.default_lesson'), 'lead', false);
         } else {
@@ -433,6 +444,7 @@ class FunnelBot
     {
         $now = now();
         $contact = TelegramContact::create([
+            'bot' => self::BOT,
             'telegram_user_id' => $from['id'],
             'username' => $from['username'] ?? null,
             'first_name' => $from['first_name'] ?? null,
@@ -461,7 +473,7 @@ class FunnelBot
     private function handleCallback(array $callback): void
     {
         $data = $callback['data'] ?? '';
-        $contact = TelegramContact::where('telegram_user_id', $callback['from']['id'] ?? 0)->first();
+        $contact = TelegramContact::forBot(self::BOT)->where('telegram_user_id', $callback['from']['id'] ?? 0)->first();
 
         // up/down — кнопки старых сообщений, до трёх уровней оценки.
         if (! $contact || ! preg_match('/^rate:(great|good|bad|up|down)(:bonus)?$/', $data, $m)) {
@@ -514,7 +526,7 @@ class FunnelBot
         if (($update['chat']['type'] ?? null) !== 'private') {
             return;
         }
-        $contact = TelegramContact::where('telegram_user_id', $update['from']['id'] ?? 0)->first();
+        $contact = TelegramContact::forBot(self::BOT)->where('telegram_user_id', $update['from']['id'] ?? 0)->first();
         if (! $contact) {
             return;
         }
@@ -558,7 +570,9 @@ class FunnelBot
             return;
         }
 
-        $contact = TelegramContact::where('topic_id', $threadId)->first();
+        // Группа общая для всех ботов: тема другого бота — не наша, ответ
+        // туда отправит тот бот, которого этот человек запускал.
+        $contact = TelegramContact::forBot(self::BOT)->where('topic_id', $threadId)->first();
         if (! $contact) {
             return;
         }

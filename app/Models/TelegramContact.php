@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Service\Telegram\TelegramBots;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Человек, запустивший бота воронки. См. миграции create_telegram_funnel_tables,
+ * Человек, запустивший одного из ботов (поле bot — App\Service\Telegram\TelegramBots;
+ * в двух ботах — два контакта). Почти все поля ниже — воронки пробного урока
+ * (bot = lesson). См. миграции create_telegram_funnel_tables,
  * add_watch_and_three_level_rating_to_telegram_contacts и App\Service\Telegram\FunnelBot.
  *
  * У контакта два урока — «слота»: основной (lesson, на который пришёл из
@@ -64,6 +67,23 @@ class TelegramContact extends Model
     public function messages(): HasMany
     {
         return $this->hasMany(TelegramMessage::class);
+    }
+
+    /** Прохождения диагностики — у контактов бота diag. */
+    public function diagnosticAttempts(): HasMany
+    {
+        return $this->hasMany(DiagnosticAttempt::class);
+    }
+
+    public function latestDiagnostic(): ?DiagnosticAttempt
+    {
+        return $this->diagnosticAttempts()->latest('id')->first();
+    }
+
+    /** Контакты одного бота (App\Service\Telegram\TelegramBots). */
+    public function scopeForBot(Builder $q, string $bot): Builder
+    {
+        return $q->where('bot', $bot);
     }
 
     /**
@@ -139,6 +159,10 @@ class TelegramContact extends Model
      */
     public function statusEmoji(): string
     {
+        if ($this->bot === TelegramBots::DIAG) {
+            return $this->diagStatusEmoji();
+        }
+
         return match (true) {
             $this->blocked_at !== null => '⛔',
             $this->awaitingReply() => '💬',
@@ -146,6 +170,22 @@ class TelegramContact extends Model
             $this->ratedAny() => '👎',
             $this->watchedAny() => '▶️',
             $this->opened_lesson_at !== null || $this->opened_bonus_at !== null => '👀',
+            default => '🆕',
+        };
+    }
+
+    /** Статус контакта бота диагностики — по последнему прохождению. */
+    private function diagStatusEmoji(): string
+    {
+        $attempt = $this->latestDiagnostic();
+
+        return match (true) {
+            $this->blocked_at !== null => '⛔',
+            $this->awaitingReply() => '💬',
+            $attempt?->improve === 'yes' => '🔥',
+            $attempt?->improve === 'no' => '🙅',
+            $attempt?->isFinished() === true => '✅',
+            $attempt !== null => '▶️',
             default => '🆕',
         };
     }
@@ -194,6 +234,20 @@ class TelegramContact extends Model
         };
     }
 
+    /** Отложенные сообщения бота диагностики (DiagBot::DUE_STEPS) — подписи для админки. */
+    public const DIAG_SCHEDULE_LABELS = [
+        'question_due_at' => 'вопрос от Александра после «Да, хочу»',
+        'nudge_due_at' => 'напоминание «начал и бросил»',
+        'reminder_due_at' => '«Получилось пройти диагностику?»',
+        'followup_due_at' => 'второе касание',
+    ];
+
+    /** @return array<string, string> поле *_due_at → подпись, для бота этого контакта */
+    public function scheduleLabels(): array
+    {
+        return $this->bot === TelegramBots::DIAG ? self::DIAG_SCHEDULE_LABELS : self::SCHEDULE_LABELS;
+    }
+
     /** Отложенные сообщения (поля *_due_at, FunnelBot::DUE_STEPS) — подписи для админки. */
     public const SCHEDULE_LABELS = [
         'question_due_at' => 'вопрос от Александра после оценки',
@@ -212,7 +266,7 @@ class TelegramContact extends Model
     public function nextScheduled(): ?array
     {
         $next = null;
-        foreach (self::SCHEDULE_LABELS as $field => $label) {
+        foreach ($this->scheduleLabels() as $field => $label) {
             if ($this->{$field} !== null && ($next === null || $this->{$field}->lt($next[1]))) {
                 $next = [$label, $this->{$field}];
             }

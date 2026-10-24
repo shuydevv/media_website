@@ -2,26 +2,34 @@
 
 namespace App\Console\Commands;
 
-use App\Service\Telegram\TelegramApi;
 use App\Service\Telegram\TelegramApiException;
+use App\Service\Telegram\TelegramBots;
 use Illuminate\Console\Command;
 
 /**
- * Регистрация webhook-а бота воронки в Telegram. Запускается руками один раз
- * на сервере (и повторно — если поменялся домен или секрет). Адрес берётся
- * из APP_URL, поэтому там должен быть боевой https-домен.
+ * Регистрация webhook-а бота (TelegramBots: lesson — воронка, по умолчанию;
+ * diag — диагностика) в Telegram. Запускается руками один раз на сервере (и
+ * повторно — если поменялся домен или секрет). Адрес берётся из APP_URL,
+ * поэтому там должен быть боевой https-домен.
  */
 class TelegramWebhook extends Command
 {
-    protected $signature = 'telegram:webhook {--info : только показать текущее состояние} {--delete : снять webhook}';
+    protected $signature = 'telegram:webhook {bot=lesson : ключ бота — lesson или diag} {--info : только показать текущее состояние} {--delete : снять webhook}';
 
-    protected $description = 'Зарегистрировать webhook бота воронки (@poltavskiy_ege_bot) в Telegram';
+    protected $description = 'Зарегистрировать webhook бота (воронки @poltavskiy_ege_bot или диагностики) в Telegram';
 
     public function handle(): int
     {
-        $api = TelegramApi::funnel();
+        $bot = (string) $this->argument('bot');
+        if (! TelegramBots::exists($bot)) {
+            $this->error("Нет бота {$bot}. Есть: ".implode(', ', TelegramBots::keys()));
+
+            return self::FAILURE;
+        }
+
+        $api = TelegramBots::api($bot);
         if (! $api->isConfigured()) {
-            $this->error('TELEGRAM_FUNNEL_BOT_TOKEN не задан в .env');
+            $this->error(TelegramBots::env($bot, 'BOT_TOKEN').' не задан в .env');
 
             return self::FAILURE;
         }
@@ -31,14 +39,15 @@ class TelegramWebhook extends Command
                 $api->call('deleteWebhook');
                 $this->info('Webhook снят.');
             } elseif (! $this->option('info')) {
-                $secret = (string) config('services.telegram_funnel.webhook_secret');
+                $secret = TelegramBots::webhookSecret($bot);
                 if ($secret === '') {
-                    $this->error('TELEGRAM_FUNNEL_WEBHOOK_SECRET не задан в .env');
+                    $this->error(TelegramBots::env($bot, 'WEBHOOK_SECRET').' не задан в .env');
 
                     return self::FAILURE;
                 }
 
-                $url = route('telegram.webhook');
+                // Бот воронки — по адресу без ключа: так он зарегистрирован.
+                $url = route('telegram.webhook', $bot === TelegramBots::LESSON ? [] : ['bot' => $bot]);
                 $api->call('setWebhook', [
                     'url' => $url,
                     'secret_token' => $secret,
@@ -47,8 +56,9 @@ class TelegramWebhook extends Command
                 ]);
                 $this->info("Webhook установлен: {$url}");
 
-                $api->call('setMyDescription', ['description' => config('telegram_funnel.profile.description')]);
-                $api->call('setMyShortDescription', ['short_description' => config('telegram_funnel.profile.short_description')]);
+                $profile = config($bot === TelegramBots::LESSON ? 'telegram_funnel.profile' : 'telegram_diag.profile');
+                $api->call('setMyDescription', ['description' => $profile['description']]);
+                $api->call('setMyShortDescription', ['short_description' => $profile['short_description']]);
                 $this->info('Описание бота обновлено.');
             }
 

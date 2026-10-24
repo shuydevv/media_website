@@ -55,6 +55,22 @@ Route::post('/trial/{slug}/rate', [\App\Http\Controllers\Telegram\TrialFeedbackC
 Route::post('/trial/{slug}/progress', [\App\Http\Controllers\Telegram\TrialFeedbackController::class, 'progress'])
     ->middleware('throttle:20,1')
     ->name('telegram.trial.progress');
+
+// Диагностика по обществознанию — Mini App бота diag (ТЗ — docs/diagnostic/).
+// Без входа: кто проходит — по подписи Telegram или cookie персональной
+// ссылки (Diagnostic\DiagnosticController).
+Route::group(['prefix' => 'diag'], function () {
+    $c = \App\Http\Controllers\Diagnostic\DiagnosticController::class;
+    Route::get('/', [$c, 'page'])->name('diag.page');
+    Route::get('/go/{token}', [$c, 'link'])->where('token', '[A-Za-z0-9]+')->name('diag.link');
+    Route::group(['prefix' => 'api', 'middleware' => 'throttle:120,1'], function () use ($c) {
+        Route::post('/session', [$c, 'session'])->name('diag.session');
+        Route::post('/profile', [$c, 'profile'])->name('diag.profile');
+        Route::post('/answer', [$c, 'answer'])->name('diag.answer');
+        Route::post('/target', [$c, 'target'])->name('diag.target');
+        Route::post('/improve', [$c, 'improve'])->name('diag.improve');
+    });
+});
 Route::group(['namespace' => 'App\Http\Controllers\Post', 'prefix' => 'posts'], function () {
     Route::get('/', 'IndexController')->name('post.index');
     Route::get('/{post:path}', 'ShowController')->name('post.show');
@@ -274,6 +290,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
 
         Route::group(['namespace' => 'Telegram', 'prefix' => 'telegram'], function () {
             Route::get('/', 'IndexController')->name('admin.telegram.index');
+            Route::get('/diagnostic', 'DiagnosticStatsController')->name('admin.telegram.diagnostic');
             Route::get('/texts', 'Texts\EditController')->name('admin.telegram.texts.edit');
             Route::put('/texts', 'Texts\UpdateController')->name('admin.telegram.texts.update');
             Route::get('/contacts', 'Contacts\IndexController')->name('admin.telegram.contacts.index');

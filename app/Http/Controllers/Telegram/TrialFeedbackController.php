@@ -63,7 +63,7 @@ class TrialFeedbackController extends Controller
             return null;
         }
 
-        $contact = TelegramContact::where('link_token', $token)->first();
+        $contact = TelegramContact::forBot(FunnelBot::BOT)->where('link_token', $token)->first();
 
         return $contact ? [$contact, $code !== $contact->lesson] : null;
     }

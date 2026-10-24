@@ -5,6 +5,7 @@ namespace App\Jobs\Telegram;
 use App\Models\SiteLead;
 use App\Models\TelegramContact;
 use App\Service\Telegram\AdminTopics;
+use App\Service\Telegram\FunnelBot;
 use App\Service\Telegram\FunnelTexts;
 use App\Service\Telegram\TelegramApi;
 use App\Service\Telegram\TelegramApiException;
@@ -62,7 +63,7 @@ class SendSiteLead implements ShouldQueue
 
         // Если этот человек уже запускал бота — сразу видно, откуда он и
         // смотрел ли пробный урок.
-        $contact = $lead->contact ?? ($lead->telegram ? TelegramContact::where('username', $lead->telegram)->first() : null);
+        $contact = $lead->contact ?? ($lead->telegram ? TelegramContact::forBot(FunnelBot::BOT)->where('username', $lead->telegram)->first() : null);
         if ($contact) {
             $lines[] = '';
             $lines[] = '🤖 Уже в боте с '.$contact->started_at->format('d.m')

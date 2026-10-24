@@ -23,8 +23,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // таблице sessions (SESSION_DRIVER=database). Подлинность — секрет в
 // заголовке, не CSRF. Общий лимит api (60/мин с IP) снят: все апдейты идут
 // с нескольких IP самого Telegram, и на всплеске трафика из рекламы он
-// начал бы отвечать боту 429.
-Route::post('/telegram/webhook', \App\Http\Controllers\Telegram\WebhookController::class)
+// начал бы отвечать боту 429. {bot} — ключ TelegramBots; без него — бот
+// воронки (его webhook зарегистрирован на адрес без ключа).
+Route::post('/telegram/webhook/{bot?}', \App\Http\Controllers\Telegram\WebhookController::class)
+    ->where('bot', '[a-z]+')
     ->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class.':api')
     ->name('telegram.webhook');
 

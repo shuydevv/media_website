@@ -34,7 +34,7 @@ class LessonLinkController extends Controller
         $query = $request->integer('t') > 0 ? ['t' => $request->integer('t')] : [];
         $target = route('main.trial', ['slug' => FunnelLessons::slug($lesson)] + $query);
 
-        $contact = TelegramContact::where('link_token', $token)->first();
+        $contact = TelegramContact::forBot(FunnelBot::BOT)->where('link_token', $token)->first();
         if (! $contact || preg_match('/bot|crawler|spider|preview|facebookexternalhit/i', (string) $request->userAgent())) {
             return redirect()->away($target);
         }

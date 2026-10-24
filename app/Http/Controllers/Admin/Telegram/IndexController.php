@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Telegram;
 use App\Http\Controllers\Controller;
 use App\Models\SiteLead;
 use App\Models\TelegramContact;
+use App\Service\Telegram\FunnelBot;
 use App\Service\Telegram\FunnelLessons;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -22,7 +23,8 @@ class IndexController extends Controller
         $from = $this->date($request->string('from')->toString());
         $to = $this->date($request->string('to')->toString());
 
-        $base = TelegramContact::query()
+        // Воронка пробного урока: шаги ниже — её поля.
+        $base = TelegramContact::forBot(FunnelBot::BOT)
             ->when($from, fn ($q) => $q->where('started_at', '>=', $from->copy()->startOfDay()))
             ->when($to, fn ($q) => $q->where('started_at', '<=', $to->copy()->endOfDay()));
 

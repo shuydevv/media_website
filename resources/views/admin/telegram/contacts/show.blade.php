@@ -8,7 +8,8 @@
     $kindTone = ['action' => 'text-zinc-900', 'user' => 'text-green-700', 'admin' => 'text-blue-700', 'bot' => 'text-zinc-600', 'planned' => 'text-orange-700'];
 @endphp
 
-<x-ui.page-header :title="$contact->displayName()" :back="route('admin.telegram.contacts.index')" back-label="Все контакты">
+@php $isLesson = $contact->bot === \App\Service\Telegram\TelegramBots::LESSON; @endphp
+<x-ui.page-header :title="$contact->displayName()" :back="route('admin.telegram.contacts.index', $isLesson ? [] : ['bot' => $contact->bot])" back-label="Все контакты">
     @if ($contact->username) {{ '@'.$contact->username }} · @endif
     метка {{ $contact->source ?? '—' }} · запустил бота {{ $contact->started_at->format('d.m.Y H:i') }}
     <x-slot:actions>
@@ -27,11 +28,15 @@
 
 <x-ui.card class="mb-6">
     <div class="flex flex-wrap items-center gap-2 mb-3">
-        <x-ui.badge :tone="$stageTone[$contact->stageKey()]">{{ \App\Models\TelegramContact::STAGES[$contact->stageKey()] }}</x-ui.badge>
+        @if ($isLesson)
+            <x-ui.badge :tone="$stageTone[$contact->stageKey()]">{{ \App\Models\TelegramContact::STAGES[$contact->stageKey()] }}</x-ui.badge>
+        @else
+            <x-ui.badge tone="purple">🧪 бот диагностики · {{ $contact->statusEmoji() }}</x-ui.badge>
+        @endif
         @if ($contact->awaitingReply()) <x-ui.badge tone="orange">ждёт ответа</x-ui.badge> @endif
         @if ($contact->topic_id) <x-ui.badge tone="green">тема есть</x-ui.badge> @else <x-ui.badge>темы нет</x-ui.badge> @endif
     </div>
-    @include('admin.telegram.contacts._lessons', ['c' => $contact])
+    @include($isLesson ? 'admin.telegram.contacts._lessons' : 'admin.telegram.contacts._diagnostic', ['c' => $contact])
     @if ($next = $contact->nextScheduled())
         <div class="mt-3 text-sm text-orange-700">⏰ Дальше: {{ $next[0] }} — {{ $next[1]->format('d.m H:i') }}</div>
     @endif

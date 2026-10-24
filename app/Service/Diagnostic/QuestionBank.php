@@ -1,0 +1,199 @@
+<?php
+
+namespace App\Service\Diagnostic;
+
+use RuntimeException;
+
+/**
+ * Банк вопросов диагностики — JSON (config diagnostic.bank_path), правит
+ * автор. Формат — ТЗ, раздел 10. Код БД не трогает: банк читается из файла,
+ * в лог ответов пишется id вопроса и хеш содержимого (hash()), чтобы правка
+ * текста не смешала статистику старой и новой версии.
+ *
+ * validate() — то же, что команда diagnostic:validate: без ошибок банк
+ * гарантированно проходится (на каждом уровне каждого блока хватает
+ * вопросов на худший путь, ключи ответов указывают на существующие варианты).
+ */
+final class QuestionBank
+{
+    /** Сколько вопросов одного уровня может понадобиться за прохождение блока (BlockRun). */
+    public const MIN_PER_LEVEL = 2;
+
+    /** @param  array<string, array>  $questions  id → вопрос */
+    public function __construct(private readonly array $questions)
+    {
+    }
+
+    public static function fromConfig(): self
+    {
+        static $cache = [];
+
+        $path = config('diagnostic.bank_path');
+        $key = $path.'@'.(is_file($path) ? filemtime($path) : 0);
+
+        return $cache[$key] ??= self::fromFile($path);
+    }
+
+    public static function fromFile(string $path): self
+    {
+        $raw = is_file($path) ? json_decode((string) file_get_contents($path), true) : null;
+        if (! is_array($raw) || ! isset($raw['questions']) || ! is_array($raw['questions'])) {
+            throw new RuntimeException("Банк диагностики не прочитан: {$path}");
+        }
+
+        $byId = [];
+        foreach ($raw['questions'] as $q) {
+            if (is_array($q) && isset($q['id'])) {
+                $byId[(string) $q['id']] = $q;
+            }
+        }
+
+        return new self($byId);
+    }
+
+    public function get(string $id): ?array
+    {
+        return $this->questions[$id] ?? null;
+    }
+
+    public static function hash(array $q): string
+    {
+        return substr(sha1(json_encode($q, JSON_UNESCAPED_UNICODE)), 0, 12);
+    }
+
+    /**
+     * Случайный вопрос уровня: не из уже заданных в этом прохождении
+     * ($used), по возможности — из тех, что человек ещё не видел ($seen,
+     * прошлые прохождения).
+     *
+     * @param  string[]  $used
+     * @param  string[]  $seen
+     */
+    public function pick(string $block, int $level, array $used, array $seen = []): ?array
+    {
+        $pool = array_values(array_filter(
+            $this->questions,
+            fn ($q) => $q['block'] === $block && (int) $q['level'] === $level && ! in_array($q['id'], $used, true),
+        ));
+        if ($pool === []) {
+            return null;
+        }
+
+        $fresh = array_values(array_filter($pool, fn ($q) => ! in_array($q['id'], $seen, true)));
+        $from = $fresh !== [] ? $fresh : $pool;
+
+        return $from[array_rand($from)];
+    }
+
+    /**
+     * @param  string[]  $blocks  ключи блоков из конфига
+     * @return string[] ошибки; пусто — банк годится
+     */
+    public function validate(array $blocks): array
+    {
+        $errors = [];
+        $count = [];
+
+        foreach ($this->questions as $id => $q) {
+            $at = "«{$id}»";
+            foreach (['block', 'level', 'mechanic', 'prompt', 'explain_correct', 'explain_wrong'] as $field) {
+                if (! isset($q[$field]) || $q[$field] === '') {
+                    $errors[] = "{$at}: нет поля {$field}";
+                }
+            }
+            if (isset($q['block']) && ! in_array($q['block'], $blocks, true)) {
+                $errors[] = "{$at}: неизвестный блок {$q['block']}";
+            }
+            $level = (int) ($q['level'] ?? 0);
+            if ($level < BlockRun::EASY || $level > BlockRun::HARD) {
+                $errors[] = "{$at}: уровень должен быть 1, 2 или 3";
+            }
+            $mechanic = $q['mechanic'] ?? '';
+            if (! in_array($mechanic, AnswerChecker::MECHANICS, true)) {
+                $errors[] = "{$at}: неизвестная механика {$mechanic}";
+
+                continue;
+            }
+
+            // Угадать свайп — 50%: только на лёгких. На сложных — только
+            // выбор множества, где угадать почти нельзя (ТЗ, раздел 6).
+            if ($mechanic === 'swipe' && $level !== BlockRun::EASY) {
+                $errors[] = "{$at}: свайп — только на лёгком уровне";
+            }
+            if ($level === BlockRun::HARD && $mechanic !== 'multi') {
+                $errors[] = "{$at}: на сложном уровне — только multi";
+            }
+
+            foreach ($this->mechanicErrors($q) as $error) {
+                $errors[] = "{$at}: {$error}";
+            }
+
+            $count[$q['block'] ?? ''][$level] = ($count[$q['block'] ?? ''][$level] ?? 0) + 1;
+        }
+
+        foreach ($blocks as $block) {
+            for ($level = BlockRun::EASY; $level <= BlockRun::HARD; $level++) {
+                $have = $count[$block][$level] ?? 0;
+                if ($have < self::MIN_PER_LEVEL) {
+                    $errors[] = "Блок {$block}, уровень {$level}: вопросов {$have}, нужно хотя бы ".self::MIN_PER_LEVEL;
+                }
+            }
+        }
+
+        return $errors;
+    }
+
+    /** @return string[] */
+    private function mechanicErrors(array $q): array
+    {
+        $ids = fn (string $field) => array_map(fn ($o) => (string) ($o['id'] ?? ''), (array) ($q[$field] ?? []));
+
+        switch ($q['mechanic']) {
+            case 'swipe':
+                return is_bool($q['answer'] ?? null) ? [] : ['answer должен быть true или false'];
+
+            case 'single':
+                $options = ($q['skin'] ?? null) === 'who' ? $ids('speakers') : $ids('options');
+
+                return in_array((string) ($q['correct'] ?? ''), $options, true) && count($options) >= 2
+                    ? [] : ['correct должен быть id одного из вариантов (у «Кто прав?» — из speakers)'];
+
+            case 'multi':
+                $options = $ids('options');
+                $correct = array_map('strval', (array) ($q['correct'] ?? []));
+                $errors = [];
+                if ($correct === [] || array_diff($correct, $options) !== []) {
+                    $errors[] = 'correct — непустой список id из options';
+                }
+                if (isset($q['pick']) && (int) $q['pick'] !== count($correct)) {
+                    $errors[] = 'pick должен совпадать с числом верных';
+                }
+
+                return $errors;
+
+            case 'buckets':
+                $buckets = $ids('buckets');
+                $cards = $ids('cards');
+                $mapping = (array) ($q['mapping'] ?? []);
+                $keys = array_map('strval', array_keys($mapping));
+                sort($keys);
+                sort($cards);
+
+                return $keys === $cards && array_diff(array_map('strval', $mapping), $buckets) === []
+                    ? [] : ['mapping должен разложить каждую карточку в существующую корзину'];
+
+            case 'chips':
+                preg_match_all('/\{\{(\d+)\}\}/', (string) ($q['text'] ?? ''), $m);
+                $gaps = $m[1];
+                $answers = (array) ($q['answers'] ?? []);
+                $keys = array_map('strval', array_keys($answers));
+                sort($gaps);
+                sort($keys);
+
+                return $gaps !== [] && $gaps === $keys && array_diff(array_map('strval', $answers), $ids('chips')) === []
+                    ? [] : ['в text пропуски {{N}}, answers — chip для каждого пропуска'];
+        }
+
+        return [];
+    }
+}

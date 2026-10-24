@@ -4,12 +4,13 @@ namespace App\Console\Commands;
 
 use App\Jobs\Telegram\RunFunnelStep;
 use App\Models\TelegramContact;
-use App\Service\Telegram\FunnelBot;
+use App\Service\Telegram\TelegramBots;
 use Illuminate\Console\Command;
 
 /**
- * Отложенные сообщения бота воронки: напоминания, «Как вам урок?» после
- * досмотра, вопрос от Александра после оценки (поля *_due_at, см.
+ * Отложенные сообщения ботов: напоминания, «Как вам урок?» после досмотра,
+ * вопрос от Александра после оценки — поля *_due_at контакта; у каждого
+ * сценария свои (BotScenario::dueSteps(), у бота воронки —
  * FunnelBot::DUE_STEPS). Не delayed job в очереди: часы и сутки в `jobs`
  * выглядели бы для queue:monitor-health как зависшая очередь, а отменить
  * сообщение — это просто не выполнить условие в момент отправки.
@@ -26,10 +27,20 @@ class SendTelegramReminders extends Command
 
     public function handle(): int
     {
-        $horizon = now()->addMinute();
-        $fields = array_keys(FunnelBot::DUE_STEPS);
+        foreach (TelegramBots::scenarios() as $bot => $scenario) {
+            $this->dispatchDue($bot, $scenario->dueSteps());
+        }
 
-        $due = TelegramContact::query()
+        return self::SUCCESS;
+    }
+
+    /** @param  array<string, array{0: string, 1: array}>  $steps  поле *_due_at → [шаг, payload] */
+    private function dispatchDue(string $bot, array $steps): void
+    {
+        $horizon = now()->addMinute();
+        $fields = array_keys($steps);
+
+        $due = TelegramContact::forBot($bot)
             ->where(function ($q) use ($fields, $horizon) {
                 foreach ($fields as $field) {
                     $q->orWhere($field, '<=', $horizon);
@@ -38,7 +49,7 @@ class SendTelegramReminders extends Command
             ->get();
 
         foreach ($due as $contact) {
-            foreach (FunnelBot::DUE_STEPS as $field => [$step, $payload]) {
+            foreach ($steps as $field => [$step, $payload]) {
                 $at = $contact->{$field};
                 if ($at === null || $at->gt($horizon)) {
                     continue;
@@ -54,7 +65,5 @@ class SendTelegramReminders extends Command
             }
             $contact->save();
         }
-
-        return self::SUCCESS;
     }
 }

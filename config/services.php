@@ -46,5 +46,12 @@ return [
         'webhook_secret' => env('TELEGRAM_FUNNEL_WEBHOOK_SECRET'),
     ],
 
+    // Бот диагностики (App\Service\Telegram\TelegramBots, ключ diag). Пишет
+    // в ту же админ-группу, что и бот воронки — admin_chat_id берётся оттуда.
+    'telegram_diag' => [
+        'bot_token'      => env('TELEGRAM_DIAG_BOT_TOKEN'),
+        'webhook_secret' => env('TELEGRAM_DIAG_WEBHOOK_SECRET'),
+    ],
+
 
 ];

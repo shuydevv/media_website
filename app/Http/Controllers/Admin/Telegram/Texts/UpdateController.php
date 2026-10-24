@@ -16,7 +16,7 @@ class UpdateController extends Controller
 {
     public function __invoke(Request $request)
     {
-        $definitions = config('telegram_funnel.texts');
+        $definitions = FunnelTexts::definitions();
 
         // 4096 — лимит длины сообщения в Telegram; с подписью и подстановками
         // запас нужен, поэтому меньше.

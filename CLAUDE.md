@@ -154,6 +154,28 @@ row-lock промокодов на SQLite пропускается. Старые
   (`LeadContact`); со страницы «Спасибо» — `?start=lead_<token>`, чтобы с человеком можно
   было говорить через бота (бот не пишет первым). `/repetitor` — свои формы и старый
   `LeadController`, туда `lead-modal` не подключать.
+- Ботов несколько — `TelegramBots` (`lesson` — воронка выше, `diag` — диагностика,
+  ТЗ — `docs/diagnostic/`). Контакт — человек в конкретном боте (`telegram_contacts.bot`,
+  уникальность `(telegram_user_id, bot)`): любой поиск контакта — через `forBot()`.
+  Webhook — `/api/telegram/webhook/{bot}` (бот воронки — без ключа), токен и секрет —
+  `services.telegram_<бот>`, сценарий — `BotScenario` (`FunnelBot` — сценарий `lesson`).
+  Админ-группа общая, апдейты из неё видят все боты: тему чужого бота пропускать, на
+  команды в группе (`/chatid`, `/emoji`) и служебные темы — только `lesson`.
+- Диагностика по обществознанию — Mini App бота `diag`: страница `/diag`
+  (`diagnostic/app.blade.php` + `public/js/diagnostic.js`, без сборки), API —
+  `Diagnostic\DiagnosticController`. Чистая логика без БД — `app/Service/Diagnostic/`
+  (`BlockRun` — адаптивный путь блока, `AnswerChecker` — проверка по механике,
+  `ScoreModel` — прогноз, `QuestionBank`), прохождение — `DiagnosticRunner`
+  (`diagnostic_attempts`/`diagnostic_answers`). Банк вопросов — JSON
+  `docs/diagnostic/questions.json`, правит автор, после правки —
+  `php artisan diagnostic:validate`. Числа модели прогноза — заглушки в
+  `config/diagnostic.php`. Кто проходит — подпись `initData` токеном бота `diag`
+  (`Telegram\WebAppInitData`); без Telegram — только `DIAG_ALLOW_ANONYMOUS` (локально).
+  Бот — `Telegram\DiagBot` (путь — в его шапке): контроллер теста сообщает ему
+  события (`opened`/`answered`/`finished`/`improved`), отправка — `ContactMessenger`.
+  Тексты — `config/telegram_diag.php`, ключи `diag_*` в той же `telegram_texts`
+  (`FunnelTexts::definitions()`). Аналитика — `/admin/telegram/diagnostic`
+  (`DiagnosticStats`), настройка сервера — `deploy/README.md`, раздел 9.
 
 **Auth** — не стандартный Breeze-флоу целиком: вход по телефону (OTP, `PhoneAuthController`,
 `Service/Sms/*`) и по email-коду/подписанной ссылке (`EmailAuthController`, `EmailOtpService`),

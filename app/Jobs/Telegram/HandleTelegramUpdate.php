@@ -2,7 +2,7 @@
 
 namespace App\Jobs\Telegram;
 
-use App\Service\Telegram\FunnelBot;
+use App\Service\Telegram\TelegramBots;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -23,12 +23,20 @@ class HandleTelegramUpdate implements ShouldQueue
 
     public int $tries = 1;
 
-    public function __construct(public array $update)
+    /**
+     * Чей апдейт (TelegramBots). Значение по умолчанию — у свойства, а не
+     * только у конструктора: задачи, поставленные до появления поля,
+     * распаковываются без конструктора и должны остаться ботом воронки.
+     */
+    public string $bot = TelegramBots::LESSON;
+
+    public function __construct(public array $update, string $bot = TelegramBots::LESSON)
     {
+        $this->bot = $bot;
     }
 
     public function handle(): void
     {
-        FunnelBot::make()->handleUpdate($this->update);
+        TelegramBots::scenario($this->bot)?->handleUpdate($this->update);
     }
 }

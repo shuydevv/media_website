@@ -256,3 +256,34 @@ cd /var/www/poltav/current && php artisan queue:retry all
 в любом месте и регистре (`vk1_er`, `VK-ER-1`) — главное, отдельной частью
 между `_`/`-`. Без кода урока — «Человек и общество».
 
+
+## 9. Telegram-бот диагностики по обществознанию
+
+Второй бот — `TelegramBots::DIAG`, сценарий `DiagBot`, тест — Mini App
+`/diag` (ТЗ — `docs/diagnostic/`). Воркер, планировщик и админ-группа — те же,
+что у бота воронки (раздел 8). Разово:
+
+1. **Бот в @BotFather** — `/newbot`, имя и @username. Отдельно настраивать
+   Mini App в BotFather не нужно: тест открывается кнопкой `web_app` в сообщении.
+2. **Добавить бота в ту же админ-группу** администратором с правом
+   «Управление темами» — он заводит темы своим людям (с маркером 🧪) и пишет
+   в служебную тему «🧪 Диагностики».
+3. **`.env`** (в `shared/.env`):
+
+   ```
+   TELEGRAM_DIAG_BOT_TOKEN=...          # из @BotFather
+   TELEGRAM_DIAG_WEBHOOK_SECRET=...     # openssl rand -hex 32, свой, не как у воронки
+   ```
+
+   `DIAG_ALLOW_ANONYMOUS` на проде не ставить: без Telegram тест не пускает.
+   Потом — `php artisan config:cache` и `sudo systemctl restart poltav-queue`.
+4. **Webhook:** `php artisan telegram:webhook diag` — адрес
+   `/api/telegram/webhook/diag`, заодно описание бота (`config/telegram_diag.php`,
+   `profile`).
+5. **Миграции** (`telegram_contacts.bot`, таблицы диагностики) идут обычным деплоем.
+
+Ссылка для рекламы: `t.me/<username>?start=<метка>` — метка любая
+(латиница/цифры/`_`/`-`). Цифры — `/admin/telegram` → «🧪 Диагностика»,
+люди — «Контакты» → «Бот диагностики», тексты — «Тексты сообщений».
+Банк вопросов — `docs/diagnostic/questions.json`, после правки —
+`php artisan diagnostic:validate`.

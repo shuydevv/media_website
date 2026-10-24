@@ -94,6 +94,6 @@ class SiteLeadController extends Controller
     {
         $token = (string) $request->cookie(LessonLinkController::COOKIE);
 
-        return $token !== '' ? TelegramContact::where('link_token', $token)->first() : null;
+        return $token !== '' ? TelegramContact::forBot(FunnelBot::BOT)->where('link_token', $token)->first() : null;
     }
 }

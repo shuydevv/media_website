@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\TelegramContact;
 use App\Service\Telegram\AdminTopics;
-use App\Service\Telegram\TelegramApi;
+use App\Service\Telegram\TelegramBots;
 use Illuminate\Console\Command;
 
 /**
@@ -28,7 +28,6 @@ class RemindUnansweredTelegram extends Command
             return self::SUCCESS;
         }
 
-        $topics = new AdminTopics(TelegramApi::funnel());
         $contacts = TelegramContact::query()
             ->whereNull('blocked_at')
             ->whereNotNull('topic_id')
@@ -40,7 +39,8 @@ class RemindUnansweredTelegram extends Command
 
         foreach ($contacts as $contact) {
             $hours = $contact->last_user_message_at->diffInHours(now());
-            $topics->note($contact, '⏰ <b>Ждёт ответа уже '.($hours >= 1 ? $hours.' ч' : 'больше часа').'</b> — последнее сообщение в '
+            // В теме пишет бот этого человека — тему создавал он.
+            (new AdminTopics(TelegramBots::api($contact->bot)))->note($contact, '⏰ <b>Ждёт ответа уже '.($hours >= 1 ? $hours.' ч' : 'больше часа').'</b> — последнее сообщение в '
                 .$contact->last_user_message_at->format('d.m H:i'), false);
             $contact->forceFill(['awaiting_alerted_at' => now()])->save();
         }

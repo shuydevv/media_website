@@ -11,13 +11,26 @@ use Illuminate\Support\Facades\Http;
  */
 class TelegramApi
 {
-    public function __construct(private readonly ?string $token = null)
-    {
+    public function __construct(
+        private readonly ?string $token = null,
+        private readonly string $bot = TelegramBots::LESSON,
+    ) {
     }
 
+    public static function forBot(string $bot): self
+    {
+        return new self(TelegramBots::token($bot), $bot);
+    }
+
+    /** Бот воронки пробного урока. */
     public static function funnel(): self
     {
-        return new self(config('services.telegram_funnel.bot_token'));
+        return self::forBot(TelegramBots::LESSON);
+    }
+
+    public function bot(): string
+    {
+        return $this->bot;
     }
 
     public function isConfigured(): bool
@@ -33,7 +46,7 @@ class TelegramApi
     public function call(string $method, array $params = []): mixed
     {
         if (! $this->isConfigured()) {
-            throw new TelegramApiException('TELEGRAM_FUNNEL_BOT_TOKEN не задан в .env');
+            throw new TelegramApiException(TelegramBots::env($this->bot, 'BOT_TOKEN').' не задан в .env');
         }
 
         try {

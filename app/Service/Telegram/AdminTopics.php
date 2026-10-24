@@ -5,6 +5,7 @@ namespace App\Service\Telegram;
 use App\Models\SiteLead;
 use App\Models\TelegramContact;
 use App\Models\TelegramMessage;
+use App\Service\Diagnostic\DiagnosticSummary;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -227,6 +228,7 @@ class AdminTopics
             'starts' => '📥 Старты',
             'leads' => '📝 Заявки с сайта',
             'liked' => '🔥 Понравилось',
+            'diag' => '🧪 Диагностики',
         ];
 
         return Cache::lock("telegram-service-topic-{$key}", 20)->block(15, function () use ($key, $names, $topicName) {
@@ -325,6 +327,15 @@ class AdminTopics
 
     private function sendCard(TelegramContact $contact): void
     {
+        if ($contact->bot === TelegramBots::DIAG) {
+            $this->api->sendMessage(self::adminChatId(), DiagnosticSummary::card($contact), [
+                'message_thread_id' => $contact->topic_id,
+                'disable_notification' => true,
+            ]);
+
+            return;
+        }
+
         $at = fn ($time) => $time ? $time->format('d.m H:i') : null;
         // Строка урока: открыл ли, сколько посмотрел, оценка и где поставлена.
         $slot = function (bool $bonus) use ($contact, $at) {
@@ -392,7 +403,8 @@ class AdminTopics
 
     private function topicName(TelegramContact $contact): string
     {
-        $name = $contact->statusEmoji().' '.$contact->displayName();
+        // 🧪 — человек из бота диагностики: группа у ботов общая.
+        $name = $contact->statusEmoji().' '.($contact->bot === TelegramBots::DIAG ? '🧪 ' : '').$contact->displayName();
         if ($contact->username && ! str_starts_with($contact->displayName(), '@')) {
             $name .= ' @'.$contact->username;
         }

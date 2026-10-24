@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Course;
 use App\Notifications\VerifyEmailWithCode;
 use App\Policies\CoursePolicy;
+use App\Service\Diagnostic\DiagnosticRunner;
 use App\Service\EmailOtpService;
 use App\Service\Sms\FakeSmsSender;
 use App\Service\Sms\SmsSender;
@@ -27,6 +28,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(SmsSender::class, function () {
             return new FakeSmsSender();
         });
+
+        // Банк вопросов и модель балла — из конфига (DiagnosticRunner::make()).
+        $this->app->bind(DiagnosticRunner::class, fn () => DiagnosticRunner::make());
     }
 
     protected $policies = [

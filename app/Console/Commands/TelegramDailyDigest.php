@@ -2,11 +2,14 @@
 
 namespace App\Console\Commands;
 
+use App\Models\DiagnosticAttempt;
 use App\Models\SiteLead;
 use App\Models\TelegramContact;
 use App\Service\Telegram\AdminTopics;
+use App\Service\Telegram\FunnelBot;
 use App\Service\Telegram\TelegramApi;
 use App\Service\Telegram\TelegramApiException;
+use App\Service\Telegram\TelegramBots;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -33,7 +36,8 @@ class TelegramDailyDigest extends Command
         }
 
         $since = now()->startOfDay();
-        $today = TelegramContact::where('started_at', '>=', $since);
+        // Шаги дня — воронки пробного урока; «ждут ответа» ниже — по всем ботам.
+        $today = TelegramContact::forBot(FunnelBot::BOT)->where('started_at', '>=', $since);
 
         $t = (clone $today)->select([
             DB::raw('COUNT(*) as starts'),
@@ -63,6 +67,18 @@ class TelegramDailyDigest extends Command
                 ->groupBy('source')->orderByDesc('c')->limit(8)->get();
             $lines[] = '';
             $lines[] = 'По меткам: '.$bySource->map(fn ($r) => ($r->source ? e($r->source) : 'без метки').' — '.$r->c)->implode(', ');
+        }
+
+        // Бот диагностики — события дня (запустили, прошли тест, сказали «да»);
+        // пока его нет — строки нет.
+        $diag = [
+            'starts' => TelegramContact::forBot(TelegramBots::DIAG)->where('started_at', '>=', $since)->count(),
+            'finished' => DiagnosticAttempt::whereNotNull('telegram_contact_id')->where('finished_at', '>=', $since)->count(),
+            'yes' => DiagnosticAttempt::whereNotNull('telegram_contact_id')->where('improve', 'yes')->where('improve_at', '>=', $since)->count(),
+        ];
+        if (array_sum($diag) > 0) {
+            $lines[] = '';
+            $lines[] = '🧪 Диагностика: запустили '.$diag['starts'].' · прошли '.$diag['finished'].' · «да, хочу» '.$diag['yes'];
         }
 
         // Ждут ответа — по всем, не только сегодняшним: вечером видно, кому

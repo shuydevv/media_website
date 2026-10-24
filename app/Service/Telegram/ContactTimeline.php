@@ -5,6 +5,7 @@ namespace App\Service\Telegram;
 use App\Models\SiteLead;
 use App\Models\TelegramContact;
 use App\Models\TelegramMessage;
+use App\Service\Diagnostic\DiagnosticSummary;
 use Carbon\CarbonInterface;
 
 /**
@@ -35,7 +36,12 @@ final class ContactTimeline
             $add($contact->last_start_at, '🔁', 'Последний повторный /start');
         }
 
-        foreach ([false, true] as $bonus) {
+        if ($contact->bot === TelegramBots::DIAG) {
+            self::diagnosticEvents($contact, $add);
+        }
+
+        // Уроки — только у контактов бота воронки (у остальных lesson пуст).
+        foreach ($contact->bot === TelegramBots::LESSON ? [false, true] : [] as $bonus) {
             $title = '«'.FunnelLessons::title($bonus ? FunnelLessons::bonusFor($contact->lesson) : $contact->lesson).'»';
             $prefix = $bonus ? 'бонусный урок ' : 'урок ';
 
@@ -69,7 +75,7 @@ final class ContactTimeline
 
         $add($contact->blocked_at, '⛔', 'Заблокировал бота');
 
-        $labels = collect(config('telegram_funnel.texts'))->map(fn ($t) => $t['label']);
+        $labels = collect(FunnelTexts::definitions())->map(fn ($t) => $t['label']);
         foreach ($contact->messages()->orderBy('id')->get() as $m) {
             $preview = $m->text !== null ? mb_strimwidth(trim($m->text), 0, 160, '…') : null;
             $media = $m->media_type ? '['.$m->media_type.'] ' : '';
@@ -85,7 +91,7 @@ final class ContactTimeline
 
         // Запланированное — в конце, по времени.
         $planned = [];
-        foreach (TelegramContact::SCHEDULE_LABELS as $field => $label) {
+        foreach ($contact->scheduleLabels() as $field => $label) {
             if ($contact->{$field}) {
                 $planned[] = ['at' => $contact->{$field}, 'icon' => '⏰', 'text' => 'Запланировано: '.$label,
                     'detail' => 'уйдёт, если к этому времени ничего не изменится (не напишет сам, не оценит и т.п.)', 'kind' => 'planned'];
@@ -94,6 +100,27 @@ final class ContactTimeline
         usort($planned, fn ($a, $b) => $a['at'] <=> $b['at']);
 
         return array_merge($events, $planned);
+    }
+
+    /** Прохождения диагностики: начал, прошёл (с баллом), ответ на «Хочешь улучшить?». */
+    private static function diagnosticEvents(TelegramContact $contact, callable $add): void
+    {
+        foreach ($contact->diagnosticAttempts()->orderBy('id')->get() as $a) {
+            $add($a->started_at, '🧪', 'Начал диагностику', 'action', $a->entry === 'miniapp' ? 'в Telegram' : null);
+            if ($a->isFinished()) {
+                $r = $a->result;
+                $add($a->finished_at, '✅', 'Прошёл диагностику', 'action',
+                    '~'.$r['low'].'–'.$r['high'].', потенциал '.$r['potential'].'+, точки роста: '.DiagnosticSummary::weakTitles($a)
+                    .($a->target_score !== null ? ', цель '.$a->target_score : ''));
+            } elseif ($a->last_answer_at) {
+                $add($a->last_answer_at, '⏸', 'Последний ответ в диагностике', 'action',
+                    'блок '.min($a->block_index + 1, count($a->block_order)).' из '.count($a->block_order));
+            }
+            if ($a->improve) {
+                $add($a->improve_at, $a->improve === 'yes' ? '🔥' : '🙅', '«Хочешь улучшить свои знания?» — '.($a->improve === 'yes' ? 'да' : 'пока нет'),
+                    'action', $a->improve_source === 'bot' ? 'кнопкой в чате' : 'на странице');
+            }
+        }
     }
 
     private static function clock(int $seconds): string
