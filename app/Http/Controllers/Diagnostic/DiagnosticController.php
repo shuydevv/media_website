@@ -54,7 +54,8 @@ class DiagnosticController extends Controller
             ],
             'characters' => collect(config('diagnostic.characters'))
                 ->map(fn ($c) => ['name' => $c['name'], 'emoji' => $c['emoji'] ?? null, 'color' => $c['color'],
-                    'avatar' => $c['avatar'] ? asset($c['avatar']) : null])
+                    'avatars' => $c['avatar'] ? collect(['idle', 'happy', 'sad'])
+                        ->mapWithKeys(fn ($mood) => [$mood => asset("{$c['avatar']}-{$mood}.webp")])->all() : null])
                 ->all(),
         ]);
     }

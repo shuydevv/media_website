@@ -114,10 +114,13 @@
         return c ? c.name : (fallback || '');
     }
 
-    /** Аватар персонажа: картинка, если есть; иначе эмодзи (или буква) на кружке его цвета. */
-    function avatar(id, fallbackName) {
+    /**
+     * Аватар персонажа: арт по эмоции (idle — обычный, happy — радуется,
+     * sad — ошибся), если есть; иначе эмодзи (или буква) на кружке его цвета.
+     */
+    function avatar(id, fallbackName, mood) {
         var c = character(id);
-        if (c && c.avatar) return el('img', { class: 'avatar', src: c.avatar, alt: '' });
+        if (c && c.avatars) return el('img', { class: 'avatar', src: c.avatars[mood] || c.avatars.idle, alt: '' });
         var name = c ? c.name : (fallbackName || '?');
         // Без кружка: эмодзи (пока нет арта) — сам по себе; буква — на кружке его цвета.
         if (c && c.emoji) return el('span', { class: 'avatar emoji', text: c.emoji });
@@ -138,7 +141,7 @@
      */
     function sayTyping(text, tone, mood, react, extra, who) {
         var bubble = el('div', { class: 'bubble' }, [el('span', { class: 'typing' }, [el('i'), el('i'), el('i')])]);
-        var img = who ? avatar(who) : mascot(mood || 'idle');
+        var img = who ? avatar(who, null, mood) : mascot(mood || 'idle');
         var node = el('div', { class: 'say' }, [img, bubble]);
         var reveal = function () {
             // Успели уйти на следующий экран за время «печатает…» — ни текста,
@@ -391,12 +394,14 @@
         // Мем — картинка из банка (поле meme: путь от корня сайта или https-адрес).
         var meme = typeof res.meme === 'string' && /^(https:\/\/|\/)/.test(res.meme) ? el('img', { class: 'meme', src: res.meme, alt: '' }) : null;
         // Говорит персонаж (тот, кто прав в «Кто прав?», или explain_by) — иначе рыба.
+        // Правый в споре радуется всегда; объясняющий персонаж — когда ответ верный.
         var who = character(res.explain_by) ? res.explain_by : null;
+        var mood = who ? (res.correct || ui.q.skin === 'who' ? 'happy' : 'idle') : (res.correct ? 'happy' : 'sad');
         var text = who ? (res.correct ? '✅ ' : '❌ ') + nameOf(who) + ': ' + res.explain : (res.correct ? pick(SAY.ok) : pick(SAY.bad)) + '\n' + res.explain;
         $screen.appendChild(sayTyping(
             text,
             res.correct ? 'ok' : 'bad',
-            res.correct ? 'happy' : 'sad',
+            mood,
             res.correct ? 'hop' : 'tilt',
             meme,
             who
@@ -807,6 +812,12 @@
                             if (nodes[id].tagName === 'BUTTON') nodes[id].disabled = true;
                             if (id === String(sol.id)) { nodes[id].classList.add('ok'); if (q.skin !== 'who') mark(nodes[id], '✓'); }
                             else if (id === chosen) { nodes[id].classList.add('bad'); if (q.skin !== 'who') mark(nodes[id], '✗'); }
+                        });
+                        // «Кто прав?»: правый радуется, остальные — «ошибся».
+                        if (q.skin === 'who') items.forEach(function (o) {
+                            var img = nodes[o.id].querySelector('img.avatar');
+                            var c = character(o.who);
+                            if (img && c && c.avatars) img.src = c.avatars[String(o.id) === String(sol.id) ? 'happy' : 'sad'];
                         });
                     },
                 };
