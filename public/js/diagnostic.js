@@ -573,12 +573,12 @@
             return n;
         };
         var value = function (g) { return Math.max(0.06, Math.min(1, g.accuracy !== undefined ? g.accuracy : [0.1, 0.35, 0.65, 0.9][g.level])); };
-        var cx = 170, cy = 112, R = 80, n = gains.length;
+        var cx = 170, cy = 134, R = 80, n = gains.length;
         var point = function (i, k) {
             var a = -Math.PI / 2 + i * 2 * Math.PI / n;
             return [cx + Math.cos(a) * R * k, cy + Math.sin(a) * R * k];
         };
-        var root = svg('svg', { viewBox: '0 0 340 226', class: 'radar', role: 'img', 'aria-label': 'Профиль по блокам' });
+        var root = svg('svg', { viewBox: '0 0 340 246', class: 'radar', role: 'img', 'aria-label': 'Профиль по блокам' });
         [0.33, 0.66, 1].forEach(function (k) {
             root.appendChild(svg('polygon', { class: 'grid', points: gains.map(function (g, i) { return point(i, k).join(','); }).join(' ') }));
         });
@@ -593,8 +593,11 @@
                 ? [words.slice(0, Math.ceil(words.length / 2)).join(' '), words.slice(Math.ceil(words.length / 2)).join(' ')]
                 : [g.title];
             lines.push(Math.round(value(g) * 100) + '%');
+            // Подпись над верхней вершиной целиком выше неё (иначе процент ложится на точку),
+            // под нижней — ниже, сбоку — по центру.
+            var first = anchor !== 'middle' ? -(lines.length - 1) * 0.6 : (at[1] < cy ? -(lines.length - 1) * 1.2 : 0);
             lines.forEach(function (line, j) {
-                var t = svg('tspan', { x: at[0], dy: j === 0 ? (-(lines.length - 1) * 0.6) + 'em' : '1.2em', class: j === lines.length - 1 ? 'pct' : null });
+                var t = svg('tspan', { x: at[0], dy: j === 0 ? first + 'em' : '1.2em', class: j === lines.length - 1 ? 'pct' : null });
                 t.textContent = line;
                 label.appendChild(t);
             });
@@ -911,50 +914,76 @@
                 q.cards.forEach(function (c) {
                     var n = el('button', { class: 'tag drag' + (c.from ? ' case' : ''), type: 'button' },
                         c.from ? [el('b', { text: c.from }), el('span', { text: c.text })] : [c.text]);
+                    // На телефоне карточку берёт долгое нажатие: обычное движение пальцем
+                    // листает страницу. Мышью — сразу, как потянул.
                     // За пальцем едет копия в <body>, а не сама карточка: у position: fixed
                     // внутри анимированного контейнера свой отсчёт координат, и карточка
                     // прыгала вниз-вправо. Копия стоит ровно там, где была карточка, и
                     // сдвигается на смещение пальца; отпустил — плавно ложится на место.
                     var drag = null;
+                    var lift = function (e) {
+                        var r = n.getBoundingClientRect();
+                        n.classList.remove('armed');
+                        drag.moved = true;
+                        drag.rect = r;
+                        drag.ghost = n.cloneNode(true);
+                        drag.ghost.classList.add('dragging');
+                        drag.ghost.style.cssText = 'left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + r.height + 'px';
+                        document.body.appendChild(drag.ghost);
+                        n.style.visibility = 'hidden';
+                        selected = null;
+                        // Место карточки — пустой рамкой сразу, ещё до того, как отпустили.
+                        if (!placed[c.id]) slots[c.id].classList.add('empty');
+                        drag.alive = true;
+                        haptic();
+                        follow(e.clientX, e.clientY);
+                        edgeScroll(drag);
+                    };
+                    var follow = function (x, y) {
+                        drag.x = x;
+                        drag.y = y;
+                        drag.ghost.style.transform = 'translate3d(' + (x - drag.x0) + 'px,' + (y - drag.y0) + 'px,0) rotate(-2deg) scale(1.04)';
+                        hover(zoneAt(x, y));
+                    };
                     n.addEventListener('pointerdown', function (e) {
                         if (ui.locked) return;
-                        drag = { x0: e.clientX, y0: e.clientY, moved: false };
+                        drag = { x0: e.clientX, y0: e.clientY, moved: false, mouse: e.pointerType === 'mouse' };
                         n.setPointerCapture(e.pointerId);
+                        if (drag.mouse) return;
+                        var d = drag;
+                        d.timer = setTimeout(function () {
+                            if (drag !== d) return;
+                            d.armed = true;
+                            n.classList.add('armed');
+                            lift({ clientX: d.x0, clientY: d.y0 });
+                        }, 300);
                     });
                     n.addEventListener('pointermove', function (e) {
                         if (!drag) return;
                         if (!drag.moved) {
                             if (Math.abs(e.clientX - drag.x0) + Math.abs(e.clientY - drag.y0) < 8) return;
-                            var r = n.getBoundingClientRect();
-                            drag.moved = true;
-                            drag.rect = r;
-                            drag.ghost = n.cloneNode(true);
-                            drag.ghost.classList.add('dragging');
-                            drag.ghost.style.cssText = 'left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + r.height + 'px';
-                            document.body.appendChild(drag.ghost);
-                            n.style.visibility = 'hidden';
-                            selected = null;
-                            // Место карточки — пустой рамкой сразу, ещё до того, как отпустили.
-                            if (!placed[c.id]) slots[c.id].classList.add('empty');
-                            drag.alive = true;
-                            haptic();
-                            edgeScroll(drag);
+                            // Пальцем повёл раньше, чем засчиталось долгое нажатие, — это прокрутка.
+                            if (!drag.mouse) { clearTimeout(drag.timer); drag = null; return; }
+                            lift(e);
                         }
-                        drag.x = e.clientX;
-                        drag.y = e.clientY;
-                        drag.ghost.style.transform = 'translate3d(' + (e.clientX - drag.x0) + 'px,' + (e.clientY - drag.y0) + 'px,0) rotate(-2deg) scale(1.04)';
-                        hover(zoneAt(e.clientX, e.clientY));
+                        follow(e.clientX, e.clientY);
                     });
+                    // Пока тянешь, страница сама не листается — только у края (edgeScroll).
+                    n.addEventListener('touchmove', function (e) { if (drag && drag.moved) e.preventDefault(); }, { passive: false });
+                    n.addEventListener('contextmenu', function (e) { e.preventDefault(); });
                     var drop = function (e, cancelled) {
                         if (!drag) return;
                         var d = drag;
                         drag = null;
+                        clearTimeout(d.timer);
                         if (!d.moved) return;   // не тянули — это тап, его разберёт click
                         d.alive = false;
                         cancelAnimationFrame(d.raf);
                         n.suppressClick = true;
                         hover(null);
                         var target = cancelled ? placed[c.id] || null : zoneAt(e.clientX, e.clientY);
+                        // Взял и отпустил на месте — карточка остаётся, где была.
+                        if (!cancelled && !target && placed[c.id] && Math.abs(e.clientX - d.x0) + Math.abs(e.clientY - d.y0) < 8) target = placed[c.id];
                         put(c.id, target);
                         // Копия долетает до нового места карточки и исчезает.
                         var to = n.getBoundingClientRect();
@@ -993,7 +1022,7 @@
                     zones[b.id] = { node: node, pool: inner };
                     list.appendChild(node);
                 });
-                card.appendChild(el('div', { class: 'counter', text: 'Перетащи каждую карточку в её группу' }));
+                card.appendChild(el('div', { class: 'counter', text: 'Зажми карточку и перетащи в её группу' }));
                 card.appendChild(pool);
                 card.appendChild(list);
                 redraw();

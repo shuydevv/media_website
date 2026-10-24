@@ -206,10 +206,14 @@
         .bucket h4 { margin: 0 0 6px; font-size: 14px; }
         .bucket .pool { margin: 0; min-height: 44px; }
         /* У каждой карточки своё место: взятая оставляет пустую рамку того же размера. */
-        .slot { display: flex; }
+        /* Карточки — в два столбца: список короче, его легче пролистать. */
+        .pool.slots, .bucket .pool { display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; }
+        .slot { display: flex; min-width: 0; }
         .slot > .tag { flex: 1; }
         .slot.empty { border: 2px dashed var(--dash); border-radius: 12px; }
-        .tag.drag { touch-action: none; user-select: none; -webkit-user-select: none; }
+        .tag.drag { touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; transition: transform .15s; }
+        /* Долгое нажатие засчитано — карточка «приподнимается» и едет за пальцем. */
+        .tag.drag.armed { transform: scale(.96); }
         .tag.dragging { position: fixed; z-index: 50; margin: 0; pointer-events: none; box-sizing: border-box; will-change: transform;
             box-shadow: 0 4px 0 var(--e, var(--edge)), 0 14px 30px rgba(0, 0, 0, .22); transition: box-shadow .15s; }
         .tag.dragging.landing { transition: transform .19s cubic-bezier(.2, .8, .2, 1), width .19s, height .19s, box-shadow .19s;
@@ -273,7 +277,7 @@
         .radar { display: block; width: 100%; max-width: 340px; margin: 4px auto 0; overflow: visible; }
         .radar .grid { fill: none; stroke: var(--line); }
         .radar .shape { fill: rgba(31, 127, 224, .22); stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; }
-        .radar .shape-g { transform-origin: 170px 112px; animation: grow .8s .2s cubic-bezier(.2, .8, .2, 1) both; }
+        .radar .shape-g { transform-origin: 170px 134px; animation: grow .8s .2s cubic-bezier(.2, .8, .2, 1) both; }
         .radar .vertex { fill: var(--accent); stroke: var(--bg); stroke-width: 2; }
         .radar .vertex.weak { fill: var(--bad); }
         @keyframes grow { from { transform: scale(0); opacity: 0; } to { transform: none; opacity: 1; } }
