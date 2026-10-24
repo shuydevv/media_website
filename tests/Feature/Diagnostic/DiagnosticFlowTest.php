@@ -179,7 +179,7 @@ class DiagnosticFlowTest extends TestCase
         $this->assertSame('miniapp', DiagnosticAttempt::sole()->entry);
     }
 
-    public function test_restart_only_after_finish_and_keeps_grade(): void
+    public function test_restart_only_after_finish_and_starts_from_the_beginning(): void
     {
         config(['diagnostic.allow_anonymous' => false]);
         $init = $this->initData(777);
@@ -191,10 +191,10 @@ class DiagnosticFlowTest extends TestCase
         $this->walkCorrect();
         $this->call_('target', ['target' => 80]);
         $old = $this->attempt;
-        $new = $this->openSession(['init_data' => $init, 'restart' => true])->assertJsonPath('screen', 'question')->json();
+        $new = $this->openSession(['init_data' => $init, 'restart' => true])->assertJsonPath('screen', 'profile')->json();
 
         $this->assertNotSame($old, $new['attempt']);
-        $this->assertSame('10', DiagnosticAttempt::latest('id')->first()->grade, 'класс не спрашиваем второй раз');
+        $this->assertNull(DiagnosticAttempt::latest('id')->first()->grade, 'заново — с вопроса про класс');
     }
 
     public function test_restart_mid_test_abandons_attempt_and_starts_fresh(): void
@@ -204,12 +204,13 @@ class DiagnosticFlowTest extends TestCase
         $this->call_('answer', ['question_id' => $state['question']['id'], 'answer' => ['x' => 1]]);
         $old = $this->attempt;
 
-        $new = $this->call_('restart', [])->assertOk()->assertJsonPath('screen', 'question')->json();
+        // Заново — с самого начала: снова знакомство («Ты в каком классе?»).
+        $new = $this->call_('restart', [])->assertOk()->assertJsonPath('screen', 'profile')->json();
 
         $this->assertNotSame($old, $new['attempt']);
         $this->assertSame(DiagnosticAttempt::STATUS_ABANDONED, DiagnosticAttempt::where('token', $old)->value('status'));
         $this->assertSame(0, $new['progress']['index']);
-        $this->assertSame('11', DiagnosticAttempt::where('token', $new['attempt'])->value('grade'), 'класс не спрашиваем второй раз');
+        $this->assertNull(DiagnosticAttempt::where('token', $new['attempt'])->value('grade'));
     }
 
     public function test_restart_after_result_keeps_finished_attempt(): void

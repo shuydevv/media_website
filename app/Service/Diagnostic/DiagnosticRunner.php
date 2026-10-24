@@ -45,9 +45,8 @@ class DiagnosticRunner
             'telegram_contact_id' => $contact?->id,
             'entry' => $entry,
             'platform' => $platform,
-            // Класс спрашиваем один раз на человека — повторное прохождение
-            // начинается сразу с вопросов.
-            'grade' => $contact ? DiagnosticAttempt::where('telegram_contact_id', $contact->id)->whereNotNull('grade')->latest('id')->value('grade') : null,
+            // Класс не переносим: каждое прохождение, в том числе после
+            // «Начать заново», — с самого начала, со знакомства (решение автора).
             'block_order' => $order,
             // Явно, а не дефолтами БД: create() их в модель не подтягивает,
             // а state() читает модель сразу после создания.
@@ -194,13 +193,7 @@ class DiagnosticRunner
             $attempt->forceFill(['status' => DiagnosticAttempt::STATUS_ABANDONED, 'current_question_id' => null])->save();
         }
 
-        $new = $this->start($attempt->contact, $attempt->entry ?? 'anonymous', $platform ?? $attempt->platform);
-        // Класс второй раз не спрашиваем — и у анонимного прохождения, где контакта нет.
-        if ($new->grade === null && $attempt->grade !== null) {
-            $new->forceFill(['grade' => $attempt->grade])->save();
-        }
-
-        return $new;
+        return $this->start($attempt->contact, $attempt->entry ?? 'anonymous', $platform ?? $attempt->platform);
     }
 
     /** «Хочешь улучшить свои знания?» — ответ один на прохождение, второй источник ничего не меняет. */
