@@ -45,6 +45,10 @@ class DiagnosticController extends Controller
         return view('diagnostic.app', [
             'mascot' => $shark('idle'),
             'mascots' => ['idle' => $shark('idle'), 'happy' => $shark('happy'), 'think' => $shark('think'), 'sad' => $shark('sad')],
+            'sea' => [
+                'light' => asset(config('diagnostic.sea.light')),
+                'dark' => config('diagnostic.sea.dark') ? asset(config('diagnostic.sea.dark')) : null,
+            ],
             'characters' => collect(config('diagnostic.characters'))
                 ->map(fn ($c) => ['name' => $c['name'], 'emoji' => $c['emoji'] ?? null, 'color' => $c['color'],
                     'avatar' => $c['avatar'] ? asset($c['avatar']) : null])

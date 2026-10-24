@@ -274,8 +274,9 @@
                 }, function () { fail(); });
             }, 'choice'));
         });
-        // Варианты — внизу, в панели у края экрана: не сливаются с репликами акулы.
-        show([say(SAY.hello, null, 'happy'), say(SAY.grade, null, 'think')], [grades], 'rise');
+        // Варианты — сразу под вопросом акулы, как ответные кнопки в чате.
+        grades.classList.add('answers');
+        show([say(SAY.hello, null, 'happy'), say(SAY.grade, null, 'think'), grades], [], 'rise');
     }
 
     function renderBlockIntro(s) {
@@ -292,7 +293,9 @@
         };
         show([
             el('div', { class: 'center' }, [
-                mascot('think', 'bob'),
+                // Маленький праздник: прошлый блок позади.
+                p.index > 0 ? el('div', { class: 'done-chip', text: '✓ «' + p.blocks[p.index - 1].title + '» пройден' }) : null,
+                mascot(p.index > 0 ? 'happy' : 'think', 'bob'),
                 el('div', { class: 'muted', text: 'Блок ' + (p.index + 1) + ' из ' + p.total }),
                 el('div', { class: 'big', text: block.title }),
             ]),
@@ -527,7 +530,8 @@
             el('i', { class: 'band', style: 'left:' + pos(r.low) + ';width:0', 'data-width': (r.high - r.low) + '%' }),
         ]);
         var label = function (at, text, cls) {
-            var clash = marks.some(function (m) { return Math.abs(m - at) < 14; });
+            // «потенциал 66+» — шириной около четверти шкалы: ближе — во вторую строку.
+            var clash = marks.some(function (m) { return Math.abs(m - at) < 24; });
             marks.push(at);
             bar.appendChild(el('span', { class: 'lbl' + (clash ? ' alt' : '') + (cls ? ' ' + cls : ''), style: 'left:' + pos(Math.max(6, Math.min(94, at))), text: text }));
         };
@@ -1059,6 +1063,20 @@
     }
 
     document.getElementById('restart').addEventListener('click', function () { restart(true); });
+
+    // Ночь — по теме Telegram (в нём) или системы: свой фон и тёмные плашки.
+    var applyNight = function () {
+        var night = inTelegram ? tg.colorScheme === 'dark' : !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('night', night);
+        // Шапка и низ Telegram — цвета воды, чтобы Mini App не обрезался полосой чужого цвета.
+        if (inTelegram && tg.isVersionAtLeast && tg.isVersionAtLeast('6.1')) {
+            var water = getComputedStyle(document.documentElement).getPropertyValue('--water').trim();
+            try { tg.setHeaderColor(water); tg.setBackgroundColor(water); } catch (e) { /* старый клиент */ }
+            if (tg.setBottomBarColor && tg.isVersionAtLeast('7.10')) { try { tg.setBottomBarColor(water); } catch (e) { /* старый клиент */ } }
+        }
+    };
+    applyNight();
+    if (inTelegram && tg.onEvent) tg.onEvent('themeChanged', applyNight);
 
     if (tg) {
         try {
