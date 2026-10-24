@@ -46,12 +46,12 @@ return [
         'default_target' => 80,
     ],
 
-    // Фон «Подводный мир» (путь от public/). dark — для тёмной темы Telegram
-    // или системы: автор пришлёт свой; пока null — днём и ночью один океан,
-    // ночью затемнённый.
-    'sea' => [
-        'light' => 'img/diagnostic/sea.webp',
-        'dark' => null,
+    // Фон (путь от public/) — паттерн кабинета ученика (resources/img/pattern.webp,
+    // 15% поверх #F6FCFF), заранее «вклеенный» в цвет фона: так файл в 30 раз
+    // легче, чем с прозрачностью. dark — для тёмной темы Telegram или системы.
+    'background' => [
+        'light' => 'img/diagnostic/pattern-light.webp',
+        'dark' => 'img/diagnostic/pattern-dark.webp',
     ],
 
     // Персонажи вопросов — кочуют из вопроса в вопрос, ошибки звучат из их

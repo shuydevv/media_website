@@ -1068,11 +1068,11 @@
     var applyNight = function () {
         var night = inTelegram ? tg.colorScheme === 'dark' : !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
         document.documentElement.classList.toggle('night', night);
-        // Шапка и низ Telegram — цвета воды, чтобы Mini App не обрезался полосой чужого цвета.
+        // Шапка и низ Telegram — цвета фона, чтобы Mini App не обрезался полосой чужого цвета.
         if (inTelegram && tg.isVersionAtLeast && tg.isVersionAtLeast('6.1')) {
-            var water = getComputedStyle(document.documentElement).getPropertyValue('--water').trim();
-            try { tg.setHeaderColor(water); tg.setBackgroundColor(water); } catch (e) { /* старый клиент */ }
-            if (tg.setBottomBarColor && tg.isVersionAtLeast('7.10')) { try { tg.setBottomBarColor(water); } catch (e) { /* старый клиент */ } }
+            var bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+            try { tg.setHeaderColor(bg); tg.setBackgroundColor(bg); } catch (e) { /* старый клиент */ }
+            if (tg.setBottomBarColor && tg.isVersionAtLeast('7.10')) { try { tg.setBottomBarColor(bg); } catch (e) { /* старый клиент */ } }
         }
     };
     applyNight();
