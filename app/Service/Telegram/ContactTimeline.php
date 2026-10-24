@@ -81,7 +81,11 @@ final class ContactTimeline
             $media = $m->media_type ? '['.$m->media_type.'] ' : '';
 
             match ($m->kind) {
-                TelegramMessage::KIND_USER => $add($m->created_at, '💬', 'Написал', 'user', $media.$preview),
+                // Пару минут без отметки — норма (очередь); дольше — не дошло
+                // до темы, досылает telegram:resend-unforwarded.
+                TelegramMessage::KIND_USER => $add($m->created_at, '💬',
+                    'Написал'.($m->forwarded_at === null && $m->created_at->lt(now()->subMinutes(3)) ? ' — ⚠️ не переслано в тему админ-группы' : ''),
+                    'user', $media.$preview.($m->forwarded_at === null && $m->forward_error ? "\nошибка: ".$m->forward_error : '')),
                 TelegramMessage::KIND_ADMIN => $add($m->created_at, '👤', 'Вы ответили', 'admin', $media.$preview),
                 default => $add($m->created_at, '🤖', 'Бот: '.($labels[$m->step] ?? $m->step ?? 'сообщение'), 'bot', $preview),
             };

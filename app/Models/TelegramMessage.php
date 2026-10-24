@@ -29,6 +29,12 @@ class TelegramMessage extends Model
         'text', 'media_type', 'file_id', 'telegram_message_id',
     ];
 
+    protected $casts = [
+        'forwarded_at' => 'datetime',
+        'forward_claimed_at' => 'datetime',
+        'forward_alerted_at' => 'datetime',
+    ];
+
     public function contact(): BelongsTo
     {
         return $this->belongsTo(TelegramContact::class, 'telegram_contact_id');

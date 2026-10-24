@@ -31,5 +31,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('telegram:send-reminders')->everyMinute()->withoutOverlapping();
         $schedule->command('telegram:digest')->dailyAt('21:00');
         $schedule->command('telegram:remind-unanswered')->everyTenMinutes()->withoutOverlapping();
+        // Без withoutOverlapping: его мьютекс в файловом кэше, а команда как
+        // раз страхует от сбоев кэша; от двойной досылки — свой claim в БД.
+        $schedule->command('telegram:resend-unforwarded')->everyMinute();
     }
 }

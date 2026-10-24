@@ -6,7 +6,6 @@ use App\Models\SiteLead;
 use App\Models\TelegramContact;
 use App\Models\TelegramMessage;
 use App\Service\Diagnostic\DiagnosticSummary;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -71,11 +70,15 @@ class AdminTopics
 
         // Сейчас воркер очереди telegram один и задачи идут по порядку, но
         // если их станет несколько — без блокировки два сообщения подряд
-        // от нового человека создали бы ему две темы.
-        return Cache::lock("telegram-topic-{$contact->id}", 20)->block(15, function () use ($contact, $chatId) {
+        // от нового человека создали бы ему две темы. Блокировка — строкой
+        // контакта в БД, не Cache::lock: файловый кэш зависит от прав на
+        // папки, и 23.10.2026 папка от root (деплой) уронила создание темы —
+        // сообщение человека в группу так и не попало.
+        $created = DB::transaction(function () use ($contact, $chatId) {
+            TelegramContact::whereKey($contact->id)->lockForUpdate()->first();
             $contact->refresh();
             if ($contact->topic_id) {
-                return (int) $contact->topic_id;
+                return false;
             }
 
             $topic = $this->api->call('createForumTopic', [
@@ -87,21 +90,69 @@ class AdminTopics
                 'topic_status' => $contact->statusEmoji(),
             ])->save();
 
-            $this->sendCard($contact);
-
-            return (int) $contact->topic_id;
+            return true;
         });
+
+        // Карточка — после транзакции и без исключения наружу: тема уже
+        // есть, и сбой карточки не должен мешать пересылке сообщения.
+        if ($created) {
+            try {
+                $this->sendCard($contact);
+            } catch (TelegramApiException $e) {
+                Log::warning('Telegram funnel: не удалось отправить карточку темы', ['contact' => $contact->id, 'error' => $e->getMessage()]);
+            }
+        }
+
+        return (int) $contact->topic_id;
     }
 
-    /** Переслать сообщение человека в его тему (со звуком — на него надо ответить). */
+    /**
+     * Переслать сообщение человека в его тему (со звуком — на него надо
+     * ответить) и отметить в telegram_messages.forwarded_at. Уже отмеченное
+     * не пересылаем: его могла дослать telegram:resend-unforwarded, пока
+     * задача очереди ждала повтора.
+     */
     public function forward(TelegramContact $contact, int $messageId): void
     {
-        $this->inTopic($contact, fn (int $chatId, int $topicId) => $this->api->call('forwardMessage', [
+        $message = $contact->messages()
+            ->where('kind', TelegramMessage::KIND_USER)
+            ->where('telegram_message_id', $messageId)
+            ->first();
+        if ($message?->forwarded_at) {
+            return;
+        }
+
+        $sent = $this->inTopic($contact, fn (int $chatId, int $topicId) => $this->api->call('forwardMessage', [
             'chat_id' => $chatId,
             'message_thread_id' => $topicId,
             'from_chat_id' => $contact->telegram_user_id,
             'message_id' => $messageId,
         ]));
+
+        if ($sent) {
+            $message?->forceFill(['forwarded_at' => now(), 'forward_error' => null])->save();
+        }
+    }
+
+    /**
+     * Запасной путь досылки, когда forwardMessage раз за разом не проходит
+     * (человек удалил сообщение и т.п.): текст из telegram_messages обычным
+     * сообщением в тему, со звуком.
+     */
+    public function forwardAsText(TelegramContact $contact, TelegramMessage $message): void
+    {
+        $body = $message->text !== null ? '<blockquote>'.e($message->text).'</blockquote>' : '';
+        $media = $message->media_type ? "\n[{$message->media_type}] — само вложение не переслалось, смотрите в чате с ботом" : '';
+        $html = '💬 <b>Сообщение от '.$message->created_at->format('d.m H:i').'</b> (переслать не удалось, текст из базы):'
+            ."\n".$body.$media;
+
+        $sent = $this->inTopic($contact, fn (int $chatId, int $topicId) => $this->api->sendMessage($chatId, $html, [
+            'message_thread_id' => $topicId,
+        ]));
+
+        if ($sent) {
+            $message->forceFill(['forwarded_at' => now(), 'forward_error' => null])->save();
+        }
     }
 
     /**
@@ -229,27 +280,38 @@ class AdminTopics
             'leads' => '📝 Заявки с сайта',
             'liked' => '🔥 Понравилось',
             'diag' => '🧪 Диагностики',
+            'alerts' => '⚠️ Сбои',
         ];
 
-        return Cache::lock("telegram-service-topic-{$key}", 20)->block(15, function () use ($key, $names, $topicName) {
-            $id = DB::table('telegram_service_topics')->where('key', $key)->value('topic_id');
-            if ($id) {
-                return (int) $id;
-            }
+        $id = DB::table('telegram_service_topics')->where('key', $key)->value('topic_id');
+        if ($id) {
+            return (int) $id;
+        }
 
-            $topic = $this->api->call('createForumTopic', [
-                'chat_id' => self::adminChatId(),
-                'name' => $names[$key] ?? $topicName ?? $key,
-            ]);
-            DB::table('telegram_service_topics')->insert([
-                'key' => $key,
-                'topic_id' => $topic['message_thread_id'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
+        // Без Cache::lock (см. ensureTopic): гонку решает первичный ключ.
+        // Две задачи разом создали по теме — запись остаётся за первой,
+        // вторая свою тему удаляет и пишет в первую.
+        $topic = $this->api->call('createForumTopic', [
+            'chat_id' => self::adminChatId(),
+            'name' => $names[$key] ?? $topicName ?? $key,
+        ]);
+        $inserted = DB::table('telegram_service_topics')->insertOrIgnore([
+            'key' => $key,
+            'topic_id' => $topic['message_thread_id'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        if ($inserted) {
             return (int) $topic['message_thread_id'];
-        });
+        }
+
+        try {
+            $this->api->call('deleteForumTopic', ['chat_id' => self::adminChatId(), 'message_thread_id' => $topic['message_thread_id']]);
+        } catch (TelegramApiException $e) {
+            Log::warning('Telegram funnel: не удалось удалить дубль служебной темы', ['key' => $key, 'error' => $e->getMessage()]);
+        }
+
+        return (int) DB::table('telegram_service_topics')->where('key', $key)->value('topic_id');
     }
 
     /** Переименовать тему, если сменился эмодзи-статус (💬 — ждёт ответа и т.п.). */
@@ -379,12 +441,14 @@ class AdminTopics
     /**
      * Вызов в тему человека; если тему удалили руками — создаём новую и
      * повторяем один раз.
+     *
+     * @return bool false — группа не настроена, ничего не отправлено
      */
-    private function inTopic(TelegramContact $contact, callable $call): void
+    private function inTopic(TelegramContact $contact, callable $call): bool
     {
         $topicId = $this->ensureTopic($contact);
         if (! $topicId) {
-            return;
+            return false;
         }
 
         try {
@@ -395,10 +459,13 @@ class AdminTopics
             }
             $contact->forceFill(['topic_id' => null, 'topic_status' => null])->save();
             $topicId = $this->ensureTopic($contact);
-            if ($topicId) {
-                $call(self::adminChatId(), $topicId);
+            if (! $topicId) {
+                return false;
             }
+            $call(self::adminChatId(), $topicId);
         }
+
+        return true;
     }
 
     private function topicName(TelegramContact $contact): string
