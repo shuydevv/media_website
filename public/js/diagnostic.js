@@ -368,7 +368,7 @@
             haptic();
             submit(true);
         } });
-        ui.submit = q.mechanic === 'swipe' ? null : button('Ответить', submit);
+        ui.submit = q.mechanic === 'swipe' ? null : button('Ответить', function () { submit(false); });
         if (ui.submit) ui.submit.disabled = true;
         show([card], [guess, ui.submit], 'slide');
         if (ui.api.ready) ui.api.ready();
@@ -379,6 +379,9 @@
     }
 
     function submit(skip) {
+        // Пропуск — только явное submit(true) от «Не знаю»: обработчик клика
+        // передаёт событие, и оно не должно превращать ответ в пропуск.
+        skip = skip === true;
         if (ui.locked || (!skip && ui.submit && !ui.api.complete())) return;
         ui.locked = true;
         if (ui.submit) ui.submit.disabled = true;
