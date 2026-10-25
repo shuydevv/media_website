@@ -181,7 +181,9 @@ row-lock промокодов на SQLite пропускается. Старые
   (`DiagnosticStats`), настройка сервера — `deploy/README.md`, раздел 9. Ошибки у
   ученика (JS, файлы, ответы API) страница шлёт в `/diag/api/log` →
   `storage/logs/diag-client-*.log` (новая — строкой в «🧪 Диагностики»). Метка рекламы —
-  `?start=<метка>` или прямая ссылка на Mini App `?startapp=<метка>` (`start_param`).
+  `?start=<метка>` или прямая ссылка на Mini App `?startapp=<метка>` (`start_param`). После правок `public/js/diagnostic.js` —
+  `node tests/e2e/diagnostic-correct.mjs` (локальный сервер, см. шапку файла): проходит тест
+  через интерфейс правильными ответами и ловит расхождения страницы и сервера.
 
 **Auth** — не стандартный Breeze-флоу целиком: вход по телефону (OTP, `PhoneAuthController`,
 `Service/Sms/*`) и по email-коду/подписанной ссылке (`EmailAuthController`, `EmailOtpService`),
