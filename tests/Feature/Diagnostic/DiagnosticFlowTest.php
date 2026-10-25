@@ -107,20 +107,30 @@ class DiagnosticFlowTest extends TestCase
         $this->assertGreaterThan(0, $result['potential'] - $result['high']);
     }
 
-    public function test_guess_is_logged_and_counted(): void
+    public function test_dont_know_skips_question_as_wrong(): void
     {
         $this->openSession();
         $state = $this->call_('profile', ['grade' => '11'])->json();
+        $answers = 0;
         while ($state['screen'] === 'question') {
-            $state = $this->call_('answer', ['question_id' => $state['question']['id'], 'answer' => $this->right($state['question']['id']), 'guess' => true])->json('state');
+            // «Не знаю» — даже с верным ответом в payload засчитывается как ноль.
+            $res = $this->call_('answer', ['question_id' => $state['question']['id'], 'answer' => $this->right($state['question']['id']), 'guess' => true])
+                ->assertJsonPath('correct', false)->assertJsonPath('skipped', true)->json();
+            $state = $res['state'];
+            $answers++;
         }
 
+        $this->assertSame(10, $answers, 'каждый блок — как после двух ошибок');
         $result = $this->call_('target', ['target' => 70])->json('result');
-
-        $this->assertSame(20, $result['guessed']);
         $attempt = DiagnosticAttempt::sole();
-        $this->assertSame(array_fill_keys(array_keys(config('diagnostic.blocks')), 0), $attempt->levels_low);
-        $this->assertLessThan($attempt->result['high'] - 2 * config('diagnostic.model.min_spread'), $attempt->result['low']);
+        $this->assertSame(array_fill_keys(array_keys(config('diagnostic.blocks')), 0), $attempt->levels);
+        $this->assertSame(10, $attempt->result['skipped']);
+        $this->assertSame(0, $result['guessed']);
+    }
+
+    public function test_blocks_go_in_fixed_order(): void
+    {
+        $this->assertSame(config('diagnostic.block_order'), array_column($this->openSession()->json('progress.blocks'), 'key'));
     }
 
     public function test_answer_to_old_question_returns_current_state(): void

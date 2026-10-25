@@ -57,8 +57,8 @@ final class DiagnosticSummary
         if ($r['weak'] !== []) {
             $lines[] = 'Точки роста: '.e(self::weakTitles($attempt));
         }
-        if (($r['guessed'] ?? 0) > 0) {
-            $lines[] = 'Наугад верно: '.$r['guessed'];
+        if (($r['skipped'] ?? 0) > 0) {
+            $lines[] = '«Не знаю»: '.$r['skipped'];
         }
         $lines[] = '«Хочешь улучшить?»: '.match ($attempt->improve) {
             'yes' => '<b>да</b>'.($attempt->improve_source === 'bot' ? ' (в чате)' : ' (на странице)'),

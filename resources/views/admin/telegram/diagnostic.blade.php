@@ -165,7 +165,7 @@
     <x-ui.empty>Ответов пока нет</x-ui.empty>
 @else
     <x-ui.table>
-        <thead><tr><th>Вопрос</th><th>Блок · уровень</th><th>Задан</th><th>Верно</th><th>Наугад</th><th>Время</th><th>Бросили</th></tr></thead>
+        <thead><tr><th>Вопрос</th><th>Блок · уровень</th><th>Задан</th><th>Верно</th><th>«Не знаю»</th><th>Время</th><th>Бросили</th></tr></thead>
         <tbody>
             @foreach ($questions as $q)
                 <tr>
@@ -173,7 +173,7 @@
                     <td data-label="Блок · уровень" class="text-sm">{{ $blocks[$q['block']]['title'] ?? $q['block'] }} · {{ $levelNames[$q['level']] ?? $q['level'] }}</td>
                     <td data-label="Задан" class="tabular-nums">{{ $q['shown'] }}</td>
                     <td data-label="Верно" class="tabular-nums">{{ $q['correct'] }}%</td>
-                    <td data-label="Наугад" class="tabular-nums">{{ $q['guess'] }}%</td>
+                    <td data-label="«Не знаю»" class="tabular-nums">{{ $q['guess'] }}%</td>
                     <td data-label="Время" class="tabular-nums">{{ $q['ms'] !== null ? round($q['ms'] / 1000).' с' : '—' }}</td>
                     <td data-label="Бросили" class="tabular-nums">{{ $dropOffs['questions'][$q['id']] ?? 0 }}</td>
                 </tr>

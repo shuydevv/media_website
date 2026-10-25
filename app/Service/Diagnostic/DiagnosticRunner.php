@@ -36,9 +36,10 @@ class DiagnosticRunner
 
     public function start(?TelegramContact $contact, string $entry, ?string $platform = null): DiagnosticAttempt
     {
-        // Порядок блоков — случайный (ТЗ, 5.1), пока автор не определит их сложность.
-        $order = array_keys(config('diagnostic.blocks'));
-        shuffle($order);
+        // Порядок блоков — один для всех (config diagnostic.block_order, ТЗ 5.1);
+        // блоки, которых там нет, — в конце.
+        $all = array_keys(config('diagnostic.blocks'));
+        $order = array_values(array_unique(array_merge(array_intersect(config('diagnostic.block_order', []), $all), $all)));
 
         return DiagnosticAttempt::create([
             'token' => Str::random(32),
@@ -100,7 +101,8 @@ class DiagnosticRunner
             }
 
             $block = $question['block'];
-            $correct = AnswerChecker::check($question, $payload);
+            // «Не знаю» ($guess) — пропуск: ноль баллов, путь блока — как после ошибки.
+            $correct = ! $guess && AnswerChecker::check($question, $payload);
 
             if ($explainMs !== null) {
                 DiagnosticAnswer::where('diagnostic_attempt_id', $attempt->id)->latest('id')->limit(1)
@@ -136,6 +138,7 @@ class DiagnosticRunner
 
             return [
                 'correct' => $correct,
+                'skipped' => $guess,
                 'explain' => $correct ? $question['explain_correct'] : $question['explain_wrong'],
                 // Кто говорит пояснение: в «Кто прав?» — тот, кто прав; иначе —
                 // explain_by из банка; пусто — рыба.
@@ -178,6 +181,8 @@ class DiagnosticRunner
             'levels_low' => $low,
             'result' => $this->model->compute($high, $low) + [
                 'guessed' => DiagnosticAnswer::where('diagnostic_attempt_id', $attempt->id)->where('correct', true)->where('guess', true)->count(),
+                // Сколько раз нажал «Не знаю» (guess = пропуск) — для карточки админу.
+                'skipped' => DiagnosticAnswer::where('diagnostic_attempt_id', $attempt->id)->where('guess', true)->count(),
                 'accuracy' => $accuracy,
             ],
             'status' => DiagnosticAttempt::STATUS_FINISHED,

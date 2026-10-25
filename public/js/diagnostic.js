@@ -34,7 +34,8 @@
     var SAY = {
         hello: 'Привет! Я помогу понять, где ты уже крут в обществознании, а где можно добрать баллы 🦈\nЭто займёт минут 10.',
         grade: 'Для начала: ты в каком классе?',
-        go: 'Поехали! Отвечай как знаешь — если сомневаешься, нажми «🎲 Наугад» перед ответом.',
+        go: 'Поехали! Если не знаешь ответ — жми «Не знаю», не угадывай: так результат будет честнее.',
+        skip: ['Ничего страшного — разберём 👇', 'Это нормально — вот как правильно 👇'],
         ok: ['Верно! ✅', 'Точно! ✅', 'Есть! ✅'],
         bad: ['Не совсем 🙃', 'Мимо, но это поправимо 🙃', 'Почти 🙃'],
         streak: '🔥 {n} подряд!',
@@ -315,7 +316,7 @@
         var block = p.blocks[p.index];
         var first = p.index === 0;
         // Без лишнего клика: заставка держится немного и сама переходит к
-        // заданию; на первом блоке дольше — там совет про «Наугад». Тап по
+        // заданию; на первом блоке дольше — там совет про «Не знаю». Тап по
         // экрану — сразу дальше. Полоска внизу показывает, сколько осталось.
         var ms = first ? 3500 : 1800;
         var go = function () {
@@ -353,11 +354,12 @@
         ui.card = card;
         ui.api = mech.build(q, card);
 
-        var guess = el('button', { class: 'chip-guess', type: 'button', text: '🎲 Наугад', onclick: function () {
+        // «Не знаю» — пропуск: сразу на сервер, засчитывается как ноль баллов.
+        var guess = el('button', { class: 'chip-guess', type: 'button', text: '🤷 Не знаю', onclick: function () {
             if (ui.locked) return;
-            ui.guess = !ui.guess;
-            guess.classList.toggle('on', ui.guess);
+            ui.guess = true;
             haptic();
+            submit(true);
         } });
         ui.submit = q.mechanic === 'swipe' ? null : button('Ответить', submit);
         if (ui.submit) ui.submit.disabled = true;
@@ -369,13 +371,13 @@
         if (ui.submit) ui.submit.disabled = !ui.api.complete();
     }
 
-    function submit() {
-        if (ui.locked || (ui.submit && !ui.api.complete())) return;
+    function submit(skip) {
+        if (ui.locked || (!skip && ui.submit && !ui.api.complete())) return;
         ui.locked = true;
         if (ui.submit) ui.submit.disabled = true;
         var payload = {
             question_id: ui.q.id,
-            answer: ui.api.value(),
+            answer: skip ? { skip: true } : ui.api.value(),
             guess: ui.guess,
             answer_ms: Date.now() - ui.shownAt,
             explain_ms: pendingExplainMs,
@@ -389,13 +391,13 @@
     }
 
     function renderFeedback(res) {
-        haptic(res.correct ? 'ok' : 'bad');
+        haptic(res.correct ? 'ok' : (res.skipped ? null : 'bad'));
         ui.api.reveal(res.solution);
         // Верно — вспышка у свайп-карточки или у верных плашек; неверно — встряска вопроса.
         if (res.correct) {
             var lit = ui.card.querySelector('.swipe-card') ? [ui.card.querySelector('.swipe-card')] : [].slice.call(ui.card.querySelectorAll('.ok'));
             lit.forEach(function (n) { play(n, 'flash-ok'); });
-        } else {
+        } else if (!res.skipped) {
             play(ui.card, 'shake');
         }
 
@@ -414,7 +416,7 @@
         var who = character(res.explain_by) ? res.explain_by : null;
         var whoMood = q.skin === 'who' ? 'happy' : (who === q.from ? (fromRight ? 'happy' : 'sad') : 'idle');
         var mood = who ? whoMood : (res.correct ? 'happy' : 'sad');
-        var text = who ? (res.correct ? '✅ ' : '❌ ') + nameOf(who) + ': ' + res.explain : (res.correct ? pick(SAY.ok) : pick(SAY.bad)) + '\n' + res.explain;
+        var text = who ? (res.correct ? '✅ ' : '❌ ') + nameOf(who) + ': ' + res.explain : (res.correct ? pick(SAY.ok) : pick(res.skipped ? SAY.skip : SAY.bad)) + '\n' + res.explain;
         $screen.appendChild(sayTyping(
             text,
             res.correct ? 'ok' : 'bad',
@@ -521,10 +523,6 @@
             : 'И вторая часть ЕГЭ — её тест не проверяет, а это около половины баллов.' }));
         nodes.push(section(strong ? 'Что проверить дальше' : 'Точки роста', growth));
 
-        if (r.guessed > 0) {
-            nodes.push(el('p', { class: 'muted small', text: '🎲 ' + r.guessed + ' ' + plural(r.guessed, 'верный ответ', 'верных ответа', 'верных ответов')
-                + ' ты дал наугад — в этих темах знания шаткие.' }));
-        }
 
         var bar = [];
         if (s.improve) {
