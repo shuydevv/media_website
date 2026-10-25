@@ -282,10 +282,13 @@ class DiagnosticRunner
     private function progress(DiagnosticAttempt $attempt): array
     {
         $blocks = config('diagnostic.blocks');
+        $current = $attempt->block_order[$attempt->block_index] ?? null;
 
         return [
             'index' => min($attempt->block_index, count($attempt->block_order)),
             'total' => count($attempt->block_order),
+            // Отвечено в текущем блоке (из BlockRun::MAX_QUESTIONS) — заливка текущего отрезка.
+            'answered' => $current ? count($this->blockAnswers($attempt, $current)) : 0,
             'blocks' => array_map(fn ($key) => ['key' => $key, 'title' => $blocks[$key]['title']], $attempt->block_order),
         ];
     }

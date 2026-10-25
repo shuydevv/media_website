@@ -74,12 +74,11 @@
         .top[hidden] { display: none; }
         .segments { display: flex; align-items: center; gap: 6px; }
         .segments i { position: relative; flex: 1; height: 6px; border-radius: 3px; background: var(--line); }
-        .segments i::after { content: ""; position: absolute; inset: 0; width: 0; border-radius: 3px; background: var(--accent);
+        /* Заливка отрезка — --fill (доля отвеченных в блоке); ракушка — одна, на конце заливки. */
+        .segments i::after { content: ""; position: absolute; inset: 0; width: var(--fill, 0); border-radius: 3px; background: var(--accent);
             transition: width .6s cubic-bezier(.2, .8, .2, 1); }
-        .segments i.done::after { width: 100%; }
-        .segments i.now::after { width: 35%; }
-        .segments i.done::before { content: "🐚"; position: absolute; right: -6px; top: 50%; transform: translateY(-50%); font-size: 13px; z-index: 1;
-            animation: pop .4s ease-out; }
+        .segments i b { position: absolute; left: var(--fill, 0); top: 50%; transform: translate(-50%, -50%); font-size: 13px; z-index: 1;
+            transition: left .6s cubic-bezier(.2, .8, .2, 1); }
         .top-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 8px; }
         .top-label { font-size: 13px; color: var(--hint); }
 
@@ -211,7 +210,8 @@
         .slot { display: flex; min-width: 0; }
         .slot > .tag { flex: 1; }
         .slot.empty { border: 2px dashed var(--dash); border-radius: 12px; }
-        .tag.drag { touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; transition: transform .15s; }
+        .tag.drag, .tag.drag * { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+        .tag.drag { touch-action: pan-y; transition: transform .15s; }
         /* Долгое нажатие засчитано — карточка «приподнимается» и едет за пальцем. */
         .tag.drag.armed { transform: scale(.96); }
         .tag.dragging { position: fixed; z-index: 50; margin: 0; pointer-events: none; box-sizing: border-box; will-change: transform;

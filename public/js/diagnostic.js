@@ -38,14 +38,13 @@
         ok: ['Верно! ✅', 'Точно! ✅', 'Есть! ✅'],
         bad: ['Не совсем 🙃', 'Мимо, но это поправимо 🙃', 'Почти 🙃'],
         streak: '🔥 {n} подряд!',
-        growth: '{block} — твоя точка роста 🎯\nИдём дальше!',
         target: 'Последний вопрос перед результатом: на сколько баллов хочешь сдать?',
         // Итог — по типу результата (renderResult). result_strong — слова автора.
         result_strong: 'Ты хорошо знаешь базовую теорию! Вот столько ты сможешь набрать, при условии, что умеешь решать задания второй части и знаешь критерии 👇',
         result_medium: 'Хорошая база! Есть пара точек роста — и ты на {potential}+ 💪',
         result_weak: 'Есть над чем поработать — и это быстро закрывается 💪',
         improve_weak: 'Хочешь подтянуть {blocks}?',
-        btn_strong: 'Хочу разобраться с этим',
+        improve_strong: 'Хочешь улучшить свой балл?',
         improveYes: 'Отлично! Возвращаю тебя в чат — там тебе напишут 🙂',
         improveNo: 'Окей! Результат сохранился. Захочешь — пиши в чат бота.',
         open: 'Открой диагностику через бота в Telegram — по кнопке «Пройти диагностику».',
@@ -120,7 +119,7 @@
      */
     function avatar(id, fallbackName, mood) {
         var c = character(id);
-        if (c && c.avatars) return el('img', { class: 'avatar', src: c.avatars[mood] || c.avatars.idle, alt: '' });
+        if (c && c.avatars) return el('img', { class: 'avatar', src: c.avatars[mood] || c.avatars.idle, alt: '', 'data-who': id });
         var name = c ? c.name : (fallbackName || '?');
         // Без кружка: эмодзи (пока нет арта) — сам по себе; буква — на кружке его цвета.
         if (c && c.emoji) return el('span', { class: 'avatar emoji', text: c.emoji });
@@ -253,17 +252,26 @@
         $top.hidden = !inTest;
         if (!inTest) return;
         var seg = document.getElementById('segments');
-        var cls = function (i, at) { return i < at ? 'done' : (i === at ? 'now' : ''); };
-        // Сначала — как было, следующим кадром — как стало: заливка едет.
-        var from = shownProgress < 0 ? p.index : shownProgress;
-        seg.innerHTML = '';
-        for (var i = 0; i < p.total; i++) seg.appendChild(el('i', { class: cls(i, from) }));
-        if (from !== p.index) {
-            requestAnimationFrame(function () {
-                requestAnimationFrame(function () { [].forEach.call(seg.children, function (s, i) { s.className = cls(i, p.index); }); });
+        // Позиция — блок + доля отвеченных в нём (из 4 возможных): линия идёт с
+        // каждым ответом, ракушка — одна, на конце заливки.
+        var at = p.index + Math.min(1, (p.answered || 0) / 4);
+        var paint = function (pos) {
+            [].forEach.call(seg.children, function (s, i) {
+                var fill = Math.max(0, Math.min(1, pos - i));
+                s.className = fill >= 1 ? 'done' : '';
+                s.style.setProperty('--fill', (fill * 100) + '%');
+                var shell = s.querySelector('b');
+                if (shell) shell.remove();
+                if (i === Math.min(p.total - 1, Math.floor(pos))) s.appendChild(el('b', { text: '🐚' }));
             });
-        }
-        shownProgress = p.index;
+        };
+        // Сначала — как было, следующим кадром — как стало: заливка едет.
+        var from = shownProgress < 0 ? at : shownProgress;
+        seg.innerHTML = '';
+        for (var i = 0; i < p.total; i++) seg.appendChild(el('i'));
+        paint(from);
+        if (from !== at) requestAnimationFrame(function () { requestAnimationFrame(function () { paint(at); }); });
+        shownProgress = at;
         var block = p.blocks[p.index];
         document.getElementById('top-label').textContent = 'Блок ' + (p.index + 1) + ' из ' + p.total + (block ? ' · ' + block.title : '');
     }
@@ -394,9 +402,18 @@
         // Мем — картинка из банка (поле meme: путь от корня сайта или https-адрес).
         var meme = typeof res.meme === 'string' && /^(https:\/\/|\/)/.test(res.meme) ? el('img', { class: 'meme', src: res.meme, alt: '' }) : null;
         // Говорит персонаж (тот, кто прав в «Кто прав?», или explain_by) — иначе рыба.
-        // Правый в споре радуется всегда; объясняющий персонаж — когда ответ верный.
+        // Персонаж вопроса (from) до ответа — обычный, после — по тому, прав ли он сам:
+        // утверждение в чате верно, в споре он прав; в посте и ответе на ЕГЭ — ошибки.
+        var q = ui.q;
+        var fromRight = q.from ? (q.mechanic === 'swipe' ? res.solution.value === true : q.skin === 'debate') : null;
+        if (q.from) [].forEach.call(ui.card.querySelectorAll('img.avatar[data-who="' + q.from + '"]'), function (img) {
+            var c = character(q.from);
+            if (c && c.avatars) img.src = c.avatars[fromRight ? 'happy' : 'sad'];
+        });
+        // Объясняющий: правый в «Кто прав?» и персонаж вопроса — по своей правоте; другой — обычный.
         var who = character(res.explain_by) ? res.explain_by : null;
-        var mood = who ? (res.correct || ui.q.skin === 'who' ? 'happy' : 'idle') : (res.correct ? 'happy' : 'sad');
+        var whoMood = q.skin === 'who' ? 'happy' : (who === q.from ? (fromRight ? 'happy' : 'sad') : 'idle');
+        var mood = who ? whoMood : (res.correct ? 'happy' : 'sad');
         var text = who ? (res.correct ? '✅ ' : '❌ ') + nameOf(who) + ': ' + res.explain : (res.correct ? pick(SAY.ok) : pick(SAY.bad)) + '\n' + res.explain;
         $screen.appendChild(sayTyping(
             text,
@@ -411,7 +428,6 @@
         var shownAt = Date.now();
         var next = function () {
             pendingExplainMs = Date.now() - shownAt;
-            if (res.block.closed_by_errors) return renderGrowth(res);
             render(res.state);
         };
         $bar.innerHTML = '';
@@ -426,15 +442,6 @@
             // Неверно — разбор читают сколько нужно, дальше — кнопкой.
             $bar.appendChild(button('Дальше', next));
         }
-    }
-
-    // Блок закрыт двумя ошибками — не «провал», а точка роста (ТЗ, 5.3).
-    function renderGrowth(res) {
-        $top.hidden = true;
-        show([
-            el('div', { class: 'center' }, [mascot('sad')]),
-            say(SAY.growth.replace('{block}', res.block.title), null, 'think'),
-        ], [button('Идём дальше', function () { render(res.state); })], 'rise');
     }
 
     function renderTarget(s) {
@@ -524,9 +531,13 @@
             nodes.push(say(s.improve === 'yes' ? SAY.improveYes : SAY.improveNo));
             bar.push(button('↺ Пройти ещё раз', function () { restart(false); }, 'ghost'));
         } else {
-            if (!strong) nodes.push(say(SAY.improve_weak.replace('{blocks}', joinAnd(r.weak_acc || r.weak)), null, 'think'));
-            bar.push(button('Пока нет', function () { improve(false); }, 'ghost'));
-            bar.push(button(strong ? SAY.btn_strong : 'Да, хочу', function () { improve(true); }));
+            // Вопрос и ответы — в конце страницы, под репликой: прочитал итог —
+            // видишь, о чём спрашивают. Нижняя панель пустая.
+            nodes.push(say(strong ? SAY.improve_strong : SAY.improve_weak.replace('{blocks}', joinAnd(r.weak_acc || r.weak)), null, 'think'));
+            nodes.push(el('div', { class: 'grades answers improve-answers' }, [
+                button('Пока нет', function () { improve(false); }, 'ghost'),
+                button('Да, хочу', function () { improve(true); }),
+            ]));
             // Пройти заново можно и не отвечая на вопрос — итог этого раза сохранится.
             nodes.push(el('div', { class: 'center-link' }, [el('button', { class: 'link', type: 'button', text: '↺ Пройти заново', onclick: function () { restart(false); } })]));
         }
@@ -663,7 +674,7 @@
      * — обратно в чат, где дальше пишет Александр.
      */
     function improve(yes) {
-        $bar.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
+        [].forEach.call($screen.querySelectorAll('.improve-answers button'), function (b) { b.disabled = true; });
         api(CFG.urls.improve, { yes: yes }).then(function (r) {
             if (r.status !== 200) return fail();
             state.improve = r.data.improve;
@@ -997,6 +1008,8 @@
                     // Пока тянешь, страница сама не листается — только у края (edgeScroll).
                     n.addEventListener('touchmove', function (e) { if (drag && drag.moved) e.preventDefault(); }, { passive: false });
                     n.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+                    // Долгое нажатие на тексте не должно его выделять (iOS) — иначе карточка не берётся.
+                    n.addEventListener('selectstart', function (e) { e.preventDefault(); });
                     var drop = function (e, cancelled) {
                         if (!drag) return;
                         var d = drag;
