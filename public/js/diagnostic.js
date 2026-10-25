@@ -400,7 +400,9 @@
 
     function renderFeedback(res) {
         haptic(res.correct ? 'ok' : (res.skipped ? null : 'bad'));
-        ui.api.reveal(res.solution);
+        // «Не знаю» — задание само становится решённым (верное положение, зелёным):
+        // не ругаем, показываем, как надо.
+        ui.api.reveal(res.solution, !!res.skipped);
         // Верно — вспышка у свайп-карточки или у верных плашек; неверно — встряска вопроса.
         if (res.correct) {
             var lit = ui.card.querySelector('.swipe-card') ? [ui.card.querySelector('.swipe-card')] : [].slice.call(ui.card.querySelectorAll('.ok'));
@@ -427,7 +429,7 @@
         var text = who ? (res.correct ? '✅ ' : '❌ ') + nameOf(who) + ': ' + res.explain : (res.correct ? pick(SAY.ok) : pick(res.skipped ? SAY.skip : SAY.bad)) + '\n' + res.explain;
         $screen.appendChild(sayTyping(
             text,
-            res.correct ? 'ok' : 'bad',
+            res.correct ? 'ok' : (res.skipped ? null : 'bad'),
             mood,
             res.correct ? 'hop' : 'tilt',
             meme,
@@ -779,9 +781,9 @@
                 return {
                     complete: function () { return answer !== null; },
                     value: function () { return { value: answer }; },
-                    reveal: function (sol) {
+                    reveal: function (sol, skipped) {
                         c.style.transform = '';
-                        c.classList.add(sol.value === answer ? 'yes' : 'no');
+                        c.classList.add(skipped || sol.value === answer ? 'yes' : 'no');
                         row.remove();
                         hint.remove();
                         card.appendChild(el('p', { class: 'muted', text: 'Правильно: ' + (sol.value ? yes : no).toLowerCase() }));
@@ -823,7 +825,8 @@
                 return {
                     complete: function () { return chosen !== null; },
                     value: function () { return { id: chosen }; },
-                    reveal: function (sol) {
+                    reveal: function (sol, skipped) {
+                        if (skipped) chosen = String(sol.id);
                         Object.keys(nodes).forEach(function (id) {
                             nodes[id].classList.remove('sel');
                             if (nodes[id].tagName === 'BUTTON') nodes[id].disabled = true;
@@ -880,9 +883,10 @@
                 return {
                     complete: function () { return q.pick ? count() === q.pick : count() > 0; },
                     value: function () { return { ids: Object.keys(chosen) }; },
-                    reveal: function (sol) {
+                    reveal: function (sol, skipped) {
                         var right = {};
                         sol.ids.forEach(function (id) { right[String(id)] = true; });
+                        if (skipped) chosen = right;
                         Object.keys(nodes).forEach(function (id) {
                             var n = nodes[id];
                             n.disabled = true;
@@ -1081,9 +1085,16 @@
                     },
                     complete: function () { return Object.keys(placed).length === q.cards.length; },
                     value: function () { return { mapping: placed }; },
-                    reveal: function (sol) {
+                    reveal: function (sol, skipped) {
                         var titles = {};
                         q.buckets.forEach(function (b) { titles[b.id] = b.title; });
+                        if (skipped) {
+                            placed = {};
+                            order = [];
+                            q.cards.forEach(function (c) { placed[c.id] = sol.mapping[c.id]; order.push(c.id); });
+                            selected = null;
+                            redraw();
+                        }
                         Object.keys(zones).forEach(function (b) { zones[b].node.classList.remove('target', 'over'); });
                         q.cards.forEach(function (c) {
                             var n = cards[c.id];
@@ -1154,8 +1165,12 @@
                 return {
                     complete: function () { return touched; },
                     value: function () { return { spots: chosen }; },
-                    reveal: function (sol) {
+                    reveal: function (sol, skipped) {
                         picker.remove();
+                        if (skipped) Object.keys(spots).forEach(function (id) {
+                            if (sol.spots[id] !== byId[id].shown) chosen[id] = sol.spots[id]; else delete chosen[id];
+                            spots[id].textContent = word(id);
+                        });
                         Object.keys(spots).forEach(function (id) {
                             var ok = word(id) === sol.spots[id];
                             spots[id].classList.remove('sel', 'changed');
