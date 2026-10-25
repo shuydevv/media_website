@@ -12,6 +12,9 @@ namespace App\Service\Diagnostic;
  *   неверно второй раз подряд → блок закрыт;
  *   не больше 4 вопросов.
  *
+ * Начальный тест ($max = 3, $retry = false): ошибка сразу закрывает блок —
+ * в его банке по одному вопросу на уровень.
+ *
  * Итог блока — наивысший уровень, на котором дан верный ответ (0 — ни
  * одного). Нижняя граница диапазона считает только верные ответы без
  * «Наугад».
@@ -29,13 +32,13 @@ final class BlockRun
      *
      * @param  list<array{level: int, correct: bool}>  $answers
      */
-    public static function nextLevel(array $answers): ?int
+    public static function nextLevel(array $answers, int $max = self::MAX_QUESTIONS, bool $retry = true): ?int
     {
         $count = count($answers);
         if ($count === 0) {
             return self::EASY;
         }
-        if ($count >= self::MAX_QUESTIONS) {
+        if ($count >= $max) {
             return null;
         }
 
@@ -44,7 +47,7 @@ final class BlockRun
             return min($last['level'] + 1, self::HARD);
         }
 
-        return self::closedByErrors($answers) ? null : $last['level'];
+        return ! $retry || self::closedByErrors($answers) ? null : $last['level'];
     }
 
     /**
@@ -52,9 +55,12 @@ final class BlockRun
      *
      * @param  list<array{correct: bool}>  $answers
      */
-    public static function closedByErrors(array $answers): bool
+    public static function closedByErrors(array $answers, bool $retry = true): bool
     {
         $count = count($answers);
+        if (! $retry) {
+            return $count > 0 && ! $answers[$count - 1]['correct'];
+        }
 
         return $count >= 2 && ! $answers[$count - 1]['correct'] && ! $answers[$count - 2]['correct'];
     }

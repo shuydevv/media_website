@@ -17,8 +17,10 @@ use Illuminate\Support\Str;
  *
  * Экраны (state()['screen']):
  *   profile  — «Ты в каком классе?» (класса ещё нет);
+ *   level    — «Какой у тебя сейчас уровень?» (тест: начальный или основной);
  *   question — текущий вопрос текущего блока;
- *   target   — блоки пройдены, «На сколько хочешь сдать?»;
+ *   target   — блоки пройдены, «На сколько хочешь сдать?» (в начальном
+ *              тесте его нет — сразу итог);
  *   result   — итог (после цели).
  */
 class DiagnosticRunner
@@ -26,12 +28,13 @@ class DiagnosticRunner
     public function __construct(
         private readonly QuestionBank $bank,
         private readonly ScoreModel $model,
+        private readonly ?QuestionBank $basicBank = null,
     ) {
     }
 
     public static function make(): self
     {
-        return new self(QuestionBank::fromConfig(), ScoreModel::fromConfig());
+        return new self(QuestionBank::fromConfig(), ScoreModel::fromConfig(), QuestionBank::fromConfig('basic.bank_path'));
     }
 
     public function start(?TelegramContact $contact, string $entry, ?string $platform = null): DiagnosticAttempt
@@ -69,12 +72,24 @@ class DiagnosticRunner
         $attempt->forceFill(['grade' => $grade])->save();
     }
 
+    public function setTrack(DiagnosticAttempt $attempt, string $track): void
+    {
+        $attempt->forceFill(['track' => $track])->save();
+    }
+
     public function state(DiagnosticAttempt $attempt): array
     {
+        if (! $attempt->isFinished() && $attempt->isBasic() && $attempt->grade !== null && $this->currentQuestion($attempt) === null) {
+            // Начальный тест цель не спрашивает: баллов ученик не увидит.
+            $this->finish($attempt, null);
+        }
+
         if ($attempt->isFinished()) {
             $screen = ['screen' => 'result', 'result' => $this->resultView($attempt), 'improve' => $attempt->improve];
         } elseif ($attempt->grade === null) {
             $screen = ['screen' => 'profile', 'grades' => config('diagnostic.grades')];
+        } elseif ($attempt->track === null) {
+            $screen = ['screen' => 'level', 'tracks' => config('diagnostic.tracks')];
         } elseif ($question = $this->currentQuestion($attempt)) {
             // hash — версия вопроса: правка банка, пока человек отвечает, не засчитает
             // ответ на старую версию по новым ключам (answer()).
@@ -84,7 +99,7 @@ class DiagnosticRunner
         }
 
         // progress — после currentQuestion(): выдача вопроса может перейти к следующему блоку.
-        return ['attempt' => $attempt->token, 'progress' => $this->progress($attempt)] + $screen;
+        return ['attempt' => $attempt->token, 'track' => $attempt->track, 'progress' => $this->progress($attempt)] + $screen;
     }
 
     /**
@@ -97,7 +112,7 @@ class DiagnosticRunner
     {
         return DB::transaction(function () use ($attempt, $questionId, $payload, $guess, $answerMs, $explainMs, $questionHash) {
             $attempt = DiagnosticAttempt::whereKey($attempt->id)->lockForUpdate()->firstOrFail();
-            $question = $attempt->current_question_id ? $this->bank->get($attempt->current_question_id) : null;
+            $question = $attempt->current_question_id ? $this->bankFor($attempt)->get($attempt->current_question_id) : null;
             if ($attempt->isFinished() || $attempt->current_question_id !== $questionId || $question === null
                 || ($questionHash !== null && $questionHash !== QuestionBank::hash($question))) {
                 throw new StaleAnswerException($attempt);
@@ -129,7 +144,7 @@ class DiagnosticRunner
             ]);
 
             $after = $this->blockAnswers($attempt, $block);
-            $blockDone = BlockRun::nextLevel($after) === null;
+            $blockDone = BlockRun::nextLevel($after, $this->maxQuestions($attempt), ! $attempt->isBasic()) === null;
             if ($blockDone) {
                 $attempt->block_index++;
             }
@@ -147,13 +162,14 @@ class DiagnosticRunner
                 // explain_by из банка; пусто — рыба.
                 'explain_by' => $this->explainBy($question),
                 'meme' => $question['meme'] ?? null,
+                'remember' => $question['remember'] ?? null,
                 'solution' => AnswerChecker::solution($question),
                 'streak' => $attempt->streak,
                 'block' => [
                     'key' => $block,
                     'title' => config("diagnostic.blocks.{$block}.title"),
                     'finished' => $blockDone,
-                    'closed_by_errors' => $blockDone && BlockRun::closedByErrors($after),
+                    'closed_by_errors' => $blockDone && BlockRun::closedByErrors($after, ! $attempt->isBasic()),
                 ],
                 'state' => $this->state($attempt),
             ];
@@ -225,13 +241,14 @@ class DiagnosticRunner
      */
     private function currentQuestion(DiagnosticAttempt $attempt): ?array
     {
-        if ($attempt->current_question_id && ($q = $this->bank->get($attempt->current_question_id))) {
+        $bank = $this->bankFor($attempt);
+        if ($attempt->current_question_id && ($q = $bank->get($attempt->current_question_id))) {
             return $q;
         }
 
         while (($block = $attempt->currentBlock()) !== null) {
-            $level = BlockRun::nextLevel($this->blockAnswers($attempt, $block));
-            $question = $level === null ? null : $this->bank->pick($block, $level, $this->usedIds($attempt), $this->seenIds($attempt));
+            $level = BlockRun::nextLevel($this->blockAnswers($attempt, $block), $this->maxQuestions($attempt), ! $attempt->isBasic());
+            $question = $level === null ? null : $bank->pick($block, $level, $this->usedIds($attempt), $this->seenIds($attempt));
             if ($question !== null) {
                 $attempt->forceFill(['current_question_id' => $question['id']])->save();
 
@@ -246,6 +263,16 @@ class DiagnosticRunner
         }
 
         return null;
+    }
+
+    private function bankFor(DiagnosticAttempt $attempt): QuestionBank
+    {
+        return $attempt->isBasic() ? ($this->basicBank ?? QuestionBank::fromConfig('basic.bank_path')) : $this->bank;
+    }
+
+    private function maxQuestions(DiagnosticAttempt $attempt): int
+    {
+        return $attempt->isBasic() ? (int) config('diagnostic.basic.max_questions') : BlockRun::MAX_QUESTIONS;
     }
 
     private function explainBy(array $question): ?string
@@ -298,12 +325,17 @@ class DiagnosticRunner
             'total' => count($attempt->block_order),
             // Отвечено в текущем блоке (из BlockRun::MAX_QUESTIONS) — заливка текущего отрезка.
             'answered' => $current ? count($this->blockAnswers($attempt, $current)) : 0,
+            'max' => $this->maxQuestions($attempt),
             'blocks' => array_map(fn ($key) => ['key' => $key, 'title' => $blocks[$key]['title']], $attempt->block_order),
         ];
     }
 
     private function resultView(DiagnosticAttempt $attempt): array
     {
+        if ($attempt->isBasic()) {
+            return $this->basicResultView($attempt);
+        }
+
         $r = $attempt->result;
         $blocks = config('diagnostic.blocks');
         $mid = (int) round(($r['low'] + $r['high']) / 2);
@@ -324,6 +356,56 @@ class DiagnosticRunner
             'weak' => array_map(fn ($key) => $blocks[$key]['title'], $r['weak']),
             'weak_acc' => array_map(fn ($key) => $blocks[$key]['accusative'] ?? $blocks[$key]['title'], $r['weak']),
             'guessed' => $r['guessed'] ?? 0,
+        ];
+    }
+
+    /**
+     * Итог начального теста (ТЗ, 5.8): без баллов — карта тем, похвала
+     * (всегда хотя бы одна), потенциал по времени до ЕГЭ и, если человек
+     * явно сильнее начального уровня, — предложение основного теста.
+     */
+    private function basicResultView(DiagnosticAttempt $attempt): array
+    {
+        $blocks = config('diagnostic.blocks');
+        $levels = $attempt->levels ?? [];
+        $answers = DiagnosticAnswer::where('diagnostic_attempt_id', $attempt->id)->orderBy('id')->get(['correct', 'guess']);
+
+        $streak = $best = 0;
+        foreach ($answers as $a) {
+            $streak = $a->correct ? $streak + 1 : 0;
+            $best = max($best, $streak);
+        }
+
+        // Сильнейшая тема — по уровню; при равенстве — раньше в тесте.
+        $top = null;
+        foreach ($attempt->block_order as $key) {
+            if ($top === null || ($levels[$key] ?? 0) > ($levels[$top] ?? 0)) {
+                $top = $key;
+            }
+        }
+        $topLevel = $top !== null ? ($levels[$top] ?? 0) : 0;
+
+        $texts = config('diagnostic.basic.praise');
+        $praise = array_filter([
+            $topLevel >= 3 ? $texts['level3'] : null,
+            $topLevel === 2 ? $texts['level2'] : null,
+            $best >= 2 ? $texts['streak'] : null,
+            $answers->where('guess', true)->isNotEmpty() ? $texts['skipped'] : null,
+            in_array($attempt->grade, ['9', '10'], true) ? $texts['early'] : null,
+            $texts['learned'],
+        ]);
+        $praise = array_map(
+            fn ($t) => strtr($t, ['{block}' => $blocks[$top]['title'] ?? '', '{n}' => $answers->count()]),
+            array_slice(array_values($praise), 0, 3),
+        );
+
+        return [
+            'map' => array_map(fn ($key) => ['key' => $key, 'title' => $blocks[$key]['title'], 'level' => $levels[$key] ?? 0], $attempt->block_order),
+            'praise' => $praise,
+            'learned' => $answers->count(),
+            'horizon' => config('diagnostic.basic.horizon.'.$attempt->grade) ?? config('diagnostic.basic.horizon.graduate'),
+            'steps' => config('diagnostic.basic.steps'),
+            'upsell' => count(array_filter($levels, fn ($l) => $l >= 3)) >= config('diagnostic.basic.upsell_blocks'),
         ];
     }
 }

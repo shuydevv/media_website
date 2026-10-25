@@ -329,6 +329,17 @@
             *, *::before, *::after { animation: none !important; transition: none !important; }
             .confetti { display: none; }
         }
+        /* Начальный тест (ТЗ, 5.8): красного нет вообще — неверно выбранное
+           не подсвечивается, разбор — в спокойном голубом. После :root.night,
+           иначе тёмная тема вернёт свой --bad-bg. */
+        :root[data-track="basic"] { --bad: var(--line); --bad-edge: var(--edge); --bad-bg: var(--paper); }
+        :root[data-track="basic"] .bubble.bad { background: var(--accent-soft); }
+        .level-btn { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
+        .level-btn small { font-weight: 400; color: var(--hint); font-size: 13px; }
+        .praise { margin: 8px 0; }
+        .map-row small { color: var(--hint); font-size: 13px; }
+        .steps { margin: 8px 0 0; padding-left: 20px; }
+        .steps li { margin: 4px 0; }
     </style>
 </head>
 <body>
@@ -355,6 +366,7 @@
         urls: {
             session: @json(route('diag.session')),
             profile: @json(route('diag.profile')),
+            level: @json(route('diag.level')),
             answer: @json(route('diag.answer')),
             target: @json(route('diag.target')),
             improve: @json(route('diag.improve')),

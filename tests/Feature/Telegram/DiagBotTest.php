@@ -85,7 +85,8 @@ class DiagBotTest extends TestCase
     {
         $contact = $this->contact(555);
         $this->openSession(555);
-        $state = $this->callApi('profile', ['grade' => '11'])->json();
+        $this->callApi('profile', ['grade' => '11']);
+        $state = $this->callApi('level', ['track' => 'middle'])->json();
         $this->callApi('answer', ['question_id' => $state['question']['id'], 'answer' => ['x' => 1]]);
 
         $this->assertNotNull($contact->fresh()->nudge_due_at, 'отсчёт «бросил» — от последнего ответа');
@@ -250,7 +251,8 @@ class DiagBotTest extends TestCase
     {
         $this->openSession(701);                    // бросил на анкете
         $this->openSession(702);                    // бросил на втором вопросе первого блока
-        $state = $this->callApi('profile', ['grade' => '11'])->json();
+        $this->callApi('profile', ['grade' => '11']);
+        $state = $this->callApi('level', ['track' => 'middle'])->json();
         $bank = QuestionBank::fromConfig();
         $state = $this->callApi('answer', ['question_id' => $state['question']['id'],
             'answer' => AnswerChecker::solution($bank->get($state['question']['id']))])->json('state');
@@ -310,7 +312,8 @@ class DiagBotTest extends TestCase
     private function finishViaApi(int $userId): DiagnosticAttempt
     {
         $this->openSession($userId);
-        $state = $this->callApi('profile', ['grade' => '11'])->json();
+        $this->callApi('profile', ['grade' => '11']);
+        $state = $this->callApi('level', ['track' => 'middle'])->json();
         $bank = QuestionBank::fromConfig();
         while ($state['screen'] === 'question') {
             $state = $this->callApi('answer', ['question_id' => $state['question']['id'],

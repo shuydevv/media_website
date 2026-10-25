@@ -170,7 +170,9 @@ row-lock промокодов на SQLite пропускается. Старые
   (`BlockRun` — адаптивный путь блока, `AnswerChecker` — проверка по механике,
   `ScoreModel` — прогноз, `QuestionBank`), прохождение — `DiagnosticRunner`
   (`diagnostic_attempts`/`diagnostic_answers`). Банк вопросов — JSON
-  `docs/diagnostic/questions.json`, правит автор, после правки —
+  `docs/diagnostic/questions.json` (начальный тест для новичков — свой банк
+  `questions_beginner.json` и свои правила, ТЗ 5.8; уровень — `diagnostic_attempts.track`),
+  правит автор, после правки —
   `php artisan diagnostic:validate`. Числа модели прогноза — заглушки в
   `config/diagnostic.php`. Кто проходит — подпись `initData` токеном бота `diag`
   (`Telegram\WebAppInitData`); без Telegram — только `DIAG_ALLOW_ANONYMOUS` (локально).

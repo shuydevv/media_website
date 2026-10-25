@@ -37,7 +37,7 @@ final class DiagnosticSummary
     public static function attemptLines(DiagnosticAttempt $attempt): array
     {
         $grade = $attempt->grade ? (config("diagnostic.grades.{$attempt->grade}") ?? $attempt->grade) : 'не указан';
-        $lines = ['Класс: '.e($grade)];
+        $lines = ['Класс: '.e($grade), 'Уровень: '.e(self::trackTitle($attempt))];
 
         if (! $attempt->isFinished()) {
             $total = count($attempt->block_order);
@@ -48,8 +48,11 @@ final class DiagnosticSummary
         }
 
         $r = $attempt->result;
-        $lines[] = 'Цель: '.($attempt->target_score !== null ? $attempt->target_score : 'не знает');
-        $lines[] = '<b>Сейчас ~'.$r['low'].'–'.$r['high'].'</b>, потенциал '.$r['potential'].'+';
+        if (! $attempt->isBasic()) {
+            $lines[] = 'Цель: '.($attempt->target_score !== null ? $attempt->target_score : 'не знает');
+        }
+        $lines[] = '<b>Сейчас ~'.$r['low'].'–'.$r['high'].'</b>, потенциал '.$r['potential'].'+'
+            .($attempt->isBasic() ? ' <i>(оценка; ученику баллы не показаны)</i>' : '');
         $lines[] = 'Блоки (0–3): '.implode(', ', array_map(
             fn ($key) => e(config("diagnostic.blocks.{$key}.title")).' '.($attempt->levels[$key] ?? 0),
             array_keys(config('diagnostic.blocks')),
@@ -77,9 +80,28 @@ final class DiagnosticSummary
 
         return '✅ '.e($contact->displayName())
             .($contact->username && ! str_starts_with($contact->displayName(), '@') ? ' @'.e($contact->username) : '')
-            .' · '.e($grade).' · ~'.$r['low'].'–'.$r['high']
+            .' · '.e($grade).($attempt->isBasic() ? ' · 🌱' : '').' · ~'.$r['low'].'–'.$r['high']
             .' · '.($contact->source ? '<code>'.e($contact->source).'</code>' : 'без метки')
             .' · <a href="'.e(route('admin.telegram.contacts.show', $contact)).'">карточка</a>';
+    }
+
+    public static function trackTitle(DiagnosticAttempt $attempt): string
+    {
+        return $attempt->track ? (config("diagnostic.tracks.{$attempt->track}.title") ?? $attempt->track) : 'не выбран';
+    }
+
+    /** Темы с уровнем от $min до $max через запятую — для итога начального теста в бот. */
+    public static function titlesByLevel(DiagnosticAttempt $attempt, int $min, int $max): string
+    {
+        $titles = [];
+        foreach ($attempt->block_order as $key) {
+            $level = $attempt->levels[$key] ?? 0;
+            if ($level >= $min && $level <= $max) {
+                $titles[] = config("diagnostic.blocks.{$key}.title");
+            }
+        }
+
+        return implode(', ', $titles);
     }
 
     /** Точки роста через запятую — для текстов бота ({weak}). */

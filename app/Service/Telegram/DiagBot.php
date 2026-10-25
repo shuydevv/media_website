@@ -160,7 +160,7 @@ class DiagBot implements BotScenario
 
         $this->dispatch($contact, 'result', ['attempt_id' => $attempt->id]);
         $this->dispatch($contact, 'feed_finished', ['attempt_id' => $attempt->id]);
-        $this->dispatch($contact, 'note', ['html' => '✅ Прошёл диагностику: ~'.$attempt->result['low'].'–'.$attempt->result['high']]);
+        $this->dispatch($contact, 'note', ['html' => '✅ Прошёл диагностику'.($attempt->isBasic() ? ' (🌱 начальный)' : '').': ~'.$attempt->result['low'].'–'.$attempt->result['high']]);
         $this->dispatch($contact, 'refresh_status');
     }
 
@@ -402,13 +402,16 @@ class DiagBot implements BotScenario
         $vars = $this->vars($contact) + [
             'low' => $r['low'], 'high' => $r['high'], 'potential' => $r['potential'],
             'weak' => DiagnosticSummary::weakTitles($attempt),
+            // Начальный тест — без баллов: что уже знает и что ещё не исследовано.
+            'known' => DiagnosticSummary::titlesByLevel($attempt, 2, 3) ?: 'разберёмся вместе',
+            'new' => DiagnosticSummary::titlesByLevel($attempt, 0, 1) ?: 'всё уже знакомо 💪',
         ];
         $extra = $attempt->improve === null ? ['reply_markup' => ['inline_keyboard' => [[
             ['text' => FunnelTexts::plain('diag_btn_yes'), 'callback_data' => 'diag:yes:'.$attempt->id],
             ['text' => FunnelTexts::plain('diag_btn_no'), 'callback_data' => 'diag:no:'.$attempt->id],
         ]]]] : [];
 
-        $sent = $this->messenger->sendAuto($contact, 'diag_result', FunnelTexts::render('diag_result', $vars), $extra);
+        $sent = $this->messenger->sendAuto($contact, 'diag_result', FunnelTexts::render($attempt->isBasic() ? 'diag_result_basic' : 'diag_result', $vars), $extra);
         if ($sent && $extra !== []) {
             $attempt->forceFill(['bot_message_id' => $sent['message_id'] ?? null])->save();
         }

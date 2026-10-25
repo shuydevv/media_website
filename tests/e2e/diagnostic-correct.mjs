@@ -1,5 +1,5 @@
 // Диагностика глазами ученика: проходит тест через интерфейс в headless Chrome,
-// на каждый вопрос отвечает заведомо правильно (ключи — из docs/diagnostic/questions.json)
+// на каждый вопрос отвечает заведомо правильно (ключи — из docs/diagnostic/questions.json и questions_beginner.json)
 // и сверяет вердикт сервера. Ловит расхождения страницы и сервера, которых не видят
 // phpunit-тесты API (так нашли «Ответить» → пропуск).
 //
@@ -18,7 +18,8 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const URL_ = process.env.DIAG_URL || 'http://127.0.0.1:8765/diag';
 const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const PROFILE = mkdtempSync(join(tmpdir(), 'diag-e2e-'));
-const BANK = Object.fromEntries(JSON.parse(readFileSync(join(ROOT, 'docs/diagnostic/questions.json'), 'utf8')).questions.map((q) => [q.id, q]));
+const BANK = Object.fromEntries(['questions.json', 'questions_beginner.json']
+  .flatMap((f) => JSON.parse(readFileSync(join(ROOT, 'docs/diagnostic', f), 'utf8')).questions).map((q) => [q.id, q]));
 const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=9351', `--user-data-dir=${PROFILE}`, 'about:blank'], { stdio: 'ignore' });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let ws, id = 0; const pending = new Map(); const errors = [];
@@ -75,6 +76,8 @@ function solver(q) {
       if (s.screen === 'result') break;
       const btn = (t) => `(() => { const b = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === ${JSON.stringify(t)} && !b.disabled); if (b) { b.click(); return true; } return false; })()`;
       if (await ev(btn('11 класс'))) { await sleep(1200); continue; }
+      // Уровень: чётные прогоны — основной тест, нечётные — начальный.
+      if (s.screen === 'level') { await ev(`document.querySelectorAll('.level-btn')[${run % 2 ? 0 : 1}]?.click()`); await sleep(1200); continue; }
       if (s.screen === 'target') { await ev(btn('Пока не знаю')) || await ev(`[...document.querySelectorAll('#bar button')].pop()?.click()`); await sleep(1500); continue; }
       if (await ev(`!!document.querySelector('.countdown') || !!document.querySelector('.done-chip')`)) { await ev(`document.getElementById('screen').click()`); await sleep(900); continue; }
       if (await ev(btn('Дальше'))) { await sleep(900); continue; }

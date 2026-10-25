@@ -119,6 +119,19 @@ class DiagnosticController extends Controller
         return response()->json($runner->state($attempt));
     }
 
+    /** «Какой у тебя сейчас уровень?» — после класса; выбирает тест (config diagnostic.tracks). */
+    public function level(Request $request, DiagnosticRunner $runner): JsonResponse
+    {
+        $attempt = $this->attempt($request);
+        $data = $request->validate(['track' => ['required', Rule::in(array_keys(config('diagnostic.tracks')))]]);
+
+        if (! $attempt->isFinished() && $attempt->grade !== null) {
+            $runner->setTrack($attempt, $data['track']);
+        }
+
+        return response()->json($runner->state($attempt));
+    }
+
     public function answer(Request $request, DiagnosticRunner $runner): JsonResponse
     {
         $attempt = $this->attempt($request);
@@ -142,6 +155,10 @@ class DiagnosticController extends Controller
                 $data['question_hash'] ?? null,
             );
             $this->notifyBot($attempt->contact, fn (DiagBot $bot) => $bot->answered($attempt->contact, $attempt->refresh()));
+            // Начальный тест без экрана цели заканчивается последним ответом.
+            if ($attempt->isFinished()) {
+                $this->notifyBot($attempt->contact, fn (DiagBot $bot) => $bot->finished($attempt->contact, $attempt));
+            }
 
             return response()->json($result);
         } catch (StaleAnswerException $e) {
@@ -224,8 +241,8 @@ class DiagnosticController extends Controller
                 (new AdminTopics(TelegramBots::api(TelegramBots::DIAG)))->postToService('diag', '⚠️ <b>Ошибка в Mini App</b> ('.e($data['kind']).'): <code>'
                     .e(mb_strimwidth($data['message'], 0, 300, '…')).'</code>'
                     .($data['platform'] ?? null ? ' · '.e($data['platform']) : '')
-                    ."
-Подробности — storage/logs/diag-client-*.log", true);
+                    .'
+Подробности — storage/logs/diag-client-*.log', true);
             } catch (\Throwable $e) {
                 Log::warning('Диагностика: не удалось известить об ошибке Mini App', ['error' => $e->getMessage()]);
             }

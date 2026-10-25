@@ -66,6 +66,7 @@ Route::group(['prefix' => 'diag'], function () {
     Route::group(['prefix' => 'api', 'middleware' => 'throttle:120,1'], function () use ($c) {
         Route::post('/session', [$c, 'session'])->name('diag.session');
         Route::post('/profile', [$c, 'profile'])->name('diag.profile');
+        Route::post('/level', [$c, 'level'])->name('diag.level');
         Route::post('/answer', [$c, 'answer'])->name('diag.answer');
         Route::post('/target', [$c, 'target'])->name('diag.target');
         Route::post('/improve', [$c, 'improve'])->name('diag.improve');

@@ -19,6 +19,11 @@ class DiagnosticAttempt extends Model
     /** Начал заново посреди теста — это прохождение брошено (DiagnosticRunner::restart). */
     public const STATUS_ABANDONED = 'abandoned';
 
+    /** Уровни после «Ты в каком классе?» (config diagnostic.tracks). */
+    public const TRACK_BASIC = 'basic';
+
+    public const TRACK_MIDDLE = 'middle';
+
     protected $guarded = ['id'];
 
     protected $casts = [
@@ -46,6 +51,11 @@ class DiagnosticAttempt extends Model
     public function isFinished(): bool
     {
         return $this->status === self::STATUS_FINISHED;
+    }
+
+    public function isBasic(): bool
+    {
+        return $this->track === self::TRACK_BASIC;
     }
 
     public function currentBlock(): ?string

@@ -34,16 +34,24 @@ final class QuestionBank
     /** Механики сложного уровня — где угадать почти нельзя. */
     public const HARD_MECHANICS = ['multi', 'fix'];
 
+    /**
+     * Начальный тест (отдельный банк, config diagnostic.basic.bank_path) —
+     * только мягкие механики, раскладка — на 2 группы, к уровням не
+     * привязаны; на уровень хватает одного вопроса: ошибка закрывает блок (ТЗ, 5.8).
+     */
+    public const BASIC_MECHANICS = ['swipe', 'single', 'buckets'];
+
     /** @param  array<string, array>  $questions  id → вопрос */
     public function __construct(private readonly array $questions)
     {
     }
 
-    public static function fromConfig(): self
+    /** @param  string  $key  bank_path — основной банк, basic.bank_path — начальный */
+    public static function fromConfig(string $key = 'bank_path'): self
     {
         static $cache = [];
 
-        $path = config('diagnostic.bank_path');
+        $path = config("diagnostic.{$key}");
         $key = $path.'@'.(is_file($path) ? filemtime($path) : 0);
 
         return $cache[$key] ??= self::fromFile($path);
@@ -142,10 +150,12 @@ final class QuestionBank
     /**
      * @param  string[]  $blocks  ключи блоков из конфига
      * @param  string[]|null  $characters  ключи персонажей (config diagnostic.characters); null — не проверять
+     * @param  bool  $basic  банк начального теста — свои правила (BASIC_MECHANICS)
      * @return string[] ошибки; пусто — банк годится
      */
-    public function validate(array $blocks, ?array $characters = null): array
+    public function validate(array $blocks, ?array $characters = null, bool $basic = false): array
     {
+        $minPerLevel = $basic ? 1 : self::MIN_PER_LEVEL;
         $errors = [];
         $count = [];
 
@@ -175,12 +185,22 @@ final class QuestionBank
                 continue;
             }
 
+            if ($basic && ! in_array($mechanic, self::BASIC_MECHANICS, true)) {
+                $errors[] = "{$at}: в начальном тесте — только механики ".implode(', ', self::BASIC_MECHANICS);
+            }
+            if ($basic && $mechanic === 'buckets' && count((array) ($q['buckets'] ?? [])) !== 2) {
+                $errors[] = "{$at}: в начальном тесте раскладка — на 2 группы";
+            }
+            if (isset($q['remember']) && (! is_string($q['remember']) || $q['remember'] === '')) {
+                $errors[] = "{$at}: remember («📌 Запомни») — непустая строка";
+            }
+
             // Угадать свайп — 50%: только на лёгких. На сложных — только
             // выбор множества, где угадать почти нельзя (ТЗ, раздел 6).
-            if ($mechanic === 'swipe' && $level !== BlockRun::EASY) {
+            if (! $basic && $mechanic === 'swipe' && $level !== BlockRun::EASY) {
                 $errors[] = "{$at}: свайп — только на лёгком уровне";
             }
-            if ($level === BlockRun::HARD && ! in_array($mechanic, self::HARD_MECHANICS, true)) {
+            if (! $basic && $level === BlockRun::HARD && ! in_array($mechanic, self::HARD_MECHANICS, true)) {
                 $errors[] = "{$at}: на сложном уровне — только multi или fix";
             }
             $skin = $q['skin'] ?? null;
@@ -208,8 +228,8 @@ final class QuestionBank
         foreach ($blocks as $block) {
             for ($level = BlockRun::EASY; $level <= BlockRun::HARD; $level++) {
                 $have = $count[$block][$level] ?? 0;
-                if ($have < self::MIN_PER_LEVEL) {
-                    $errors[] = "Блок {$block}, уровень {$level}: вопросов {$have}, нужно хотя бы ".self::MIN_PER_LEVEL;
+                if ($have < $minPerLevel) {
+                    $errors[] = "Блок {$block}, уровень {$level}: вопросов {$have}, нужно хотя бы {$minPerLevel}";
                 }
             }
         }

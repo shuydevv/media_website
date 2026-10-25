@@ -58,7 +58,7 @@ class DiagnosticFlowTest extends TestCase
         $state = $this->openSession()->assertOk()->assertJsonPath('screen', 'profile')->json();
         $this->assertSame(5, $state['progress']['total']);
 
-        $state = $this->call_('profile', ['grade' => '11'])->assertJsonPath('screen', 'question')->json();
+        $state = $this->choose('11')->assertJsonPath('screen', 'question')->json();
         $this->assertArrayNotHasKey('correct', $state['question']);
         $this->assertArrayNotHasKey('answer', $state['question']);
         $this->assertArrayNotHasKey('explain_correct', $state['question']);
@@ -88,7 +88,7 @@ class DiagnosticFlowTest extends TestCase
     public function test_all_wrong_closes_each_block_after_two_questions(): void
     {
         $this->openSession();
-        $state = $this->call_('profile', ['grade' => '10'])->json();
+        $state = $this->choose('10')->json();
 
         $closed = 0;
         while ($state['screen'] === 'question') {
@@ -107,10 +107,54 @@ class DiagnosticFlowTest extends TestCase
         $this->assertGreaterThan(0, $result['potential'] - $result['high']);
     }
 
+    public function test_basic_all_correct_finishes_without_target_and_scores(): void
+    {
+        $this->openSession();
+        $state = $this->choose('10', 'basic')->assertJsonPath('track', 'basic')->json();
+
+        $n = 0;
+        while ($state['screen'] === 'question') {
+            $this->assertStringStartsWith('b-', $state['question']['id'], 'вопросы — из начального банка');
+            $res = $this->call_('answer', ['question_id' => $state['question']['id'], 'answer' => $this->right($state['question']['id'])])
+                ->assertJsonPath('correct', true)->json();
+            $this->assertNotEmpty($res['remember'], 'мини-урок: «📌 Запомни»');
+            $state = $res['state'];
+            $n++;
+        }
+
+        $this->assertSame(15, $n);
+        $this->assertSame('result', $state['screen'], 'начальный тест цель не спрашивает');
+        $r = $state['result'];
+        $this->assertArrayNotHasKey('low', $r, 'баллы новичку не показываем');
+        $this->assertSame([3, 3, 3, 3, 3], array_column($r['map'], 'level'));
+        $this->assertTrue($r['upsell']);
+        $this->assertCount(3, $r['praise']);
+        $this->assertSame(DiagnosticAttempt::STATUS_FINISHED, DiagnosticAttempt::first()->status);
+    }
+
+    public function test_basic_error_closes_block_but_praise_is_always_there(): void
+    {
+        $this->openSession();
+        $state = $this->choose('11', 'basic')->json();
+
+        $closed = 0;
+        while ($state['screen'] === 'question') {
+            $res = $this->call_('answer', ['question_id' => $state['question']['id'], 'answer' => ['wrong' => true]])->json();
+            $closed += $res['block']['closed_by_errors'] ? 1 : 0;
+            $state = $res['state'];
+        }
+
+        $this->assertSame(5, $closed, 'одна ошибка закрывает блок');
+        $this->assertSame(5, DiagnosticAnswer::count());
+        $this->assertFalse($state['result']['upsell']);
+        $this->assertNotEmpty($state['result']['praise']);
+        $this->assertSame(config('diagnostic.basic.horizon.11'), $state['result']['horizon']);
+    }
+
     public function test_dont_know_skips_question_as_wrong(): void
     {
         $this->openSession();
-        $state = $this->call_('profile', ['grade' => '11'])->json();
+        $state = $this->choose('11')->json();
         $answers = 0;
         while ($state['screen'] === 'question') {
             // «Не знаю» — даже с верным ответом в payload засчитывается как ноль.
@@ -131,7 +175,7 @@ class DiagnosticFlowTest extends TestCase
     public function test_answer_to_outdated_question_version_is_not_counted(): void
     {
         $this->openSession();
-        $q = $this->call_('profile', ['grade' => '11'])->json('question');
+        $q = $this->choose('11')->json('question');
         $this->assertNotEmpty($q['hash']);
 
         // Банк поправили, пока человек отвечал: ответ на старую версию — 409 и актуальный экран.
@@ -151,7 +195,7 @@ class DiagnosticFlowTest extends TestCase
     public function test_answer_to_old_question_returns_current_state(): void
     {
         $this->openSession();
-        $state = $this->call_('profile', ['grade' => '11'])->json();
+        $state = $this->choose('11')->json();
         $id = $state['question']['id'];
         $this->call_('answer', ['question_id' => $id, 'answer' => $this->right($id)])->assertOk();
 
@@ -163,7 +207,7 @@ class DiagnosticFlowTest extends TestCase
     public function test_explain_time_goes_to_previous_answer(): void
     {
         $this->openSession();
-        $state = $this->call_('profile', ['grade' => '11'])->json();
+        $state = $this->choose('11')->json();
         $first = $state['question']['id'];
         $state = $this->call_('answer', ['question_id' => $first, 'answer' => $this->right($first)])->json('state');
         $this->call_('answer', ['question_id' => $state['question']['id'], 'answer' => ['x' => 1], 'explain_ms' => 4200]);
@@ -201,7 +245,7 @@ class DiagnosticFlowTest extends TestCase
 
         $state = $this->openSession(['init_data' => $this->initData(555)])->assertOk()->assertJsonPath('in_telegram', true)->json();
         $this->attempt = $state['attempt'];
-        $question = $this->call_('profile', ['grade' => 'graduate'])->json('question.id');
+        $question = $this->choose('graduate')->json('question.id');
 
         // Закрыл и открыл заново — тот же вопрос того же прохождения.
         $this->attempt = null;
@@ -221,7 +265,7 @@ class DiagnosticFlowTest extends TestCase
         config(['diagnostic.allow_anonymous' => false]);
         $init = $this->initData(777);
         $this->attempt = $this->openSession(['init_data' => $init])->json('attempt');
-        $this->call_('profile', ['grade' => '10']);
+        $this->choose('10');
 
         $this->assertSame($this->attempt, $this->openSession(['init_data' => $init, 'restart' => true])->json('attempt'), 'незаконченное не сбрасываем');
 
@@ -237,7 +281,7 @@ class DiagnosticFlowTest extends TestCase
     public function test_restart_mid_test_abandons_attempt_and_starts_fresh(): void
     {
         $this->openSession();
-        $state = $this->call_('profile', ['grade' => '11'])->json();
+        $state = $this->choose('11')->json();
         $this->call_('answer', ['question_id' => $state['question']['id'], 'answer' => ['x' => 1]]);
         $old = $this->attempt;
 
@@ -264,7 +308,7 @@ class DiagnosticFlowTest extends TestCase
     public function test_who_explanation_is_voiced_by_the_right_speaker(): void
     {
         $this->openSession();
-        $this->call_('profile', ['grade' => '11']);
+        $this->choose('11');
         // Текущим ставим «Кто прав?» из банка — на случайном пути его может не быть.
         $q = collect(QuestionBank::fromConfig()->all())->firstWhere('skin', 'who');
         DiagnosticAttempt::where('token', $this->attempt)->update(['current_question_id' => $q['id']]);
@@ -298,14 +342,25 @@ class DiagnosticFlowTest extends TestCase
         return $this->postJson('/diag/api/'.$action, $body, ['X-Diag-Attempt' => $this->attempt]);
     }
 
+    /** Знакомство: класс, потом уровень (по умолчанию — основной тест). */
+    private function choose(string $grade, string $track = 'middle'): TestResponse
+    {
+        $profile = $this->call_('profile', ['grade' => $grade]);
+
+        // Класс и уровень уже выбраны (прохождение продолжается) — экран вопроса.
+        return $profile->json('screen') === 'level' ? $this->call_('level', ['track' => $track]) : $profile;
+    }
+
     private function right(string $questionId): array
     {
-        return AnswerChecker::solution(QuestionBank::fromConfig()->get($questionId));
+        $bank = str_starts_with($questionId, 'b-') ? QuestionBank::fromConfig('basic.bank_path') : QuestionBank::fromConfig();
+
+        return AnswerChecker::solution($bank->get($questionId));
     }
 
     private function walkCorrect(): void
     {
-        $state = $this->call_('profile', ['grade' => '10'])->json();
+        $state = $this->choose('10')->json();
         while ($state['screen'] === 'question') {
             $state = $this->call_('answer', ['question_id' => $state['question']['id'], 'answer' => $this->right($state['question']['id'])])->json('state');
         }

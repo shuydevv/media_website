@@ -14,30 +14,46 @@ class ValidateDiagnosticBank extends Command
 {
     protected $signature = 'diagnostic:validate';
 
-    protected $description = 'Проверить банк вопросов диагностики (docs/diagnostic/questions.json)';
+    protected $description = 'Проверить банки вопросов диагностики (docs/diagnostic/questions.json и questions_beginner.json)';
 
     public function handle(): int
     {
-        try {
-            $bank = QuestionBank::fromFile(config('diagnostic.bank_path'));
-        } catch (\RuntimeException $e) {
-            $this->error($e->getMessage().' — файл не найден или это не JSON с полем questions.');
+        $blocks = array_keys(config('diagnostic.blocks'));
+        $characters = array_keys(config('diagnostic.characters'));
+        $total = 0;
+        $ids = [];
+
+        // Основной и начальный банки — свои правила, но id общие для лога
+        // ответов: совпадать не должны.
+        foreach (['bank_path' => false, 'basic.bank_path' => true] as $key => $basic) {
+            $path = config("diagnostic.{$key}");
+            $this->line(basename($path).':');
+            try {
+                $bank = QuestionBank::fromFile($path);
+            } catch (\RuntimeException $e) {
+                $this->error($e->getMessage().' — файл не найден или это не JSON с полем questions.');
+
+                return self::FAILURE;
+            }
+
+            $errors = $bank->validate($blocks, $characters, $basic);
+            foreach (array_intersect(array_keys($bank->all()), $ids) as $id) {
+                $errors[] = "«{$id}»: такой id уже есть в основном банке";
+            }
+            $ids = array_merge($ids, array_keys($bank->all()));
+            foreach ($errors as $error) {
+                $this->line("  ✗ {$error}");
+            }
+            $total += count($errors);
+        }
+
+        if ($total > 0) {
+            $this->error("Ошибок: {$total}");
 
             return self::FAILURE;
         }
 
-        $errors = $bank->validate(array_keys(config('diagnostic.blocks')), array_keys(config('diagnostic.characters')));
-        foreach ($errors as $error) {
-            $this->line("  ✗ {$error}");
-        }
-
-        if ($errors !== []) {
-            $this->error('Ошибок: '.count($errors));
-
-            return self::FAILURE;
-        }
-
-        $this->info('Банк в порядке.');
+        $this->info('Банки в порядке.');
 
         return self::SUCCESS;
     }

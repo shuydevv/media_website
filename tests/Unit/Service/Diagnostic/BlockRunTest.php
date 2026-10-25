@@ -43,6 +43,16 @@ class BlockRunTest extends TestCase
         $this->assertSame($result, BlockRun::result($answers));
     }
 
+    public function test_basic_path_has_no_retry(): void
+    {
+        $basic = fn ($answers) => BlockRun::nextLevel($answers, 3, false);
+        $this->assertSame(1, $basic([]));
+        $this->assertNull($basic([['level' => 1, 'correct' => false]]), 'ошибка закрывает блок');
+        $this->assertSame(3, $basic([['level' => 1, 'correct' => true], ['level' => 2, 'correct' => true]]));
+        $this->assertNull($basic([['level' => 1, 'correct' => true], ['level' => 2, 'correct' => true], ['level' => 3, 'correct' => true]]), 'не больше 3 вопросов');
+        $this->assertTrue(BlockRun::closedByErrors([['correct' => true], ['correct' => false]], false));
+    }
+
     public function test_two_errors_in_a_row_close_the_block(): void
     {
         $this->assertTrue(BlockRun::closedByErrors([['correct' => true], ['correct' => false], ['correct' => false]]));

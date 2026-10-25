@@ -20,7 +20,7 @@
     @foreach ($groups as $group => $definitions)
     <h2 class="mt-6 mb-3 text-base font-semibold text-zinc-900">{{ $group }}</h2>
     @if ($loop->last)
-        <p class="mb-3 max-w-3xl text-sm text-zinc-500">Подстановки бота диагностики: <code>{name}</code> — имя; в итоге — <code>{low}</code>, <code>{high}</code>, <code>{potential}</code>, <code>{weak}</code> (точки роста); в напоминании «начал и бросил» — <code>{block}</code>, <code>{total}</code>.</p>
+        <p class="mb-3 max-w-3xl text-sm text-zinc-500">Подстановки бота диагностики: <code>{name}</code> — имя; в итоге — <code>{low}</code>, <code>{high}</code>, <code>{potential}</code>, <code>{weak}</code> (точки роста), в итоге начального теста — <code>{known}</code>, <code>{new}</code>; в напоминании «начал и бросил» — <code>{block}</code>, <code>{total}</code>.</p>
     @endif
     <div class="space-y-4 max-w-3xl">
         @foreach ($definitions as $key => $def)
