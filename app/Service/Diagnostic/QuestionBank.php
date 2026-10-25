@@ -100,18 +100,24 @@ final class QuestionBank
             return null;
         }
 
-        // Разнообразие важнее всего: реже всего встречавшаяся в этом прохождении
-        // механика с оформлением, потом сама механика, потом — не та же, что
-        // в прошлом вопросе; при равенстве — то, чего человек ещё не видел.
+        // Первое прохождение — важнее разнообразие: реже всего встречавшаяся в
+        // этом прохождении механика с оформлением, потом сама механика, потом —
+        // не та же, что в прошлом вопросе. Повторное ($seen не пуст) — сначала
+        // то, чего человек ещё не видел, а уже среди них — разнообразие.
         $kinds = array_map(fn ($id) => $this->kind($this->questions[$id] ?? []), $used);
         $mechanics = array_map(fn ($k) => strtok($k, ':'), $kinds);
         $last = end($kinds) ?: null;
-        $score = fn ($q) => [
-            count(array_keys($kinds, $this->kind($q), true)),
-            count(array_keys($mechanics, $q['mechanic'] ?? '', true)),
-            (int) ($this->kind($q) === $last),
-            (int) in_array($q['id'], $seen, true),
-        ];
+        $retake = $seen !== [];
+        $score = function ($q) use ($kinds, $mechanics, $last, $seen, $retake) {
+            $variety = [
+                count(array_keys($kinds, $this->kind($q), true)),
+                count(array_keys($mechanics, $q['mechanic'] ?? '', true)),
+                (int) ($this->kind($q) === $last),
+            ];
+            $unseen = (int) in_array($q['id'], $seen, true);
+
+            return $retake ? [$unseen, ...$variety] : [...$variety, $unseen];
+        };
 
         $best = null;
         $from = [];
