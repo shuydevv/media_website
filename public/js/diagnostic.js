@@ -347,8 +347,15 @@
         }
         if (q.skin === 'debate' && q.from) {
             card.appendChild(el('div', { class: 'speaker' }, [avatar(q.from), el('div', { class: 'bubble' }, [el('b', { text: nameOf(q.from) + ': ' }), q.prompt])]));
-        } else if (q.mechanic !== 'swipe') {
-            card.appendChild(el('p', { class: 'prompt', text: q.prompt }));
+        } else {
+            // На каждом вопросе — кто-то из наших: персонаж уже есть в «Кто прав?»,
+            // чате, посте и ответе на ЕГЭ; в остальных — персонаж вопроса (from)
+            // или акула рядом с вопросом.
+            var hasFace = q.skin === 'who' || q.skin === 'chat' || q.skin === 'fragments' || (q.mechanic === 'fix' && q.from);
+            var face = q.from ? avatar(q.from) : mascot('think', 'host');
+            var text = q.mechanic === 'swipe' ? (hasFace ? null : 'Правда или нет?') : q.prompt;
+            if (text !== null) card.appendChild(hasFace ? el('p', { class: 'prompt', text: text })
+                : el('div', { class: 'q-host' }, [face, el('p', { class: 'prompt', text: text })]));
         }
         if (q.task) card.appendChild(el('p', { class: 'task', text: 'Задание: ' + q.task }));
         ui.card = card;

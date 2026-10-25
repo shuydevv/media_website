@@ -144,6 +144,10 @@
         .q { margin: 4px 0 12px; }
         .prompt { margin: 0 0 12px; font-weight: 600; }
         .q > .prompt { font-size: 18px; margin: 4px 0 14px; }
+        /* Ведущий вопроса: акула или персонаж — слева от текста. */
+        .q-host { display: flex; gap: 12px; align-items: center; margin: 4px 0 14px; }
+        .q-host > img { flex: none; width: 72px; height: 72px; object-fit: contain; }
+        .q-host .prompt { margin: 0; font-size: 18px; }
         .q > .task { margin: -6px 0 14px; }
         .options { display: grid; gap: 10px; }
         .opt {
