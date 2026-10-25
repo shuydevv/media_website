@@ -124,6 +124,7 @@ class DiagnosticController extends Controller
         $attempt = $this->attempt($request);
         $data = $request->validate([
             'question_id' => ['required', 'string', 'max:64'],
+            'question_hash' => ['nullable', 'string', 'max:32'],
             'answer' => ['required', 'array'],
             'guess' => ['nullable', 'boolean'],
             'answer_ms' => ['nullable', 'integer', 'min:0'],
@@ -138,6 +139,7 @@ class DiagnosticController extends Controller
                 (bool) ($data['guess'] ?? false),
                 $data['answer_ms'] ?? null,
                 $data['explain_ms'] ?? null,
+                $data['question_hash'] ?? null,
             );
             $this->notifyBot($attempt->contact, fn (DiagBot $bot) => $bot->answered($attempt->contact, $attempt->refresh()));
 

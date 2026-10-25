@@ -76,7 +76,9 @@ class DiagnosticRunner
         } elseif ($attempt->grade === null) {
             $screen = ['screen' => 'profile', 'grades' => config('diagnostic.grades')];
         } elseif ($question = $this->currentQuestion($attempt)) {
-            $screen = ['screen' => 'question', 'question' => AnswerChecker::publicView($question)];
+            // hash — версия вопроса: правка банка, пока человек отвечает, не засчитает
+            // ответ на старую версию по новым ключам (answer()).
+            $screen = ['screen' => 'question', 'question' => AnswerChecker::publicView($question) + ['hash' => QuestionBank::hash($question)]];
         } else {
             $screen = ['screen' => 'target', 'default_target' => config('diagnostic.model.default_target')];
         }
@@ -91,12 +93,13 @@ class DiagnosticRunner
      *
      * @throws StaleAnswerException вопрос уже не текущий (повторная отправка, вторая вкладка)
      */
-    public function answer(DiagnosticAttempt $attempt, string $questionId, array $payload, bool $guess, ?int $answerMs, ?int $explainMs): array
+    public function answer(DiagnosticAttempt $attempt, string $questionId, array $payload, bool $guess, ?int $answerMs, ?int $explainMs, ?string $questionHash = null): array
     {
-        return DB::transaction(function () use ($attempt, $questionId, $payload, $guess, $answerMs, $explainMs) {
+        return DB::transaction(function () use ($attempt, $questionId, $payload, $guess, $answerMs, $explainMs, $questionHash) {
             $attempt = DiagnosticAttempt::whereKey($attempt->id)->lockForUpdate()->firstOrFail();
             $question = $attempt->current_question_id ? $this->bank->get($attempt->current_question_id) : null;
-            if ($attempt->isFinished() || $attempt->current_question_id !== $questionId || $question === null) {
+            if ($attempt->isFinished() || $attempt->current_question_id !== $questionId || $question === null
+                || ($questionHash !== null && $questionHash !== QuestionBank::hash($question))) {
                 throw new StaleAnswerException($attempt);
             }
 

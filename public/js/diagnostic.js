@@ -377,6 +377,7 @@
         if (ui.submit) ui.submit.disabled = true;
         var payload = {
             question_id: ui.q.id,
+            question_hash: ui.q.hash || null,
             answer: skip ? { skip: true } : ui.api.value(),
             guess: ui.guess,
             answer_ms: Date.now() - ui.shownAt,

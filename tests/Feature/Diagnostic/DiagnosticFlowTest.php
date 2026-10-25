@@ -128,6 +128,21 @@ class DiagnosticFlowTest extends TestCase
         $this->assertSame(0, $result['guessed']);
     }
 
+    public function test_answer_to_outdated_question_version_is_not_counted(): void
+    {
+        $this->openSession();
+        $q = $this->call_('profile', ['grade' => '11'])->json('question');
+        $this->assertNotEmpty($q['hash']);
+
+        // Банк поправили, пока человек отвечал: ответ на старую версию — 409 и актуальный экран.
+        $this->call_('answer', ['question_id' => $q['id'], 'question_hash' => 'old', 'answer' => $this->right($q['id'])])
+            ->assertStatus(409)->assertJsonPath('state.question.id', $q['id']);
+        $this->assertSame(0, DiagnosticAnswer::count());
+
+        $this->call_('answer', ['question_id' => $q['id'], 'question_hash' => $q['hash'], 'answer' => $this->right($q['id'])])
+            ->assertOk()->assertJsonPath('correct', true);
+    }
+
     public function test_blocks_go_in_fixed_order(): void
     {
         $this->assertSame(config('diagnostic.block_order'), array_column($this->openSession()->json('progress.blocks'), 'key'));
