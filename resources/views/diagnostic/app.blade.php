@@ -111,10 +111,12 @@
             font-weight: 700; font-size: 18px; }
         .avatar.emoji { background: none; font-size: 38px; line-height: 1; border-radius: 0; }
         /* Арт персонажа — PNG/WebP с прозрачным фоном, без кружка. */
-        img.avatar { width: 52px; height: 52px; background: none; border-radius: 0; object-fit: contain; }
+        img.avatar { width: 76px; height: 76px; background: none; border-radius: 0; object-fit: contain; }
         .say .avatar { width: 64px; height: 64px; font-size: 26px; }
         .say .avatar.emoji { width: 72px; height: 72px; font-size: 52px; }
-        .say img.avatar { width: 80px; height: 80px; }
+        .say img.avatar { width: 96px; height: 96px; }
+        /* В шапке сообщения (чат, пост, ответ на ЕГЭ) — чуть меньше: рядом имя. */
+        .speech-head img.avatar { width: 64px; height: 64px; }
 
         /* Кнопки — «объёмные»: заливка и кромка снизу, при нажатии вдавливаются. */
         .btn {
