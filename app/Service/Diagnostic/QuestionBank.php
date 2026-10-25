@@ -100,10 +100,37 @@ final class QuestionBank
             return null;
         }
 
-        $fresh = array_values(array_filter($pool, fn ($q) => ! in_array($q['id'], $seen, true)));
-        $from = $fresh !== [] ? $fresh : $pool;
+        // Разнообразие важнее всего: реже всего встречавшаяся в этом прохождении
+        // механика с оформлением, потом сама механика, потом — не та же, что
+        // в прошлом вопросе; при равенстве — то, чего человек ещё не видел.
+        $kinds = array_map(fn ($id) => $this->kind($this->questions[$id] ?? []), $used);
+        $mechanics = array_map(fn ($k) => strtok($k, ':'), $kinds);
+        $last = end($kinds) ?: null;
+        $score = fn ($q) => [
+            count(array_keys($kinds, $this->kind($q), true)),
+            count(array_keys($mechanics, $q['mechanic'] ?? '', true)),
+            (int) ($this->kind($q) === $last),
+            (int) in_array($q['id'], $seen, true),
+        ];
+
+        $best = null;
+        $from = [];
+        foreach ($pool as $q) {
+            $s = $score($q);
+            if ($best === null || $s < $best) {
+                [$best, $from] = [$s, [$q]];
+            } elseif ($s === $best) {
+                $from[] = $q;
+            }
+        }
 
         return $from[array_rand($from)];
+    }
+
+    /** Механика с оформлением — «вид» вопроса для разнообразия: «single:who». */
+    private function kind(array $q): string
+    {
+        return ($q['mechanic'] ?? '').':'.($q['skin'] ?? '');
     }
 
     /**

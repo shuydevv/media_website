@@ -62,4 +62,24 @@ class QuestionBankTest extends TestCase
         $this->assertSame('b', $bank->pick('law', 1, ['a', 'c'], ['b'])['id'], 'все видел — повтор лучше, чем ничего');
         $this->assertNull($bank->pick('law', 1, ['a', 'b', 'c']));
     }
+
+    public function test_pick_prefers_mechanic_not_used_yet_in_attempt(): void
+    {
+        $q = fn ($id, $block, $mechanic, $skin = null) => ['id' => $id, 'block' => $block, 'level' => 1, 'mechanic' => $mechanic, 'skin' => $skin];
+        $bank = new QuestionBank([
+            'p1' => $q('p1', 'politics', 'swipe', 'chat'),
+            'p2' => $q('p2', 'politics', 'single', 'who'),
+            'e1' => $q('e1', 'economy', 'swipe', 'chat'),
+            'e2' => $q('e2', 'economy', 'single', 'who'),
+            'e3' => $q('e3', 'economy', 'single', 'odd'),
+        ]);
+
+        for ($i = 0; $i < 20; $i++) {
+            // В политике уже были чат и «Кто прав?» — в экономике «Найди лишнее»,
+            // даже если его человек уже видел.
+            $this->assertSame('e3', $bank->pick('economy', 1, ['p1', 'p2'], ['e3'])['id']);
+            // Был только чат — любой, кроме чата.
+            $this->assertContains($bank->pick('economy', 1, ['p1'])['id'], ['e2', 'e3']);
+        }
+    }
 }

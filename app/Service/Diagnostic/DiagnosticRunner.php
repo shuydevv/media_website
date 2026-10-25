@@ -265,7 +265,8 @@ class DiagnosticRunner
     /** @return string[] */
     private function usedIds(DiagnosticAttempt $attempt): array
     {
-        return DiagnosticAnswer::where('diagnostic_attempt_id', $attempt->id)->pluck('question_id')->all();
+        // По порядку ответов: последний — для «не та же механика, что в прошлом вопросе».
+        return DiagnosticAnswer::where('diagnostic_attempt_id', $attempt->id)->orderBy('id')->pluck('question_id')->all();
     }
 
     /** Вопросы, которые этот человек видел в прошлых прохождениях. @return string[] */
