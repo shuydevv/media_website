@@ -54,7 +54,7 @@
         level: 'А какой у тебя сейчас уровень?',
         // Начальный тест (ТЗ, 5.8): провалиться нельзя — после каждого вопроса
         // разбор, ошибка — «новое для тебя», без красного и баллов.
-        basic_go: 'Тут нельзя ошибиться по-настоящему 🙂 После каждого вопроса — короткий разбор. Не знаешь — жми «Не знаю — покажи».',
+        basic_go: 'Чем больше верных ответов — тем круче итог 🔥 Не знаешь — жми «Не знаю — покажи».',
         basic_ok: '✅ Ты это знаешь!',
         basic_new: '🌱 Новое для тебя',
         basic_result: 'Ты знаешь больше, чем думал 🙂',
@@ -169,8 +169,11 @@
             // ни прокрутки: иначе новый вопрос открылся бы прокрученным вниз.
             if (!node.isConnected) return;
             bubble.className = 'bubble' + (tone ? ' ' + tone : '');
-            bubble.textContent = text;
+            // Метка {meme} в разборе — мем посреди текста (подпись сверху, вывод снизу).
+            var parts = extra ? text.split('{meme}') : [text.replace(/\{meme\}/g, '')];
+            bubble.textContent = parts[0];
             if (extra) bubble.appendChild(extra);
+            if (parts.length > 1) bubble.appendChild(document.createTextNode(parts.slice(1).join('')));
             if (react) img.classList.add(react);
             // Экран плавно уезжает в самый низ — к реплике.
             window.scrollTo({ top: document.documentElement.scrollHeight, behavior: reducedMotion ? 'auto' : 'smooth' });
@@ -359,7 +362,7 @@
         // Без лишнего клика: заставка держится немного и сама переходит к
         // заданию; на первом блоке дольше — там совет про «Не знаю». Тап по
         // экрану — сразу дальше. Полоска внизу показывает, сколько осталось.
-        var ms = first ? 3500 : 1800;
+        var ms = first ? (basic() ? 4000 : 3500) : 1800;
         var go = function () {
             shownBlock = p.index;
             renderQuestion(s.question);   // show() внутри снимет таймер и тап
