@@ -340,6 +340,9 @@
         :root[data-track="basic"] { --bad: var(--sun); --bad-edge: var(--sun-edge); --bad-bg: #FFF6DC; }
         :root.night[data-track="basic"] { --bad-bg: rgba(255, 200, 61, .16); }
         :root[data-track="basic"] .bubble.bad { background: var(--accent-soft); }
+        /* Жёлтых кнопок в начальном тесте нет: жёлтым там подсвечена ошибка. */
+        :root[data-track="basic"] .btn:not(.ghost) { background: var(--accent); color: #fff; --e: var(--accent-edge); }
+        :root[data-track="basic"] .btn[disabled] { background: var(--line); color: var(--hint); --e: var(--edge); }
         /* «Какой у тебя уровень?» — кнопки во всю ширину, подсказка под кнопкой. */
         .levels { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
         .levels img { display: block; width: 100%; aspect-ratio: 1; border-radius: 16px; margin-bottom: 8px; cursor: pointer; }
