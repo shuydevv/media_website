@@ -101,8 +101,6 @@
 
     function basic() { return !!state && state.track === 'basic'; }
 
-    // В начальном тесте никто не грустит: вместо «ошибся» — обычное лицо.
-    function sadMood() { return basic() ? 'idle' : 'sad'; }
 
     function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
 
@@ -470,22 +468,12 @@
         var fromRight = q.from ? (q.mechanic === 'swipe' ? res.solution.value === true : q.skin === 'debate') : null;
         if (q.from) [].forEach.call(ui.card.querySelectorAll('img.avatar[data-who="' + q.from + '"]'), function (img) {
             var c = character(q.from);
-            if (c && c.avatars) img.src = c.avatars[fromRight ? 'happy' : sadMood()];
-        });
-        // «Кто прав?» — спорят все, после ответа видно, кто выиграл спор: правый
-        // радуется, остальные грустят. Грустят и в начальном тесте: ошибся
-        // персонаж, а не ученик.
-        if (q.skin === 'who') (q.speakers || []).forEach(function (sp) {
-            var c = character(sp.who);
-            if (!c || !c.avatars) return;
-            [].forEach.call(ui.card.querySelectorAll('.options img.avatar[data-who="' + sp.who + '"]'), function (img) {
-                img.src = c.avatars[String(sp.id) === String(res.solution.id) ? 'happy' : 'sad'];
-            });
+            if (c && c.avatars) img.src = c.avatars[fromRight ? 'happy' : 'sad'];
         });
         // Объясняющий: правый в «Кто прав?» и персонаж вопроса — по своей правоте; другой — обычный.
         var who = character(res.explain_by) ? res.explain_by : null;
-        var whoMood = q.skin === 'who' ? 'happy' : (who === q.from ? (fromRight ? 'happy' : sadMood()) : 'idle');
-        var mood = who ? whoMood : (res.correct ? 'happy' : (soft ? 'think' : 'sad'));
+        var whoMood = q.skin === 'who' ? 'happy' : (who === q.from ? (fromRight ? 'happy' : 'sad') : 'idle');
+        var mood = who ? whoMood : (res.correct ? 'happy' : 'sad');
         var text = soft
             ? (res.correct ? SAY.basic_ok : SAY.basic_new) + '\n' + (who ? nameOf(who) + ': ' : '') + res.explain
             : who ? (res.correct ? '✅ ' : '❌ ') + nameOf(who) + ': ' + res.explain : (res.correct ? pick(SAY.ok) : pick(res.skipped ? SAY.skip : SAY.bad)) + '\n' + res.explain;
@@ -991,7 +979,7 @@
                         if (q.skin === 'who') items.forEach(function (o) {
                             var img = nodes[o.id].querySelector('img.avatar');
                             var c = character(o.who);
-                            if (img && c && c.avatars) img.src = c.avatars[String(o.id) === String(sol.id) ? 'happy' : sadMood()];
+                            if (img && c && c.avatars) img.src = c.avatars[String(o.id) === String(sol.id) ? 'happy' : 'sad'];
                         });
                     },
                 };
