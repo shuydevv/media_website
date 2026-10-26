@@ -47,10 +47,11 @@ class BlockRunTest extends TestCase
     {
         $basic = fn ($answers) => BlockRun::nextLevel($answers, 3, false);
         $this->assertSame(1, $basic([]));
-        $this->assertNull($basic([['level' => 1, 'correct' => false]]), 'ошибка закрывает блок');
+        $this->assertSame(2, $basic([['level' => 1, 'correct' => false]]), 'ошибка блок не закрывает');
         $this->assertSame(3, $basic([['level' => 1, 'correct' => true], ['level' => 2, 'correct' => true]]));
         $this->assertNull($basic([['level' => 1, 'correct' => true], ['level' => 2, 'correct' => true], ['level' => 3, 'correct' => true]]), 'не больше 3 вопросов');
-        $this->assertTrue(BlockRun::closedByErrors([['correct' => true], ['correct' => false]], false));
+        $this->assertFalse(BlockRun::closedByErrors([['correct' => false], ['correct' => false]], false));
+        $this->assertSame(2, BlockRun::correctCount([['correct' => true], ['correct' => false], ['correct' => true]]));
     }
 
     public function test_two_errors_in_a_row_close_the_block(): void

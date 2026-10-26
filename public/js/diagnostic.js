@@ -52,20 +52,21 @@
         authFail: 'Не получилось войти. Закрой это окно и открой диагностику из бота ещё раз.',
         error: 'Что-то пошло не так. Проверь интернет и попробуй ещё раз.',
         level: 'А какой у тебя сейчас уровень?',
-        // Начальный тест (ТЗ, 5.8): провалиться нельзя — за каждый вопрос
-        // факт в копилку, ошибка — «новое для тебя», без красного и баллов.
-        basic_go: 'Тут нельзя ошибиться по-настоящему 🙂 За каждый вопрос — новый факт в копилку. Не знаешь — жми «Не знаю — покажи».',
+        // Начальный тест (ТЗ, 5.8): провалиться нельзя — после каждого вопроса
+        // разбор, ошибка — «новое для тебя», без красного и баллов.
+        basic_go: 'Тут нельзя ошибиться по-настоящему 🙂 После каждого вопроса — короткий разбор. Не знаешь — жми «Не знаю — покажи».',
         basic_ok: '✅ Ты это знаешь!',
         basic_new: '🌱 Новое для тебя',
-        basic_coin: '📚 +1 в копилку',
         basic_result: 'Ты знаешь больше, чем думал 🙂',
+        basic_result_low: 'Отличное начало — теперь видно, с чего стартовать 🙂',
         basic_upsell: 'Похоже, ты знаешь больше, чем начальный уровень 😏 Хочешь узнать свой балл ЕГЭ? Пройди тест посложнее.',
         improve_basic: 'Хочешь, подскажу, с чего начать?',
     };
 
     // Статусы тем на карте начального теста — по уровню блока (0–3).
     var BASIC_MAP = [
-        ['🗺', 'ещё не исследовано'], ['🗺', 'ещё не исследовано'], ['🌱', 'есть база'], ['✅', 'уже знаешь'],
+        // Тест проверяет только базовые понятия — «знаешь право» не говорим.
+        ['🗺', 'начнём знакомство'], ['🗺', 'начнём знакомство'], ['🌱', 'часть базы знакома'], ['✅', 'базовые понятия знаешь'],
     ];
 
     var state = null;         // последний state от сервера
@@ -336,17 +337,17 @@
 
     // «Какой у тебя сейчас уровень?» — подсказка на кнопке: люди плохо оценивают себя.
     function renderLevel(s) {
-        var list = el('div', { class: 'grades answers' });
+        var list = el('div', { class: 'levels' });
         Object.keys(s.tracks).forEach(function (key) {
             var t = s.tracks[key];
-            list.appendChild(el('button', { class: 'btn choice level-btn', type: 'button', onclick: function () {
+            list.appendChild(el('div', {}, [el('button', { class: 'btn choice level-btn', type: 'button', text: t.title, onclick: function () {
                 haptic();
                 list.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
                 api(CFG.urls.level, { track: key }).then(function (r) {
                     if (r.status !== 200) return fail();
                     render(r.data);
                 }, function () { fail(); });
-            } }, [el('b', { text: t.title }), el('small', { text: t.hint })]));
+            } }), el('small', { text: t.hint })]));
         });
         show([say(SAY.level, null, 'think'), list], [], 'rise');
     }
@@ -484,7 +485,6 @@
             who
         ));
         if (res.correct && res.streak >= (soft ? 2 : 3)) toast(SAY.streak.replace('{n}', res.streak));
-        else if (soft && !res.correct) toast(SAY.basic_coin);
 
         var shownAt = Date.now();
         var next = function () {
@@ -492,7 +492,7 @@
             render(res.state);
         };
         $bar.innerHTML = '';
-        if (res.correct) {
+        if (res.correct && !soft) {
             // Верно — без лишнего клика: пара секунд прочитать (по длине текста)
             // и сам переход; отсчёт — после «печатает…». Тап — сразу дальше.
             var ms = Math.min(5000, Math.max(2500, 1200 + text.length * 35));
@@ -500,7 +500,7 @@
             $bar.appendChild(countdownBar(ms, typing));
             autoAdvance(next, ms, typing);
         } else {
-            // Неверно — разбор читают сколько нужно, дальше — кнопкой.
+            // Неверно (а в начальном тесте — всегда) — разбор читают сколько нужно, дальше — кнопкой.
             $bar.appendChild(button('Дальше', next));
         }
     }
@@ -610,28 +610,31 @@
     }
 
     /**
-     * Итог начального теста (ТЗ, 5.8): без баллов. Вывод акулы → за что
-     * похвалить → карта тем → потенциал по времени до ЕГЭ → копилка →
-     * (сильному — тест посложнее) → «Хочешь, подскажу, с чего начать?».
+     * Итог начального теста (ТЗ, 5.8): без баллов. Сверху вниз: вывод акулы и
+     * «верно N из M» → значки похвалы → карта-острова (тап — что узнал в
+     * теме) → реплики персонажей → путь до ЕГЭ → (сильному — тест посложнее)
+     * → «Хочешь, подскажу, с чего начать?».
      */
     function renderBasicResult(s, quiet) {
         var r = s.result;
-        var nodes = [say(SAY.basic_result, null, 'happy')];
-        nodes.push(section('За что тебя похвалить', r.praise.map(function (t) { return el('div', { class: 'praise', text: '⭐ ' + t }); })));
-        nodes.push(section('Карта предмета', r.map.map(function (b) {
-            var st = BASIC_MAP[b.level] || BASIC_MAP[0];
-            return el('div', { class: 'gain map-row' }, [el('span', { text: st[0] + ' ' + b.title }), el('small', { text: st[1] })]);
-        })));
-        nodes.push(section('Твой потенциал', [
-            el('p', { text: r.horizon }),
-            el('ol', { class: 'steps' }, r.steps.map(function (t) { return el('li', { text: t }); })),
+        var nodes = [say(r.correct >= r.total / 2 ? SAY.basic_result : SAY.basic_result_low, null, 'happy')];
+        nodes.push(el('div', { class: 'hero' }, [
+            el('div', { class: 'score', text: r.correct + ' из ' + r.total }),
+            el('div', { class: 'muted', text: 'верных ответов' }),
         ]));
-        nodes.push(el('p', { class: 'muted center', text: '📚 В копилке ' + r.learned + ' ' + plural(r.learned, 'факт', 'факта', 'фактов') }));
+        nodes.push(el('div', { class: 'badges' }, r.badges.map(function (b) {
+            return el('div', { class: 'badge' }, [el('span', { class: 'badge-icon', text: b.icon }), el('span', { text: b.text })]);
+        })));
+        nodes.push(section('Карта предмета', [islands(r.map)]));
+        nodes.push(section('Что говорит команда', r.voices.map(function (v) {
+            return el('div', { class: 'say voice' }, [avatar(v.who, null, 'happy'), el('div', { class: 'bubble' }, [el('b', { text: nameOf(v.who) + ': ' }), v.text])]);
+        })));
+        nodes.push(section('Путь до ЕГЭ', [el('p', { text: r.horizon }), route(r)]));
 
         var bar = [];
         if (r.upsell) {
             nodes.push(say(SAY.basic_upsell, null, 'happy'));
-            nodes.push(el('div', { class: 'center-link' }, [el('button', { class: 'link', type: 'button', text: '📚 Пройти тест посложнее', onclick: function () { restart(false); } })]));
+            nodes.push(el('div', { class: 'center-link' }, [el('button', { class: 'link', type: 'button', text: '📚 Пройти тест посложнее', onclick: function () { restart(false, 'middle'); } })]));
         }
         if (s.improve) {
             nodes.push(say(s.improve === 'yes' ? SAY.improveYes : SAY.improveNo));
@@ -646,6 +649,53 @@
         }
         show(nodes, bar, quiet ? null : 'rise');
         if (!quiet && !celebrated) { celebrated = true; setTimeout(confetti, 700); }
+    }
+
+    // Острова в море — темы. Цвет и туман — по числу верных из 3; точки ●●○ —
+    // сами ответы. Тап — карточка ниже: «📌 Запомни» вопросов этой темы.
+    var ISLE_AT = [[4, 4], [54, 0], [28, 34], [2, 66], [56, 62]];
+    var ISLE_ART = '<svg viewBox="0 0 120 64" aria-hidden="true"><ellipse class="shoal" cx="60" cy="50" rx="56" ry="12"/>'
+        + '<path class="land" d="M14 50 C20 28 44 16 62 18 C82 20 100 32 106 50 Z"/>'
+        + '<path class="palm" d="M70 22 C70 14 72 8 76 4 M76 4 C68 2 62 6 60 10 M76 4 C84 0 90 4 92 8"/></svg>';
+
+    function islands(map) {
+        var info = el('div', { class: 'isle-info' });
+        var sea = el('div', { class: 'sea' });
+        var buttons = [];
+        var select = function (i) {
+            var b = map[i];
+            var st = BASIC_MAP[b.level] || BASIC_MAP[0];
+            buttons.forEach(function (n, j) { n.classList.toggle('sel', j === i); });
+            info.innerHTML = '';
+            info.appendChild(el('h4', { text: st[0] + ' ' + b.title + ' — ' + st[1] }));
+            info.appendChild(el('p', { class: 'muted small', text: 'Что ты узнал в этой теме:' }));
+            b.facts.forEach(function (f) {
+                info.appendChild(el('div', { class: 'fact' }, [el('span', { text: f.correct ? '✅' : '📌' }), el('span', { text: f.text })]));
+            });
+        };
+        map.forEach(function (b, i) {
+            var dots = '';
+            for (var k = 0; k < (b.asked || 3); k++) dots += k < b.level ? '●' : '○';
+            var art = el('span', { class: 'isle-art' });
+            art.innerHTML = ISLE_ART;
+            var at = ISLE_AT[i] || [0, 0];
+            var n = el('button', { class: 'isle lvl-' + b.level, type: 'button', style: 'left:' + at[0] + '%;top:' + at[1] + '%', onclick: function () { haptic(); select(i); } }, [
+                art, el('span', { class: 'isle-name', text: b.title }), el('span', { class: 'isle-dots', text: dots }),
+            ]);
+            buttons.push(n);
+            sea.appendChild(n);
+        });
+        select(0);
+        return el('div', {}, [sea, info]);
+    }
+
+    // Путь до ЕГЭ: кораблик «сейчас» → вехи → флаг «ЕГЭ через ~N месяцев».
+    function route(r) {
+        var stops = [['🚤', r.steps[0]]].concat(r.steps.slice(1, -1).map(function (t) { return ['⛵', t]; }));
+        stops.push(['🏁', r.steps[r.steps.length - 1] + (r.months ? ' · ЕГЭ через ~' + r.months + ' ' + plural(r.months, 'месяц', 'месяца', 'месяцев') : '')]);
+        return el('div', { class: 'route' }, stops.map(function (st) {
+            return el('div', { class: 'stop' }, [el('span', { class: 'stop-icon', text: st[0] }), el('span', { text: st[1] })]);
+        }));
     }
 
     function section(title, children) {
@@ -792,9 +842,10 @@
      * «Начать заново»: посреди теста ($ask) — с подтверждением, прохождение
      * закрывается как брошенное; после итога — сразу, итог остаётся в истории.
      */
-    function restart(ask) {
+    /** track — сразу в этот тест с тем же классом («Пройди тест посложнее»). */
+    function restart(ask, track) {
         var go = function () {
-            api(CFG.urls.restart, { platform: tg ? tg.platform : null }).then(function (r) {
+            api(CFG.urls.restart, { platform: tg ? tg.platform : null, track: track || null }).then(function (r) {
                 if (r.status !== 200) return fail();
                 shownBlock = -1;
                 shownProgress = -1;
@@ -920,7 +971,7 @@
                             nodes[id].classList.remove('sel');
                             if (nodes[id].tagName === 'BUTTON') nodes[id].disabled = true;
                             if (id === String(sol.id)) { nodes[id].classList.add('ok'); if (q.skin !== 'who') mark(nodes[id], '✓'); }
-                            else if (id === chosen) { nodes[id].classList.add('bad'); if (q.skin !== 'who' && !basic()) mark(nodes[id], '✗'); }
+                            else if (id === chosen) { nodes[id].classList.add('bad'); if (basic()) mark(nodes[id], 'твой ответ'); else if (q.skin !== 'who') mark(nodes[id], '✗'); }
                         });
                         // «Кто прав?»: правый радуется, остальные — «ошибся».
                         if (q.skin === 'who') items.forEach(function (o) {

@@ -128,11 +128,20 @@ class DiagnosticFlowTest extends TestCase
         $this->assertArrayNotHasKey('low', $r, 'баллы новичку не показываем');
         $this->assertSame([3, 3, 3, 3, 3], array_column($r['map'], 'level'));
         $this->assertTrue($r['upsell']);
-        $this->assertCount(3, $r['praise']);
+        $this->assertCount(3, $r['badges']);
+        $this->assertSame([15, 15], [$r['correct'], $r['total']]);
+        $this->assertCount(3, $r['map'][0]['facts'], 'на острове — «📌 Запомни» всех вопросов темы');
+        $this->assertSame(['turtle', 'squid', 'puffer'], array_column($r['voices'], 'who'));
+        $this->assertGreaterThan(0, $r['months']);
+
+        // «Пройди тест посложнее» — сразу основной тест, класс не спрашиваем.
+        $state = $this->call_('restart', ['track' => 'middle'])->assertJsonPath('track', 'middle')->json();
+        $this->assertSame('question', $state['screen']);
+        $this->assertSame('10', DiagnosticAttempt::latest('id')->first()->grade);
         $this->assertSame(DiagnosticAttempt::STATUS_FINISHED, DiagnosticAttempt::first()->status);
     }
 
-    public function test_basic_error_closes_block_but_praise_is_always_there(): void
+    public function test_basic_errors_do_not_shorten_the_test_and_praise_is_always_there(): void
     {
         $this->openSession();
         $state = $this->choose('11', 'basic')->json();
@@ -144,10 +153,12 @@ class DiagnosticFlowTest extends TestCase
             $state = $res['state'];
         }
 
-        $this->assertSame(5, $closed, 'одна ошибка закрывает блок');
-        $this->assertSame(5, DiagnosticAnswer::count());
+        $this->assertSame(0, $closed, 'ошибка блок не закрывает');
+        $this->assertSame(15, DiagnosticAnswer::count(), 'все 15 вопросов при любых ответах');
+        $this->assertSame([0, 0, 0, 0, 0], array_column($state['result']['map'], 'level'));
         $this->assertFalse($state['result']['upsell']);
-        $this->assertNotEmpty($state['result']['praise']);
+        $this->assertNotEmpty($state['result']['badges']);
+        $this->assertSame(0, $state['result']['correct']);
         $this->assertSame(config('diagnostic.basic.horizon.11'), $state['result']['horizon']);
     }
 

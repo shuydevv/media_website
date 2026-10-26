@@ -33,7 +33,8 @@ final class DiagnosticStats
     /** Прохождение без движения дольше — считаем брошенным (ещё может вернуться: «Продолжим?» через 3 ч). */
     public const DROPOUT_AFTER_MINUTES = 60;
 
-    public function __construct(private readonly ?CarbonInterface $from = null, private readonly ?CarbonInterface $to = null)
+    /** @param  string|null  $track  basic / middle — только прохождения этого теста (config diagnostic.tracks) */
+    public function __construct(private readonly ?CarbonInterface $from = null, private readonly ?CarbonInterface $to = null, private readonly ?string $track = null)
     {
     }
 
@@ -43,7 +44,8 @@ final class DiagnosticStats
         return TelegramContact::forBot(TelegramBots::DIAG)
             ->when($this->from, fn ($q) => $q->where('started_at', '>=', $this->from->copy()->startOfDay()))
             ->when($this->to, fn ($q) => $q->where('started_at', '<=', $this->to->copy()->endOfDay()))
-            ->with('diagnosticAttempts')
+            ->when($this->track, fn ($q) => $q->whereHas('diagnosticAttempts', fn ($a) => $a->where('track', $this->track)))
+            ->with(['diagnosticAttempts' => fn ($a) => $a->when($this->track, fn ($a) => $a->where('track', $this->track))])
             ->get();
     }
 
@@ -145,9 +147,14 @@ final class DiagnosticStats
             }
         }
 
+        // Балл — только у основного теста; у начального — доля верных.
+        $middle = $finished->reject->isBasic();
+        $basic = $finished->filter->isBasic();
+
         return [
             'count' => $finished->count(),
-            'avg' => $finished->isEmpty() ? null : (int) round($finished->avg(fn ($a) => ($a->result['low'] + $a->result['high']) / 2)),
+            'avg' => $middle->isEmpty() ? null : (int) round($middle->avg(fn ($a) => ($a->result['low'] + $a->result['high']) / 2)),
+            'basic_correct' => $basic->isEmpty() ? null : (int) round($basic->avg(fn ($a) => ($a->result['correct'] ?? 0) / max(1, $a->result['total'] ?? 15) * 100)),
             'grades' => $finished->countBy(fn ($a) => $a->grade ?? '—')->all(),
             'levels' => $levels,
         ];
@@ -169,7 +176,9 @@ final class DiagnosticStats
             return [];
         }
 
-        $bank = QuestionBank::fromConfig();
+        $main = QuestionBank::fromConfig();
+        $basic = QuestionBank::fromConfig('basic.bank_path');
+        $bank = new QuestionBank($main->all() + $basic->all());
         $rows = DiagnosticAnswer::whereIn('diagnostic_attempt_id', $attemptIds)
             ->selectRaw('question_id, block, level, mechanic, COUNT(*) as shown, SUM(correct) as correct_n, SUM(guess) as guess_n, AVG(answer_ms) as ms')
             ->groupBy('question_id', 'block', 'level', 'mechanic')

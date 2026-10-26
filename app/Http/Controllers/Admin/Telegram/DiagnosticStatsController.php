@@ -16,7 +16,8 @@ class DiagnosticStatsController extends Controller
         $from = $this->date($request->string('from')->toString());
         $to = $this->date($request->string('to')->toString());
 
-        $stats = new DiagnosticStats($from, $to);
+        $track = array_key_exists($request->string('track')->toString(), config('diagnostic.tracks')) ? $request->string('track')->toString() : null;
+        $stats = new DiagnosticStats($from, $to, $track);
         $contacts = $stats->contacts();
         $finished = DiagnosticStats::finished($contacts);
         $dropOffs = DiagnosticStats::dropOffs($contacts);
@@ -29,6 +30,7 @@ class DiagnosticStatsController extends Controller
             'questions' => $stats->questions($contacts, array_keys($dropOffs['questions'])),
             'recent' => $finished->sortByDesc('finished_at')->take(30)->load('contact'),
             'from' => $from?->format('Y-m-d'),
+            'track' => $track,
             'to' => $to?->format('Y-m-d'),
             'configured' => [
                 'TELEGRAM_DIAG_BOT_TOKEN' => (bool) TelegramBots::token(TelegramBots::DIAG),

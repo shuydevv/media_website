@@ -186,7 +186,8 @@ class DiagnosticController extends Controller
     public function restart(Request $request, DiagnosticRunner $runner): JsonResponse
     {
         $old = $this->attempt($request);
-        $attempt = $runner->restart($old, $request->string('platform')->toString() ?: null);
+        $track = $request->validate(['track' => ['nullable', Rule::in(array_keys(config('diagnostic.tracks')))]])['track'] ?? null;
+        $attempt = $runner->restart($old, $request->string('platform')->toString() ?: null, $track);
         $this->notifyBot($attempt->contact, fn (DiagBot $bot) => $bot->opened($attempt->contact, $attempt, true));
 
         $response = response()->json($runner->state($attempt) + ['in_telegram' => $attempt->entry === 'miniapp']);

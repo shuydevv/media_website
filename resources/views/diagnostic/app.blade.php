@@ -332,14 +332,39 @@
         /* Начальный тест (ТЗ, 5.8): красного нет вообще — неверно выбранное
            не подсвечивается, разбор — в спокойном голубом. После :root.night,
            иначе тёмная тема вернёт свой --bad-bg. */
-        :root[data-track="basic"] { --bad: var(--line); --bad-edge: var(--edge); --bad-bg: var(--paper); }
+        :root[data-track="basic"] { --bad: var(--sun); --bad-edge: var(--sun-edge); --bad-bg: #FFF6DC; }
+        :root.night[data-track="basic"] { --bad-bg: rgba(255, 200, 61, .16); }
         :root[data-track="basic"] .bubble.bad { background: var(--accent-soft); }
-        .level-btn { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
-        .level-btn small { font-weight: 400; color: var(--hint); font-size: 13px; }
-        .praise { margin: 8px 0; }
-        .map-row small { color: var(--hint); font-size: 13px; }
-        .steps { margin: 8px 0 0; padding-left: 20px; }
-        .steps li { margin: 4px 0; }
+        /* «Какой у тебя уровень?» — кнопки во всю ширину, подсказка под кнопкой. */
+        .levels { display: grid; gap: 14px; margin-top: 16px; }
+        .levels .btn { width: 100%; }
+        .levels small { display: block; margin: 6px 4px 0; color: var(--hint); font-size: 13px; line-height: 1.35; }
+        /* Итог начального теста. */
+        .badges { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 4px 0 8px; }
+        .badge { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px; background: var(--paper); border: 2px solid var(--sun); font-weight: 600; font-size: 14px; }
+        .badge-icon { font-size: 18px; }
+        .sea { position: relative; height: 280px; border-radius: var(--radius); overflow: hidden;
+            background: radial-gradient(circle at 20% 30%, rgba(255,255,255,.35) 0 2px, transparent 3px) 0 0 / 34px 34px, linear-gradient(180deg, #BFE3FA, #8FCBF2); }
+        :root.night .sea { background: radial-gradient(circle at 20% 30%, rgba(255,255,255,.08) 0 2px, transparent 3px) 0 0 / 34px 34px, linear-gradient(180deg, #16405E, #0F2E45); }
+        .isle { position: absolute; width: 42%; padding: 0; border: 0; background: none; color: var(--ink); display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform .2s; }
+        .isle.sel { transform: scale(1.08); }
+        .isle-art svg { display: block; width: 100%; max-width: 110px; }
+        .isle .shoal { fill: #F3E2B3; }
+        .isle .land { fill: #58B86B; }
+        .isle .palm { fill: none; stroke: #2F7D43; stroke-width: 4; stroke-linecap: round; }
+        .isle.lvl-2 .land { fill: #9BCF6A; }
+        .isle.lvl-0, .isle.lvl-1 { opacity: .55; filter: grayscale(.7); }
+        .isle-name { font-size: 12px; font-weight: 700; background: var(--paper); border-radius: 8px; padding: 1px 6px; margin-top: -4px; }
+        .isle.sel .isle-name { outline: 2px solid var(--accent); }
+        .isle-dots { font-size: 11px; letter-spacing: 2px; color: var(--accent-edge); }
+        .isle-info { margin-top: 10px; padding: 12px; border-radius: var(--radius); background: var(--paper); }
+        .isle-info h4 { margin: 0 0 4px; font-size: 15px; }
+        .fact { display: flex; gap: 8px; margin: 6px 0; font-size: 14px; line-height: 1.35; }
+        .say.voice { margin: 8px 0; }
+        .route { position: relative; margin-top: 8px; padding-left: 4px; }
+        .route::before { content: ''; position: absolute; left: 17px; top: 16px; bottom: 16px; border-left: 2px dashed var(--dash); }
+        .stop { position: relative; display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+        .stop-icon { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: var(--paper); font-size: 16px; }
     </style>
 </head>
 <body>

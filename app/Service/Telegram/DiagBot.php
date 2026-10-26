@@ -160,7 +160,7 @@ class DiagBot implements BotScenario
 
         $this->dispatch($contact, 'result', ['attempt_id' => $attempt->id]);
         $this->dispatch($contact, 'feed_finished', ['attempt_id' => $attempt->id]);
-        $this->dispatch($contact, 'note', ['html' => '✅ Прошёл диагностику'.($attempt->isBasic() ? ' (🌱 начальный)' : '').': ~'.$attempt->result['low'].'–'.$attempt->result['high']]);
+        $this->dispatch($contact, 'note', ['html' => '✅ Прошёл диагностику: '.($attempt->isBasic() ? '🌱 начальный, верно '.DiagnosticSummary::correctLine($attempt) : '~'.$attempt->result['low'].'–'.$attempt->result['high'])]);
         $this->dispatch($contact, 'refresh_status');
     }
 

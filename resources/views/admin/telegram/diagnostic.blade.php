@@ -27,8 +27,14 @@
 <form method="get" class="flex flex-wrap items-end gap-2 mb-4">
     <x-ui.input type="date" name="from" label="С" size="sm" value="{{ $from }}" />
     <x-ui.input type="date" name="to" label="По" size="sm" value="{{ $to }}" />
+    <x-ui.select name="track" label="Тест" size="sm">
+        <option value="">Оба</option>
+        @foreach (config('diagnostic.tracks') as $key => $t)
+            <option value="{{ $key }}" @selected($track === $key)>{{ $t['title'] }}</option>
+        @endforeach
+    </x-ui.select>
     <x-ui.button type="submit" size="xs" variant="secondary">Показать</x-ui.button>
-    @if ($from || $to)
+    @if ($from || $to || $track)
         <x-ui.button href="{{ route('admin.telegram.diagnostic') }}" size="xs" variant="ghost">Сбросить</x-ui.button>
     @endif
 </form>
@@ -108,7 +114,10 @@
     <x-ui.card class="mb-4">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <x-ui.stat label="Прошли">{{ $results['count'] }}</x-ui.stat>
-            <x-ui.stat label="Средний балл (середина диапазона)">{{ $results['avg'] }}</x-ui.stat>
+            <x-ui.stat label="Средний балл (середина диапазона)">{{ $results['avg'] ?? '—' }}</x-ui.stat>
+            @if ($results['basic_correct'] !== null)
+                <x-ui.stat label="🌱 Начальный: верных в среднем">{{ $results['basic_correct'] }}%</x-ui.stat>
+            @endif
             <x-ui.stat label="Классы">
                 <x-slot:sub>
                     @foreach ($results['grades'] as $grade => $n)
@@ -143,7 +152,7 @@
                 <tr>
                     <td data-primary><a href="{{ route('admin.telegram.contacts.show', $a->contact) }}" class="text-blue-600 hover:underline">{{ $a->contact->displayName() }}</a></td>
                     <td data-label="Класс">{{ $a->grade ? config("diagnostic.grades.{$a->grade}", $a->grade) : '—' }}</td>
-                    <td data-label="Балл" class="tabular-nums">~{{ $a->result['low'] }}–{{ $a->result['high'] }} <span class="text-zinc-400">→ {{ $a->result['potential'] }}+</span></td>
+                    <td data-label="Балл" class="tabular-nums">@if ($a->isBasic()) 🌱 верно {{ \App\Service\Diagnostic\DiagnosticSummary::correctLine($a) }} @else ~{{ $a->result['low'] }}–{{ $a->result['high'] }} <span class="text-zinc-400">→ {{ $a->result['potential'] }}+</span> @endif</td>
                     <td data-label="Цель" class="tabular-nums">{{ $a->target_score ?? 'не знает' }}</td>
                     <td data-label="«Хочешь улучшить?»">
                         <span>

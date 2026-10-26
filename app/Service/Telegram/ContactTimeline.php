@@ -113,7 +113,7 @@ final class ContactTimeline
             $add($a->started_at, '🧪', 'Начал диагностику', 'action', $a->entry === 'miniapp' ? 'в Telegram' : null);
             if ($a->isFinished()) {
                 $r = $a->result;
-                $add($a->finished_at, '✅', 'Прошёл диагностику', 'action',
+                $add($a->finished_at, '✅', 'Прошёл диагностику', 'action', $a->isBasic() ? '🌱 начальный, верно '.DiagnosticSummary::correctLine($a) :
                     '~'.$r['low'].'–'.$r['high'].', потенциал '.$r['potential'].'+, точки роста: '.DiagnosticSummary::weakTitles($a)
                     .($a->target_score !== null ? ', цель '.$a->target_score : ''));
             } elseif ($a->last_answer_at) {

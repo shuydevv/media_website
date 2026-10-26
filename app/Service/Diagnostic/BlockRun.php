@@ -12,8 +12,9 @@ namespace App\Service\Diagnostic;
  *   неверно второй раз подряд → блок закрыт;
  *   не больше 4 вопросов.
  *
- * Начальный тест ($max = 3, $retry = false): ошибка сразу закрывает блок —
- * в его банке по одному вопросу на уровень.
+ * Начальный тест ($retry = false): не адаптивный — все уровни по порядку,
+ * ошибка блок не закрывает: цель — познакомить с базовой теорией, а не
+ * измерить (ТЗ, 5.8). Итог блока там — число верных (correctCount).
  *
  * Итог блока — наивысший уровень, на котором дан верный ответ (0 — ни
  * одного). Нижняя граница диапазона считает только верные ответы без
@@ -35,6 +36,9 @@ final class BlockRun
     public static function nextLevel(array $answers, int $max = self::MAX_QUESTIONS, bool $retry = true): ?int
     {
         $count = count($answers);
+        if (! $retry) {
+            return $count < $max ? $count + 1 : null;
+        }
         if ($count === 0) {
             return self::EASY;
         }
@@ -59,7 +63,7 @@ final class BlockRun
     {
         $count = count($answers);
         if (! $retry) {
-            return $count > 0 && ! $answers[$count - 1]['correct'];
+            return false;
         }
 
         return $count >= 2 && ! $answers[$count - 1]['correct'] && ! $answers[$count - 2]['correct'];
@@ -79,6 +83,12 @@ final class BlockRun
         $right = array_sum(array_map(fn ($a) => $a['correct'] ? $a['level'] : 0, $answers));
 
         return $total > 0 ? round($right / $total, 3) : 0.0;
+    }
+
+    /** @param  list<array{correct: bool}>  $answers */
+    public static function correctCount(array $answers): int
+    {
+        return count(array_filter($answers, fn ($a) => $a['correct']));
     }
 
     /**

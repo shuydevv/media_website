@@ -188,8 +188,9 @@ class DiagnosticRunner
         $accuracy = [];
         foreach (array_keys(config('diagnostic.blocks')) as $block) {
             $answers = $this->blockAnswers($attempt, $block);
-            $high[$block] = BlockRun::result($answers);
-            $low[$block] = BlockRun::result($answers, true);
+            // Начальный тест не адаптивный: итог блока — сколько верных из 3.
+            $high[$block] = $attempt->isBasic() ? BlockRun::correctCount($answers) : BlockRun::result($answers);
+            $low[$block] = $attempt->isBasic() ? $high[$block] : BlockRun::result($answers, true);
             $accuracy[$block] = BlockRun::accuracy($answers);
         }
 
@@ -203,6 +204,9 @@ class DiagnosticRunner
                 // Сколько раз нажал «Не знаю» (guess = пропуск) — для карточки админу.
                 'skipped' => DiagnosticAnswer::where('diagnostic_attempt_id', $attempt->id)->where('guess', true)->count(),
                 'accuracy' => $accuracy,
+                // Сколько верных из заданных — «верно 9 из 15» для начального теста.
+                'correct' => DiagnosticAnswer::where('diagnostic_attempt_id', $attempt->id)->where('correct', true)->count(),
+                'total' => DiagnosticAnswer::where('diagnostic_attempt_id', $attempt->id)->count(),
             ],
             'status' => DiagnosticAttempt::STATUS_FINISHED,
             'finished_at' => now(),
@@ -214,13 +218,20 @@ class DiagnosticRunner
      * (abandoned — в статистике видно, что бросил), начинается новое.
      * Законченное не трогаем — его итог остаётся в истории.
      */
-    public function restart(DiagnosticAttempt $attempt, ?string $platform = null): DiagnosticAttempt
+    public function restart(DiagnosticAttempt $attempt, ?string $platform = null, ?string $track = null): DiagnosticAttempt
     {
         if (! $attempt->isFinished()) {
             $attempt->forceFill(['status' => DiagnosticAttempt::STATUS_ABANDONED, 'current_question_id' => null])->save();
         }
 
-        return $this->start($attempt->contact, $attempt->entry ?? 'anonymous', $platform ?? $attempt->platform);
+        $new = $this->start($attempt->contact, $attempt->entry ?? 'anonymous', $platform ?? $attempt->platform);
+        // «Пройди тест посложнее» с итога начального: класс уже известен —
+        // сразу в основной тест, без знакомства.
+        if ($track !== null && $attempt->grade !== null) {
+            $new->forceFill(['grade' => $attempt->grade, 'track' => $track])->save();
+        }
+
+        return $new;
     }
 
     /** «Хочешь улучшить свои знания?» — ответ один на прохождение, второй источник ничего не меняет. */
@@ -360,15 +371,17 @@ class DiagnosticRunner
     }
 
     /**
-     * Итог начального теста (ТЗ, 5.8): без баллов — карта тем, похвала
-     * (всегда хотя бы одна), потенциал по времени до ЕГЭ и, если человек
-     * явно сильнее начального уровня, — предложение основного теста.
+     * Итог начального теста (ТЗ, 5.8): без баллов — сколько верных, значки
+     * похвалы (всегда хотя бы один), карта-острова с тем, что узнал в каждой
+     * теме, реплики персонажей, путь до ЕГЭ и, если человек явно сильнее
+     * начального уровня, — предложение основного теста.
      */
     private function basicResultView(DiagnosticAttempt $attempt): array
     {
         $blocks = config('diagnostic.blocks');
         $levels = $attempt->levels ?? [];
-        $answers = DiagnosticAnswer::where('diagnostic_attempt_id', $attempt->id)->orderBy('id')->get(['correct', 'guess']);
+        $answers = DiagnosticAnswer::where('diagnostic_attempt_id', $attempt->id)->orderBy('id')->get(['block', 'question_id', 'correct', 'guess']);
+        $bank = $this->bankFor($attempt);
 
         $streak = $best = 0;
         foreach ($answers as $a) {
@@ -384,28 +397,75 @@ class DiagnosticRunner
             }
         }
         $topLevel = $top !== null ? ($levels[$top] ?? 0) : 0;
+        // Слабейшая — с конца, чтобы при равенстве не совпасть с сильнейшей.
+        $weak = null;
+        foreach (array_reverse($attempt->block_order) as $key) {
+            if ($weak === null || ($levels[$key] ?? 0) < ($levels[$weak] ?? 0)) {
+                $weak = $key;
+            }
+        }
+        $correct = $answers->where('correct', true)->count();
+        $total = $answers->count();
 
+        $vars = [
+            '{block}' => $blocks[$top]['title'] ?? '', '{best}' => $blocks[$top]['title'] ?? '', '{weak}' => $blocks[$weak]['title'] ?? '',
+            '{streak}' => $best, '{correct}' => $correct, '{total}' => $total,
+        ];
         $texts = config('diagnostic.basic.praise');
-        $praise = array_filter([
+        $badges = array_filter([
             $topLevel >= 3 ? $texts['level3'] : null,
             $topLevel === 2 ? $texts['level2'] : null,
-            $best >= 2 ? $texts['streak'] : null,
+            $best >= 3 ? $texts['streak'] : null,
             $answers->where('guess', true)->isNotEmpty() ? $texts['skipped'] : null,
             in_array($attempt->grade, ['9', '10'], true) ? $texts['early'] : null,
-            $texts['learned'],
+            $texts['done'],
         ]);
-        $praise = array_map(
-            fn ($t) => strtr($t, ['{block}' => $blocks[$top]['title'] ?? '', '{n}' => $answers->count()]),
-            array_slice(array_values($praise), 0, 3),
-        );
+        $badges = array_map(fn ($b) => ['icon' => $b['icon'], 'text' => strtr($b['text'], $vars)], array_slice(array_values($badges), 0, 3));
+
+        $voices = config('diagnostic.basic.voices');
+        $high = [
+            'turtle' => $correct >= $total * 0.6,
+            'squid' => $topLevel >= 2,
+            'puffer' => $weak === null || ($levels[$weak] ?? 0) >= 3,
+        ];
 
         return [
-            'map' => array_map(fn ($key) => ['key' => $key, 'title' => $blocks[$key]['title'], 'level' => $levels[$key] ?? 0], $attempt->block_order),
-            'praise' => $praise,
-            'learned' => $answers->count(),
+            'correct' => $correct,
+            'total' => $total,
+            'badges' => $badges,
+            // Остров — тема: сколько верных из заданных и «📌 Запомни» её вопросов.
+            'map' => array_map(fn ($key) => [
+                'key' => $key,
+                'title' => $blocks[$key]['title'],
+                'level' => $levels[$key] ?? 0,
+                'asked' => $answers->where('block', $key)->count(),
+                'facts' => $answers->where('block', $key)->map(fn ($a) => [
+                    'text' => $bank->get($a->question_id)['remember'] ?? null,
+                    'correct' => (bool) $a->correct,
+                ])->filter(fn ($f) => $f['text'] !== null)->values()->all(),
+            ], $attempt->block_order),
+            'voices' => array_map(fn ($who) => ['who' => $who, 'text' => strtr($voices[$who][$high[$who] ? 'high' : 'low'], $vars)], array_keys($voices)),
+            'months' => $this->monthsToExam($attempt->grade),
             'horizon' => config('diagnostic.basic.horizon.'.$attempt->grade) ?? config('diagnostic.basic.horizon.graduate'),
             'steps' => config('diagnostic.basic.steps'),
             'upsell' => count(array_filter($levels, fn ($l) => $l >= 3)) >= config('diagnostic.basic.upsell_blocks'),
         ];
+    }
+
+    /**
+     * Примерно месяцев до ЕГЭ (основной период — с конца мая; считаем до
+     * 1 июня). 11 класс и выпускник — ближайший июнь, если учебный год уже
+     * начался (с июля) — следующий; 10 — на год позже, 9 — на два.
+     */
+    private function monthsToExam(?string $grade): ?int
+    {
+        $shift = ['11' => 0, 'graduate' => 0, '10' => 1, '9' => 2][$grade] ?? null;
+        if ($shift === null) {
+            return null;
+        }
+        $now = now();
+        $exam = $now->copy()->setDate($now->year + ($now->month >= 7 ? 1 : 0) + $shift, 6, 1)->startOfDay();
+
+        return max(1, (int) round($now->diffInDays($exam) / 30.4));
     }
 }

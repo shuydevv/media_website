@@ -51,13 +51,17 @@ final class DiagnosticSummary
         if (! $attempt->isBasic()) {
             $lines[] = 'Цель: '.($attempt->target_score !== null ? $attempt->target_score : 'не знает');
         }
-        $lines[] = '<b>Сейчас ~'.$r['low'].'–'.$r['high'].'</b>, потенциал '.$r['potential'].'+'
-            .($attempt->isBasic() ? ' <i>(оценка; ученику баллы не показаны)</i>' : '');
-        $lines[] = 'Блоки (0–3): '.implode(', ', array_map(
+        if ($attempt->isBasic()) {
+            // Начальный тест не измеряет балл — только сколько верных.
+            $lines[] = '<b>Верно '.self::correctLine($attempt).'</b>';
+        } else {
+            $lines[] = '<b>Сейчас ~'.$r['low'].'–'.$r['high'].'</b>, потенциал '.$r['potential'].'+';
+        }
+        $lines[] = ($attempt->isBasic() ? 'Темы (верно из 3): ' : 'Блоки (0–3): ').implode(', ', array_map(
             fn ($key) => e(config("diagnostic.blocks.{$key}.title")).' '.($attempt->levels[$key] ?? 0),
             array_keys(config('diagnostic.blocks')),
         ));
-        if ($r['weak'] !== []) {
+        if ($r['weak'] !== [] && ! $attempt->isBasic()) {
             $lines[] = 'Точки роста: '.e(self::weakTitles($attempt));
         }
         if (($r['skipped'] ?? 0) > 0) {
@@ -80,9 +84,17 @@ final class DiagnosticSummary
 
         return '✅ '.e($contact->displayName())
             .($contact->username && ! str_starts_with($contact->displayName(), '@') ? ' @'.e($contact->username) : '')
-            .' · '.e($grade).($attempt->isBasic() ? ' · 🌱' : '').' · ~'.$r['low'].'–'.$r['high']
+            .' · '.e($grade).' · '.($attempt->isBasic() ? '🌱 верно '.self::correctLine($attempt) : '~'.$r['low'].'–'.$r['high'])
             .' · '.($contact->source ? '<code>'.e($contact->source).'</code>' : 'без метки')
             .' · <a href="'.e(route('admin.telegram.contacts.show', $contact)).'">карточка</a>';
+    }
+
+    /** «9 из 15» — у прохождений до подсчёта — из уровней блоков. */
+    public static function correctLine(DiagnosticAttempt $attempt): string
+    {
+        $r = $attempt->result ?? [];
+
+        return ($r['correct'] ?? array_sum($attempt->levels ?? [])).' из '.($r['total'] ?? count($attempt->block_order) * 3);
     }
 
     public static function trackTitle(DiagnosticAttempt $attempt): string
