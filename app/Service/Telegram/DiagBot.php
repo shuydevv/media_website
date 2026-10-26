@@ -359,7 +359,7 @@ class DiagBot implements BotScenario
     {
         $this->messenger->sendAuto($contact, 'diag_welcome', FunnelTexts::render('diag_welcome', $this->vars($contact)), [
             'reply_markup' => ['inline_keyboard' => [[$this->testButton('diag_btn_start')]]],
-        ]);
+        ], public_path(config('telegram_diag.photos.diag_welcome')));
     }
 
     /** Не открыл тест — «Получилось пройти?» от Александра, один раз. */

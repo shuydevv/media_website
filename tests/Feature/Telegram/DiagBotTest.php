@@ -43,7 +43,13 @@ class DiagBotTest extends TestCase
         ]);
         $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
 
-        Http::fake(['*' => Http::response(['ok' => true, 'result' => ['message_id' => 501, 'message_thread_id' => 77]])]);
+        Http::fake([
+            '*/sendPhoto' => Http::response(['ok' => true, 'result' => [
+                'message_id' => 501,
+                'photo' => [['file_id' => 'small'], ['file_id' => 'big-file-id']],
+            ]]),
+            '*' => Http::response(['ok' => true, 'result' => ['message_id' => 501, 'message_thread_id' => 77]]),
+        ]);
     }
 
     public function test_start_sends_welcome_with_test_button_and_feeds_service_topic(): void
@@ -55,14 +61,24 @@ class DiagBotTest extends TestCase
         $this->assertNull($contact->lesson);
         $this->assertNotNull($contact->reminder_due_at);
 
-        Http::assertSent(fn (Request $r) => $this->to($r, 'sendMessage') && $r['chat_id'] === 555
-            && str_contains($r['text'], 'диагностика')
-            && ($r['reply_markup']['inline_keyboard'][0][0]['web_app']['url'] ?? null) === route('diag.page'));
+        // Приветствие — картинкой с подписью; в multipart поля плоские.
+        Http::assertSent(fn (Request $r) => $this->to($r, 'sendPhoto') && $this->fields($r)['chat_id'] == 555
+            && str_contains($this->fields($r)['caption'], 'диагностика')
+            && (json_decode($this->fields($r)['reply_markup'], true)['inline_keyboard'][0][0]['web_app']['url'] ?? null) === route('diag.page'));
         Http::assertSent(fn (Request $r) => $this->to($r, 'createForumTopic') && $r['name'] === '🧪 Диагностики');
         Http::assertSent(fn (Request $r) => $this->to($r, 'sendMessage') && $r['chat_id'] === self::ADMIN_CHAT
             && str_contains($r['text'], '🆕') && str_contains($r['text'], 'vk_diag1'));
         // Всё — токеном бота диагностики.
         Http::assertNotSent(fn (Request $r) => str_contains($r->url(), 'lesson-token'));
+    }
+
+    public function test_welcome_photo_uploaded_once_then_sent_by_file_id(): void
+    {
+        DiagBot::make()->handleUpdate($this->privateText(1, 555, '/start'));
+        DiagBot::make()->handleUpdate($this->privateText(2, 556, '/start'));
+
+        $this->assertSame(1, $this->countSent('sendPhoto', fn ($r) => $r->isMultipart()), 'файл загружен один раз');
+        Http::assertSent(fn (Request $r) => $this->to($r, 'sendPhoto') && $this->fields($r)['chat_id'] == 556 && $this->fields($r)['photo'] === 'big-file-id');
     }
 
     public function test_reminder_only_if_test_not_opened(): void
@@ -327,6 +343,12 @@ class DiagBotTest extends TestCase
     private function to(Request $r, string $method): bool
     {
         return str_ends_with($r->url(), '/bot'.'diag-token/'.$method);
+    }
+
+    /** Поля запроса: у multipart (отправка файла) data() — список частей. */
+    private function fields(Request $r): array
+    {
+        return $r->isMultipart() ? array_column($r->data(), 'contents', 'name') : $r->data();
     }
 
     private function countSent(string $method, ?callable $filter = null): int

@@ -130,7 +130,8 @@ class MultiBotTest extends TestCase
         (new RunFunnelStep($diag->id, 'welcome'))->handle();
 
         // Ушло токеном бота диагностики, а не воронки.
-        Http::assertSent(fn ($r) => str_contains($r->url(), '/botdiag-token/sendMessage') && $r['chat_id'] === 555);
+        // Приветствие — картинкой (multipart, поэтому без проверки полей).
+        Http::assertSent(fn ($r) => str_contains($r->url(), '/botdiag-token/sendPhoto'));
         Http::assertNotSent(fn ($r) => str_contains($r->url(), '/botlesson-token/'));
     }
 

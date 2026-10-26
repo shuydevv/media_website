@@ -46,16 +46,29 @@ class ContactMessenger
         return $this->sendAuto($contact, $step, $html, $extra);
     }
 
-    /** @return array|null отправленное сообщение или null, если бот заблокирован */
-    public function sendAuto(TelegramContact $contact, string $step, string $html, array $extra = []): ?array
+    /**
+     * $photo — файл на диске: тогда фото, а текст — подписью к нему. Подпись
+     * у Telegram — до 1024 символов; текст из админки длиннее — уйдёт без фото.
+     *
+     * @return array|null отправленное сообщение или null, если бот заблокирован
+     */
+    public function sendAuto(TelegramContact $contact, string $step, string $html, array $extra = [], ?string $photo = null): ?array
     {
         if ($contact->blocked_at) {
             return null;
         }
 
+        if ($photo !== null && mb_strlen(html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5)) > 1024) {
+            Log::warning("Telegram {$this->api->bot()}: текст длиннее подписи к фото, отправлен без фото", ['step' => $step]);
+            $photo = null;
+        }
+        $send = fn (string $html) => $photo !== null
+            ? $this->api->sendPhoto($contact->telegram_user_id, $photo, $html, $extra)
+            : $this->api->sendMessage($contact->telegram_user_id, $html, $extra);
+
         try {
             try {
-                $sent = $this->api->sendMessage($contact->telegram_user_id, $html, $extra);
+                $sent = $send($html);
             } catch (TelegramApiException $e) {
                 // Премиум-эмодзи ({e:…} в тексте из админки), которые Telegram
                 // боту не разрешает, валят отправку целиком — повторяем с
@@ -65,7 +78,7 @@ class ContactMessenger
                 }
                 Log::warning("Telegram {$this->api->bot()}: премиум-эмодзи отклонены, отправлено с обычными", ['step' => $step, 'error' => $e->getMessage()]);
                 $html = preg_replace('~<tg-emoji emoji-id="\d+">(.*?)</tg-emoji>~su', '$1', $html);
-                $sent = $this->api->sendMessage($contact->telegram_user_id, $html, $extra);
+                $sent = $send($html);
             }
         } catch (TelegramApiException $e) {
             if (! $e->isBlockedByUser()) {
@@ -87,7 +100,7 @@ class ContactMessenger
             'telegram_message_id' => $sent['message_id'] ?? null,
         ]);
 
-        $this->topics->note($contact, "🤖 <i>Бот:</i>\n".preg_replace('~<a href="[^"]*">(.*?)</a>~su', '$1', $html));
+        $this->topics->note($contact, '🤖 <i>Бот'.($photo !== null ? ' (с картинкой)' : '').":</i>\n".preg_replace('~<a href="[^"]*">(.*?)</a>~su', '$1', $html));
 
         return $sent;
     }
