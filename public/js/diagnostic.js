@@ -394,7 +394,9 @@
             // или акула рядом с вопросом.
             var hasFace = q.skin === 'who' || q.skin === 'chat' || q.skin === 'fragments' || (q.mechanic === 'fix' && q.from);
             var face = q.from ? avatar(q.from) : mascot('think', 'host');
-            var text = q.mechanic === 'swipe' ? (hasFace ? null : 'Правда или нет?') : q.prompt;
+            // «Найди лишнее» — прямо в формулировке: отдельной плашкой его не замечали.
+            var text = q.mechanic === 'swipe' ? (hasFace ? null : 'Правда или нет?')
+                : q.skin === 'odd' ? q.prompt.replace(/[.:]?\s*$/, '. Найди лишнее') : q.prompt;
             if (text !== null) card.appendChild(hasFace ? el('p', { class: 'prompt', text: text })
                 : el('div', { class: 'q-host' }, [face, el('p', { class: 'prompt', text: text })]));
         }
@@ -939,7 +941,6 @@
                 var nodes = {};
                 var list = el('div', { class: 'options' });
                 var items = q.skin === 'who' ? q.speakers : q.options;
-                if (q.skin === 'odd') card.insertBefore(el('div', { class: 'task', text: 'Найди лишнее' }), card.lastChild);
                 items.forEach(function (o) {
                     var node;
                     var onclick = function () {
@@ -1191,6 +1192,9 @@
                         e.stopPropagation();
                         if (n.suppressClick) { n.suppressClick = false; return; }
                         if (ui.locked) return;
+                        // Выбрана другая карточка — тап по лежащей в группе кладёт выбранную
+                        // в ту же группу, а не выкидывает лежащую.
+                        if (placed[c.id] && selected !== null && selected !== c.id) return put(selected, placed[c.id]);
                         if (placed[c.id]) return put(c.id, null);
                         selected = selected === c.id ? null : c.id;
                         haptic();
@@ -1211,7 +1215,6 @@
                     zones[b.id] = { node: node, pool: inner };
                     list.appendChild(node);
                 });
-                card.appendChild(el('div', { class: 'counter', text: 'Зажми карточку и перетащи в её группу' }));
                 card.appendChild(pool);
                 card.appendChild(list);
                 redraw();

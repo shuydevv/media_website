@@ -204,7 +204,7 @@
         .tag.case { display: flex; flex-direction: column; gap: 2px; }
         .tag.case b { font-size: 12px; color: var(--hint); font-weight: 600; }
         .buckets { display: grid; gap: 10px; }
-        .bucket { border: 2px dashed var(--dash); border-radius: 14px; padding: 10px; cursor: pointer; background: rgba(255, 255, 255, .5); }
+        .bucket { border: 2px dashed var(--dash); border-radius: 14px; padding: 10px; cursor: pointer; background: rgba(255, 255, 255, .5); -webkit-user-select: none; user-select: none; }
         :root.night .bucket { background: rgba(255, 255, 255, .03); }
         .bucket.target { border-color: var(--accent); }
         .bucket.over { border-style: solid; border-color: var(--accent); background: var(--accent-soft); }
