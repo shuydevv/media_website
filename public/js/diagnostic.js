@@ -55,8 +55,8 @@
         // Начальный тест (ТЗ, 5.8): провалиться нельзя — после каждого вопроса
         // разбор, ошибка — «новое для тебя», без красного и баллов.
         basic_go: 'Чем больше верных ответов — тем круче итог 🔥 Не знаешь — жми «Не знаю — покажи».',
-        basic_ok: '✅ Ты это знаешь!',
-        basic_new: '🌱 Новое для тебя',
+        basic_ok: ['🎯 В точку!', '🔥 Красава!', '✅ Есть!'],
+        basic_new: ['🙃 А вот и нет', '🙃 Не совсем...', '🙃 Не-а!'],
         basic_result: 'Ты знаешь больше, чем думал 🙂',
         basic_result_low: 'Отличное начало — теперь видно, с чего стартовать 🙂',
         basic_upsell: 'Похоже, ты знаешь больше, чем начальный уровень 😏 Хочешь узнать свой балл ЕГЭ? Пройди тест посложнее.',
@@ -156,9 +156,10 @@
     /**
      * Реплика маскота после короткого «печатает…» — как в чате. Узел
      * возвращается сразу (место в ленте занято), текст появляется через
-     * delay мс; extra — что дописать в пузырь (мем).
+     * delay мс; extra — что дописать в пузырь (мем); head — первая строка
+     * с отступом снизу («В точку!» в начальном тесте).
      */
-    function sayTyping(text, tone, mood, react, extra, who) {
+    function sayTyping(text, tone, mood, react, extra, who, head) {
         var bubble = el('div', { class: 'bubble' }, [el('span', { class: 'typing' }, [el('i'), el('i'), el('i')])]);
         var img = who ? avatar(who, null, mood) : mascot(mood || 'idle');
         var node = el('div', { class: 'say' }, [img, bubble]);
@@ -169,7 +170,9 @@
             bubble.className = 'bubble' + (tone ? ' ' + tone : '');
             // Метка {meme} в разборе — мем посреди текста (подпись сверху, вывод снизу).
             var parts = extra ? text.split('{meme}') : [text.replace(/\{meme\}/g, '')];
-            bubble.textContent = parts[0];
+            bubble.textContent = '';
+            if (head) bubble.appendChild(el('div', { class: 'say-head', text: head }));
+            bubble.appendChild(document.createTextNode(parts[0]));
             if (extra) bubble.appendChild(extra);
             if (parts.length > 1) bubble.appendChild(document.createTextNode(parts.slice(1).join('')));
             if (react) img.classList.add(react);
@@ -341,7 +344,7 @@
         var list = el('div', { class: 'levels' });
         Object.keys(s.tracks).forEach(function (key) {
             var t = s.tracks[key];
-            list.appendChild(el('div', {}, [el('button', { class: 'btn choice level-btn', type: 'button', text: t.title, onclick: function () {
+            list.appendChild(el('div', { class: 'level' }, [t.image ? el('img', { src: t.image, alt: '' }) : null, el('button', { class: 'btn choice level-btn', type: 'button', text: t.title, onclick: function () {
                 haptic();
                 list.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
                 api(CFG.urls.level, { track: key }).then(function (r) {
@@ -475,7 +478,7 @@
         var whoMood = q.skin === 'who' ? 'happy' : (who === q.from ? (fromRight ? 'happy' : 'sad') : 'idle');
         var mood = who ? whoMood : (res.correct ? 'happy' : 'sad');
         var text = soft
-            ? (res.correct ? SAY.basic_ok : SAY.basic_new) + '\n' + (who ? nameOf(who) + ': ' : '') + res.explain
+            ? (who ? nameOf(who) + ': ' : '') + res.explain
             : who ? (res.correct ? '✅ ' : '❌ ') + nameOf(who) + ': ' + res.explain : (res.correct ? pick(SAY.ok) : pick(res.skipped ? SAY.skip : SAY.bad)) + '\n' + res.explain;
         // Мини-урок: «📌 Запомни» из банка (поле remember).
         if (res.remember) text += '\n\n📌 Запомни: ' + res.remember;
@@ -485,7 +488,8 @@
             mood,
             res.correct ? 'hop' : 'tilt',
             meme,
-            who
+            who,
+            soft ? pick(res.correct ? SAY.basic_ok : SAY.basic_new) : null
         ));
         if (res.correct && res.streak >= (soft ? 2 : 3)) toast(SAY.streak.replace('{n}', res.streak));
 
@@ -973,7 +977,7 @@
                             nodes[id].classList.remove('sel');
                             if (nodes[id].tagName === 'BUTTON') nodes[id].disabled = true;
                             if (id === String(sol.id)) { nodes[id].classList.add('ok'); if (q.skin !== 'who') mark(nodes[id], '✓'); }
-                            else if (id === chosen) { nodes[id].classList.add('bad'); if (basic()) mark(nodes[id], 'твой ответ'); else if (q.skin !== 'who') mark(nodes[id], '✗'); }
+                            else if (id === chosen) { nodes[id].classList.add('bad'); if (!basic() && q.skin !== 'who') mark(nodes[id], '✗'); }
                         });
                         // «Кто прав?»: правый радуется, остальные — «ошибся».
                         if (q.skin === 'who') items.forEach(function (o) {

@@ -96,7 +96,7 @@
         .center-link { text-align: center; margin: 6px 0 8px; }
 
         /* Ведущая и реплики — пузыри как в чате. */
-        .say { display: flex; gap: 10px; align-items: flex-end; margin: 12px 0; animation: pop .25s ease-out; }
+        .say { display: flex; gap: 8px; align-items: flex-end; margin: 12px 0; animation: pop .25s ease-out; }
         .say img { width: 64px; height: 64px; flex: none; }
         .bubble { background: var(--paper); color: var(--ink); padding: 10px 14px; border-radius: 18px 18px 18px 6px; max-width: 85%; white-space: pre-line;
             box-shadow: 0 1px 3px rgba(20, 60, 100, .08); }
@@ -114,7 +114,9 @@
         img.avatar { width: 76px; height: 76px; background: none; border-radius: 0; object-fit: contain; }
         .say .avatar { width: 64px; height: 64px; font-size: 26px; }
         .say .avatar.emoji { width: 72px; height: 72px; font-size: 52px; }
-        .say img.avatar { width: 96px; height: 96px; }
+        .say img.avatar { width: 84px; height: 84px; }
+        /* Пояснение — на всю ширину рядом с персонажем, а не 85%. */
+        .say .bubble { max-width: none; }
         /* В шапке сообщения (чат, пост, ответ на ЕГЭ) — чуть меньше: рядом имя. */
         .speech-head img.avatar { width: 64px; height: 64px; }
 
@@ -322,7 +324,10 @@
         .confetti { position: fixed; inset: 0; pointer-events: none; z-index: 30; overflow: hidden; }
         .confetti i { position: absolute; top: -12px; width: 8px; height: 12px; border-radius: 2px; animation: fall 1.4s cubic-bezier(.3, .6, .6, 1) forwards; }
         @keyframes fall { to { transform: translate(var(--dx), 105vh) rotate(var(--rot)); opacity: .9; } }
-        .meme { display: block; max-width: 100%; border-radius: 12px; margin-top: 8px; }
+        .meme { display: block; max-width: 100%; border-radius: 12px; margin: 6px 0; }
+        /* Мем — в исходных пропорциях: .say img выше задаёт квадрат аватара. */
+        .say img.meme { width: auto; height: auto; flex: initial; }
+        .say-head { margin-bottom: 6px; }
 
         /* Кому движение мешает (настройка системы) — всё сразу, без анимаций. */
         @media (prefers-reduced-motion: reduce) {
@@ -336,7 +341,8 @@
         :root.night[data-track="basic"] { --bad-bg: rgba(255, 200, 61, .16); }
         :root[data-track="basic"] .bubble.bad { background: var(--accent-soft); }
         /* «Какой у тебя уровень?» — кнопки во всю ширину, подсказка под кнопкой. */
-        .levels { display: grid; gap: 14px; margin-top: 16px; }
+        .levels { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+        .levels img { display: block; width: 100%; aspect-ratio: 1; border-radius: 16px; margin-bottom: 8px; }
         .levels .btn { width: 100%; }
         .levels small { display: block; margin: 6px 4px 0; color: var(--hint); font-size: 13px; line-height: 1.35; }
         /* Итог начального теста. */
