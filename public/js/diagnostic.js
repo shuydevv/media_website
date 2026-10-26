@@ -472,6 +472,16 @@
             var c = character(q.from);
             if (c && c.avatars) img.src = c.avatars[fromRight ? 'happy' : sadMood()];
         });
+        // «Кто прав?» — спорят все, после ответа видно, кто выиграл спор: правый
+        // радуется, остальные грустят. Грустят и в начальном тесте: ошибся
+        // персонаж, а не ученик.
+        if (q.skin === 'who') (q.speakers || []).forEach(function (sp) {
+            var c = character(sp.who);
+            if (!c || !c.avatars) return;
+            [].forEach.call(ui.card.querySelectorAll('.options img.avatar[data-who="' + sp.who + '"]'), function (img) {
+                img.src = c.avatars[String(sp.id) === String(res.solution.id) ? 'happy' : 'sad'];
+            });
+        });
         // Объясняющий: правый в «Кто прав?» и персонаж вопроса — по своей правоте; другой — обычный.
         var who = character(res.explain_by) ? res.explain_by : null;
         var whoMood = q.skin === 'who' ? 'happy' : (who === q.from ? (fromRight ? 'happy' : sadMood()) : 'idle');
