@@ -54,7 +54,7 @@
         level: 'А какой у тебя сейчас уровень?',
         // Начальный тест (ТЗ, 5.8): провалиться нельзя — после каждого вопроса
         // разбор, ошибка — «новое для тебя», без красного и баллов.
-        basic_go: 'Чем больше верных ответов — тем круче итог 🔥 Не знаешь — жми «Не знаю — покажи».',
+        basic_go: 'Чем больше верных ответов — тем круче итог 🔥 Если не знаешь — не стесняйся смотреть ответы.',
         basic_ok: ['🎯 В точку!', '🔥 Красава!', '✅ Есть!'],
         basic_new: ['🙃 А вот и нет', '🙃 Не совсем...', '🙃 Не-а!'],
         basic_result: 'Ты знаешь больше, чем думал 🙂',
@@ -344,14 +344,17 @@
         var list = el('div', { class: 'levels' });
         Object.keys(s.tracks).forEach(function (key) {
             var t = s.tracks[key];
-            list.appendChild(el('div', { class: 'level' }, [t.image ? el('img', { src: t.image, alt: '' }) : null, el('button', { class: 'btn choice level-btn', type: 'button', text: t.title, onclick: function () {
+            var btn = el('button', { class: 'btn choice level-btn', type: 'button', text: t.title, onclick: function () {
                 haptic();
                 list.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
                 api(CFG.urls.level, { track: key }).then(function (r) {
                     if (r.status !== 200) return fail();
                     render(r.data);
                 }, function () { fail(); });
-            } }), el('small', { text: t.hint })]));
+            } });
+            // Тап по картинке — как по кнопке (нажатая кнопка уже disabled — второй раз не уйдёт).
+            var img = t.image ? el('img', { src: t.image, alt: '', onclick: function () { btn.click(); } }) : null;
+            list.appendChild(el('div', { class: 'level' }, [img, btn, el('small', { text: t.hint })]));
         });
         show([say(SAY.level, null, 'think'), list], [], 'rise');
     }
@@ -409,7 +412,7 @@
         ui.api = mech.build(q, card);
 
         // «Не знаю» — пропуск: сразу на сервер, засчитывается как ноль баллов.
-        var guess = el('button', { class: 'chip-guess', type: 'button', text: basic() ? '🤔 Не знаю — покажи' : '🤷 Не знаю', onclick: function () {
+        var guess = el('button', { class: 'chip-guess', type: 'button', text: basic() ? 'Показать ответ' : '🤷 Не знаю', onclick: function () {
             if (ui.locked) return;
             ui.guess = true;
             haptic();
@@ -508,7 +511,8 @@
             autoAdvance(next, ms, typing);
         } else {
             // Неверно (а в начальном тесте — всегда) — разбор читают сколько нужно, дальше — кнопкой.
-            $bar.appendChild(button('Дальше', next));
+            // В начальном тесте — синяя: жёлтая сливается с подсветкой ошибки.
+            $bar.appendChild(button('Дальше', next, basic() ? 'choice' : null));
         }
     }
 

@@ -99,7 +99,8 @@ final class DiagnosticSummary
 
     public static function trackTitle(DiagnosticAttempt $attempt): string
     {
-        return $attempt->track ? (config("diagnostic.tracks.{$attempt->track}.title") ?? $attempt->track) : 'не выбран';
+        // Перенос в названии — только для кнопки в Mini App, в сводке одной строкой.
+        return $attempt->track ? str_replace("\n", ' ', config("diagnostic.tracks.{$attempt->track}.title") ?? $attempt->track) : 'не выбран';
     }
 
     /** Темы с уровнем от $min до $max через запятую — для итога начального теста в бот. */

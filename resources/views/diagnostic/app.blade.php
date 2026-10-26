@@ -342,8 +342,9 @@
         :root[data-track="basic"] .bubble.bad { background: var(--accent-soft); }
         /* «Какой у тебя уровень?» — кнопки во всю ширину, подсказка под кнопкой. */
         .levels { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
-        .levels img { display: block; width: 100%; aspect-ratio: 1; border-radius: 16px; margin-bottom: 8px; }
-        .levels .btn { width: 100%; }
+        .levels img { display: block; width: 100%; aspect-ratio: 1; border-radius: 16px; margin-bottom: 8px; cursor: pointer; }
+        /* \n в названии уровня — перенос строки («Средний / или выше»). */
+        .levels .btn { width: 100%; white-space: pre-line; }
         .levels small { display: block; margin: 6px 4px 0; color: var(--hint); font-size: 13px; line-height: 1.35; }
         /* Итог начального теста. */
         .badges { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 4px 0 8px; }
