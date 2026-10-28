@@ -29,6 +29,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('sessions:prune')->dailyAt('04:30');
         $schedule->command('ai:collect-grading-batches')->everyFiveMinutes()->withoutOverlapping();
         $schedule->command('telegram:send-reminders')->everyMinute()->withoutOverlapping();
+        // Без withoutOverlapping (мьютекс — файловый кэш): от двойного старта
+        // и двойной отправки защищают блокировка и захват получателя в БД.
+        $schedule->command('telegram:broadcasts')->everyMinute();
         $schedule->command('telegram:digest')->dailyAt('21:00');
         $schedule->command('telegram:remind-unanswered')->everyTenMinutes()->withoutOverlapping();
         // Без withoutOverlapping: его мьютекс в файловом кэше, а команда как

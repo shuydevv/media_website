@@ -35,6 +35,13 @@
         @endif
         @if ($contact->awaitingReply()) <x-ui.badge tone="orange">ждёт ответа</x-ui.badge> @endif
         @if ($contact->topic_id) <x-ui.badge tone="green">тема есть</x-ui.badge> @else <x-ui.badge>темы нет</x-ui.badge> @endif
+        @if ($contact->broadcast_opt_out_at) <x-ui.badge tone="orange">🔕 без рассылок</x-ui.badge> @endif
+        {{-- То же, что /norassylka и /rassylka в теме человека: исключает человека, а не только этот бот. --}}
+        <form method="post" action="{{ route('admin.telegram.contacts.broadcast-opt-out', $contact) }}" class="ml-auto">
+            @csrf
+            <input type="hidden" name="opt_out" value="{{ $contact->broadcast_opt_out_at ? 0 : 1 }}">
+            <x-ui.button type="submit" size="xs" variant="outline">{{ $contact->broadcast_opt_out_at ? 'Снова присылать рассылки' : 'Не присылать рассылки' }}</x-ui.button>
+        </form>
     </div>
     @include($isLesson ? 'admin.telegram.contacts._lessons' : 'admin.telegram.contacts._diagnostic', ['c' => $contact])
     @if ($next = $contact->nextScheduled())

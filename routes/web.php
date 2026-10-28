@@ -299,6 +299,10 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
             Route::get('/contacts', 'Contacts\IndexController')->name('admin.telegram.contacts.index');
             Route::get('/contacts/{contact}', 'Contacts\ShowController')->name('admin.telegram.contacts.show');
             Route::post('/contacts/{contact}/dialog', 'Contacts\StartDialogController')->name('admin.telegram.contacts.dialog');
+            Route::post('/contacts/{contact}/broadcast-opt-out', 'Contacts\BroadcastOptOutController')->name('admin.telegram.contacts.broadcast-opt-out');
+            Route::get('/broadcasts', 'Broadcasts\IndexController')->name('admin.telegram.broadcasts.index');
+            Route::get('/broadcasts/{broadcast}', 'Broadcasts\ShowController')->name('admin.telegram.broadcasts.show');
+            Route::post('/broadcasts/{broadcast}/people', 'Broadcasts\PeopleController')->name('admin.telegram.broadcasts.people');
         });
 
         Route::group(['namespace' => 'Crm', 'prefix' => 'crm'], function () {

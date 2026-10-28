@@ -87,6 +87,7 @@ final class ContactTimeline
                     'Написал'.($m->forwarded_at === null && $m->created_at->lt(now()->subMinutes(3)) ? ' — ⚠️ не переслано в тему админ-группы' : ''),
                     'user', $media.$preview.($m->forwarded_at === null && $m->forward_error ? "\nошибка: ".$m->forward_error : '')),
                 TelegramMessage::KIND_ADMIN => $add($m->created_at, '👤', 'Вы ответили', 'admin', $media.$preview),
+                TelegramMessage::KIND_BROADCAST => $add($m->created_at, '📣', 'Рассылка #'.str_replace('broadcast:', '', (string) $m->step), 'admin', $media.$preview),
                 default => $add($m->created_at, '🤖', 'Бот: '.($labels[$m->step] ?? $m->step ?? 'сообщение'), 'bot', $preview),
             };
         }

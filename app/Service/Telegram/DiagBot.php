@@ -8,6 +8,7 @@ use App\Models\TelegramContact;
 use App\Models\TelegramMessage;
 use App\Service\Diagnostic\DiagnosticRunner;
 use App\Service\Diagnostic\DiagnosticSummary;
+use App\Service\Telegram\Broadcast\BroadcastSender;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -233,7 +234,17 @@ class DiagBot implements BotScenario
         ]);
 
         $this->dispatch($contact, 'forward', ['message_id' => $message['message_id']]);
+        $this->noteBroadcastReply($contact);
         $this->dispatch($contact, 'refresh_status');
+    }
+
+    /** Первое сообщение после рассылки — строкой в теме, на что это ответ (после пересылки: тема уже есть). */
+    private function noteBroadcastReply(TelegramContact $contact): void
+    {
+        if ($recipient = BroadcastSender::recordReply($contact)) {
+            $this->dispatch($contact, 'note', ['html' => '📣 Ответ на рассылку #'.$recipient->telegram_broadcast_id
+                .' от '.$recipient->sent_at->format('d.m H:i').': '.e($recipient->broadcast->preview(120))]);
+        }
     }
 
     private function handleStart(array $from, ?string $param): void

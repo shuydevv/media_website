@@ -87,7 +87,7 @@ class AdminTopics
             ]);
             $contact->forceFill([
                 'topic_id' => $topic['message_thread_id'],
-                'topic_status' => $contact->statusEmoji(),
+                'topic_status' => $contact->topicStatus(),
             ])->save();
 
             return true;
@@ -281,6 +281,7 @@ class AdminTopics
             'liked' => '🔥 Понравилось',
             'diag' => '🧪 Диагностики',
             'alerts' => '⚠️ Сбои',
+            'broadcast' => '📣 Рассылка',
         ];
 
         $id = DB::table('telegram_service_topics')->where('key', $key)->value('topic_id');
@@ -314,10 +315,10 @@ class AdminTopics
         return (int) DB::table('telegram_service_topics')->where('key', $key)->value('topic_id');
     }
 
-    /** Переименовать тему, если сменился эмодзи-статус (💬 — ждёт ответа и т.п.). */
+    /** Переименовать тему, если сменился эмодзи-статус (💬 — ждёт ответа, 📣 — ответил на рассылку и т.п.). */
     public function refreshStatus(TelegramContact $contact): void
     {
-        if (! $contact->topic_id || ! self::adminChatId() || $contact->topic_status === $contact->statusEmoji()) {
+        if (! $contact->topic_id || ! self::adminChatId() || $contact->topic_status === $contact->topicStatus()) {
             return;
         }
 
@@ -327,11 +328,11 @@ class AdminTopics
                 'message_thread_id' => $contact->topic_id,
                 'name' => $this->topicName($contact),
             ]);
-            $contact->forceFill(['topic_status' => $contact->statusEmoji()])->save();
+            $contact->forceFill(['topic_status' => $contact->topicStatus()])->save();
         } catch (TelegramApiException $e) {
             // «TOPIC_NOT_MODIFIED» — название уже такое, это не ошибка.
             if (str_contains($e->getMessage(), 'NOT_MODIFIED')) {
-                $contact->forceFill(['topic_status' => $contact->statusEmoji()])->save();
+                $contact->forceFill(['topic_status' => $contact->topicStatus()])->save();
 
                 return;
             }
@@ -471,7 +472,7 @@ class AdminTopics
     private function topicName(TelegramContact $contact): string
     {
         // 🧪 — человек из бота диагностики: группа у ботов общая.
-        $name = $contact->statusEmoji().' '.($contact->bot === TelegramBots::DIAG ? '🧪 ' : '').$contact->displayName();
+        $name = $contact->topicStatus().' '.($contact->bot === TelegramBots::DIAG ? '🧪 ' : '').$contact->displayName();
         if ($contact->username && ! str_starts_with($contact->displayName(), '@')) {
             $name .= ' @'.$contact->username;
         }

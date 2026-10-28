@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Service\Telegram\Broadcast\BroadcastSender;
 use App\Service\Telegram\TelegramBots;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -62,6 +63,8 @@ class TelegramContact extends Model
         'lesson_played_at' => 'datetime',
         'bonus_played_at' => 'datetime',
         'followup_sent_at' => 'datetime',
+        'broadcast_opt_out_at' => 'datetime',
+        'last_broadcast_at' => 'datetime',
     ];
 
     public function messages(): HasMany
@@ -172,6 +175,25 @@ class TelegramContact extends Model
             $this->opened_lesson_at !== null || $this->opened_bonus_at !== null => '👀',
             default => '🆕',
         };
+    }
+
+    /**
+     * Статус в названии темы: statusEmoji() и 📣, пока человек ждёт ответа
+     * на сообщение, написанное в ответ на рассылку (BroadcastSender::REPLY_WINDOW_DAYS),
+     * — после рассылки таких тем появляется много разом. Хранится в
+     * topic_status: сменился — тему переименовывают.
+     */
+    public function topicStatus(): string
+    {
+        return $this->statusEmoji().($this->repliedToBroadcast() && $this->awaitingReply() ? '📣' : '');
+    }
+
+    /** Последнее сообщение человека — в течение окна ответа после последней рассылки ему. */
+    public function repliedToBroadcast(): bool
+    {
+        return $this->last_broadcast_at !== null && $this->last_user_message_at !== null
+            && $this->last_user_message_at->gte($this->last_broadcast_at)
+            && $this->last_user_message_at->lte($this->last_broadcast_at->copy()->addDays(BroadcastSender::REPLY_WINDOW_DAYS));
     }
 
     /** Статус контакта бота диагностики — по последнему прохождению. */

@@ -6,13 +6,16 @@ use App\Jobs\Telegram\RunFunnelStep;
 use App\Models\SiteLead;
 use App\Models\TelegramContact;
 use App\Models\TelegramMessage;
+use App\Service\Telegram\Broadcast\BroadcastDesk;
+use App\Service\Telegram\Broadcast\BroadcastSender;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
  * Сценарий бота lesson (TelegramBots). Он же «главный» бот в общей
- * админ-группе: отвечает на /chatid и /emoji, ведёт служебные темы.
+ * админ-группе: отвечает на /chatid и /emoji, ведёт служебные темы, в том
+ * числе «📣 Рассылка» (Broadcast\BroadcastDesk).
  *
  * Воронка пробного урока (исходный путь — «TG инструкция.md»):
  *
@@ -96,13 +99,17 @@ class FunnelBot implements BotScenario
             return;
         }
 
-        // Правку сообщения разбираем только для /emoji в админ-группе:
-        // «отправил /emoji, потом дописал эмодзи» — частый случай. Остальные
-        // правки (человека или своего ответа) пока не обрабатываем.
+        // Правку сообщения разбираем только в админ-группе: для /emoji
+        // («отправил /emoji, потом дописал эмодзи» — частый случай) и в теме
+        // рассылок (поправили черновик). Остальные правки (человека или
+        // своего ответа) пока не обрабатываем.
         $edited = $update['edited_message'] ?? null;
-        if ($edited && isset($edited['chat']['id']) && AdminTopics::isAdminChat($edited['chat']['id'])
-            && preg_match('~^/emoji(?:@\w+)?(?![A-Za-z0-9_])~', $edited['text'] ?? '')) {
-            $this->replyCustomEmojiIds($edited);
+        if ($edited && isset($edited['chat']['id']) && AdminTopics::isAdminChat($edited['chat']['id'])) {
+            if (preg_match('~^/emoji(?:@\w+)?(?![A-Za-z0-9_])~', $edited['text'] ?? '')) {
+                $this->replyCustomEmojiIds($edited);
+            } else {
+                BroadcastDesk::make()->handleEdited($edited);
+            }
 
             return;
         }
@@ -357,7 +364,17 @@ class FunnelBot implements BotScenario
         ]);
 
         $this->dispatch($contact, 'forward', ['message_id' => $message['message_id']]);
+        $this->noteBroadcastReply($contact);
         $this->dispatch($contact, 'refresh_status');
+    }
+
+    /** Первое сообщение после рассылки — строкой в теме, на что это ответ (после пересылки: тема уже есть). */
+    private function noteBroadcastReply(TelegramContact $contact): void
+    {
+        if ($recipient = BroadcastSender::recordReply($contact)) {
+            $this->dispatch($contact, 'note', ['html' => '📣 Ответ на рассылку #'.$recipient->telegram_broadcast_id
+                .' от '.$recipient->sent_at->format('d.m H:i').': '.e($recipient->broadcast->preview(120))]);
+        }
     }
 
     private function handleStart(array $from, ?string $param): void
@@ -473,6 +490,11 @@ class FunnelBot implements BotScenario
     private function handleCallback(array $callback): void
     {
         $data = $callback['data'] ?? '';
+        if (str_starts_with($data, 'bc:')) {
+            BroadcastDesk::make()->handleCallback($callback);
+
+            return;
+        }
         $contact = TelegramContact::forBot(self::BOT)->where('telegram_user_id', $callback['from']['id'] ?? 0)->first();
 
         // up/down — кнопки старых сообщений, до трёх уровней оценки.
@@ -551,6 +573,11 @@ class FunnelBot implements BotScenario
         if (! ($from['is_bot'] ?? false) && preg_match('~^/emoji(?:@\w+)?(?![A-Za-z0-9_])~', $message['text'] ?? '')) {
             $this->replyCustomEmojiIds($message);
 
+            return;
+        }
+
+        // Тема «📣 Рассылка», /broadcast, /norassylka и /rassylka в темах людей.
+        if (BroadcastDesk::make()->handleAdminMessage($message)) {
             return;
         }
 

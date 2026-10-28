@@ -164,6 +164,18 @@ row-lock промокодов на SQLite пропускается. Старые
   `services.telegram_<бот>`, сценарий — `BotScenario` (`FunnelBot` — сценарий `lesson`).
   Админ-группа общая, апдейты из неё видят все боты: тему чужого бота пропускать, на
   команды в группе (`/chatid`, `/emoji`) и служебные темы — только `lesson`.
+- Рассылки — тема «📣 Рассылка» (заводится `/broadcast` в группе), `Telegram\Broadcast\`:
+  `BroadcastDesk` (карточка черновика, кнопки `bc:*`, ответы на карточку — исключить/вернуть/
+  время, `/norassylka`/`/rassylka` в теме человека), `BroadcastAudience` (кому: один
+  получатель на человека — бот, которым пользовался последним; исключения —
+  `telegram_contacts.broadcast_opt_out_at` на человека и `excluded_user_ids` рассылки),
+  `BroadcastSender` (порции `SendBroadcast`, захват получателя pending→sending против
+  дублей, `copyMessages` ботом контакта). Рассылка не считается ответом админа —
+  автоматика воронки идёт дальше, только близкие `*_due_at` сдвигаются на 2 ч. Копий в
+  темы людей нет (лимит группы ~20 сообщений/мин) — история в `telegram_messages`
+  (`kind = broadcast`). Ответ в течение 3 дней — `replied_at` получателя и 📣 в названии
+  темы. План и сторож зависших — `telegram:broadcasts` раз в минуту. Админка —
+  `/admin/telegram/broadcasts`.
 - Диагностика по обществознанию — Mini App бота `diag`: страница `/diag`
   (`diagnostic/app.blade.php` + `public/js/diagnostic.js`, без сборки), API —
   `Diagnostic\DiagnosticController`. Чистая логика без БД — `app/Service/Diagnostic/`

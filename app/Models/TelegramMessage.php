@@ -24,6 +24,9 @@ class TelegramMessage extends Model
 
     public const KIND_ADMIN = 'admin';
 
+    /** Копия рассылки (step — broadcast:<id>, App\Service\Telegram\Broadcast\BroadcastSender). */
+    public const KIND_BROADCAST = 'broadcast';
+
     protected $fillable = [
         'telegram_contact_id', 'direction', 'kind', 'step',
         'text', 'media_type', 'file_id', 'telegram_message_id',
