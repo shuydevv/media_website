@@ -230,15 +230,22 @@ class BroadcastSender
         $this->postponeAutomation($contact);
         $contact->save();
 
-        TelegramMessage::create([
-            'telegram_contact_id' => $contact->id,
-            'direction' => TelegramMessage::DIRECTION_OUT,
-            'kind' => TelegramMessage::KIND_BROADCAST,
-            'step' => 'broadcast:'.$broadcast->id,
-            'text' => $broadcast->text,
-            'media_type' => $broadcast->media_type,
-            'telegram_message_id' => $sent[0]['message_id'] ?? null,
-        ]);
+        // Сообщение уже у человека и отмечено: сбой записи истории не должен
+        // останавливать рассылку (29.10.2026 узкая колонка kind роняла задачу
+        // на каждом получателе — уходило по человеку раз в 3 минуты).
+        try {
+            TelegramMessage::create([
+                'telegram_contact_id' => $contact->id,
+                'direction' => TelegramMessage::DIRECTION_OUT,
+                'kind' => TelegramMessage::KIND_BROADCAST,
+                'step' => 'broadcast:'.$broadcast->id,
+                'text' => $broadcast->text,
+                'media_type' => $broadcast->media_type,
+                'telegram_message_id' => $sent[0]['message_id'] ?? null,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Telegram broadcast: не записана история отправки', ['broadcast' => $broadcast->id, 'contact' => $contact->id, 'error' => $e->getMessage()]);
+        }
     }
 
     /** Отложенные автосообщения ближе QUIET_MINUTES — на QUIET_MINUTES, в окно 10–21. */
