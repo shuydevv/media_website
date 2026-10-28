@@ -281,6 +281,32 @@ class BroadcastTest extends TestCase
         $this->assertNull($lesson->fresh()->broadcast_opt_out_at);
     }
 
+    public function test_opt_out_command_with_list_of_people(): void
+    {
+        $ivan = $this->contact(TelegramBots::LESSON, 1011, ['username' => 'ivan_p']);
+        $maria = $this->contact(TelegramBots::DIAG, 1012, ['username' => 'Maria']);
+        $byId = $this->contact(TelegramBots::LESSON, 5550001013);
+        $other = $this->contact(TelegramBots::LESSON, 1014, ['username' => 'other']);
+
+        // В общей ленте (без темы): ники с @ и без, id, неизвестный ник.
+        $general = $this->topicMessage(50, '/norassylka @ivan_p maria 5550001013 @ghost');
+        unset($general['message']['message_thread_id'], $general['message']['is_topic_message'], $general['message']['reply_to_message']);
+        FunnelBot::make()->handleUpdate($general);
+
+        $this->assertNotNull($ivan->fresh()->broadcast_opt_out_at);
+        $this->assertNotNull($maria->fresh()->broadcast_opt_out_at);
+        $this->assertNotNull($byId->fresh()->broadcast_opt_out_at);
+        $this->assertNull($other->fresh()->broadcast_opt_out_at);
+        $this->assertSame(1, $this->countSent('sendMessage', fn (Request $r) => str_contains((string) $r['text'], 'Исключены из всех рассылок')
+            && str_contains((string) $r['text'], '@ghost') && ! isset($r['message_thread_id'])));
+
+        // В теме «📣 Рассылка» — тоже команда, а не черновик.
+        FunnelBot::make()->handleUpdate($this->topicMessage(51, '/rassylka ivan_p'));
+        $this->assertNull($ivan->fresh()->broadcast_opt_out_at);
+        $this->assertNotNull($maria->fresh()->broadcast_opt_out_at);
+        $this->assertSame(0, TelegramBroadcast::count());
+    }
+
     public function test_reply_after_broadcast_is_marked_in_topic(): void
     {
         $contact = $this->contact(TelegramBots::DIAG, 1101, ['topic_id' => 555, 'topic_status' => '🆕']);

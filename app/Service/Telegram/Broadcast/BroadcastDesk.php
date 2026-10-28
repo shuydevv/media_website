@@ -30,8 +30,9 @@ use Illuminate\Support\Facades\Log;
  *   из этой рассылки; «вернуть …» — вернуть; «18:30» / «завтра 10:00» /
  *   «29.10 10:00» — запланировать на это время.
  *
- *   /norassylka в теме человека — исключить из всех рассылок, /rassylka —
- *   вернуть (поле broadcast_opt_out_at; то же — в карточке в админке).
+ *   /norassylka @ник @ник id — исключить из всех рассылок, /rassylka … —
+ *   вернуть, в любом месте группы; без ников в теме человека — его самого
+ *   (поле broadcast_opt_out_at; то же — в карточке в админке).
  *
  * Получателей считает BroadcastAudience, отправляет BroadcastSender.
  * Карточка — единственное, что бот правит при отправке: в группу Telegram
@@ -101,8 +102,13 @@ class BroadcastDesk
             return true;
         }
 
-        if ($threadId && ! $ourTopic && preg_match('~^/(no)?rassylka(?:@\w+)?(?![A-Za-z0-9_])~', $text, $m)) {
-            $this->optOutFromTopic($threadId, ($m[1] ?? '') !== '');
+        if (preg_match('~^/(no)?rassylka(?:@\w+)?(?![A-Za-z0-9_])(.*)$~su', $text, $m)) {
+            $optOut = $m[1] !== '';
+            match (true) {
+                trim($m[2]) !== '' => $this->optOutList($message, trim($m[2]), $optOut),
+                $threadId && ! $ourTopic => $this->optOutFromTopic($threadId, $optOut),
+                default => $this->reply($message, 'Напишите после команды ники или id через пробел: <code>/norassylka @ivan @maria</code> — исключить из всех рассылок, <code>/rassylka @ivan</code> — вернуть. В теме человека команда без ников — про него самого.'),
+            };
 
             return true;
         }
@@ -293,6 +299,34 @@ class BroadcastDesk
             : '🔔 '.e($contact->displayName()).' снова получает рассылки. Исключить — /norassylka');
     }
 
+    /**
+     * /norassylka @ник ник 123 … — исключить из всех рассылок (или вернуть).
+     * Ники можно без @: голое слово из латиницы, цифр и _ — ник, только
+     * цифры — id. Ссылки на темы и упоминания — как в ответе на карточку.
+     */
+    private function optOutList(array $message, string $args, bool $optOut): void
+    {
+        $args = preg_replace('~(?<=^|\s)(?=[A-Za-z_][A-Za-z0-9_]{3,31}(?:\s|$))~', '@', $args);
+        [$found, $missing] = $this->resolvePeople(['text' => $args] + $message);
+        if ($found !== []) {
+            $this->setOptOut(array_keys($found), $optOut);
+        }
+
+        $lines = [];
+        if ($found !== []) {
+            $lines[] = ($optOut ? '🔕 Исключены из всех рассылок: ' : '🔔 Снова получают рассылки: ').implode(', ', array_map('e', $found));
+        }
+        if ($missing !== []) {
+            $lines[] = '❓ Не нашёл среди тех, кто запускал ботов: '.implode(', ', array_map('e', $missing));
+        }
+        if ($lines === []) {
+            $lines[] = 'Не нашёл в команде ни ников, ни id. Пример: <code>/norassylka @ivan @maria</code>';
+        } elseif ($optOut && $found !== []) {
+            $lines[] = 'Вернуть — <code>/rassylka</code> и те же ники.';
+        }
+        $this->reply($message, implode("\n", $lines));
+    }
+
     private function openTopic(): void
     {
         try {
@@ -302,7 +336,7 @@ class BroadcastDesk
                 'Напишите сюда сообщение — текст, фото, видео или альбом, с любым оформлением. Сразу оно не уйдёт: бот ответит карточкой — сколько человек получат, кто нет и почему, — и отправит только после «🚀 Отправить» и подтверждения.',
                 '',
                 '• Исключить из рассылки — ответьте на карточку @логином, id или ссылкой на тему; «вернуть @логин» — вернуть.',
-                '• Исключить из всех рассылок — /norassylka в теме человека, вернуть — /rassylka.',
+                '• Исключить из всех рассылок — <code>/norassylka @ник @ник</code> (ники или id через пробел; в теме человека можно без ников), вернуть — <code>/rassylka @ник</code>.',
                 '• Запланировать — кнопкой или ответом на карточку: «18:30», «завтра 10:00», «29.10 10:00».',
                 '• «👁 Тест себе» — прислать вам в личку так, как увидят люди (бот должен быть у вас запущен).',
                 '• Сообщение с // — заметка, не рассылка.',
@@ -863,6 +897,19 @@ class BroadcastDesk
             ]);
         } catch (TelegramApiException $e) {
             Log::warning('Telegram broadcast: не удалось ответить в теме', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /** Ответ на сообщение там, где его написали: в теме или в общей ленте. */
+    private function reply(array $message, string $html): void
+    {
+        try {
+            $this->api->sendMessage(AdminTopics::adminChatId(), $html, array_filter([
+                'message_thread_id' => ($message['is_topic_message'] ?? false) ? ($message['message_thread_id'] ?? null) : null,
+                'reply_parameters' => ['message_id' => (int) $message['message_id'], 'allow_sending_without_reply' => true],
+            ]));
+        } catch (TelegramApiException $e) {
+            Log::warning('Telegram broadcast: не удалось ответить в группе', ['error' => $e->getMessage()]);
         }
     }
 

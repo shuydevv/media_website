@@ -166,7 +166,8 @@ row-lock промокодов на SQLite пропускается. Старые
   команды в группе (`/chatid`, `/emoji`) и служебные темы — только `lesson`.
 - Рассылки — тема «📣 Рассылка» (заводится `/broadcast` в группе), `Telegram\Broadcast\`:
   `BroadcastDesk` (карточка черновика, кнопки `bc:*`, ответы на карточку — исключить/вернуть/
-  время, `/norassylka`/`/rassylka` в теме человека), `BroadcastAudience` (кому: один
+  время; `/norassylka @ник id …`/`/rassylka …` в любом месте группы, без ников — в теме
+  человека про него), `BroadcastAudience` (кому: один
   получатель на человека — бот, которым пользовался последним; исключения —
   `telegram_contacts.broadcast_opt_out_at` на человека и `excluded_user_ids` рассылки),
   `BroadcastSender` (порции `SendBroadcast`, захват получателя pending→sending против
