@@ -34,7 +34,7 @@
                         @if ($b->author_name) <div class="text-xs text-zinc-400">{{ $b->author_name }}</div> @endif
                     </td>
                     <td data-label="Статус"><x-ui.badge :tone="$statusTone[$b->status] ?? 'gray'">{{ \App\Models\TelegramBroadcast::STATUS_LABELS[$b->status] }}</x-ui.badge></td>
-                    <td data-label="Кому" class="text-sm">{{ \App\Models\TelegramBroadcast::AUDIENCE_LABELS[$b->audience] }}</td>
+                    <td data-label="Кому" class="text-sm">{{ $b->audienceLabel() }}</td>
                     <td data-label="Доставлено" class="tabular-nums text-sm">
                         @if ($b->isEditable()) <span class="text-zinc-400">—</span> @else {{ $b->sent_count }} из {{ $b->recipients_count }} @endif
                     </td>

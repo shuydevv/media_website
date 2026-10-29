@@ -13,6 +13,9 @@ use Illuminate\Support\Collection;
  * которым он пользовался последним (написал, перезапустил, запустил); если
  * там он бота заблокировал — другой.
  *
+ * Если задан список «только этим» (only_user_ids) — аудитория сужается до
+ * него; остальные правила те же.
+ *
  * Не получат: исключённые из всех рассылок (broadcast_opt_out_at у любого
  * контакта человека — исключают человека, не бота), исключённые из этой
  * рассылки (excluded_user_ids) и те, кто заблокировал все свои боты из
@@ -58,7 +61,11 @@ final class BroadcastAudience
         $excluded = collect();
         $duplicates = 0;
 
-        $people = TelegramContact::whereIn('bot', $bots)->latest('started_at')->get()->groupBy('telegram_user_id');
+        $only = $broadcast->onlyUserIds();
+
+        $people = TelegramContact::whereIn('bot', $bots)
+            ->when($only !== null, fn ($q) => $q->whereIn('telegram_user_id', $only))
+            ->latest('started_at')->get()->groupBy('telegram_user_id');
         foreach ($people as $userId => $contacts) {
             if ($contacts->count() > 1) {
                 $duplicates++;

@@ -228,6 +228,28 @@ class BroadcastTest extends TestCase
         $this->assertSame(0, TelegramBroadcast::where('id', '!=', $broadcast->id)->count(), 'ответ на карточку — не новый черновик');
     }
 
+    public function test_reply_only_limits_to_listed_ids_and_all_resets(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $this->contact(TelegramBots::DIAG, 9510001);
+        $this->contact(TelegramBots::DIAG, 9520002);
+        $this->contact(TelegramBots::DIAG, 9530003);
+        $broadcast = $this->draft();
+
+        $this->actingAs($admin)->get(route('admin.telegram.contacts.index', ['bot' => 'diag']))
+            ->assertOk()->assertSee('Скопировать id (3)')->assertSee('9510001')->assertSee('9530003');
+
+        FunnelBot::make()->handleUpdate($this->replyToCard(40, "только 9510001\n9530003 999999"));
+        $this->assertEqualsCanonicalizing([9510001, 9530003], $broadcast->fresh()->onlyUserIds());
+        $this->assertEqualsCanonicalizing([9510001, 9530003], BroadcastAudience::for($broadcast->fresh())->recipients->pluck('telegram_user_id')->map(fn ($id) => (int) $id)->all());
+        $this->assertSame(1, $this->countSent('sendMessage', fn (Request $r) => str_contains((string) $r['text'], 'только по списку: <b>2</b>') && str_contains((string) $r['text'], '999999')));
+        $this->assertSame([], $broadcast->fresh()->excludedUserIds(), '«только» — не исключение');
+
+        FunnelBot::make()->handleUpdate($this->replyToCard(41, 'всем'));
+        $this->assertNull($broadcast->fresh()->onlyUserIds());
+        $this->assertCount(3, BroadcastAudience::for($broadcast->fresh())->recipients);
+    }
+
     public function test_reply_with_time_schedules_after_confirmation(): void
     {
         $this->travelTo(CarbonImmutable::parse('2026-10-28 15:00'));

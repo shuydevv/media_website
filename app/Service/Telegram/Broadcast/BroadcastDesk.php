@@ -27,7 +27,8 @@ use Illuminate\Support\Facades\Log;
  *   в момент отправки.
  *
  *   Ответ на карточку: @логин, id, ссылка на тему или упоминание — исключить
- *   из этой рассылки; «вернуть …» — вернуть; «18:30» / «завтра 10:00» /
+ *   из этой рассылки; «вернуть …» — вернуть; «только 123 456 …» — только
+ *   этим людям (only_user_ids), «всем» — снять список; «18:30» / «завтра 10:00» /
  *   «29.10 10:00» — запланировать на это время.
  *
  *   /norassylka @ник @ник id — исключить из всех рассылок, /rassylka … —
@@ -241,6 +242,12 @@ class BroadcastDesk
             return;
         }
 
+        if (preg_match('~^(только|всем)(?!\w)~iu', $text, $m)) {
+            $this->setOnly($broadcast, $message, mb_strtolower($m[1]) === 'только');
+
+            return;
+        }
+
         $return = (bool) preg_match('~^вернуть~iu', $text);
         [$found, $missing] = $this->resolvePeople($message);
         if ($found === [] && $missing === []) {
@@ -260,6 +267,43 @@ class BroadcastDesk
             $lines[] = '❓ Не нашёл среди тех, кто запускал ботов: '.implode(', ', array_map('e', $missing));
         }
         $this->say(implode("\n", $lines), $message['message_id']);
+    }
+
+    /**
+     * «только 123 456 …» — рассылка только этим людям (список заменяет
+     * прежний; id копируют в админке в списке контактов), «всем» — снять список.
+     */
+    private function setOnly(TelegramBroadcast $broadcast, array $message, bool $only): void
+    {
+        if (! $only) {
+            $broadcast->forceFill(['only_user_ids' => null])->save();
+            $this->refreshCard($broadcast);
+            $this->say('👥 Рассылка #'.$broadcast->id.' — снова всем из аудитории.', $message['message_id']);
+
+            return;
+        }
+
+        [$found, $missing] = $this->resolvePeople($message);
+        if ($found === []) {
+            $this->say($missing === []
+                ? 'После «только» вставьте id через пробел или с новой строки (их можно скопировать в админке, в списке контактов), можно @логины.'
+                : '❓ Никого не нашёл среди тех, кто запускал ботов: '.e(self::shortList($missing)).'. Список не изменён.', $message['message_id']);
+
+            return;
+        }
+
+        $broadcast->forceFill(['only_user_ids' => array_keys($found)])->save();
+        $this->refreshCard($broadcast);
+        $lines = ['👤 Рассылка #'.$broadcast->id.' — только по списку: <b>'.count($found).'</b> '.self::people(count($found), true).'. Кто из них получит — в карточке. «всем» — снять список.'];
+        if ($missing !== []) {
+            $lines[] = '❓ Не нашёл среди тех, кто запускал ботов ('.count($missing).'): '.e(self::shortList($missing));
+        }
+        $this->say(implode("\n", $lines), $message['message_id']);
+    }
+
+    private static function shortList(array $items): string
+    {
+        return implode(', ', array_slice($items, 0, 30)).(count($items) > 30 ? ' и ещё '.(count($items) - 30) : '');
     }
 
     /** Исключить из этой рассылки (или вернуть) — из Telegram и из админки. */
@@ -336,6 +380,7 @@ class BroadcastDesk
                 'Напишите сюда сообщение — текст, фото, видео или альбом, с любым оформлением. Сразу оно не уйдёт: бот ответит карточкой — сколько человек получат, кто нет и почему, — и отправит только после «🚀 Отправить» и подтверждения.',
                 '',
                 '• Исключить из рассылки — ответьте на карточку @логином, id или ссылкой на тему; «вернуть @логин» — вернуть.',
+                '• Только конкретным людям — ответьте на карточку «только» и id через пробел или с новой строки (кнопка «Скопировать id» — в админке, в списке контактов бота); «всем» — снять список.',
                 '• Исключить из всех рассылок — <code>/norassylka @ник @ник</code> (ники или id через пробел; в теме человека можно без ников), вернуть — <code>/rassylka @ник</code>.',
                 '• Запланировать — кнопкой или ответом на карточку: «18:30», «завтра 10:00», «29.10 10:00».',
                 '• «👁 Тест себе» — прислать вам в личку так, как увидят люди (бот должен быть у вас запущен).',
@@ -411,6 +456,10 @@ class BroadcastDesk
                 }
 
                 return null;
+            case 'all':
+                $set(['only_user_ids' => null]);
+
+                return 'Снова всем из аудитории';
             case 'send':
                 $set(['card_state' => self::STATE_CONFIRM]);
 
@@ -537,7 +586,7 @@ class BroadcastDesk
     public function cardHtml(TelegramBroadcast $broadcast): string
     {
         $head = '📣 <b>Рассылка #'.$broadcast->id.'</b> · '.mb_strtolower(TelegramBroadcast::STATUS_LABELS[$broadcast->status]);
-        $lines = [$head, 'Сообщение: '.e($broadcast->preview()), 'Кому: '.TelegramBroadcast::AUDIENCE_LABELS[$broadcast->audience]];
+        $lines = [$head, 'Сообщение: '.e($broadcast->preview()), 'Кому: '.$broadcast->audienceLabel()];
 
         if ($broadcast->isEditable()) {
             $a = BroadcastAudience::for($broadcast);
@@ -565,7 +614,7 @@ class BroadcastDesk
                     .(self::isNight() ? "\n🌙 Сейчас ".now()->format('H:i').' — люди могут спать. Может, запланировать на утро?' : ''),
                 self::STATE_TIME => 'Когда отправить? Кнопкой ниже или ответом на карточку: «18:30», «завтра 10:00», «29.10 10:00».',
                 self::STATE_PLAN => $broadcast->pending_at ? '<b>Запланировать на '.self::when($broadcast->pending_at).'?</b>' : 'Выберите время.',
-                default => '<i>Исключить — ответьте на карточку: @логин, id или ссылка на тему; «вернуть @логин» — вернуть. Сообщение копируется из темы в момент отправки: правка исходника меняет рассылку.</i>',
+                default => '<i>Исключить — ответьте на карточку: @логин, id или ссылка на тему; «вернуть @логин» — вернуть. Только конкретным людям — «только» и id через пробел (копируются в админке, в списке контактов); «всем» — снять список. Сообщение копируется из темы в момент отправки: правка исходника меняет рассылку.</i>',
             };
         } elseif ($broadcast->status !== TelegramBroadcast::STATUS_CANCELLED) {
             $s = $this->stats($broadcast);
@@ -613,6 +662,7 @@ class BroadcastDesk
                 array_map(fn ($aud, $label) => $b(($broadcast->audience === $aud ? '✓ ' : '').$label, 'aud:'.$aud),
                     array_keys(TelegramBroadcast::AUDIENCE_LABELS), ['🎯+🧪 Оба', '🎯 Урок', '🧪 Диагностика']),
                 [$b('👥 Получат', 'list:r:0'), $b('🚫 Не получат', 'list:x:0')],
+                $broadcast->onlyUserIds() !== null ? [$b('✖ Убрать список — всем', 'all')] : null,
                 [$b('👁 Тест себе', 'test'), $b('🔄 Пересчитать', 'refresh')],
                 $broadcast->status === TelegramBroadcast::STATUS_SCHEDULED
                     ? [$b('🚀 Отправить сейчас', 'send'), $b('✖ Снять с плана', 'unplan')]
@@ -875,10 +925,15 @@ class BroadcastDesk
         return now()->hour < 9 || now()->hour >= 22;
     }
 
-    private static function people(int $n): string
+    /** «человеку/людям»; $nominative — «человек/человека». */
+    private static function people(int $n, bool $nominative = false): string
     {
         $mod10 = $n % 10;
         $mod100 = $n % 100;
+
+        if ($nominative) {
+            return $mod10 >= 2 && $mod10 <= 4 && ($mod100 < 12 || $mod100 > 14) ? 'человека' : 'человек';
+        }
 
         return match (true) {
             $mod10 === 1 && $mod100 !== 11 => 'человеку',

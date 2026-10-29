@@ -9,7 +9,7 @@
 @endphp
 
 <x-ui.page-header :title="'Рассылка #'.$broadcast->id" :back="route('admin.telegram.broadcasts.index')" back-label="Все рассылки">
-    {{ \App\Models\TelegramBroadcast::AUDIENCE_LABELS[$broadcast->audience] }}
+    {{ $broadcast->audienceLabel() }}
     @if ($broadcast->author_name) · автор {{ $broadcast->author_name }} @endif
     · создана {{ $broadcast->created_at->format('d.m.Y H:i') }}
     @if ($topicUrl)

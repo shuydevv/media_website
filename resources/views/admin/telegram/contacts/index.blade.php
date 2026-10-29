@@ -43,6 +43,12 @@
     @if ($q !== '')
         <x-ui.button href="{{ route('admin.telegram.contacts.index', array_filter(['bot' => $isLesson ? null : $bot, 'stage' => $stage])) }}" size="xs" variant="ghost">Сбросить</x-ui.button>
     @endif
+    @if ($userIds !== '')
+        <x-ui.button type="button" size="xs" variant="secondary" data-copy-ids="{{ $userIds }}"
+                     title="Все id под текущим фильтром — для рассылки: ответьте на карточку в «📣 Рассылка» словом «только» и вставьте их">
+            Скопировать id ({{ $counts[$stage] }})
+        </x-ui.button>
+    @endif
 </form>
 
 @if ($contacts->isEmpty())
@@ -61,7 +67,9 @@
                         @if ($c->username && ! str_starts_with($c->displayName(), '@'))
                             <span class="text-zinc-400 text-sm">{{ '@'.$c->username }}</span>
                         @endif
-                        <div class="text-xs text-zinc-400 font-mono">{{ $c->source ?? 'без метки' }}</div>
+                        <div class="text-xs text-zinc-400 font-mono">
+                            <span class="select-all text-zinc-500" title="Telegram id">{{ $c->telegram_user_id }}</span> · {{ $c->source ?? 'без метки' }}
+                        </div>
                     </td>
                     <td data-label="Этап">
                         <span>
@@ -91,4 +99,30 @@
 
     <div class="mt-4">{{ $contacts->links() }}</div>
 @endif
+
+<script>
+document.addEventListener('click', function (e) {
+    var button = e.target.closest('[data-copy-ids]');
+    if (!button) return;
+
+    var ids = button.getAttribute('data-copy-ids');
+    var label = button.textContent;
+    var done = function () {
+        button.textContent = 'Скопировано ✓';
+        setTimeout(function () { button.textContent = label; }, 1500);
+    };
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(ids).then(done).catch(function () { window.prompt('Скопируйте id:', ids); });
+        return;
+    }
+    // http без TLS (локально) — clipboard API недоступен.
+    var area = document.createElement('textarea');
+    area.value = ids;
+    document.body.appendChild(area);
+    area.select();
+    try { document.execCommand('copy'); done(); } catch (err) { window.prompt('Скопируйте id:', ids); }
+    area.remove();
+});
+</script>
 @endsection

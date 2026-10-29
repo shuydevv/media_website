@@ -44,11 +44,14 @@ class IndexController extends Controller
         }
         $botCounts = collect(TelegramBots::keys())->mapWithKeys(fn ($b) => [$b => TelegramContact::forBot($b)->count()])->all();
 
-        $contacts = $search($base()->when($stage !== '', fn ($w) => $w->stage($stage)))
+        $filtered = fn () => $search($base()->when($stage !== '', fn ($w) => $w->stage($stage)));
+        $contacts = $filtered()
             ->latest('started_at')
             ->paginate(50)
             ->withQueryString();
+        // Все id под фильтром (не только страницы) — вставить в бота: «только …» в ответ на карточку рассылки.
+        $userIds = $filtered()->latest('started_at')->pluck('telegram_user_id')->unique()->implode(' ');
 
-        return view('admin.telegram.contacts.index', compact('contacts', 'counts', 'botCounts', 'bot', 'stage', 'q'));
+        return view('admin.telegram.contacts.index', compact('contacts', 'counts', 'botCounts', 'bot', 'stage', 'q', 'userIds'));
     }
 }

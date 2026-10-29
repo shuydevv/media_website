@@ -57,6 +57,7 @@ class TelegramBroadcast extends Model
     protected $casts = [
         'source_message_ids' => 'array',
         'excluded_user_ids' => 'array',
+        'only_user_ids' => 'array',
         'pending_at' => 'datetime',
         'card_refreshed_at' => 'datetime',
         'scheduled_at' => 'datetime',
@@ -80,6 +81,20 @@ class TelegramBroadcast extends Model
     public function excludedUserIds(): array
     {
         return array_map('intval', $this->excluded_user_ids ?? []);
+    }
+
+    /** @return int[]|null только этим людям; null — всем из аудитории */
+    public function onlyUserIds(): ?array
+    {
+        return $this->only_user_ids === null ? null : array_map('intval', $this->only_user_ids);
+    }
+
+    /** «оба бота», «бот диагностики · только 12 по списку». */
+    public function audienceLabel(): string
+    {
+        $only = $this->onlyUserIds();
+
+        return self::AUDIENCE_LABELS[$this->audience].($only !== null ? ' · только '.count($only).' по списку' : '');
     }
 
     public function isExcludedHere(int $telegramUserId): bool
