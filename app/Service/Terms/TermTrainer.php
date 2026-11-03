@@ -110,7 +110,10 @@ class TermTrainer
             $learn = ['status' => 'done_today', 'count' => 0];
         } elseif ($batch->isEmpty()) {
             $learn = ['status' => 'all_learned', 'count' => 0];
-        } elseif ($dueCount > 0) {
+        } elseif ($dueCount > 0 && !($reviewToday && $reviewToday->finished_at)) {
+            // Пока повторение дня не пройдено — новые закрыты. Пройдено —
+            // открыты, даже если часть терминов не влезла в потолок и ждёт
+            // завтра: ученик сделал всё, что от него сегодня хотели.
             $learn = ['status' => 'blocked_due', 'count' => $batch->count()];
         } else {
             $learn = ['status' => 'available', 'count' => $batch->count()];
