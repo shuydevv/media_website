@@ -282,6 +282,7 @@ class AdminTopics
             'diag' => '🧪 Диагностики',
             'alerts' => '⚠️ Сбои',
             'broadcast' => '📣 Рассылка',
+            'avito' => '🛒 Авито',
         ];
 
         $id = DB::table('telegram_service_topics')->where('key', $key)->value('topic_id');

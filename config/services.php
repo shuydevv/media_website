@@ -53,5 +53,15 @@ return [
         'webhook_secret' => env('TELEGRAM_DIAG_WEBHOOK_SECRET'),
     ],
 
+    // Мессенджер Авито → тема «🛒 Авито» в админ-группе бота воронки
+    // (App\Service\Avito\AvitoApi, App\Jobs\Avito\SendAvitoMessage).
+    // client_id/secret — «Авито для профессионалов» → API; webhook_secret —
+    // часть адреса webhook-а, подписка — php artisan avito:webhook.
+    'avito' => [
+        'client_id'      => env('AVITO_CLIENT_ID'),
+        'client_secret'  => env('AVITO_CLIENT_SECRET'),
+        'webhook_secret' => env('AVITO_WEBHOOK_SECRET'),
+    ],
+
 
 ];

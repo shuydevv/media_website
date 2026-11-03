@@ -30,6 +30,13 @@ Route::post('/telegram/webhook/{bot?}', \App\Http\Controllers\Telegram\WebhookCo
     ->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class.':api')
     ->name('telegram.webhook');
 
+// Webhook мессенджера Авито (App\Http\Controllers\Avito\WebhookController) →
+// тема «🛒 Авито». Подписи у Авито нет — секрет в адресе; подписка —
+// `php artisan avito:webhook`. Общий лимит api снят, как у Telegram.
+Route::post('/avito/webhook/{secret}', \App\Http\Controllers\Avito\WebhookController::class)
+    ->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class.':api')
+    ->name('avito.webhook');
+
 // Заявки с других моих сайтов (App\Http\Controllers\InboundLeadController):
 // шлют из браузера с чужого домена — поэтому здесь, без CSRF; CORS для api/*
 // открыт в config/cors.php. Сайт узнаётся по ключу из config/inbound_leads.php.

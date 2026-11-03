@@ -177,6 +177,13 @@ row-lock промокодов на SQLite пропускается. Старые
   (`kind = broadcast`). Ответ в течение 3 дней — `replied_at` получателя и 📣 в названии
   темы. План и сторож зависших — `telegram:broadcasts` раз в минуту. Админка —
   `/admin/telegram/broadcasts`.
+- Авито → тема «🛒 Авито» той же админ-группы: webhook мессенджера
+  `/api/avito/webhook/{secret}` (`Avito\WebhookController`, подписи у Авито нет —
+  секрет в адресе) → `avito_messages` (уникальный `message_id` против повторов, свои
+  исходящие пропускаются) → `Jobs\Avito\SendAvitoMessage` → `postToService('avito')`.
+  Клиент API — `Service\Avito\AvitoApi` (client_credentials, токен в кэше), подписка —
+  `php artisan avito:webhook`, настройка — `deploy/README.md`, раздел 10. Ответов из
+  Telegram пока нет; `chat_id`/`user_id` в таблице — задел под них.
 - Диагностика по обществознанию — Mini App бота `diag`: страница `/diag`
   (`diagnostic/app.blade.php` + `public/js/diagnostic.js`, без сборки), API —
   `Diagnostic\DiagnosticController`. Чистая логика без БД — `app/Service/Diagnostic/`
