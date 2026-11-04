@@ -403,7 +403,9 @@ foreach ($sessionsWithoutLesson as $session) {
 
         // Заход на дашборд — это и есть «визит на платформу» для ежедневного
         // бонуса корма (не чаще раза в день, см. FishFoodService::awardDailyVisit()).
-        $fish->awardDailyVisit($user);
+        // Сколько корма дали за сегодняшний визит — 0, если уже давали:
+        // уведомление «+N за визит» показывается только на первом заходе дня.
+        $fishDailyBonus = $fish->awardDailyVisit($user) ? (int) config('fish.corm.daily_visit') : 0;
         $fishLevel = $fish->levelFor((int) $user->fish_total_fed);
         $fishProgress = $fish->progressFor((int) $user->fish_total_fed);
         $fishBalance = (int) $user->fish_corm_balance;
@@ -411,7 +413,8 @@ foreach ($sessionsWithoutLesson as $session) {
         $fishMascotEatingImage = $fish->mascotImageUrl($fishLevel, 'eating');
         $fishBackgroundImage = $fish->backgroundImageUrl($user->fish_background);
         $fishName = $user->fish_name ?: $fish->levelName($fishLevel);
+        $fishUnderwater = in_array($user->fish_background ?? config('fish.default_background'), config('fish.underwater_backgrounds', []), true);
 
-        return view('student.dashboard', compact('courses', 'days', 'nextLesson', 'nextHomework', 'nextPayment', 'blockedCourseIds', 'fishLevel', 'fishProgress', 'fishBalance', 'fishMascotImage', 'fishMascotEatingImage', 'fishBackgroundImage', 'fishName'));
+        return view('student.dashboard', compact('courses', 'days', 'nextLesson', 'nextHomework', 'nextPayment', 'blockedCourseIds', 'fishLevel', 'fishProgress', 'fishBalance', 'fishMascotImage', 'fishMascotEatingImage', 'fishBackgroundImage', 'fishName', 'fishDailyBonus', 'fishUnderwater'));
     }
 }

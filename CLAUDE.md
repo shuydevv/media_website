@@ -115,7 +115,17 @@ row-lock промокодов на SQLite пропускается. Старые
   `FishFoodService::awardTermSession()`. Проверить «следующий день» — `php artisan terms:shift`.
   Админка «Термины» (`/admin/terms/*`): фото, доступ (доп. курсы и отдельные ученики),
   жалобы учеников из квиза.
+- Тренажёр дат по истории — `/student/dates`, события и правления с годами. Устроен как
+  тренажёр терминов, отличия — `docs/history/Тренажёр дат — механика.md`. База —
+  `docs/history/events_base.json` (события + правления, факты из «Супершпоры» автора),
+  заливается `php artisan dates:import`; руками в `hist_*` не правится. Код —
+  `app/Service/Dates/` (`DateTrainer` — сессии, `YearAnswer` — ввод года, `HistImporter`),
+  расписание/корм/дистракторы — общие классы из `Service/Terms`. Таблицы `hist_*`,
+  доступ — `HistAccess` + `dates.access`. Скрипт экрана сессии общий с терминами —
+  `student/terms/partials/session-script.blade.php` (ищет элементы по id: экраны дат
+  держат ту же разметку). «Следующий день» — `php artisan dates:shift`.
 - Тренажёры на дашборде — в блоке с рыбой: кнопка «Тренажёры» и реплика рыбы в облачке.
+  Тренажёров несколько — кнопка ведёт на общую страницу `/student/trainers`.
   Тренажёр регистрируется в `config/trainers.php` (класс с интерфейсом
   `App\Service\Trainers\Trainer`: сообщает ситуацию и свои слова). Что говорит рыба —
   `FishSpeech` + `config/fish_speech.php` (фразы согласованы с автором, не переписывать).

@@ -8,6 +8,7 @@ use App\Models\TelegramBroadcastRecipient;
 use App\Models\TelegramContact;
 use App\Service\Telegram\Broadcast\BroadcastAudience;
 use App\Service\Telegram\Broadcast\BroadcastDesk;
+use App\Service\Telegram\Broadcast\BroadcastSender;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -15,7 +16,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
  * Рассылка: что уходит и кому. Пока не отправлена — получатели считаются
  * заново (BroadcastAudience), вкладки «Получат» / «Не получат» и галочки:
  * исключить из этой рассылки, из всех или вернуть (PeopleController). После
- * старта — зафиксированные получатели со статусом доставки.
+ * старта — зафиксированные получатели со статусом доставки, а у
+ * отправленной — «Зашли позже»: кому можно дослать.
  */
 class ShowController extends Controller
 {
@@ -23,11 +25,15 @@ class ShowController extends Controller
 
     private const TABS_SENT = ['all' => 'Все', 'sent' => 'Доставлено', 'failed' => 'Не доставлено', 'replied' => 'Ответили'];
 
+    /** Отправленной — ещё и те, кто зашёл позже (дослать — LatecomersController). */
+    private const TABS_LATE = ['late' => 'Зашли позже'];
+
     public function __invoke(Request $request, TelegramBroadcast $broadcast)
     {
         $q = trim($request->string('q')->toString());
         $editable = $broadcast->isEditable();
-        $tabs = $editable ? self::TABS_EDITABLE : self::TABS_SENT;
+        $late = $broadcast->status === TelegramBroadcast::STATUS_DONE;
+        $tabs = $editable ? self::TABS_EDITABLE : self::TABS_SENT + ($late ? self::TABS_LATE : []);
         $tab = $request->string('tab')->toString();
         if (! array_key_exists($tab, $tabs)) {
             $tab = array_key_first($tabs);
@@ -63,6 +69,13 @@ class ShowController extends Controller
                 'failed' => $all->filter(fn ($row) => $row['recipient']->status !== TelegramBroadcastRecipient::STATUS_SENT),
                 'replied' => $all->filter(fn ($row) => $row['recipient']->replied_at !== null),
             ];
+            // Досылать — только законченной: во время отправки список ещё меняется.
+            if ($late) {
+                $groups['late'] = BroadcastSender::latecomers($broadcast)->map(fn (TelegramContact $c) => [
+                    'contact' => $c, 'recipient' => null, 'tone' => 'gray',
+                    'note' => 'зашёл '.($c->last_start_at ?? $c->started_at)?->format('d.m H:i'),
+                ]);
+            }
             $stats = BroadcastDesk::make()->stats($broadcast);
         }
 

@@ -69,5 +69,6 @@ class Kernel extends HttpKernel
         'mentor' => \App\Http\Middleware\MentorMiddleware::class,
         'billing.current' => \App\Http\Middleware\EnsureCourseBillingCurrent::class,
         'terms.access' => \App\Http\Middleware\EnsureTermTrainerAccess::class,
+        'dates.access' => \App\Http\Middleware\EnsureDateTrainerAccess::class,
     ];
 }

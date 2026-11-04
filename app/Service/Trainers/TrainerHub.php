@@ -14,8 +14,9 @@ class TrainerHub
     /**
      * @return array{trainers: array, pending: int, url: ?string}
      *   trainers — [{trainer, title, url, status}]; url — куда ведёт кнопка
-     *   «Тренажёры»: пока тренажёр один, сразу в него; когда их станет
-     *   несколько, здесь будет общая страница.
+     *   «Тренажёры»: в «Качалку», если ученику открыт хоть один
+     *   тренажёр (даже с одним там видны снаряды «в разработке» и второй
+     *   зал); null — кнопки нет.
      */
     public function forUser(User $user): array
     {
@@ -38,7 +39,7 @@ class TrainerHub
         return [
             'trainers' => $trainers,
             'pending' => array_sum(array_map(fn ($t) => (int) $t['status']['pending'], $trainers)),
-            'url' => $trainers[0]['url'] ?? null,
+            'url' => $trainers ? route('student.trainers.index') : null,
         ];
     }
 }

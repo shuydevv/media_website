@@ -11,6 +11,7 @@ use App\Service\Telegram\ReminderSchedule;
 use App\Service\Telegram\TelegramApi;
 use App\Service\Telegram\TelegramApiException;
 use App\Service\Telegram\TelegramBots;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -93,6 +94,71 @@ class BroadcastSender
         }
 
         return $started;
+    }
+
+    /**
+     * Кто получил бы рассылку сейчас, но не был в её получателях: запустил
+     * бота после отправки или вернулся, разблокировав. Сравниваем по людям:
+     * получившему из одного бота другой бот не дошлёт.
+     *
+     * @return Collection<int, TelegramContact>
+     */
+    public static function latecomers(TelegramBroadcast $broadcast): Collection
+    {
+        $had = TelegramContact::whereIn('id', $broadcast->recipients()->select('telegram_contact_id'))
+            ->pluck('telegram_user_id')->map(fn ($id) => (int) $id)->flip();
+
+        return BroadcastAudience::for($broadcast)->recipients
+            ->reject(fn (TelegramContact $c) => isset($had[(int) $c->telegram_user_id]))
+            ->values();
+    }
+
+    /**
+     * Дослать отправленную рассылку тем, кто зашёл позже ($telegramUserIds —
+     * только этим из них; null — всем). Получатели добавляются к прежним,
+     * рассылка снова «отправляется» и идёт обычными порциями. Вернёт,
+     * скольким поставили в очередь.
+     */
+    public function sendToLatecomers(TelegramBroadcast $broadcast, ?array $telegramUserIds = null): int
+    {
+        $added = DB::transaction(function () use ($broadcast, $telegramUserIds) {
+            TelegramBroadcast::whereKey($broadcast->id)->lockForUpdate()->first();
+            $broadcast->refresh();
+            if ($broadcast->status !== TelegramBroadcast::STATUS_DONE) {
+                return 0;
+            }
+
+            $late = self::latecomers($broadcast);
+            if ($telegramUserIds !== null) {
+                $only = array_flip(array_map('intval', $telegramUserIds));
+                $late = $late->filter(fn (TelegramContact $c) => isset($only[(int) $c->telegram_user_id]));
+            }
+            if ($late->isEmpty()) {
+                return 0;
+            }
+
+            foreach ($late->chunk(500) as $chunk) {
+                TelegramBroadcastRecipient::insert($chunk->map(fn (TelegramContact $c) => [
+                    'telegram_broadcast_id' => $broadcast->id,
+                    'telegram_contact_id' => $c->id,
+                    'status' => TelegramBroadcastRecipient::STATUS_PENDING,
+                ])->values()->all());
+            }
+            $broadcast->forceFill([
+                'status' => TelegramBroadcast::STATUS_SENDING,
+                'finished_at' => null,
+                'progress_at' => now(),
+            ])->save();
+
+            return $late->count();
+        });
+
+        if ($added) {
+            $this->desk->refreshCard($broadcast);
+            self::dispatchChunk($broadcast);
+        }
+
+        return $added;
     }
 
     public static function dispatchChunk(TelegramBroadcast $broadcast, int $delaySeconds = 0): void

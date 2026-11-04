@@ -12,7 +12,7 @@
     // Не дорос — купить нельзя вообще, вместо цены пишем, с какого уровня.
     $levelLocked = !$unlocked && $fishLevel < $minLevel;
     $canAfford = ($fishBalance ?? 0) >= $price;
-    $src = app(\App\Service\FishFoodService::class)->foodImageUrl($slug);
+    $src = app(\App\Service\FishFoodService::class)->foodPickerImageUrl($slug);
 @endphp
 @if ($unlocked)
     <form method="POST" action="{{ route('student.profile.food.select') }}">

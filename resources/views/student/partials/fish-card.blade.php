@@ -6,14 +6,22 @@
      rounded) — её даёт сама карточка 1. Один и тот же партиал рендерится и
      на первом заходе на дашборд, и в ответ на htmx-запрос кормления (см.
      FishController::feed()) — так оба места гарантированно выглядят
-     одинаково. Кормление — по 1 корму за нажатие, не весь баланс разом. --}}
+     одинаково. Кормление — по 1 корму за нажатие, не весь баланс разом.
+     Стили (.fish-xp, .fish-nameplate, .fish-btn…) — в dashboard.blade.php. --}}
 @php
+    $fishService = app(\App\Service\FishFoodService::class);
     // Название уровня — из App\Service\FishFoodService::levelName(), одно
     // место истины (используется и здесь, и в баннере левел-апа).
-    $fishLevelName = app(\App\Service\FishFoodService::class)->levelName($fishLevel);
+    $fishLevelName = $fishService->levelName($fishLevel);
     $fishProgressPercent = $fishProgress['isMax']
         ? 100
         : (int) round(($fishProgress['needed'] > 0 ? $fishProgress['current'] / $fishProgress['needed'] : 0) * 100);
+    // Цель на шкале опыта: силуэт следующей формы в конце полоски и подпись
+    // «Ещё N до <следующей формы>».
+    $fishNextImage = $fishProgress['isMax'] ? null : $fishService->mascotImageUrl($fishLevel + 1);
+    $fishNextName = config('fish.level_names_genitive.'.$fishLevel, 'нового уровня');
+    $fishLeft = $fishProgress['isMax'] ? 0 : max(0, $fishProgress['needed'] - $fishProgress['current']);
+    $fishFoodIcon = auth()->user()->fish_food_icon_url;
 
     // Тренажёры (App\Service\Trainers\TrainerHub) — для кнопки рядом с
     // «Покормить». На дашборде уже посчитаны (там же облачко рыбы), после
@@ -23,53 +31,83 @@
 @endphp
 {{-- data-balance читает скрипт кормления на дашборде: кончился ли корм
      («всё съедено»); data-crumb-src — картинка падающей на маскота еды
-     (выбирается в профиле, см. config('fish.foods')). --}}
+     (выбирается в профиле, см. config('fish.foods')); data-level и
+     data-progress — скрипт шкалы опыта: с какого значения доводить
+     заливку после htmx-свапа и был ли переход на новый уровень. --}}
 <div id="fish-card" class="flex-1 flex flex-col min-w-0"
      data-balance="{{ $fishBalance }}"
+     data-level="{{ $fishLevel }}"
+     data-progress="{{ $fishProgressPercent }}"
+     data-max="{{ $fishProgress['isMax'] ? 1 : 0 }}"
      data-crumb-src="{{ auth()->user()->fish_food_crumb_url }}">
-    <div class="sans-medium text-xs uppercase tracking-wide text-zinc-400 mb-3">Уровень {{ $fishLevel }} · {{ $fishLevelName }}</div>
+    {{-- Номер уровня — значком на углу маскота (.fish-level-badge в
+         dashboard.blade.php), здесь только название формы. --}}
+    <div class="sans-medium text-xs uppercase tracking-wide text-zinc-400 mb-2">{{ $fishLevelName }}</div>
 
-    <div class="flex-1 flex flex-col">
-        {{-- Имя — главный заголовок карточки, поэтому крупнее и жирнее
-             остального (эйробров сверху — мелкий и приглушённый, низ —
-             служебная строка корма/кнопки: три чётких уровня важности). --}}
-        <div class="sans-medium text-lg text-zinc-900 truncate">{{ $fishName }}</div>
+    <div class="flex-1 flex flex-col min-w-0">
+        {{-- Имя — табличкой; карандаш ведёт в профиль переименовать
+             (#character — вкладка «Персонаж», поле имени в фокусе). --}}
+        <a href="{{ route('student.profile.show') }}#character" class="fish-nameplate" title="Переименовать">
+            <span class="truncate">{{ $fishName }}</span>
+            <x-icon name="edit-02" class="fish-nameplate-edit w-3.5 h-3.5" />
+        </a>
 
         <div class="mt-5">
-            @if($fishProgress['isMax'])
-                <div class="text-xs text-zinc-500">Максимальный уровень!</div>
-            @else
-                <div class="h-2 rounded-full bg-gray-100 overflow-hidden">
-                    <div class="h-full rounded-full bg-blue-500" style="width: {{ $fishProgressPercent }}%"></div>
+            {{-- Шкала опыта. Заливку после кормления доводит скрипт на
+                 дашборде (старое значение → новое), а не прыжком. --}}
+            <div class="fish-xp {{ $fishProgress['isMax'] ? 'is-max' : '' }}">
+                <div class="fish-xp-track">
+                    <div class="fish-xp-fill" style="width: {{ $fishProgressPercent }}%"></div>
                 </div>
-                <div class="text-xs text-zinc-500 mt-1.5">{{ $fishProgress['current'] }} / {{ $fishProgress['needed'] }} до следующего уровня</div>
-            @endif
+                @if($fishNextImage)
+                    <img src="{{ $fishNextImage }}" alt="" class="fish-xp-next" title="Следующая форма — {{ config('fish.level_names.'.$fishLevel) }}">
+                @endif
+            </div>
+            <div class="fish-xp-caption">
+                @if($fishProgress['isMax'])
+                    Максимальный уровень!
+                @else
+                    Ещё <b>{{ $fishLeft }}</b>
+                    <img src="{{ $fishFoodIcon }}" alt="корма" class="w-3.5 h-3.5 inline-block">
+                    до {{ $fishNextName }}
+                @endif
+            </div>
         </div>
 
         <div class="mt-auto pt-5">
-            <div class="text-sm text-zinc-600 mb-4 flex items-center gap-1">
-                Корм:
-                <img src="{{ auth()->user()->fish_food_icon_url }}" alt="" class="w-5 h-5 inline-block">
-                <span class="font-medium text-zinc-900">{{ $fishBalance }}</span>
-            </div>
-            <div class="fish-buttons {{ $trainersUrl ? 'grid grid-cols-2 gap-2' : '' }}">
-                <x-ui.button type="button" variant="outline" size="sm" block class="fish-feed-btn px-2"
+            {{-- Кнопки с небольшим объёмом: «Покормить» голубая, тренажёры серые (стили —
+                 .fish-btn в dashboard.blade.php). Запас корма — в самой
+                 кнопке «Покормить» (отдельной строки «Корм: N» больше нет).
+                 С тренажёрами «Покормить» тянется, гантель — по содержимому.
+                 is-ready — мягкое свечение, пока есть чем кормить. --}}
+            <div class="fish-buttons {{ $trainersUrl ? 'grid gap-2' : '' }}" @if($trainersUrl) style="grid-template-columns: 1fr auto" @endif>
+                <button type="button" class="fish-btn fish-btn--feed fish-feed-btn {{ $fishBalance > 0 ? 'is-ready' : '' }}"
                         hx-post="{{ route('student.fish.feed') }}"
                         hx-target="#fish-card"
                         hx-swap="outerHTML"
-                        :disabled="$fishBalance <= 0">
-                    <img src="{{ auth()->user()->fish_food_icon_url }}" alt="" class="w-6 h-6 inline-block mr-1.5 align-text-bottom">
-                    Покормить
-                </x-ui.button>
-                {{-- Пока тренажёр один, кнопка ведёт прямо в него; счётчик —
-                     сколько дел ждёт сегодня во всех тренажёрах. --}}
+                        @disabled($fishBalance <= 0)>
+                    @if($fishBalance > 0)
+                        <img src="{{ $fishFoodIcon }}" alt="" class="w-6 h-6">
+                        Покормить
+                        <span class="fish-btn-stock" aria-label="запас корма: {{ $fishBalance }}">· {{ $fishBalance }}</span>
+                    @else
+                        {{-- Корма нет — кнопка подсказывает, где его взять. --}}
+                        Реши задание
+                        <img src="{{ $fishFoodIcon }}" alt="корм" class="w-6 h-6">
+                    @endif
+                </button>
                 @if($trainersUrl)
-                    <x-ui.button href="{{ $trainersUrl }}" :variant="$trainers['pending'] > 0 ? 'accent' : 'outline'" size="sm" block class="px-2 gap-1.5">
-                        Тренажёры
+                    {{-- Вместо слова — гантель; название — для экранного
+                         диктора и подсказки при наведении. Счётчик дел во всех
+                         тренажёрах — значком за правым верхним углом кнопки
+                         (периодически подпрыгивает, см. .fish-btn-count). --}}
+                    <a href="{{ $trainersUrl }}" class="fish-btn fish-btn--gym" aria-label="Тренажёры" title="Тренажёры">
+                        <img src="{{ asset('img/icons/gym_weight.svg') }}" alt="">
                         @if($trainers['pending'] > 0)
-                            <span class="min-w-5 h-5 px-1.5 rounded-full bg-white text-blue-600 text-xs leading-5 font-semibold">{{ $trainers['pending'] }}</span>
+                            <span class="fish-btn-count">{{ $trainers['pending'] }}</span>
                         @endif
-                    </x-ui.button>
+                        <span class="sr-only">Тренажёры</span>
+                    </a>
                 @endif
             </div>
         </div>

@@ -57,13 +57,102 @@
             flex-shrink: 0;
             align-self: flex-start;
         }
+        /* Аквариум: голубоватая стеклянная рамка снаружи, а стекло —
+           слои поверх сцены (::before — блик по диагонали, ::after —
+           светлая кромка и затемнение у краёв, как толща стекла). Слои выше
+           маскота (z 4), но ниже крошек еды (5) и баннера левел-апа (10);
+           pointer-events: none — клик по маскоту по-прежнему кормит. */
         #greeting-mascot {
             position: relative;
             overflow: hidden;
+            border: 2px solid #B9D7F2;
+            border-radius: 1rem;
+            box-shadow:
+                0 0 0 4px rgba(234, 243, 253, .9),
+                0 10px 24px -6px rgba(15, 50, 90, .35),
+                0 2px 6px rgba(15, 23, 42, .12);
+        }
+        #greeting-mascot::before,
+        #greeting-mascot::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 4;
+            pointer-events: none;
+            border-radius: inherit;
+        }
+        #greeting-mascot::before {
+            background:
+                linear-gradient(125deg, rgba(255,255,255,.42) 0%, rgba(255,255,255,.12) 18%, rgba(255,255,255,0) 30%),
+                linear-gradient(125deg, rgba(255,255,255,0) 72%, rgba(255,255,255,.14) 80%, rgba(255,255,255,0) 86%);
+        }
+        #greeting-mascot::after {
+            box-shadow:
+                inset 0 0 0 2px rgba(255, 255, 255, .55),
+                inset 0 0 18px rgba(255, 255, 255, .35),
+                inset 0 -14px 28px -10px rgba(8, 40, 80, .45),
+                inset 0 12px 24px -12px rgba(255, 255, 255, .5);
         }
         .fish-feed-btn {
             position: relative;
             overflow: hidden;
+        }
+        /* Кнопки под рыбой (решение автора): бледная нейтральная заливка,
+           обводка снаружи и объём внутри — светлый блик сверху и полоса
+           потемнее у нижнего края (inset). «Покормить» — голубая
+           (.fish-btn--feed), тренажёры — серые. При нажатии объём уходит. */
+        .fish-btn {
+            --fill: #F6F8FA; --hover: #EEF2F5; --line: #C9D3DB; --low: #D5DEE5;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .4rem;
+            width: 100%;
+            height: 2.75rem;
+            padding: 0 1rem;
+            border: 1.5px solid var(--line);
+            border-radius: .875rem;
+            background: var(--fill);
+            font-weight: 600;
+            font-size: 1rem;
+            line-height: 1;
+            color: #1D2E3A;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: inset 0 2px 0 rgba(255,255,255,.9), inset 0 -4px 0 var(--low);
+            transition: transform .08s ease, box-shadow .08s ease, background-color .15s ease;
+        }
+        .fish-btn:hover { background: var(--hover); }
+        .fish-btn:active { transform: translateY(1px); box-shadow: inset 0 1px 0 var(--low); }
+        .fish-btn:focus-visible { outline: 3px solid #93C5FD; outline-offset: 2px; }
+        .fish-btn-stock { font-weight: 500; color: #657B8B; }
+        .fish-btn:disabled { --fill: #F4F6F8; --hover: #F4F6F8; --line: #DCE3E8; --low: #E9EEF2; color: #94A3B8; cursor: not-allowed; transform: none; }
+        .fish-btn:disabled img { filter: grayscale(1) opacity(.55); }
+        .fish-btn:disabled .fish-btn-stock { color: inherit; }
+        /* Гантель легче: меньше и светлее чёрного, чтобы маленькая кнопка не
+           тянула взгляд сильнее «Покормить». */
+        /* «Покормить» — голубая, тренажёры — серые (решение автора): у кнопок
+           разное назначение, одинаковый цвет их путал. */
+        .fish-btn--feed { --fill: #EAF3FD; --hover: #DDEBFB; --line: #8DB8E8; --low: #C3DAF3; }
+        .fish-btn--gym { padding: 0 1.1rem; }
+        .fish-btn--gym img { width: 1.75rem; height: 1.75rem; opacity: .8; }
+        .fish-btn-count {
+            position: absolute;
+            top: -9px;
+            right: -9px;
+            min-width: 1.25rem;
+            height: 1.25rem;
+            padding: 0 .35rem;
+            box-sizing: border-box;
+            border-radius: 9999px;
+            background: #2563EB;
+            color: #fff;
+            font-size: .75rem;
+            font-weight: 700;
+            line-height: 1.25rem;
+            text-align: center;
+            box-shadow: 0 0 0 2px #fff;
         }
         /* Кнопка "Покормить" — variant="outline" (белый фон), поэтому белая
            рябь на ней была не волной, а невнятной вспышкой без контраста.
@@ -206,12 +295,6 @@
                 container: fish-column / inline-size;
             }
         }
-        /* Две кнопки рядом: боковой отступ 8px. Класс px-2 на кнопке не
-           срабатывает — его перебивает px-4 размера sm у x-ui.button. */
-        .fish-buttons.grid > * {
-            padding-left: .5rem;
-            padding-right: .5rem;
-        }
         /* Колонка всё равно узкая (квадрат не меньше 14rem) — текст кнопок
            на размер меньше, чтобы «Покормить» и «Тренажёры» не упирались в
            края. */
@@ -304,19 +387,359 @@
                 align-items: center;
                 gap: 1rem;
             }
-            /* Раньше маскот растягивался на всю ширину карточки (width:100%) —
-               при aspect-square на узком экране это давало квадрат ~300px+,
-               визуально "гигантский". Компромисс — 230px по центру: рыба
-               крупная, а облачку слева от неё хватает места. */
+            /* Широкий аквариум на всю ширину карточки (3:2), а не квадрат
+               по центру: квадрат 230px оставлял пустые поля по бокам, а
+               квадрат на всю ширину (~330px) делал рыбу «гигантской». Высота
+               при 3:2 — почти как у прежнего квадрата. Фон (квадратный)
+               обрезается сверху/снизу через background-size: cover. */
             .dashboard-mascot-row .fish-stage {
-                align-self: center;
-                width: 230px;
-                max-width: 72%;
-                margin-top: 10px;
+                align-self: stretch;
+                width: 100%;
+                max-width: none;
             }
+            .dashboard-mascot-row #greeting-mascot {
+                aspect-ratio: 3 / 2;
+            }
+            /* Рыба — квадрат по высоте аквариума, по центру. */
+            .dashboard-mascot-row .fish-bob {
+                width: auto;
+                height: 94%;
+                aspect-ratio: 1 / 1;
+            }
+            /* Облачко — внутри аквариума слева, хвостиком к рыбе; за край
+               экрана больше не выходит, поэтому fishFitBubble() его не
+               двигает. */
+            .dashboard-mascot-row .fish-bubble {
+                left: 10px;
+                right: auto;
+                max-width: calc(50% - 10px);
+            }
+            .dashboard-mascot-row .fish-bubble.is-top { top: 12px; }
+            .dashboard-mascot-row .fish-bubble.is-bottom { bottom: 12px; }
             .dashboard-mascot-row #fish-card {
                 width: 100%;
             }
+        }
+
+        /* ===== Игровой слой карточки с рыбой ===== */
+
+        /* Имя — табличка: светлая плашка с обводкой, карандаш — в профиль. */
+        .fish-nameplate {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            max-width: 100%;
+            align-self: flex-start;
+            padding: .3rem .75rem .35rem;
+            border: 1.5px solid #D5DEE5;
+            border-radius: .75rem;
+            background: #F6F8FA;
+            box-shadow: inset 0 -2px 0 #E4EAEF;
+            font-weight: 600;
+            font-size: 1.125rem;
+            line-height: 1.3;
+            color: #1D2E3A;
+            text-decoration: none;
+            transition: background-color .15s ease, border-color .15s ease;
+        }
+        /* min-width: 0 — иначе текст внутри inline-flex не сжимается, truncate
+           не срабатывает, и длинное имя через грид растягивает карточку
+           (на ПК это скрывал container-type: size у карточки, на телефоне его нет). */
+        .fish-nameplate > span { min-width: 0; }
+        #dashboard-cards-grid > * { min-width: 0; }
+        .fish-nameplate:hover { background: #EEF2F5; border-color: #C9D3DB; }
+        .fish-nameplate-edit { flex-shrink: 0; color: #94A3B8; transition: color .15s ease; }
+        .fish-nameplate:hover .fish-nameplate-edit { color: #2563EB; }
+
+        /* Шкала опыта: толстая полоска с объёмом в стиле .fish-btn, в конце
+           — тёмный силуэт следующей формы (цель). */
+        /* Полоска и силуэт — рядом в ряд, силуэт на полоску не заходит. */
+        .fish-xp {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+        .fish-xp-track {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+            height: 14px;
+            border: 1.5px solid #C9D3DB;
+            border-radius: 9999px;
+            background: #EEF2F5;
+            box-shadow: inset 0 2px 2px rgba(15, 23, 42, .08);
+            overflow: hidden;
+        }
+        .fish-xp-fill {
+            position: relative;
+            height: 100%;
+            min-width: 10px;
+            border-radius: 9999px;
+            background: linear-gradient(180deg, #7DB5F5 0%, #3B82F6 55%, #2563EB 100%);
+            box-shadow: inset 0 2px 0 rgba(255,255,255,.45);
+            transition: width .45s cubic-bezier(.22, 1, .36, 1);
+            overflow: hidden;
+        }
+        /* Блик, пробегающий по заливке при каждом +1. */
+        .fish-xp-fill::after {
+            content: "";
+            position: absolute;
+            top: 0; bottom: 0;
+            left: -40%;
+            width: 40%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,.7), transparent);
+            transform: skewX(-20deg);
+            opacity: 0;
+        }
+        .fish-xp-fill.is-gain::after { animation: fish-xp-shine .6s ease-out; }
+        @keyframes fish-xp-shine {
+            0% { left: -40%; opacity: 1; }
+            100% { left: 110%; opacity: 1; }
+        }
+        .fish-xp.is-max .fish-xp-fill {
+            background: linear-gradient(180deg, #FDE68A 0%, #F59E0B 60%, #D97706 100%);
+        }
+        .fish-xp-next {
+            flex-shrink: 0;
+            width: 2.25rem;
+            height: 2.25rem;
+            object-fit: contain;
+            filter: brightness(0) opacity(.28);
+        }
+        .fish-xp-caption {
+            margin-top: .4rem;
+            font-size: .75rem;
+            color: #657B8B;
+        }
+        .fish-xp-caption b { color: #1D2E3A; font-weight: 700; }
+        .fish-xp-caption img { vertical-align: -3px; }
+
+        /* Пока есть корм — «Покормить» мягко светится, зовёт нажать.
+           Внутренние тени повторяют .fish-btn, иначе анимация их бы затёрла.
+           При нажатии свечение выключается, чтобы работал :active-«вдавленный» вид. */
+        .fish-btn--feed.is-ready { animation: fish-feed-glow 2.4s ease-in-out infinite; }
+        .fish-btn--feed.is-ready:active { animation: none; }
+        @keyframes fish-feed-glow {
+            0%, 100% { box-shadow: inset 0 2px 0 rgba(255,255,255,.9), inset 0 -4px 0 var(--low), 0 0 0 0 rgba(59,130,246,0); }
+            50%      { box-shadow: inset 0 2px 0 rgba(255,255,255,.9), inset 0 -4px 0 var(--low), 0 0 0 5px rgba(59,130,246,.18); }
+        }
+        /* Запас корма в кнопке «подпрыгивает», когда число поменялось. */
+        .fish-btn-stock { display: inline-block; }
+        .fish-btn-stock.is-bump { animation: fish-stock-bump .35s ease-out; }
+        @keyframes fish-stock-bump {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.35); color: #2563EB; }
+            100% { transform: scale(1); }
+        }
+        /* Счётчик дел на гантели раз в несколько секунд подпрыгивает. */
+        .fish-btn-count { animation: fish-count-hop 4s ease-in-out infinite; }
+        @keyframes fish-count-hop {
+            0%, 80%, 100% { transform: translateY(0); }
+            86% { transform: translateY(-6px); }
+            92% { transform: translateY(0); }
+            96% { transform: translateY(-2px); }
+        }
+
+        /* Всплывающие «+1» (у шкалы) и «−1» (у кнопки) — position: fixed на
+           body, а не внутри #fish-card: тот пересоздаётся htmx-свапом и унёс
+           бы цифру с собой на полпути. */
+        .fish-float {
+            position: fixed;
+            z-index: 50;
+            pointer-events: none;
+            font-weight: 800;
+            font-size: 15px;
+            line-height: 1;
+            transform: translate(-50%, -50%);
+            text-shadow: 0 1px 0 #fff, 0 0 6px rgba(255,255,255,.9);
+            animation: fish-float-up .8s ease-out forwards;
+        }
+        .fish-float.is-plus { color: #2563EB; }
+        .fish-float.is-minus { color: #64748B; font-size: 13px; }
+        @keyframes fish-float-up {
+            0%   { opacity: 0; transform: translate(-50%, -30%) scale(.7); }
+            20%  { opacity: 1; transform: translate(-50%, -80%) scale(1.1); }
+            100% { opacity: 0; transform: translate(-50%, -260%) scale(1); }
+        }
+
+        /* Комбо «×5», «×10» над маскотом за быструю серию нажатий. */
+        .fish-combo {
+            position: absolute;
+            left: 50%;
+            top: 14%;
+            z-index: 7;
+            pointer-events: none;
+            font-weight: 900;
+            font-size: 30px;
+            line-height: 1;
+            color: #FBBF24;
+            -webkit-text-stroke: 2px #92400E;
+            paint-order: stroke fill;
+            text-shadow: 0 3px 0 #92400E, 0 6px 12px rgba(15,23,42,.35);
+            transform: translate(-50%, 0);
+            animation: fish-combo-pop 1.1s cubic-bezier(.22, 1, .36, 1) forwards;
+        }
+        .fish-combo.is-big { font-size: 40px; color: #FB923C; -webkit-text-stroke-color: #9A3412; text-shadow: 0 3px 0 #9A3412, 0 6px 14px rgba(15,23,42,.4); }
+        @keyframes fish-combo-pop {
+            0%   { opacity: 0; transform: translate(-50%, 10px) scale(.3) rotate(-12deg); }
+            25%  { opacity: 1; transform: translate(-50%, 0) scale(1.25) rotate(4deg); }
+            40%  { transform: translate(-50%, 0) scale(1) rotate(0); }
+            75%  { opacity: 1; transform: translate(-50%, -6px) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -26px) scale(.9); }
+        }
+
+        /* Маскот «плавает»: покачивание — на обёртке, а не на самом
+           #fish-mascot-img. Картинку крутит GSAP при левел-апе (scale через
+           inline transform), а CSS-анимация на том же элементе перебила бы
+           его transform. */
+        .fish-bob {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            animation: fish-bob 3.4s ease-in-out infinite;
+        }
+        @keyframes fish-bob {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25%      { transform: translateY(-3px) rotate(-1.2deg); }
+            50%      { transform: translateY(-6px) rotate(0deg); }
+            75%      { transform: translateY(-3px) rotate(1.2deg); }
+        }
+
+        /* Пузырьки за маскотом — только на подводных фонах
+           (config('fish.underwater_backgrounds')). */
+        .fish-water {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .fish-water span {
+            position: absolute;
+            bottom: -16px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(255,255,255,.75);
+            background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.85) 0 14%, rgba(255,255,255,.14) 40%, rgba(255,255,255,.05) 70%);
+            opacity: 0;
+            animation: fish-bubble-rise linear infinite;
+        }
+        @keyframes fish-bubble-rise {
+            0%   { opacity: 0; transform: translate(0, 0); }
+            10%  { opacity: .9; }
+            50%  { transform: translate(6px, -11rem); }
+            85%  { opacity: .7; }
+            100% { opacity: 0; transform: translate(-4px, -22rem); }
+        }
+
+        /* Значок уровня на углу маскота — шестиугольник с номером. */
+        .fish-level-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            z-index: 6;
+            width: 40px;
+            height: 44px;
+            pointer-events: none;
+            filter: drop-shadow(0 2px 3px rgba(15, 23, 42, .3));
+        }
+        .fish-level-badge::before,
+        .fish-level-badge span {
+            content: "";
+            position: absolute;
+            clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+        }
+        .fish-level-badge::before { inset: 0; background: #fff; }
+        .fish-level-badge span {
+            inset: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #7DB5F5 0%, #2563EB 100%);
+            color: #fff;
+            font-weight: 800;
+            font-size: 18px;
+            line-height: 1;
+            text-shadow: 0 1px 0 rgba(0,0,0,.25);
+        }
+        .fish-level-badge.is-max span { background: linear-gradient(180deg, #FDE68A 0%, #D97706 100%); }
+        .fish-level-badge.is-pop { animation: fish-badge-pop .6s cubic-bezier(.22, 1, .36, 1); }
+        @keyframes fish-badge-pop {
+            0% { transform: scale(1); }
+            35% { transform: scale(1.45) rotate(-10deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+
+        /* Уведомление «+N корма за визит» — окно-уведомление в углу экрана
+           (как системное), а не модалка по центру: не перекрывает страницу и
+           само уходит. На ПК — справа внизу, на телефоне — сверху (внизу
+           там нижнее меню). */
+        .fish-daily {
+            position: fixed;
+            right: 1.5rem;
+            bottom: 1.5rem;
+            z-index: 60;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            width: 300px;
+            max-width: calc(100vw - 2rem);
+            padding: .75rem .875rem;
+            border: 1.5px solid #C3DAF3;
+            border-radius: 1rem;
+            background: #fff;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, .16);
+            transform: translateY(calc(100% + 2rem));
+            opacity: 0;
+            transition: transform .45s cubic-bezier(.22, 1, .36, 1), opacity .3s ease;
+        }
+        .fish-daily.is-in { transform: translateY(0); opacity: 1; }
+        .fish-daily-icon {
+            flex-shrink: 0;
+            width: 2.75rem;
+            height: 2.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: .875rem;
+            background: #EAF3FD;
+            box-shadow: inset 0 -3px 0 #C3DAF3;
+        }
+        .fish-daily-icon img { width: 1.75rem; height: 1.75rem; }
+        .fish-daily-title { font-weight: 700; font-size: .9375rem; color: #1D2E3A; }
+        .fish-daily-title b { color: #2563EB; }
+        .fish-daily-text { font-size: .8125rem; color: #657B8B; margin-top: 1px; }
+        .fish-daily-close {
+            align-self: flex-start;
+            flex-shrink: 0;
+            margin-left: auto;
+            padding: 2px;
+            color: #94A3B8;
+        }
+        .fish-daily-close:hover { color: #1D2E3A; }
+        @media (max-width: 599px) {
+            .fish-daily {
+                left: 1rem;
+                right: 1rem;
+                bottom: auto;
+                top: .75rem;
+                width: auto;
+                max-width: none;
+                transform: translateY(calc(-100% - 1rem));
+            }
+        }
+
+        /* Кто просил систему меньше анимаций — без постоянного движения
+           (покачивание, пузырьки, свечение, прыжки счётчика). Разовая
+           обратная связь на нажатие остаётся, но без полёта. */
+        @media (prefers-reduced-motion: reduce) {
+            .fish-bob,
+            .fish-btn--feed.is-ready,
+            .fish-btn-count,
+            .fish-xp-fill.is-gain::after { animation: none; }
+            .fish-water { display: none; }
+            .fish-xp-fill, .fish-daily { transition: none; }
+            .fish-float, .fish-combo { animation-duration: .01s; animation-delay: .6s; }
         }
     </style>
     <div id="dashboard-cards-grid">
@@ -382,11 +805,32 @@
                 });
             </script>
             <div id="greeting-mascot" class="w-full aspect-square rounded-xl bg-gray-100 flex items-center justify-center {{ $fishBalance > 0 ? 'cursor-pointer' : '' }}" style="background-image: url('{{ $fishBackgroundImage }}'); background-size: cover; background-position: center;" title="Покормить">
-                <img id="fish-mascot-img"
-                     src="{{ $fishMascotImage }}"
-                     data-default-src="{{ $fishMascotImage }}"
-                     data-eating-src="{{ $fishMascotEatingImage }}"
-                     alt="" class="w-full h-full object-contain">
+                {{-- Пузырьки — за маскотом (z-index ниже .fish-bob). Позиции
+                     и скорости фиксированные, а не случайные на сервере:
+                     раскладка не скачет между заходами. --}}
+                @if($fishUnderwater)
+                    <div class="fish-water" aria-hidden="true">
+                        @foreach ([[8, 7, 7.5, 0], [22, 11, 9, 2.8], [37, 6, 6.5, 5.1], [63, 9, 8, 1.2], [78, 13, 10, 4], [90, 7, 7, 6.3], [50, 5, 6, 3.6]] as [$bx, $bs, $bd, $bdelay])
+                            <span style="left: {{ $bx }}%; width: {{ $bs }}px; height: {{ $bs }}px; animation-duration: {{ $bd }}s; animation-delay: {{ $bdelay }}s;"></span>
+                        @endforeach
+                    </div>
+                @endif
+                {{-- .fish-bob — покачивание; на самой картинке нельзя (её
+                     transform занят GSAP-анимацией левел-апа). --}}
+                <div class="fish-bob">
+                    <img id="fish-mascot-img"
+                         src="{{ $fishMascotImage }}"
+                         data-default-src="{{ $fishMascotImage }}"
+                         data-eating-src="{{ $fishMascotEatingImage }}"
+                         alt="" class="w-full h-full object-contain">
+                </div>
+            </div>
+            {{-- Значок уровня на углу маскота. Номер после левел-апа меняет
+                 скрипт (событие 'fish-level-up', поле level). --}}
+            @php $fishMaxLevel = count(config('fish.levels')) + 1; @endphp
+            <div class="fish-level-badge {{ $fishLevel >= $fishMaxLevel ? 'is-max' : '' }}"
+                 data-max-level="{{ $fishMaxLevel }}" role="img" aria-label="Уровень {{ $fishLevel }}">
+                <span>{{ $fishLevel }}</span>
             </div>
             {{-- Реплика рыбы (App\Service\Trainers\FishSpeech) — белое облачко
                  как в мультике: слева от рыбы, хвостиком к ней. Нажатие ведёт
@@ -484,6 +928,48 @@
             </div>
         </x-ui.card>
     </div>
+
+    {{-- Ежедневный бонус — окно-уведомление в углу (не модалка): только на
+         первом заходе дня ($fishDailyBonus > 0, см. DashboardController).
+         Выезжает после появления маскота, само уходит через 6 с. --}}
+    @if($fishDailyBonus > 0)
+        <div id="fish-daily" class="fish-daily" role="status">
+            <div class="fish-daily-icon"><img src="{{ auth()->user()->fish_food_icon_url }}" alt=""></div>
+            <div class="min-w-0">
+                <div class="fish-daily-title"><b>+{{ $fishDailyBonus }}</b> корма за визит</div>
+                <div class="fish-daily-text">Заходи завтра — будет ещё</div>
+            </div>
+            <button type="button" class="fish-daily-close" aria-label="Закрыть">
+                <x-icon name="x-close" class="w-4 h-4" />
+            </button>
+        </div>
+        <script>
+            (function () {
+                var note = document.getElementById('fish-daily');
+                var hideTimer = null;
+                function hide() {
+                    clearTimeout(hideTimer);
+                    note.classList.remove('is-in');
+                    setTimeout(function () { note.remove(); }, 500);
+                }
+                note.querySelector('.fish-daily-close').addEventListener('click', hide);
+                // DOMContentLoaded, а не load: load ждёт все картинки и CDN —
+                // на слабом интернете уведомление пришло бы слишком поздно.
+                document.addEventListener('DOMContentLoaded', function () {
+                    setTimeout(function () {
+                        note.classList.add('is-in');
+                        // Запас корма в кнопке отзывается на бонус.
+                        var stock = document.querySelector('#fish-card .fish-btn-stock');
+                        if (stock) setTimeout(function () { stock.classList.add('is-bump'); }, 350);
+                        hideTimer = setTimeout(hide, 6000);
+                    }, 900);
+                });
+                // Наведение мышью — не прятать, пока читают.
+                note.addEventListener('mouseenter', function () { clearTimeout(hideTimer); });
+                note.addEventListener('mouseleave', function () { hideTimer = setTimeout(hide, 2500); });
+            })();
+        </script>
+    @endif
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -674,6 +1160,117 @@
             document.body.addEventListener('fish-level-up', function () { fishTalk.levelUp(); });
         }
 
+        // Игровой слой кормления: «−1» у кнопки и «+1» у шкалы опыта на
+        // каждое нажатие, комбо «×5»/«×10» за быструю серию, плавная
+        // доводка шкалы после htmx-свапа и номер на значке уровня.
+        (function () {
+            function floatText(text, cls, x, y) {
+                var el = document.createElement('div');
+                el.className = 'fish-float ' + cls;
+                el.textContent = text;
+                el.style.left = x + 'px';
+                el.style.top = y + 'px';
+                document.body.appendChild(el);
+                el.addEventListener('animationend', function () { el.remove(); });
+            }
+
+            // Серия — нажатия с паузой меньше 2 с (как у реплик fishTalk).
+            // Комбо на 5-м, 10-м и дальше на каждом 10-м нажатии.
+            var combo = 0, comboAt = 0;
+            function showCombo(n) {
+                var stage = document.querySelector('.fish-stage');
+                if (!stage) return;
+                var el = document.createElement('div');
+                el.className = 'fish-combo' + (n >= 10 ? ' is-big' : '');
+                el.textContent = '×' + n;
+                stage.appendChild(el);
+                el.addEventListener('animationend', function () { el.remove(); });
+            }
+
+            // Позиции берём в момент клика — до свапа, пока старая карточка на месте.
+            document.addEventListener('click', function (evt) {
+                var btn = evt.target.closest('.fish-feed-btn');
+                if (!btn || btn.disabled) return;
+
+                var stock = btn.querySelector('.fish-btn-stock');
+                var r = (stock || btn).getBoundingClientRect();
+                floatText('−1', 'is-minus', r.left + r.width / 2, r.top);
+
+                var card = document.getElementById('fish-card');
+                var fill = card && card.dataset.max !== '1' ? card.querySelector('.fish-xp-fill') : null;
+                if (fill) {
+                    var f = fill.getBoundingClientRect();
+                    floatText('+1', 'is-plus', f.right, f.top - 4);
+                }
+
+                var now = Date.now();
+                combo = now - comboAt > 2000 ? 1 : combo + 1;
+                comboAt = now;
+                if (combo === 5 || (combo >= 10 && combo % 10 === 0)) showCombo(combo);
+            });
+
+            // Шкала: новая карточка приходит уже с новой шириной — ставим
+            // заливку на старое значение и даём transition довести её. На
+            // левел-апе — сначала до конца, потом с нуля до нового значения.
+            var before = null;
+            document.body.addEventListener('htmx:beforeSwap', function (evt) {
+                var card = evt.detail.target;
+                if (!card || card.id !== 'fish-card') return;
+                before = { level: +card.dataset.level, progress: +card.dataset.progress, balance: +card.dataset.balance };
+            });
+            document.body.addEventListener('htmx:afterSwap', function (evt) {
+                if (!evt.detail.target || evt.detail.target.id !== 'fish-card' || !before) return;
+                var prev = before;
+                before = null;
+                var card = document.getElementById('fish-card');
+                if (!card) return;
+
+                var fed = +card.dataset.balance < prev.balance;
+                var stock = card.querySelector('.fish-btn-stock');
+                if (stock && +card.dataset.balance !== prev.balance) stock.classList.add('is-bump');
+
+                var fill = card.querySelector('.fish-xp-fill');
+                if (!fill || !fed) return;
+                var target = +card.dataset.progress;
+                var leveled = +card.dataset.level > prev.level;
+
+                function jump(width) {
+                    fill.style.transition = 'none';
+                    fill.style.width = width + '%';
+                    void fill.offsetWidth; // зафиксировать ширину без анимации
+                    fill.style.transition = '';
+                }
+                jump(prev.progress);
+                fill.classList.add('is-gain');
+                if (leveled) {
+                    fill.style.width = '100%';
+                    setTimeout(function () {
+                        if (!fill.isConnected) return;
+                        jump(0);
+                        fill.style.width = target + '%';
+                    }, 450);
+                } else {
+                    fill.style.width = target + '%';
+                }
+            });
+
+            // Значок уровня вне #fish-card — номер меняем по событию левел-апа,
+            // в момент, когда маскот уже «вырос» (≈0.6 с таймлайна ниже).
+            document.body.addEventListener('fish-level-up', function (evt) {
+                var badge = document.querySelector('.fish-level-badge');
+                var level = evt.detail && evt.detail.level;
+                if (!badge || !level) return;
+                setTimeout(function () {
+                    badge.querySelector('span').textContent = level;
+                    badge.setAttribute('aria-label', 'Уровень ' + level);
+                    badge.classList.toggle('is-max', level >= +badge.dataset.maxLevel);
+                    badge.classList.remove('is-pop');
+                    void badge.offsetWidth;
+                    badge.classList.add('is-pop');
+                }, 600);
+            });
+        })();
+
         // Таймер возврата картинки маскота с "eating" на "default" после
         // кормления — общий для всех кликов (не локальная переменная внутри
         // обработчика), чтобы серия быстрых кликов продлевала его, а не
@@ -766,12 +1363,12 @@
                     crumb = document.createElement('img');
                     crumb.src = crumbSrc;
                     crumb.alt = '';
-                    crumb.style.cssText = 'position:absolute; top:-' + Math.ceil(size) + 'px; left:' + (Math.random() * (w - size)) + 'px; width:' + size + 'px; height:' + size + 'px; pointer-events:none; z-index:5; opacity:0;';
+                    crumb.style.cssText = 'position:absolute; top:-' + Math.ceil(size) + 'px; left:' + (Math.random() * (w - size)) + 'px; width:' + size + 'px; height:' + size + 'px; pointer-events:none; z-index:5;';
                 } else {
                     var size = 3 + Math.random() * 4;
                     var color = crumbColors[Math.floor(Math.random() * crumbColors.length)];
                     crumb = document.createElement('div');
-                    crumb.style.cssText = 'position:absolute; top:-8px; left:' + (Math.random() * w) + 'px; width:' + size + 'px; height:' + size + 'px; background:' + color + '; border-radius:' + (Math.random() > .5 ? '50%' : '2px') + '; pointer-events:none; z-index:5; opacity:0;';
+                    crumb.style.cssText = 'position:absolute; top:-8px; left:' + (Math.random() * w) + 'px; width:' + size + 'px; height:' + size + 'px; background:' + color + '; border-radius:' + (Math.random() > .5 ? '50%' : '2px') + '; pointer-events:none; z-index:5;';
                 }
                 mascot.appendChild(crumb);
 
@@ -782,17 +1379,23 @@
                     var duration = 1.1 + Math.random() * 0.6;
                     var delay = Math.random() * 0.4;
 
+                    // Сверху еда непрозрачная и растворяется только во второй
+                    // половине падения. Стартует выше рамки маскота (top < 0,
+                    // overflow:hidden), поэтому, пока ждёт свою delay, её не видно.
                     gsap.to(el, {
                         y: fallTo,
                         x: driftX,
                         rotation: rotation,
-                        opacity: 1,
                         duration: duration,
                         delay: delay,
                         ease: 'power1.in',
-                        onComplete: function () {
-                            gsap.to(el, { opacity: 0, duration: .3, onComplete: function () { el.remove(); } });
-                        },
+                        onComplete: function () { el.remove(); },
+                    });
+                    gsap.to(el, {
+                        opacity: 0,
+                        duration: duration * 0.5,
+                        delay: delay + duration * 0.5,
+                        ease: 'power1.in',
                     });
                 })(crumb);
             }
@@ -863,7 +1466,10 @@
                 ghost.alt = '';
                 ghost.className = 'w-full h-full object-contain';
                 ghost.style.cssText = 'position:absolute; inset:0; z-index:6; pointer-events:none;';
-                mascot.appendChild(ghost);
+                // В обёртку рыбы (.fish-bob), а не во весь аквариум: на
+                // телефоне аквариум широкий, рыба стоит правее центра —
+                // «призрак» должен быть ровно там же, где картинка.
+                (img.parentElement || mascot).appendChild(ghost);
             }
 
             var tl = gsap.timeline({ onComplete: function () { flash.remove(); } });

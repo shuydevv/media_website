@@ -573,14 +573,26 @@ class FishFoodService
      */
     public function foodImageUrl(?string $slug = null): string
     {
-        return asset('img/food/'.$this->resolveFood($slug).'.svg');
+        $slug = $this->resolveFood($slug);
+
+        return asset('img/food/'.(config("fish.foods.{$slug}.image") ?? $slug).'.svg');
+    }
+
+    /**
+     * Картинка в самом выборе еды (профиль → «Еда») — всегда {slug}.svg,
+     * без подмены через 'image': у снюса там банка, а иконка корма в
+     * остальном UI — пакетик (см. foodImageUrl()).
+     */
+    public function foodPickerImageUrl(string $slug): string
+    {
+        return asset('img/food/'.$slug.'.svg');
     }
 
     public function foodCrumbUrl(?string $slug = null): string
     {
         $slug = $this->resolveFood($slug);
 
-        return asset('img/food/'.(config("fish.foods.{$slug}.crumb") ?? $slug).'.svg');
+        return asset('img/food/'.(config("fish.foods.{$slug}.crumb") ?? config("fish.foods.{$slug}.image") ?? $slug).'.svg');
     }
 
     private function resolveFood(?string $slug): string

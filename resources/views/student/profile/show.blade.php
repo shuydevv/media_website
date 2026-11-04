@@ -774,7 +774,15 @@
 
         var saved = null;
         try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) {}
-        activate(saved || 'character');
+        // #character — с таблички имени на дашборде («Переименовать»):
+        // открываем «Персонаж» и ставим курсор в поле имени.
+        if (location.hash === '#character') {
+            activate('character');
+            var nameInput = document.querySelector('input[name="fish_name"]');
+            if (nameInput) nameInput.focus();
+        } else {
+            activate(saved || 'character');
+        }
     })();
 
     (function () {

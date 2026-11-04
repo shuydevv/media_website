@@ -19,6 +19,15 @@
 
 @include('admin.telegram._tabs', ['active' => 'broadcasts'])
 
+@if ($lateCount)
+    <x-ui.card class="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div class="text-sm text-zinc-700">
+            Последнюю рассылку #{{ $last->id }} не получили <b>{{ $lateCount }}</b> — зашли в бота позже.
+        </div>
+        <x-ui.button href="{{ route('admin.telegram.broadcasts.show', ['broadcast' => $last, 'tab' => 'late']) }}" size="xs" variant="outline">Посмотреть и дослать</x-ui.button>
+    </x-ui.card>
+@endif
+
 @if ($broadcasts->isEmpty())
     <x-ui.empty>Рассылок ещё не было</x-ui.empty>
 @else

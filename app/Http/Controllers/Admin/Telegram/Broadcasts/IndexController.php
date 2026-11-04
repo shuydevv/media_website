@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\TelegramBroadcast;
 use App\Models\TelegramBroadcastRecipient;
 use App\Service\Telegram\Broadcast\BroadcastDesk;
+use App\Service\Telegram\Broadcast\BroadcastSender;
 
 /**
  * Все рассылки (создаются в теме «📣 Рассылка» админ-группы —
@@ -24,8 +25,13 @@ class IndexController extends Controller
             ->latest('id')
             ->paginate(30);
 
+        // Сколько зашло после последней отправленной — им можно дослать.
+        $last = TelegramBroadcast::where('status', TelegramBroadcast::STATUS_DONE)->latest('started_at')->first();
+
         return view('admin.telegram.broadcasts.index', [
             'broadcasts' => $broadcasts,
+            'last' => $last,
+            'lateCount' => $last ? BroadcastSender::latecomers($last)->count() : 0,
             'topicUrl' => BroadcastDesk::topicUrl(),
         ]);
     }

@@ -1,0 +1,3278 @@
+{
+  "eras": {
+    "1": "Древняя Русь",
+    "2": "Московское государство",
+    "3": "XVII век",
+    "4": "Империя XVIII в.",
+    "5": "XIX век",
+    "6": "Начало XX века",
+    "7": "СССР",
+    "8": "Современная Россия"
+  },
+  "order": [
+    {
+      "stage": "Главное: даты, без которых нельзя",
+      "ids": [
+        "kreshchenie-988", "kulikovo-1380", "poltava-1709", "war-1812", "ww2-1941",
+        "victory-1945", "varyagi-862", "romanov-1613", "serfdom-1861", "october-1917",
+        "led-1242", "reign-peter1", "ugra-1480", "ussr-1922", "constitution-1993",
+        "batyi-1237", "smuta-1598", "february-1917", "reign-ivan4", "gagarin-1961",
+        "neva-1240", "empire-1721", "decembrists-1825", "stalingrad-1942", "belovezh-1991",
+        "reign-catherine2", "oprichnina-1565", "ulozhenie-1649", "kursk-1943", "reign-alexander2",
+        "moskva-1612", "venchanie-1547", "spb-1703", "nep-1921", "perestroika-1985",
+        "reign-ivan3", "northern-war-1700", "reign-stalin", "crimean-war-1853", "bloody-sunday-1905"
+      ]
+    },
+    {
+      "stage": "Важное: ключевые правители и крупные события",
+      "ids": [
+        "russkaya-pravda-1016", "kazan-1552", "manifesto-1905", "xx-congress-1956", "reign-nicholas2",
+        "reign-vladimir", "livonia-1558", "razin-1670", "pugachev-1773", "civil-war-1918",
+        "reign-yaroslav", "ermak-1581", "brest-1918", "collectivization-1929", "reign-khrushchev",
+        "reign-nevsky", "sudebnik-1497", "five-year-1928", "reign-alexander1", "caribbean-1962",
+        "reign-donskoy", "pereyaslav-1654", "reign-nicholas1", "ww1-1914", "reign-gorbachev",
+        "reign-monomakh", "reign-alexey", "reforms-1864", "japan-war-1904", "reign-brezhnev",
+        "lyubech-1097", "kalka-1223", "crimea-1783", "stolypin-1906", "gkchp-1991",
+        "razdroblennost-1132", "sudebnik-1550", "gramoty-1785", "reign-lenin", "chernobyl-1986",
+        "moskva-1147", "reign-godunov", "tabel-1722", "rus-tur-1877", "afghan-1979",
+        "reign-kalita", "reign-mikhail", "reign-alexander3", "reign-yeltsin", "reign-putin1",
+        "novgorod-1478", "reign-elizabeth", "sputnik-1957", "crimea-2014", "reign-vasily3"
+      ]
+    },
+    {
+      "stage": "Полезно знать",
+      "ids": [
+        "pechat-1564", "terror-1937", "reign-dolgoruky", "pact-1939", "reign-paul",
+        "moscow-1941", "reign-bogolyubsky", "patriarch-1589", "coup-1762", "constitution-1936",
+        "reign-svyatoslav", "alexander2-1881", "reign-olga", "stalin-1953", "reign-vasily2",
+        "rurikovichi-1598", "chechnya-1994", "mgu-1755", "reign-vsevolod", "volnye-1803",
+        "reign-sofia", "atom-1949", "astrakhan-1556", "peter-1689", "default-1998",
+        "witte-1897", "reign-anna", "khrushchev-1964", "reign-fedor-ioannovich", "reign-shuisky",
+        "reign-oleg", "railway-1837", "berlin-wall-1989", "amendments-2020", "reign-lzhedmitry1",
+        "reign-semiboyarshchina"
+      ]
+    },
+    {
+      "stage": "Второстепенное: короткие правления и частные события",
+      "ids": [
+        "oleg-882", "reign-catherine1", "lenin-1924", "kafedra-1325", "reign-lzhedmitry2",
+        "reign-rurik", "reign-peter2", "famine-1932", "reign-glinskaya", "reign-fedor-alexeevich",
+        "olga-945", "reign-ivan6", "reign-malenkov", "reign-vasily1", "pavel-1801",
+        "igor-1185", "reign-peter3", "reign-andropov", "reign-semyon", "reign-ivan5",
+        "novgorod-1136", "reign-chernenko", "gorbachev-1991", "reign-ivan2", "yeltsin-1999",
+        "reign-igor", "reign-medvedev", "reign-putin2", "reign-mstislav", "reign-yuri-danilovich",
+        "reign-daniil-moscow"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "varyagi-862",
+      "title": "Призвание варягов",
+      "other_names": ["Призвание Рюрика"],
+      "date": { "display": "862", "start": 862, "end": 862 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Северные племена призвали на княжение варяга Рюрика.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "Рюрик сел княжить в Новгороде", "group": null },
+        { "id": 2, "type": "person", "text": "Синеус княжил в Белоозере, Трувор — в Изборске", "group": null },
+        { "id": 3, "type": "cause", "text": "причина: племена хотели прекратить усобицы", "group": null },
+        { "id": 4, "type": "cause", "text": "причина: нейтральному вождю легче найти компромисс", "group": null },
+        { "id": 5, "type": "detail", "text": "рассказ об этом есть в «Повести временных лет»", "group": null }
+      ],
+      "reigns": ["reign-rurik"]
+    },
+    {
+      "id": "oleg-882",
+      "title": "Объединение Новгорода и Киева",
+      "other_names": [],
+      "date": { "display": "882", "start": 882, "end": 882 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Олег Вещий захватил Киев и объединил два центра восточных славян.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "Олег Вещий правил вместо малолетнего Игоря", "group": null },
+        { "id": 2, "type": "detail", "text": "по приказу князя убиты Аскольд и Дир", "group": null },
+        { "id": 3, "type": "result", "text": "столица перенесена в Киев", "group": null },
+        { "id": 4, "type": "result", "text": "установлен контроль над путём «из варяг в греки»", "group": null },
+        { "id": 5, "type": "result", "text": "образовалось Древнерусское государство", "group": null }
+      ],
+      "reigns": ["reign-oleg"]
+    },
+    {
+      "id": "olga-945",
+      "title": "Гибель Игоря и реформа Ольги",
+      "other_names": ["Восстание древлян"],
+      "date": { "display": "945", "start": 945, "end": 945 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Древляне убили князя Игоря, Ольга упорядочила сбор дани.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "cause", "text": "причина восстания: князь решил собрать дань повторно", "group": null },
+        { "id": 2, "type": "person", "text": "князь Игорь убит древлянами", "group": null },
+        { "id": 3, "type": "result", "text": "введены уроки — размер дани", "group": null },
+        { "id": 4, "type": "result", "text": "введены погосты — места сбора дани", "group": null },
+        { "id": 5, "type": "result", "text": "полюдье сменилось повозом", "group": null }
+      ],
+      "reigns": ["reign-igor", "reign-olga"]
+    },
+    {
+      "id": "kreshchenie-988",
+      "title": "Крещение Руси",
+      "other_names": [],
+      "date": { "display": "988", "start": 988, "end": 988 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Владимир Святославич принял христианство и крестил Русь.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "Владимир Святославич крестился в Херсонесе (Корсуни)", "group": null },
+        { "id": 2, "type": "detail", "text": "принято христианство византийского образца", "group": null },
+        { "id": 3, "type": "detail", "text": "до этого не удалась языческая реформа с Перуном во главе пантеона", "group": null },
+        { "id": 4, "type": "result", "text": "развивались грамотность и культура", "group": null },
+        { "id": 5, "type": "result", "text": "укрепились связи с Византией", "group": null }
+      ],
+      "reigns": ["reign-vladimir"]
+    },
+    {
+      "id": "russkaya-pravda-1016",
+      "title": "«Русская Правда» Ярослава Мудрого",
+      "other_names": ["Русская Правда", "Правда Ярослава"],
+      "date": { "display": "1016", "start": 1016, "end": 1016 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Первый письменный свод законов Руси.",
+      "parent": null,
+      "confusable_with": ["sudebnik-1497"],
+      "pair_notes": {"sudebnik-1497": "Русская Правда — первый письменный свод законов Руси; Судебник Ивана III — первый свод законов единого государства, ввёл Юрьев день"},
+      "facts": [
+        { "id": 1, "type": "person", "text": "принята при Ярославе Мудром", "group": null },
+        { "id": 2, "type": "detail", "text": "мстить за убийство могли только ближайшие родственники", "group": null },
+        { "id": 3, "type": "detail", "text": "введён штраф за убийство — вира", "group": null },
+        { "id": 4, "type": "detail", "text": "размер штрафа зависел от знатности убитого", "group": null }
+      ],
+      "reigns": []
+    },
+    {
+      "id": "lyubech-1097",
+      "title": "Любечский съезд",
+      "other_names": [],
+      "date": { "display": "1097", "start": 1097, "end": 1097 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Съезд князей в Любече: каждый князь сохранял за собой земли своего отца — отчину.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "съезд созвал Владимир Мономах", "group": null },
+        { "id": 2, "type": "detail", "text": "решение: «каждый держит отчину свою»", "group": null },
+        { "id": 3, "type": "result", "text": "княжества стали наследственными владениями князей", "group": null, "src": "extra" },
+        { "id": 4, "type": "cause", "text": "причина: усобицы потомков Ярослава Мудрого", "group": null },
+        { "id": 5, "type": "detail", "text": "до этого Олег Святославич воевал со Святополком и Мономахом", "group": null },
+        { "id": 6, "type": "result", "text": "князья договорились вместе бороться с половцами", "group": null, "src": "extra" }
+      ],
+      "reigns": []
+    },
+    {
+      "id": "razdroblennost-1132",
+      "title": "Начало раздробленности",
+      "other_names": ["Начало политической раздробленности"],
+      "date": { "display": "1132", "start": 1132, "end": 1132 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "После смерти Мстислава Великого Русь распалась на самостоятельные княжества.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "умер Мстислав Великий, сын Мономаха", "group": null },
+        { "id": 2, "type": "cause", "text": "причина: господство натурального хозяйства", "group": null },
+        { "id": 3, "type": "cause", "text": "причина: упало значение пути «из варяг в греки»", "group": null },
+        { "id": 4, "type": "cause", "text": "причина: сложились местные княжеские династии", "group": null },
+        { "id": 5, "type": "result", "text": "летописи велись в 14 городах", "group": null },
+        { "id": 6, "type": "result", "text": "ослабла обороноспособность Руси", "group": null }
+      ],
+      "reigns": ["reign-mstislav", "reign-dolgoruky"]
+    },
+    {
+      "id": "novgorod-1136",
+      "title": "Новгородская республика",
+      "other_names": ["Установление республики в Новгороде"],
+      "date": { "display": "1136", "start": 1136, "end": 1136 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Новгородцы изгнали князя, и город стал республикой.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "изгнан князь Всеволод Мстиславич", "group": null },
+        { "id": 2, "type": "detail", "text": "высшая власть — у веча", "group": null },
+        { "id": 3, "type": "detail", "text": "правили посадник, тысяцкий и епископ", "group": null },
+        { "id": 4, "type": "detail", "text": "князя приглашали как военного руководителя", "group": null },
+        { "id": 5, "type": "cause", "text": "причина независимости: Новгород далеко от Киева", "group": null },
+        { "id": 6, "type": "cause", "text": "причина независимости: богатая торговля", "group": null },
+        { "id": 7, "type": "cause", "text": "причина независимости: набеги кочевников не угрожали", "group": null }
+      ],
+      "reigns": ["reign-dolgoruky"]
+    },
+    {
+      "id": "moskva-1147",
+      "title": "Первое упоминание Москвы",
+      "other_names": [],
+      "date": { "display": "1147", "start": 1147, "end": 1147 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Летопись впервые называет Москву.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "князь — Юрий Долгорукий", "group": null },
+        { "id": 2, "type": "person", "text": "князь — шестой сын Владимира Мономаха", "group": null },
+        { "id": 3, "type": "detail", "text": "Москва — в Ростово-Суздальском княжестве", "group": null },
+        { "id": 4, "type": "detail", "text": "князь строил города: Кострому, Дмитров", "group": null },
+        { "id": 5, "type": "detail", "text": "«Приди ко мне, брате, в Москов» — приглашение Святославу Ольговичу", "group": null, "src": "extra" }
+      ],
+      "reigns": ["reign-dolgoruky"]
+    },
+    {
+      "id": "igor-1185",
+      "title": "Поход Игоря и «Слово о полку Игореве»",
+      "other_names": ["Поход Игоря Святославича"],
+      "date": { "display": "1185", "start": 1185, "end": 1185 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Неудачный поход на половцев, воспетый в «Слове о полку Игореве».",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "князь Новгорода-Северского Игорь Святославич", "group": null },
+        { "id": 2, "type": "detail", "text": "поход против половцев", "group": null },
+        { "id": 3, "type": "cause", "text": "причина неудачи: князь пошёл без подмоги", "group": null },
+        { "id": 4, "type": "result", "text": "князь попал в плен", "group": null },
+        { "id": 5, "type": "result", "text": "в «Слове» — призыв князей к единству", "group": null }
+      ],
+      "reigns": ["reign-vsevolod"]
+    },
+    {
+      "id": "kalka-1223",
+      "title": "Битва на реке Калке",
+      "other_names": ["Битва на Калке"],
+      "date": { "display": "1223", "start": 1223, "end": 1223 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Первое столкновение русских князей с монголами — поражение.",
+      "parent": null,
+      "confusable_with": ["batyi-1237"],
+      "pair_notes": {"batyi-1237": "Калка — первая встреча с монголами, одно сражение; Батый — завоевание Руси и начало зависимости от Орды"},
+      "facts": [
+        { "id": 1, "type": "person", "text": "монголами командовали Джэбэ и Субэдэй", "group": null },
+        { "id": 2, "type": "person", "text": "русскими — Мстислав Киевский, Удалой и Черниговский", "group": null },
+        { "id": 3, "type": "detail", "text": "союзники — половцы хана Котяна", "group": null },
+        { "id": 4, "type": "cause", "text": "причина поражения: бегство половцев с поля боя", "group": null },
+        { "id": 5, "type": "cause", "text": "причина поражения: несогласованность действий князей", "group": "rus-princes-disunity" }
+      ],
+      "reigns": []
+    },
+    {
+      "id": "batyi-1237",
+      "title": "Нашествие Батыя",
+      "other_names": ["Монгольское нашествие", "Батыево нашествие"],
+      "date": { "display": "1237–1240", "start": 1237, "end": 1240 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Два похода хана Батыя разорили северо-восточную и южную Русь.",
+      "parent": null,
+      "confusable_with": ["kalka-1223"],
+      "pair_notes": {"kalka-1223": "Калка — первая встреча с монголами, одно сражение; Батый — завоевание Руси и начало зависимости от Орды"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "первой пала Рязань, отличился Евпатий Коловрат", "group": null },
+        { "id": 2, "type": "detail", "text": "Козельск прозван «злым городом»", "group": null },
+        { "id": 3, "type": "detail", "text": "битва на реке Сить", "group": null },
+        { "id": 4, "type": "detail", "text": "Новгород не был тронут", "group": null },
+        { "id": 5, "type": "result", "text": "пал Киев", "group": null },
+        { "id": 6, "type": "cause", "text": "причина поражения Руси: разобщённость князей", "group": "rus-princes-disunity" }
+      ],
+      "reigns": []
+    },
+    {
+      "id": "neva-1240",
+      "title": "Невская битва",
+      "other_names": [],
+      "date": { "display": "15 июля 1240", "start": 1240, "end": 1240 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Победа новгородского князя Александра над шведами.",
+      "parent": null,
+      "confusable_with": ["led-1242"],
+      "pair_notes": {"led-1242": "Невская — шведы на Неве; Ледовое побоище — ливонские рыцари на Чудском озере, двумя годами позже"},
+      "facts": [
+        { "id": 1, "type": "person", "text": "князь Александр получил прозвище «Невский»", "group": null },
+        { "id": 2, "type": "person", "text": "противник — шведы во главе с Биргером", "group": null },
+        { "id": 3, "type": "detail", "text": "сражение у устья Ижоры, на берегу Невы", "group": null },
+        { "id": 4, "type": "detail", "text": "князь не стал дожидаться подмоги", "group": null }
+      ],
+      "reigns": []
+    },
+    {
+      "id": "led-1242",
+      "title": "Ледовое побоище",
+      "other_names": ["Битва на Чудском озере"],
+      "date": { "display": "5 апреля 1242", "start": 1242, "end": 1242 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Разгром ливонских рыцарей войском Александра Невского.",
+      "parent": null,
+      "confusable_with": ["neva-1240"],
+      "pair_notes": {"neva-1240": "Невская — шведы на Неве; Ледовое побоище — ливонские рыцари на Чудском озере, двумя годами позже"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "место — Чудское озеро", "group": null },
+        { "id": 2, "type": "person", "text": "противник — Ливонский орден", "group": null },
+        { "id": 3, "type": "detail", "text": "рыцари построились клином — «свиньёй»", "group": null },
+        { "id": 4, "type": "detail", "text": "перед этим ливонцы захватили Изборск и Псков", "group": null },
+        { "id": 5, "type": "cause", "text": "цель рыцарей: обратить Русь в католичество", "group": null }
+      ],
+      "reigns": []
+    },
+    {
+      "id": "kafedra-1325",
+      "title": "Перенос митрополичьей кафедры в Москву",
+      "other_names": [],
+      "date": { "display": "1325", "start": 1325, "end": 1325 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Митрополит Пётр перенёс свою кафедру в Москву.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "митрополит Пётр поддерживал Москву", "group": null },
+        { "id": 2, "type": "person", "text": "московский князь — Иван Калита", "group": null },
+        { "id": 3, "type": "cause", "text": "причина: конфликт митрополита с тверским князем", "group": null },
+        { "id": 4, "type": "cause", "text": "причина: Москва боролась с Тверью за первенство", "group": null },
+        { "id": 5, "type": "result", "text": "вырос авторитет Москвы", "group": "moscow-authority" },
+        { "id": 6, "type": "result", "text": "в Москву потянулось население", "group": null }
+      ],
+      "reigns": ["reign-yuri-danilovich", "reign-kalita"]
+    },
+    {
+      "id": "kulikovo-1380",
+      "title": "Куликовская битва",
+      "other_names": ["Мамаево побоище"],
+      "date": { "display": "1380", "start": 1380, "end": 1380 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Первая крупная победа русских войск над Ордой.",
+      "parent": null,
+      "confusable_with": ["ugra-1480"],
+      "pair_notes": {"ugra-1480": "Куликовская — первая крупная победа, но зависимость осталась; на Угре битвы не было, а зависимость закончилась"},
+      "facts": [
+        { "id": 1, "type": "person", "text": "князь Дмитрий получил прозвище «Донской»", "group": null },
+        { "id": 2, "type": "person", "text": "противник — темник Мамай", "group": null },
+        { "id": 3, "type": "detail", "text": "засадный полк Владимира Серпуховского и Дмитрия Боброка", "group": null },
+        { "id": 4, "type": "detail", "text": "поединок Пересвета и Челубея", "group": null },
+        { "id": 5, "type": "detail", "text": "войско благословил Сергий Радонежский", "group": null },
+        { "id": 6, "type": "result", "text": "победа не избавила Русь от зависимости", "group": null },
+        { "id": 7, "type": "result", "text": "вырос авторитет Москвы", "group": "moscow-authority" }
+      ],
+      "reigns": ["reign-donskoy"]
+    },
+    {
+      "id": "novgorod-1478",
+      "title": "Присоединение Новгорода",
+      "other_names": ["Присоединение Новгорода к Москве"],
+      "date": { "display": "1478", "start": 1478, "end": 1478 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Иван III подчинил Новгород и ликвидировал республику.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "государь — Иван III", "group": "ivan-iii" },
+        { "id": 2, "type": "cause", "text": "причина: Новгород стремился перейти к Литве", "group": null },
+        { "id": 3, "type": "detail", "text": "до этого новгородцы разбиты на реке Шелони", "group": null },
+        { "id": 4, "type": "result", "text": "ликвидировано вече", "group": null },
+        { "id": 5, "type": "result", "text": "усложнилась торговля с Ганзой", "group": null },
+        { "id": 6, "type": "result", "text": "знать обязана служить московскому государю", "group": null }
+      ],
+      "reigns": ["reign-ivan3"]
+    },
+    {
+      "id": "ugra-1480",
+      "title": "Стояние на реке Угре",
+      "other_names": ["Стояние на Угре"],
+      "date": { "display": "1480", "start": 1480, "end": 1480 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Противостояние войск Ивана III и хана Ахмата, после которого Русь вышла из-под власти Орды.",
+      "parent": null,
+      "confusable_with": ["kulikovo-1380"],
+      "pair_notes": {"kulikovo-1380": "Куликовская — первая крупная победа, но зависимость осталась; на Угре битвы не было, а зависимость закончилась"},
+      "facts": [
+        { "id": 1, "type": "person", "text": "государь — Иван III", "group": "ivan-iii" },
+        { "id": 2, "type": "person", "text": "противник — хан Ахмат", "group": null },
+        { "id": 3, "type": "detail", "text": "союзник хана — Казимир IV, но войско Литвы не пришло", "group": null },
+        { "id": 4, "type": "detail", "text": "союзник Москвы — крымский хан", "group": null },
+        { "id": 5, "type": "detail", "text": "войска стояли на разных берегах реки", "group": null },
+        { "id": 6, "type": "result", "text": "конец ордынской зависимости", "group": null, "src": "extra" }
+      ],
+      "reigns": ["reign-ivan3"]
+    },
+    {
+      "id": "sudebnik-1497",
+      "title": "Судебник Ивана III",
+      "other_names": ["Судебник 1497 года"],
+      "date": { "display": "1497", "start": 1497, "end": 1497 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Первый свод законов единого Российского государства.",
+      "parent": null,
+      "confusable_with": ["sudebnik-1550", "russkaya-pravda-1016"],
+      "pair_notes": {"russkaya-pravda-1016": "Русская Правда — первый письменный свод законов Руси; Судебник Ивана III — первый свод законов единого государства, ввёл Юрьев день", "sudebnik-1550": "Судебник Ивана III ввёл Юрьев день и пожилое; Судебник Ивана IV увеличил пожилое и ввёл наказание за взятки"},
+      "facts": [
+        { "id": 1, "type": "person", "text": "государь — Иван III", "group": "ivan-iii" },
+        { "id": 2, "type": "detail", "text": "крестьянские переходы ограничены Юрьевым днём", "group": null },
+        { "id": 3, "type": "detail", "text": "за уход крестьянин платил «пожилое»", "group": null },
+        { "id": 4, "type": "cause", "text": "причина: Русская Правда устарела", "group": null },
+        { "id": 5, "type": "cause", "text": "причина: сложилось единое государство", "group": null }
+      ],
+      "reigns": ["reign-ivan3"]
+    },
+    {
+      "id": "venchanie-1547",
+      "title": "Венчание Ивана IV на царство",
+      "other_names": ["Венчание на царство"],
+      "date": { "display": "16 января 1547", "start": 1547, "end": 1547 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Иван IV первым из московских государей принял титул царя.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "обряд прошёл в Успенском соборе", "group": null },
+        { "id": 2, "type": "person", "text": "по совету митрополита Макария", "group": null },
+        { "id": 3, "type": "detail", "text": "титул царя равен императорскому", "group": null },
+        { "id": 4, "type": "detail", "text": "идея «Москва — Третий Рим»", "group": null },
+        { "id": 5, "type": "detail", "text": "прежде царями на Руси называли ханов", "group": null }
+      ],
+      "reigns": ["reign-ivan4"]
+    },
+    {
+      "id": "sudebnik-1550",
+      "title": "Судебник Ивана IV и стрельцы",
+      "other_names": ["Судебник 1550 года"],
+      "date": { "display": "1550", "start": 1550, "end": 1550 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Новый свод законов и военная реформа Избранной рады.",
+      "parent": null,
+      "confusable_with": ["sudebnik-1497", "ulozhenie-1649"],
+      "pair_notes": {"sudebnik-1497": "Судебник Ивана III ввёл Юрьев день и пожилое; Судебник Ивана IV увеличил пожилое и ввёл наказание за взятки", "ulozhenie-1649": "Судебник Ивана IV сохранял Юрьев день; Соборное уложение отменило переходы — бессрочный сыск беглых"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "составить его решил Земский собор", "group": null },
+        { "id": 2, "type": "person", "text": "реформы вёл Алексей Адашев", "group": null },
+        { "id": 3, "type": "detail", "text": "введено наказание за взятки", "group": null },
+        { "id": 4, "type": "detail", "text": "размер пожилого увеличен", "group": null },
+        { "id": 5, "type": "detail", "text": "созданы полки с огнестрельным оружием", "group": null },
+        { "id": 6, "type": "detail", "text": "местничество ограничено в армии", "group": null },
+        { "id": 7, "type": "detail", "text": "утверждён Стоглавым собором", "group": null }
+      ],
+      "reigns": ["reign-ivan4"]
+    },
+    {
+      "id": "kazan-1552",
+      "title": "Взятие Казани",
+      "other_names": ["Присоединение Казани"],
+      "date": { "display": "1552", "start": 1552, "end": 1552 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Войско Ивана IV взяло Казань, ханство вошло в состав России.",
+      "parent": null,
+      "confusable_with": ["astrakhan-1556"],
+      "pair_notes": {"astrakhan-1556": "Казань взяли штурмом, в честь победы — храм Василия Блаженного; Астрахань сдалась через четыре года"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "опорой стала крепость Свияжск", "group": null },
+        { "id": 2, "type": "person", "text": "в походе — Андрей Курбский и Владимир Старицкий", "group": null },
+        { "id": 3, "type": "detail", "text": "сдался хан Едигер", "group": null },
+        { "id": 4, "type": "result", "text": "в честь победы построен храм Василия Блаженного", "group": null }
+      ],
+      "reigns": ["reign-ivan4"]
+    },
+    {
+      "id": "astrakhan-1556",
+      "title": "Присоединение Астрахани",
+      "other_names": ["Взятие Астрахани"],
+      "date": { "display": "1556", "start": 1556, "end": 1556 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Астраханское ханство вошло в состав России.",
+      "parent": null,
+      "confusable_with": ["kazan-1552"],
+      "pair_notes": {"kazan-1552": "Казань взяли штурмом, в честь победы — храм Василия Блаженного; Астрахань сдалась через четыре года"},
+      "facts": [
+        { "id": 1, "type": "person", "text": "ставленник Москвы Дервиш-Али изгнал русских", "group": null },
+        { "id": 2, "type": "detail", "text": "город сдался", "group": null },
+        { "id": 3, "type": "result", "text": "открылась торговля по Каспийскому морю", "group": null },
+        { "id": 4, "type": "result", "text": "недовольство Османской империи", "group": null }
+      ],
+      "reigns": ["reign-ivan4"]
+    },
+    {
+      "id": "livonia-1558",
+      "title": "Ливонская война",
+      "other_names": [],
+      "date": { "display": "1558–1583", "start": 1558, "end": 1583 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Неудачная война Ивана IV за выход к Балтике.",
+      "parent": null,
+      "confusable_with": ["northern-war-1700"],
+      "pair_notes": {"northern-war-1700": "Ливонская — Иван IV, поражение; Северная — Пётр I, победа и выход к Балтике"},
+      "facts": [
+        { "id": 1, "type": "cause", "text": "цель: выход к Балтийскому морю", "group": "baltic" },
+        { "id": 2, "type": "cause", "text": "повод: орден не платил дань за Юрьев", "group": null },
+        { "id": 3, "type": "detail", "text": "против России — Литва, Польша и Швеция", "group": null },
+        { "id": 4, "type": "detail", "text": "Стефан Баторий осаждал Псков", "group": null },
+        { "id": 5, "type": "result", "text": "Ям-Запольское перемирие с Речью Посполитой", "group": null },
+        { "id": 6, "type": "result", "text": "Плюсское перемирие со Швецией", "group": null }
+      ],
+      "reigns": ["reign-ivan4"]
+    },
+    {
+      "id": "pechat-1564",
+      "title": "Первая печатная книга",
+      "other_names": ["Апостол"],
+      "date": { "display": "1564", "start": 1564, "end": 1564 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Иван Фёдоров выпустил «Апостол» — начало книгопечатания в России.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "первопечатник — Иван Фёдоров", "group": null, "src": "extra" },
+        { "id": 2, "type": "person", "text": "помощник — Пётр Мстиславец", "group": null, "src": "extra" },
+        { "id": 3, "type": "detail", "text": "книга называлась «Апостол»", "group": null, "src": "extra" },
+        { "id": 4, "type": "detail", "text": "напечатана на Печатном дворе в Москве", "group": null, "src": "extra" }
+      ],
+      "reigns": ["reign-ivan4"]
+    },
+    {
+      "id": "oprichnina-1565",
+      "title": "Опричнина",
+      "other_names": [],
+      "date": { "display": "1565–1572", "start": 1565, "end": 1572 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Политика террора Ивана IV против бояр и всех, кого он подозревал в измене.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "страна разделена на опричнину и земщину", "group": null },
+        { "id": 2, "type": "detail", "text": "столица опричнины — Александровская слобода", "group": null },
+        { "id": 3, "type": "person", "text": "глава опричников — Малюта Скуратов", "group": null },
+        { "id": 4, "type": "detail", "text": "убит митрополит Филипп", "group": null },
+        { "id": 5, "type": "detail", "text": "разграблен Новгород", "group": null },
+        { "id": 6, "type": "cause", "text": "причина: стремление ограничить боярские привилегии", "group": null }
+      ],
+      "reigns": ["reign-ivan4"]
+    },
+    {
+      "id": "ermak-1581",
+      "title": "Поход Ермака в Сибирь",
+      "other_names": ["Поход Ермака"],
+      "date": { "display": "1581–1585", "start": 1581, "end": 1585 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Казаки Ермака разбили Сибирское ханство — начало освоения Сибири.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "поход снарядили купцы Строгановы", "group": null },
+        { "id": 2, "type": "person", "text": "противник — хан Кучум", "group": null },
+        { "id": 3, "type": "detail", "text": "отряд казаков перешёл Урал", "group": null, "src": "extra" },
+        { "id": 4, "type": "result", "text": "в итоге отряд был разбит", "group": null }
+      ],
+      "reigns": ["reign-ivan4"]
+    },
+    {
+      "id": "patriarch-1589",
+      "title": "Учреждение патриаршества",
+      "other_names": [],
+      "date": { "display": "1589", "start": 1589, "end": 1589 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Русская церковь получила своего патриарха.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "первый патриарх — Иов", "group": null },
+        { "id": 2, "type": "result", "text": "Русская церковь стала независимой", "group": null },
+        { "id": 3, "type": "person", "text": "царь — Фёдор Иоаннович", "group": null },
+        { "id": 4, "type": "person", "text": "страной фактически управлял Борис Годунов", "group": "godunov" }
+      ],
+      "reigns": ["reign-fedor-ioannovich"]
+    },
+    {
+      "id": "rurikovichi-1598",
+      "title": "Пресечение династии Рюриковичей",
+      "other_names": [],
+      "date": { "display": "1598", "start": 1598, "end": 1598 },
+      "era": 3,
+      "level": 1,
+      "image": null,
+      "summary": "Умер бездетный царь Фёдор Иоаннович, последний Рюрикович на престоле.",
+      "parent": "smuta-1598",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "умер царь Фёдор Иоаннович", "group": null },
+        { "id": 2, "type": "detail", "text": "ранее в Угличе погиб царевич Дмитрий", "group": null },
+        { "id": 3, "type": "result", "text": "Земский собор избрал царём Бориса Годунова", "group": "godunov" },
+        { "id": 4, "type": "detail", "text": "сестра Годунова была женой царя", "group": null }
+      ],
+      "reigns": ["reign-fedor-ioannovich", "reign-godunov"]
+    },
+    {
+      "id": "smuta-1598",
+      "title": "Смутное время",
+      "other_names": ["Смута"],
+      "date": { "display": "1598–1613", "start": 1598, "end": 1613 },
+      "era": 3,
+      "level": 1,
+      "image": null,
+      "summary": "Глубокий кризис государства: самозванцы, восстания и интервенция.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "самозванец Лжедмитрий I — Григорий Отрепьев", "group": null },
+        { "id": 2, "type": "person", "text": "Василий Шуйский избран на Земском соборе", "group": null },
+        { "id": 3, "type": "detail", "text": "Семибоярщина свергла Шуйского", "group": null },
+        { "id": 4, "type": "detail", "text": "появился Лжедмитрий II", "group": null },
+        { "id": 5, "type": "cause", "text": "причина: голод после трёх неурожайных лет", "group": null },
+        { "id": 6, "type": "cause", "text": "причина: иностранная интервенция", "group": null }
+      ],
+      "reigns": ["reign-fedor-ioannovich", "reign-godunov"]
+    },
+    {
+      "id": "moskva-1612",
+      "title": "Освобождение Москвы",
+      "other_names": ["Освобождение Москвы от поляков"],
+      "date": { "display": "1612", "start": 1612, "end": 1612 },
+      "era": 3,
+      "level": 1,
+      "image": null,
+      "summary": "Второе ополчение освободило Москву от польского гарнизона.",
+      "parent": "smuta-1598",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "ополчение вели Кузьма Минин и Дмитрий Пожарский", "group": null },
+        { "id": 2, "type": "detail", "text": "ополчение собралось в Нижнем Новгороде", "group": null },
+        { "id": 3, "type": "detail", "text": "был введён военный налог", "group": null },
+        { "id": 4, "type": "person", "text": "на помощь полякам шёл гетман Ходкевич", "group": null },
+        { "id": 5, "type": "result", "text": "сдался польский гарнизон в Кремле", "group": null }
+      ],
+      "reigns": ["reign-semiboyarshchina"]
+    },
+    {
+      "id": "romanov-1613",
+      "title": "Избрание Михаила Романова",
+      "other_names": ["Избрание Михаила Фёдоровича"],
+      "date": { "display": "1613", "start": 1613, "end": 1613 },
+      "era": 3,
+      "level": 1,
+      "image": null,
+      "summary": "Земский собор избрал царём Михаила Романова — начало новой династии.",
+      "parent": "smuta-1598",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "царя избрал Земский собор", "group": null },
+        { "id": 2, "type": "cause", "text": "почему избран: поддержка казаков, он сын Филарета", "group": null },
+        { "id": 3, "type": "cause", "text": "почему избран: юный царь казался удобным боярам", "group": null },
+        { "id": 4, "type": "cause", "text": "почему избран: двоюродный племянник Фёдора Иоанновича", "group": null },
+        { "id": 5, "type": "cause", "text": "почему избран: семья не запятнала себя в Смуту", "group": null }
+      ],
+      "reigns": ["reign-mikhail"]
+    },
+    {
+      "id": "ulozhenie-1649",
+      "title": "Соборное уложение",
+      "other_names": [],
+      "date": { "display": "1649", "start": 1649, "end": 1649 },
+      "era": 3,
+      "level": 1,
+      "image": null,
+      "summary": "Свод законов Алексея Михайловича, окончательно закрепостивший крестьян.",
+      "parent": null,
+      "confusable_with": ["sudebnik-1550"],
+      "pair_notes": {"sudebnik-1550": "Судебник Ивана IV сохранял Юрьев день; Соборное уложение отменило переходы — бессрочный сыск беглых"},
+      "facts": [
+        { "id": 1, "type": "person", "text": "царь — Алексей Михайлович", "group": null },
+        { "id": 2, "type": "detail", "text": "до этого — Соляной бунт", "group": null },
+        { "id": 3, "type": "detail", "text": "бессрочный сыск беглых крестьян", "group": null },
+        { "id": 4, "type": "detail", "text": "введено понятие «государственное преступление»", "group": null },
+        { "id": 5, "type": "detail", "text": "ликвидированы белые слободы", "group": null },
+        { "id": 6, "type": "result", "text": "окончательно оформлено крепостное право", "group": null }
+      ],
+      "reigns": ["reign-alexey"]
+    },
+    {
+      "id": "pereyaslav-1654",
+      "title": "Переяславская рада",
+      "other_names": [],
+      "date": { "display": "1654", "start": 1654, "end": 1654 },
+      "era": 3,
+      "level": 1,
+      "image": null,
+      "summary": "Рада утвердила вхождение Войска Запорожского в состав России.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "гетман — Богдан Хмельницкий", "group": null },
+        { "id": 2, "type": "detail", "text": "до этого Земский собор принял казаков", "group": null },
+        { "id": 3, "type": "cause", "text": "причина: религиозный гнёт со стороны поляков", "group": null },
+        { "id": 4, "type": "result", "text": "началась русско-польская война", "group": null }
+      ],
+      "reigns": ["reign-alexey"]
+    },
+    {
+      "id": "razin-1670",
+      "title": "Восстание Степана Разина",
+      "other_names": ["Восстание Разина"],
+      "date": { "display": "1670–1671", "start": 1670, "end": 1671 },
+      "era": 3,
+      "level": 1,
+      "image": null,
+      "summary": "Крупнейшее народное восстание «бунташного века».",
+      "parent": null,
+      "confusable_with": ["pugachev-1773"],
+      "pair_notes": {"pugachev-1773": "Разин — XVII век, Алексей Михайлович; Пугачёв — XVIII век, Екатерина II, выдавал себя за Петра III"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "ему предшествовал «поход за зипунами»", "group": null },
+        { "id": 2, "type": "detail", "text": "вожак рассылал «прелестные письма»", "group": null },
+        { "id": 3, "type": "detail", "text": "взяты Царицын, Астрахань, Саратов, Самара", "group": null },
+        { "id": 4, "type": "detail", "text": "поражение под Симбирском", "group": null },
+        { "id": 5, "type": "result", "text": "домовитые казаки выдали вожака властям", "group": null },
+        { "id": 6, "type": "cause", "text": "причина: власть ограничивала казачью вольницу", "group": "cossack-freedom" }
+      ],
+      "reigns": ["reign-alexey"]
+    },
+    {
+      "id": "peter-1689",
+      "title": "Начало единоличного правления Петра I",
+      "other_names": ["Свержение Софьи"],
+      "date": { "display": "1689", "start": 1689, "end": 1689 },
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "Пётр I отстранил от власти царевну Софью, правившую при малолетних братьях Иване и Петре.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "до этого Шакловитый советовал Софье убить Петра", "group": null },
+        { "id": 2, "type": "detail", "text": "Пётр собирал войска в Троице-Сергиевом монастыре", "group": null },
+        { "id": 3, "type": "person", "text": "патриарх Иоаким принял сторону Петра", "group": null },
+        { "id": 4, "type": "result", "text": "Софью заточили в Новодевичий монастырь", "group": null }
+      ],
+      "reigns": ["reign-sofia", "reign-ivan5", "reign-peter1"]
+    },
+    {
+      "id": "northern-war-1700",
+      "title": "Северная война",
+      "other_names": [],
+      "date": { "display": "1700–1721", "start": 1700, "end": 1721 },
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "Война Петра I со Швецией за выход к Балтийскому морю.",
+      "parent": null,
+      "confusable_with": ["livonia-1558"],
+      "pair_notes": {"livonia-1558": "Ливонская — Иван IV, поражение; Северная — Пётр I, победа и выход к Балтике"},
+      "facts": [
+        { "id": 1, "type": "cause", "text": "цель: выход к Балтийскому морю", "group": "baltic" },
+        { "id": 2, "type": "detail", "text": "Северный союз: Россия, Саксония, Дания", "group": null },
+        { "id": 3, "type": "detail", "text": "в начале — поражение под Нарвой", "group": null },
+        { "id": 4, "type": "detail", "text": "победа флота при Гангуте", "group": null },
+        { "id": 5, "type": "result", "text": "заключён Ништадтский мир", "group": "nystad" }
+      ],
+      "reigns": ["reign-peter1"]
+    },
+    {
+      "id": "spb-1703",
+      "title": "Основание Санкт-Петербурга",
+      "other_names": ["Основание Петербурга"],
+      "date": { "display": "16 мая 1703", "start": 1703, "end": 1703 },
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "Пётр I заложил новый город на отвоёванных у шведов землях.",
+      "parent": "northern-war-1700",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "незадолго до этого взят Орешек (Шлиссельбург)", "group": null },
+        { "id": 2, "type": "result", "text": "позже город стал столицей", "group": null },
+        { "id": 3, "type": "detail", "text": "город заложен в устье Невы", "group": null, "src": "extra" }
+      ],
+      "reigns": ["reign-peter1"]
+    },
+    {
+      "id": "poltava-1709",
+      "title": "Полтавская битва",
+      "other_names": ["Полтавское сражение"],
+      "date": { "display": "27 июня 1709", "start": 1709, "end": 1709 },
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "Генеральное сражение Северной войны, после которого перевес перешёл к России.",
+      "parent": "northern-war-1700",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "Карл XII бежал в Турцию", "group": null },
+        { "id": 2, "type": "detail", "text": "накануне — битва у деревни Лесной", "group": null },
+        { "id": 3, "type": "person", "text": "на сторону шведов перешёл гетман Мазепа", "group": null },
+        { "id": 4, "type": "result", "text": "перелом в Северной войне", "group": null },
+        { "id": 5, "type": "result", "text": "Швеция лишилась сухопутной армии", "group": null }
+      ],
+      "reigns": ["reign-peter1"]
+    },
+    {
+      "id": "empire-1721",
+      "title": "Провозглашение Российской империи",
+      "other_names": [],
+      "date": { "display": "1721", "start": 1721, "end": 1721 },
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "После победы над Швецией Россия стала империей.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "Пётр I принял титул императора", "group": null, "src": "extra" },
+        { "id": 2, "type": "detail", "text": "до этого — Ништадтский мир", "group": "nystad" },
+        { "id": 3, "type": "detail", "text": "Россия получила Лифляндию, Эстляндию, Ингерманландию", "group": null },
+        { "id": 4, "type": "detail", "text": "Финляндия осталась у Швеции", "group": null }
+      ],
+      "reigns": ["reign-peter1"]
+    },
+    {
+      "id": "tabel-1722",
+      "title": "Табель о рангах",
+      "other_names": [],
+      "date": { "display": "1722", "start": 1722, "end": 1722 },
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "Закон Петра I о порядке прохождения государственной службы.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "14 чинов", "group": null },
+        { "id": 2, "type": "detail", "text": "на первом месте — личные заслуги", "group": null },
+        { "id": 3, "type": "result", "text": "можно выслужить личное или потомственное дворянство", "group": null }
+      ],
+      "reigns": ["reign-peter1"]
+    },
+    {
+      "id": "mgu-1755",
+      "title": "Основание Московского университета",
+      "other_names": ["Основание МГУ"],
+      "date": { "display": "1755", "start": 1755, "end": 1755 },
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "В Москве открылся университет.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "императрица — Елизавета Петровна", "group": null },
+        { "id": 2, "type": "person", "text": "идею предложил Михаил Ломоносов", "group": null },
+        { "id": 3, "type": "person", "text": "основатель — Иван Шувалов", "group": null }
+      ],
+      "reigns": ["reign-elizabeth"]
+    },
+    {
+      "id": "coup-1762",
+      "title": "Переворот Екатерины II",
+      "other_names": ["Дворцовый переворот 1762 года"],
+      "date": { "display": "1762", "start": 1762, "end": 1762 },
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "Жена Петра III свергла мужа и заняла престол.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "свергнут Пётр III", "group": null },
+        { "id": 2, "type": "detail", "text": "никто не стал защищать императора", "group": null },
+        { "id": 3, "type": "result", "text": "свергнутый император вскоре убит", "group": null },
+        { "id": 4, "type": "detail", "text": "незадолго до этого — Манифест о вольности дворянства", "group": null }
+      ],
+      "reigns": ["reign-peter3", "reign-catherine2"]
+    },
+    {
+      "id": "pugachev-1773",
+      "title": "Восстание Пугачёва",
+      "other_names": ["Пугачёвщина", "Крестьянская война под предводительством Пугачёва"],
+      "date": { "display": "1773–1775", "start": 1773, "end": 1775 },
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "Крупнейшее народное восстание XVIII века.",
+      "parent": null,
+      "confusable_with": ["razin-1670"],
+      "pair_notes": {"razin-1670": "Разин — XVII век, Алексей Михайлович; Пугачёв — XVIII век, Екатерина II, выдавал себя за Петра III"},
+      "facts": [
+        { "id": 1, "type": "cause", "text": "причина: власть ограничивала казачью вольницу", "group": "cossack-freedom" },
+        { "id": 2, "type": "detail", "text": "вожак выдавал себя за Петра III", "group": null },
+        { "id": 3, "type": "person", "text": "башкир возглавил Салават Юлаев", "group": null },
+        { "id": 4, "type": "detail", "text": "началось на реке Яик", "group": null },
+        { "id": 5, "type": "detail", "text": "не удалась осада Оренбурга", "group": null },
+        { "id": 6, "type": "result", "text": "проведена губернская реформа", "group": null }
+      ],
+      "reigns": ["reign-catherine2"]
+    },
+    {
+      "id": "crimea-1783",
+      "title": "Присоединение Крыма",
+      "other_names": ["Присоединение Крыма к России"],
+      "date": { "display": "1783", "start": 1783, "end": 1783 },
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "Крымское ханство вошло в состав России.",
+      "parent": null,
+      "confusable_with": ["crimea-2014"],
+      "pair_notes": {"crimea-2014": "1783 — присоединение Крымского ханства при Екатерине II; 2014 — воссоединение после референдума"},
+      "facts": [
+        { "id": 1, "type": "person", "text": "хан Шагин-Гирей отрёкся от престола", "group": null },
+        { "id": 2, "type": "person", "text": "присоединение готовил Г. А. Потёмкин", "group": null },
+        { "id": 3, "type": "result", "text": "появилась Новороссия", "group": null }
+      ],
+      "reigns": ["reign-catherine2"]
+    },
+    {
+      "id": "gramoty-1785",
+      "title": "Жалованные грамоты",
+      "other_names": ["Жалованные грамоты дворянству и городам"],
+      "date": { "display": "1785", "start": 1785, "end": 1785 },
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "Екатерина II закрепила права дворянства и городов.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "дворяне освобождены от телесных наказаний", "group": null },
+        { "id": 2, "type": "detail", "text": "созданы дворянские собрания", "group": null },
+        { "id": 3, "type": "detail", "text": "дворяне свободны от обязательной службы", "group": null },
+        { "id": 4, "type": "detail", "text": "горожане разделены на 6 разрядов", "group": null },
+        { "id": 5, "type": "detail", "text": "в городах — дума и городской голова", "group": null }
+      ],
+      "reigns": ["reign-catherine2"]
+    },
+    {
+      "id": "pavel-1801",
+      "title": "Убийство Павла I, воцарение Александра I",
+      "other_names": ["Убийство Павла I"],
+      "date": { "display": "11 марта 1801", "start": 1801, "end": 1801 },
+      "era": 5,
+      "level": 1,
+      "image": null,
+      "summary": "Заговорщики убили Павла I, на престол взошёл его сын Александр.",
+      "parent": null,
+      "confusable_with": ["alexander2-1881"],
+      "pair_notes": {"alexander2-1881": "Павла I убили заговорщики-дворяне во дворце; Александра II — народовольцы бомбой"},
+      "facts": [
+        { "id": 1, "type": "person", "text": "заговорщики — Н. П. Панин и П. А. Пален", "group": null },
+        { "id": 2, "type": "detail", "text": "император отказался отречься и был убит", "group": null },
+        { "id": 3, "type": "detail", "text": "новый царь обещал править «по сердцу» Екатерины", "group": null },
+        { "id": 4, "type": "result", "text": "восстановлена жалованная грамота дворянству", "group": null },
+        { "id": 5, "type": "result", "text": "создан Негласный комитет", "group": null }
+      ],
+      "reigns": ["reign-paul", "reign-alexander1"]
+    },
+    {
+      "id": "volnye-1803",
+      "title": "Указ о вольных хлебопашцах",
+      "other_names": [],
+      "date": { "display": "20 февраля 1803", "start": 1803, "end": 1803 },
+      "era": 5,
+      "level": 1,
+      "image": null,
+      "summary": "Помещикам разрешили отпускать крестьян на волю с землёй за выкуп.",
+      "parent": null,
+      "confusable_with": ["serfdom-1861"],
+      "pair_notes": {"serfdom-1861": "Указ о вольных хлебопашцах лишь разрешал помещикам отпускать крестьян; в 1861 году крепостное право отменено для всех"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "помещик мог отпустить крестьян с землёй за выкуп", "group": null },
+        { "id": 2, "type": "detail", "text": "носил рекомендательный характер", "group": null },
+        { "id": 3, "type": "result", "text": "освобождено всего 0,25% крестьян", "group": null },
+        { "id": 4, "type": "cause", "text": "причина: либеральные устремления императора", "group": null }
+      ],
+      "reigns": ["reign-alexander1"]
+    },
+    {
+      "id": "war-1812",
+      "title": "Отечественная война",
+      "other_names": ["Отечественная война 1812 года"],
+      "date": { "display": "1812", "start": 1812, "end": 1812 },
+      "era": 5,
+      "level": 1,
+      "image": null,
+      "summary": "Вторжение Наполеона в Россию и разгром его армии.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "армиями командовали Барклай-де-Толли и Багратион", "group": null },
+        { "id": 2, "type": "person", "text": "главнокомандующим назначен Кутузов", "group": null },
+        { "id": 3, "type": "detail", "text": "Бородинская битва", "group": null },
+        { "id": 4, "type": "detail", "text": "совет в Филях о сдаче Москвы", "group": null },
+        { "id": 5, "type": "detail", "text": "Тарутинский манёвр", "group": null },
+        { "id": 6, "type": "detail", "text": "переправа французов через Березину", "group": null }
+      ],
+      "reigns": ["reign-alexander1"]
+    },
+    {
+      "id": "decembrists-1825",
+      "title": "Восстание декабристов",
+      "other_names": ["Восстание на Сенатской площади"],
+      "date": { "display": "14 декабря 1825", "start": 1825, "end": 1825 },
+      "era": 5,
+      "level": 1,
+      "image": null,
+      "summary": "Попытка дворян-офицеров не дать Николаю I занять престол и изменить строй.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "полки вышли на Сенатскую площадь", "group": null },
+        { "id": 2, "type": "cause", "text": "повод: междуцарствие", "group": null },
+        { "id": 3, "type": "person", "text": "«диктатор» Трубецкой не явился", "group": null },
+        { "id": 4, "type": "person", "text": "Каховский смертельно ранил Милорадовича", "group": null },
+        { "id": 5, "type": "detail", "text": "на юге восстал Черниговский полк", "group": null },
+        { "id": 6, "type": "result", "text": "пятеро руководителей казнены", "group": null }
+      ],
+      "reigns": ["reign-alexander1", "reign-nicholas1"]
+    },
+    {
+      "id": "railway-1837",
+      "title": "Первая железная дорога в России",
+      "other_names": ["Царскосельская железная дорога"],
+      "date": { "display": "30 октября 1837", "start": 1837, "end": 1837 },
+      "era": 5,
+      "level": 1,
+      "image": null,
+      "summary": "Открылась железная дорога от Петербурга до Царского Села.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "соединила Петербург и Царское Село", "group": null },
+        { "id": 2, "type": "person", "text": "среди организаторов — граф А. Бобринский", "group": null },
+        { "id": 3, "type": "detail", "text": "часть промышленного переворота", "group": null },
+        { "id": 4, "type": "result", "text": "позже построена Николаевская дорога в Москву", "group": null }
+      ],
+      "reigns": ["reign-nicholas1"]
+    },
+    {
+      "id": "crimean-war-1853",
+      "title": "Крымская война",
+      "other_names": ["Восточная война"],
+      "date": { "display": "1853–1856", "start": 1853, "end": 1856 },
+      "era": 5,
+      "level": 1,
+      "image": null,
+      "summary": "Война России с Турцией, Англией, Францией и Сардинией, окончившаяся поражением.",
+      "parent": null,
+      "confusable_with": ["rus-tur-1877"],
+      "pair_notes": {"rus-tur-1877": "Крымская — поражение, Парижский мир, запрет флота на Чёрном море; русско-турецкая — победа, Сан-Стефанский мир, освобождение Балкан"},
+      "facts": [
+        { "id": 1, "type": "cause", "text": "повод: спор о святых местах", "group": null },
+        { "id": 2, "type": "detail", "text": "Нахимов победил в Синопском бою", "group": null },
+        { "id": 3, "type": "detail", "text": "оборона Севастополя", "group": null },
+        { "id": 4, "type": "detail", "text": "союзники высадились в Евпатории", "group": null },
+        { "id": 5, "type": "result", "text": "запрет иметь флот на Чёрном море", "group": null },
+        { "id": 6, "type": "result", "text": "заключён Парижский мир", "group": null }
+      ],
+      "reigns": ["reign-nicholas1"]
+    },
+    {
+      "id": "serfdom-1861",
+      "title": "Отмена крепостного права",
+      "other_names": ["Крестьянская реформа"],
+      "date": { "display": "19 февраля 1861", "start": 1861, "end": 1861 },
+      "era": 5,
+      "level": 1,
+      "image": null,
+      "summary": "Манифест Александра II освободил крестьян от крепостной зависимости.",
+      "parent": null,
+      "confusable_with": ["volnye-1803"],
+      "pair_notes": {"volnye-1803": "Указ о вольных хлебопашцах лишь разрешал помещикам отпускать крестьян; в 1861 году крепостное право отменено для всех"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "крестьяне выкупали наделы", "group": null },
+        { "id": 2, "type": "detail", "text": "до выкупа — временнообязанное состояние", "group": null },
+        { "id": 3, "type": "detail", "text": "80% выкупа платило государство", "group": null },
+        { "id": 4, "type": "person", "text": "Н. А. Милютин настаивал на освобождении с землёй", "group": null },
+        { "id": 5, "type": "detail", "text": "споры разбирали мировые посредники", "group": null }
+      ],
+      "reigns": ["reign-alexander2"]
+    },
+    {
+      "id": "reforms-1864",
+      "title": "Земская и судебная реформы",
+      "other_names": ["Земская реформа", "Судебная реформа"],
+      "date": { "display": "1864", "start": 1864, "end": 1864 },
+      "era": 5,
+      "level": 1,
+      "image": null,
+      "summary": "Созданы земства и новый суд.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "земства — выборное местное самоуправление", "group": null },
+        { "id": 2, "type": "detail", "text": "всесословное представительство", "group": null },
+        { "id": 3, "type": "detail", "text": "введён суд присяжных", "group": null },
+        { "id": 4, "type": "detail", "text": "суд стал гласным и состязательным", "group": null },
+        { "id": 5, "type": "detail", "text": "появились присяжные поверенные — адвокаты", "group": null }
+      ],
+      "reigns": ["reign-alexander2"]
+    },
+    {
+      "id": "rus-tur-1877",
+      "title": "Русско-турецкая война",
+      "other_names": ["Русско-турецкая война 1877–1878"],
+      "date": { "display": "1877–1878", "start": 1877, "end": 1878 },
+      "era": 5,
+      "level": 1,
+      "image": null,
+      "summary": "Война за освобождение балканских славян от турецкой власти.",
+      "parent": null,
+      "confusable_with": ["crimean-war-1853"],
+      "pair_notes": {"crimean-war-1853": "Крымская — поражение, Парижский мир, запрет флота на Чёрном море; русско-турецкая — победа, Сан-Стефанский мир, освобождение Балкан"},
+      "facts": [
+        { "id": 1, "type": "person", "text": "Гурко занял Шипкинский перевал", "group": null },
+        { "id": 2, "type": "person", "text": "Скобелев осаждал Плевну", "group": null },
+        { "id": 3, "type": "result", "text": "заключён Сан-Стефанский мир", "group": null },
+        { "id": 4, "type": "result", "text": "Сербия, Черногория, Румыния стали независимыми", "group": null },
+        { "id": 5, "type": "result", "text": "Болгария стала автономным княжеством", "group": null },
+        { "id": 6, "type": "result", "text": "итоги пересмотрел Берлинский конгресс", "group": null }
+      ],
+      "reigns": ["reign-alexander2"]
+    },
+    {
+      "id": "alexander2-1881",
+      "title": "Убийство Александра II",
+      "other_names": [],
+      "date": { "display": "1 марта 1881", "start": 1881, "end": 1881 },
+      "era": 5,
+      "level": 1,
+      "image": null,
+      "summary": "Народовольцы убили императора-реформатора.",
+      "parent": null,
+      "confusable_with": ["pavel-1801"],
+      "pair_notes": {"pavel-1801": "Павла I убили заговорщики-дворяне во дворце; Александра II — народовольцы бомбой"},
+      "facts": [
+        { "id": 1, "type": "person", "text": "бомбу бросил Гриневицкий", "group": null },
+        { "id": 2, "type": "detail", "text": "организация — «Народная воля»", "group": null },
+        { "id": 3, "type": "person", "text": "руководители — Желябов и Перовская", "group": null },
+        { "id": 4, "type": "detail", "text": "в этот день царь одобрил проект Лорис-Меликова", "group": null },
+        { "id": 5, "type": "result", "text": "Манифест о незыблемости самодержавия", "group": null },
+        { "id": 6, "type": "result", "text": "началась политика контрреформ", "group": null }
+      ],
+      "reigns": ["reign-alexander2", "reign-alexander3"]
+    },
+    {
+      "id": "witte-1897",
+      "title": "Денежная реформа Витте",
+      "other_names": ["Денежная реформа"],
+      "date": { "display": "1897", "start": 1897, "end": 1897 },
+      "era": 6,
+      "level": 1,
+      "image": null,
+      "summary": "Введение золотого рубля.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "министр финансов — С. Ю. Витте", "group": "witte" },
+        { "id": 2, "type": "detail", "text": "введён золотой рубль", "group": null },
+        { "id": 3, "type": "result", "text": "рубль стал конвертируемым", "group": null },
+        { "id": 4, "type": "result", "text": "в Россию пошёл иностранный капитал", "group": null }
+      ],
+      "reigns": ["reign-nicholas2"]
+    },
+    {
+      "id": "japan-war-1904",
+      "title": "Русско-японская война",
+      "other_names": [],
+      "date": { "display": "1904–1905", "start": 1904, "end": 1905 },
+      "era": 6,
+      "level": 1,
+      "image": null,
+      "summary": "Война с Японией за влияние на Дальнем Востоке, окончившаяся поражением России.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "бой крейсера «Варяг» в Чемульпо", "group": null },
+        { "id": 2, "type": "person", "text": "адмирал Макаров погиб на «Петропавловске»", "group": null },
+        { "id": 3, "type": "person", "text": "Стессель сдал Порт-Артур", "group": null },
+        { "id": 4, "type": "detail", "text": "разгром флота Рожественского при Цусиме", "group": null },
+        { "id": 5, "type": "result", "text": "Портсмутский мир", "group": null },
+        { "id": 6, "type": "result", "text": "Япония получила юг Сахалина", "group": null }
+      ],
+      "reigns": ["reign-nicholas2"]
+    },
+    {
+      "id": "bloody-sunday-1905",
+      "title": "Кровавое воскресенье",
+      "other_names": [],
+      "date": { "display": "9 января 1905", "start": 1905, "end": 1905 },
+      "era": 6,
+      "level": 1,
+      "image": null,
+      "summary": "Расстрел мирного шествия рабочих в Петербурге — начало Первой русской революции.",
+      "parent": null,
+      "confusable_with": ["manifesto-1905"],
+      "pair_notes": {"manifesto-1905": "Кровавое воскресенье начало революцию в январе; Манифест 17 октября — уступка царя на её пике"},
+      "facts": [
+        { "id": 1, "type": "person", "text": "шествие предложил священник Гапон", "group": null },
+        { "id": 2, "type": "detail", "text": "рабочие шли к царю с петицией", "group": null },
+        { "id": 3, "type": "detail", "text": "до этого — забастовка на Путиловском заводе", "group": "putilov" },
+        { "id": 4, "type": "result", "text": "началась Первая русская революция", "group": null }
+      ],
+      "reigns": ["reign-nicholas2"]
+    },
+    {
+      "id": "manifesto-1905",
+      "title": "Манифест 17 октября",
+      "other_names": ["Манифест об усовершенствовании государственного порядка"],
+      "date": { "display": "17 октября 1905", "start": 1905, "end": 1905 },
+      "era": 6,
+      "level": 1,
+      "image": null,
+      "summary": "Николай II даровал гражданские свободы и пообещал Государственную думу.",
+      "parent": null,
+      "confusable_with": ["bloody-sunday-1905"],
+      "pair_notes": {"bloody-sunday-1905": "Кровавое воскресенье начало революцию в январе; Манифест 17 октября — уступка царя на её пике"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "провозглашены свободы слова, собраний, союзов", "group": null },
+        { "id": 2, "type": "detail", "text": "обещана законодательная Государственная дума", "group": null },
+        { "id": 3, "type": "person", "text": "подписан под нажимом С. Ю. Витте", "group": "witte" },
+        { "id": 4, "type": "detail", "text": "неприкосновенность личности", "group": null },
+        { "id": 5, "type": "result", "text": "возникли партии, например «Союз 17 октября»", "group": null }
+      ],
+      "reigns": ["reign-nicholas2"]
+    },
+    {
+      "id": "stolypin-1906",
+      "title": "Столыпинская аграрная реформа",
+      "other_names": ["Аграрная реформа Столыпина"],
+      "date": { "display": "1906–1911", "start": 1906, "end": 1911 },
+      "era": 6,
+      "level": 1,
+      "image": null,
+      "summary": "Реформа, позволившая крестьянам выходить из общины.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "разрешён свободный выход из общины", "group": null },
+        { "id": 2, "type": "detail", "text": "отрубы и хутора", "group": null },
+        { "id": 3, "type": "detail", "text": "ссуды Крестьянского поземельного банка", "group": null },
+        { "id": 4, "type": "detail", "text": "переселение крестьян в Сибирь", "group": null },
+        { "id": 5, "type": "result", "text": "из общины вышло меньше четверти хозяйств", "group": null }
+      ],
+      "reigns": ["reign-nicholas2"]
+    },
+    {
+      "id": "ww1-1914",
+      "title": "Вступление России в Первую мировую войну",
+      "other_names": ["Начало Первой мировой войны"],
+      "date": { "display": "1 августа 1914", "start": 1914, "end": 1914 },
+      "era": 6,
+      "level": 1,
+      "image": null,
+      "summary": "Германия объявила войну России.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "cause", "text": "повод: убийство эрцгерцога в Сараеве", "group": null },
+        { "id": 2, "type": "detail", "text": "Россия начала мобилизацию в защиту Сербии", "group": null },
+        { "id": 3, "type": "detail", "text": "Россия — в составе Антанты", "group": null },
+        { "id": 4, "type": "detail", "text": "Восточно-Прусская операция", "group": null },
+        { "id": 5, "type": "detail", "text": "Галицийская битва", "group": null }
+      ],
+      "reigns": ["reign-nicholas2"]
+    },
+    {
+      "id": "february-1917",
+      "title": "Февральская революция",
+      "other_names": [],
+      "date": { "display": "Февраль 1917", "start": 1917, "end": 1917 },
+      "era": 6,
+      "level": 1,
+      "image": null,
+      "summary": "Падение монархии в России.",
+      "parent": null,
+      "confusable_with": ["october-1917"],
+      "pair_notes": {"october-1917": "Февраль — свержение монархии, Временное правительство; Октябрь — большевики свергли Временное правительство"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "началась с забастовки на Путиловском заводе", "group": "putilov" },
+        { "id": 2, "type": "detail", "text": "создан Петроградский совет", "group": null },
+        { "id": 3, "type": "person", "text": "Временное правительство возглавил князь Львов", "group": null },
+        { "id": 4, "type": "result", "text": "Николай II отрёкся от престола", "group": null },
+        { "id": 5, "type": "result", "text": "Михаил отказался от короны до Учредительного собрания", "group": null },
+        { "id": 6, "type": "detail", "text": "женская демонстрация с требованием хлеба", "group": null }
+      ],
+      "reigns": ["reign-nicholas2", "reign-lenin"]
+    },
+    {
+      "id": "october-1917",
+      "title": "Октябрьская революция",
+      "other_names": ["Октябрьский переворот"],
+      "date": { "display": "25 октября 1917", "start": 1917, "end": 1917 },
+      "era": 6,
+      "level": 1,
+      "image": null,
+      "summary": "Большевики свергли Временное правительство и взяли власть.",
+      "parent": null,
+      "confusable_with": ["february-1917"],
+      "pair_notes": {"february-1917": "Февраль — свержение монархии, Временное правительство; Октябрь — большевики свергли Временное правительство"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "переворот готовил Военно-революционный комитет", "group": null },
+        { "id": 2, "type": "detail", "text": "взят Зимний дворец", "group": null },
+        { "id": 3, "type": "detail", "text": "II Всероссийский съезд Советов", "group": null },
+        { "id": 4, "type": "result", "text": "Декрет о земле", "group": null },
+        { "id": 5, "type": "result", "text": "Совнарком во главе с Лениным", "group": null },
+        { "id": 6, "type": "result", "text": "Декрет о мире", "group": null }
+      ],
+      "reigns": ["reign-nicholas2", "reign-lenin"]
+    },
+    {
+      "id": "brest-1918",
+      "title": "Брестский мир",
+      "other_names": ["Брест-Литовский мир"],
+      "date": { "display": "3 марта 1918", "start": 1918, "end": 1918 },
+      "era": 6,
+      "level": 1,
+      "image": null,
+      "summary": "Сепаратный мир Советской России с Германией и её союзниками.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "мир подписал Сокольников", "group": null },
+        { "id": 2, "type": "detail", "text": "отторгнуты Польша, Литва, часть Латвии", "group": null },
+        { "id": 3, "type": "detail", "text": "Турции отходили Ардаган, Батум, Карс", "group": null },
+        { "id": 4, "type": "result", "text": "левые эсеры вышли из Совнаркома", "group": null },
+        { "id": 5, "type": "result", "text": "столица перенесена в Москву", "group": null }
+      ],
+      "reigns": ["reign-lenin"]
+    },
+    {
+      "id": "civil-war-1918",
+      "title": "Гражданская война",
+      "other_names": ["Гражданская война в России"],
+      "date": { "display": "1918–1922", "start": 1918, "end": 1922 },
+      "era": 6,
+      "level": 1,
+      "image": null,
+      "summary": "Война красных и белых за власть после революции.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "белые: Деникин, Колчак, Юденич, Врангель", "group": null },
+        { "id": 2, "type": "person", "text": "красные: Фрунзе, Будённый, Тухачевский", "group": null },
+        { "id": 3, "type": "detail", "text": "политика военного коммунизма", "group": null },
+        { "id": 4, "type": "detail", "text": "иностранная интервенция", "group": null },
+        { "id": 5, "type": "detail", "text": "мятеж Чехословацкого корпуса", "group": null }
+      ],
+      "reigns": ["reign-lenin"]
+    },
+    {
+      "id": "nep-1921",
+      "title": "Переход к НЭПу",
+      "other_names": ["НЭП", "Новая экономическая политика"],
+      "date": { "display": "1921", "start": 1921, "end": 1921 },
+      "era": 6,
+      "level": 1,
+      "image": null,
+      "summary": "Отказ от военного коммунизма в пользу рыночных отношений.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "решение принял X съезд РКП(б)", "group": null },
+        { "id": 2, "type": "detail", "text": "продразвёрстка заменена продналогом", "group": null },
+        { "id": 3, "type": "detail", "text": "разрешена свободная торговля", "group": null },
+        { "id": 4, "type": "detail", "text": "иностранные концессии", "group": null },
+        { "id": 5, "type": "cause", "text": "причина: Кронштадтское восстание", "group": null },
+        { "id": 6, "type": "cause", "text": "причина: Тамбовское восстание (антоновщина)", "group": null }
+      ],
+      "reigns": ["reign-lenin"]
+    },
+    {
+      "id": "ussr-1922",
+      "title": "Образование СССР",
+      "other_names": [],
+      "date": { "display": "30 декабря 1922", "start": 1922, "end": 1922 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Советские республики объединились в единый союз.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "РСФСР, УССР, БССР и ЗСФСР", "group": null },
+        { "id": 2, "type": "detail", "text": "победил ленинский проект федерации", "group": null },
+        { "id": 3, "type": "detail", "text": "отвергнут план автономизации Сталина", "group": null },
+        { "id": 4, "type": "detail", "text": "право республик на выход из союза", "group": null }
+      ],
+      "reigns": ["reign-lenin"]
+    },
+    {
+      "id": "lenin-1924",
+      "title": "Смерть Ленина",
+      "other_names": [],
+      "date": { "display": "21 января 1924", "start": 1924, "end": 1924 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Смерть основателя советского государства.",
+      "parent": null,
+      "confusable_with": ["stalin-1953"],
+      "pair_notes": {"stalin-1953": "Смерть Ленина — начало борьбы за власть, в которой победил Сталин; смерть Сталина — начало «оттепели»"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "в «Письме к съезду» вождь критиковал Сталина", "group": null },
+        { "id": 2, "type": "result", "text": "обострилась борьба за лидерство в партии", "group": null },
+        { "id": 3, "type": "detail", "text": "в том же месяце принята первая Конституция СССР", "group": null },
+        { "id": 4, "type": "result", "text": "Сталин и его союзники против «левой оппозиции» Троцкого", "group": null }
+      ],
+      "reigns": ["reign-lenin", "reign-stalin"]
+    },
+    {
+      "id": "five-year-1928",
+      "title": "Первая пятилетка, индустриализация",
+      "other_names": ["Первая пятилетка", "Индустриализация"],
+      "date": { "display": "1928–1932", "start": 1928, "end": 1932 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Форсированное строительство тяжёлой промышленности.",
+      "parent": null,
+      "confusable_with": ["collectivization-1929"],
+      "pair_notes": {"collectivization-1929": "Пятилетка — стройки промышленности; коллективизация — колхозы и раскулачивание в деревне"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "построены Днепрогэс и Турксиб", "group": null },
+        { "id": 2, "type": "detail", "text": "Магнитогорский металлургический комбинат", "group": null },
+        { "id": 3, "type": "detail", "text": "тракторные заводы в Сталинграде и Харькове", "group": null },
+        { "id": 4, "type": "detail", "text": "движение ударников", "group": null },
+        { "id": 5, "type": "detail", "text": "упор на тяжёлую промышленность в ущерб лёгкой", "group": null }
+      ],
+      "reigns": ["reign-stalin"]
+    },
+    {
+      "id": "collectivization-1929",
+      "title": "Коллективизация",
+      "other_names": ["Сплошная коллективизация"],
+      "date": { "display": "1929–1933", "start": 1929, "end": 1933 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Принудительное объединение крестьян в колхозы.",
+      "parent": null,
+      "confusable_with": ["five-year-1928"],
+      "pair_notes": {"five-year-1928": "Пятилетка — стройки промышленности; коллективизация — колхозы и раскулачивание в деревне"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "«год великого перелома»", "group": null },
+        { "id": 2, "type": "detail", "text": "раскулачивание", "group": null },
+        { "id": 3, "type": "person", "text": "в деревню направили «двадцатипятитысячников»", "group": null },
+        { "id": 4, "type": "detail", "text": "статья Сталина «Головокружение от успехов»", "group": null },
+        { "id": 5, "type": "detail", "text": "машинно-тракторные станции (МТС)", "group": null },
+        { "id": 6, "type": "detail", "text": "оплата труда трудоднями", "group": null }
+      ],
+      "reigns": ["reign-stalin"]
+    },
+    {
+      "id": "famine-1932",
+      "title": "Голод в СССР",
+      "other_names": [],
+      "date": { "display": "1932–1933", "start": 1932, "end": 1933 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Массовый голод в зерновых районах СССР.",
+      "parent": "collectivization-1929",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "cause", "text": "причина: неурожай и колхозная политика", "group": null },
+        { "id": 2, "type": "detail", "text": "о голоде было запрещено говорить", "group": null },
+        { "id": 3, "type": "result", "text": "погибло около 7 млн человек", "group": null },
+        { "id": 4, "type": "detail", "text": "для крестьян без разрешения не выдавали паспортов", "group": null }
+      ],
+      "reigns": ["reign-stalin"]
+    },
+    {
+      "id": "constitution-1936",
+      "title": "Конституция СССР («сталинская»)",
+      "other_names": ["Сталинская конституция", "Конституция 1936 года"],
+      "date": { "display": "5 декабря 1936", "start": 1936, "end": 1936 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Конституция, провозгласившая победу социализма в СССР.",
+      "parent": null,
+      "confusable_with": ["constitution-1993"],
+      "pair_notes": {"constitution-1993": "1936 — «сталинская», провозгласила победу социализма; 1993 — Конституция России, президентская республика"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "провозглашена победа социализма", "group": null },
+        { "id": 2, "type": "detail", "text": "высший орган — Верховный Совет СССР", "group": null },
+        { "id": 3, "type": "detail", "text": "всеобщие, прямые, равные, тайные выборы", "group": null },
+        { "id": 4, "type": "detail", "text": "многие нормы остались на бумаге", "group": null }
+      ],
+      "reigns": ["reign-stalin"]
+    },
+    {
+      "id": "terror-1937",
+      "title": "Большой террор",
+      "other_names": ["Ежовщина"],
+      "date": { "display": "1937–1938", "start": 1937, "end": 1938 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Массовые политические репрессии.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "приговоры выносили внесудебные «тройки»", "group": null },
+        { "id": 2, "type": "person", "text": "нарком внутренних дел — Н. И. Ежов", "group": null },
+        { "id": 3, "type": "detail", "text": "дело Тухачевского", "group": null },
+        { "id": 4, "type": "detail", "text": "процесс над Бухариным и Рыковым", "group": null },
+        { "id": 5, "type": "result", "text": "репрессированы почти все делегаты «съезда победителей»", "group": null }
+      ],
+      "reigns": ["reign-stalin"]
+    },
+    {
+      "id": "pact-1939",
+      "title": "Пакт Молотова — Риббентропа",
+      "other_names": ["Договор о ненападении между СССР и Германией"],
+      "date": { "display": "23 августа 1939", "start": 1939, "end": 1939 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Договор о ненападении между СССР и Германией.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "секретный протокол о сферах интересов", "group": null },
+        { "id": 2, "type": "detail", "text": "в сферу СССР — Финляндия, Латвия, Эстония, Бессарабия", "group": null },
+        { "id": 3, "type": "result", "text": "СССР получил время на подготовку к войне", "group": null },
+        { "id": 4, "type": "result", "text": "Германия обеспечила себе тыл на востоке", "group": null },
+        { "id": 5, "type": "result", "text": "через неделю Германия напала на Польшу", "group": null }
+      ],
+      "reigns": ["reign-stalin"]
+    },
+    {
+      "id": "ww2-1941",
+      "title": "Великая Отечественная война",
+      "other_names": ["ВОВ", "Нападение Германии на СССР"],
+      "date": { "display": "22 июня 1941 – 9 мая 1945", "start": 1941, "end": 1945 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Война СССР против нацистской Германии и её союзников: от нападения Германии до её капитуляции.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "план «Барбаросса» — молниеносная война", "group": null },
+        { "id": 2, "type": "person", "text": "с обращением к народу выступил Молотов", "group": null },
+        { "id": 3, "type": "detail", "text": "создан Государственный комитет обороны", "group": null },
+        { "id": 4, "type": "detail", "text": "танковое сражение под Дубно — Луцком — Бродами", "group": null },
+        { "id": 5, "type": "detail", "text": "до этого Зорге предупреждал Сталина о нападении", "group": null }
+      ],
+      "reigns": ["reign-stalin"]
+    },
+    {
+      "id": "moscow-1941",
+      "title": "Начало контрнаступления под Москвой",
+      "other_names": ["Контрнаступление под Москвой", "Битва за Москву"],
+      "date": { "display": "Декабрь 1941", "start": 1941, "end": 1941 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Красная армия перешла в контрнаступление и отбросила врага от Москвы.",
+      "parent": "ww2-1941",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "до этого отражена операция «Тайфун»", "group": null },
+        { "id": 2, "type": "person", "text": "Западным фронтом командовал Жуков", "group": null },
+        { "id": 3, "type": "person", "text": "до этого — оборона дивизии Панфилова", "group": null },
+        { "id": 4, "type": "detail", "text": "до этого — парад на Красной площади 7 ноября", "group": null },
+        { "id": 5, "type": "result", "text": "враг отброшен на 100–250 км", "group": null },
+        { "id": 6, "type": "result", "text": "сорван план блицкрига", "group": null }
+      ],
+      "reigns": ["reign-stalin"]
+    },
+    {
+      "id": "stalingrad-1942",
+      "title": "Сталинградская битва",
+      "other_names": [],
+      "date": { "display": "17 июля 1942 – 2 февраля 1943", "start": 1942, "end": 1943 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Окружение и разгром немецкой армии на Волге — начало коренного перелома.",
+      "parent": "ww2-1941",
+      "confusable_with": ["kursk-1943"],
+      "pair_notes": {"kursk-1943": "Сталинград начал коренной перелом, Курская битва его завершила"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "приказ № 227 «Ни шагу назад!»", "group": null },
+        { "id": 2, "type": "detail", "text": "оборона Дома Павлова", "group": null },
+        { "id": 3, "type": "detail", "text": "бои за Мамаев курган", "group": null },
+        { "id": 4, "type": "detail", "text": "операция «Уран» по окружению противника", "group": null },
+        { "id": 5, "type": "person", "text": "в плен взят фельдмаршал Паулюс", "group": null },
+        { "id": 6, "type": "result", "text": "начало коренного перелома", "group": null }
+      ],
+      "reigns": ["reign-stalin"]
+    },
+    {
+      "id": "kursk-1943",
+      "title": "Курская битва",
+      "other_names": ["Битва на Курской дуге"],
+      "date": { "display": "Июль–август 1943", "start": 1943, "end": 1943 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Срыв последнего крупного наступления вермахта на востоке.",
+      "parent": "ww2-1941",
+      "confusable_with": ["stalingrad-1942"],
+      "pair_notes": {"stalingrad-1942": "Сталинград начал коренной перелом, Курская битва его завершила"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "немецкий план «Цитадель»", "group": null },
+        { "id": 2, "type": "detail", "text": "танковое сражение под Прохоровкой", "group": null },
+        { "id": 3, "type": "person", "text": "фронтами командовали Рокоссовский и Ватутин", "group": null },
+        { "id": 4, "type": "detail", "text": "операции «Кутузов» и «Полководец Румянцев»", "group": null },
+        { "id": 5, "type": "result", "text": "первый победный салют — за Орёл и Белгород", "group": null }
+      ],
+      "reigns": ["reign-stalin"]
+    },
+    {
+      "id": "victory-1945",
+      "title": "Победа в Великой Отечественной войне",
+      "other_names": ["День Победы"],
+      "date": { "display": "9 мая 1945", "start": 1945, "end": 1945 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Капитуляция Германии.",
+      "parent": "ww2-1941",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "Берлинская операция", "group": null },
+        { "id": 2, "type": "detail", "text": "бои за Зееловские высоты", "group": null },
+        { "id": 3, "type": "person", "text": "акт о капитуляции принимал Жуков", "group": null },
+        { "id": 4, "type": "detail", "text": "встреча союзников на Эльбе", "group": null },
+        { "id": 5, "type": "detail", "text": "до этого — Ялтинская конференция", "group": null }
+      ],
+      "reigns": ["reign-stalin"]
+    },
+    {
+      "id": "atom-1949",
+      "title": "Первое испытание атомной бомбы",
+      "other_names": ["Испытание атомной бомбы в СССР"],
+      "date": { "display": "29 августа 1949", "start": 1949, "end": 1949 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "СССР стал ядерной державой.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "проектом руководил Л. П. Берия", "group": null },
+        { "id": 2, "type": "person", "text": "оружие создали Курчатов и Харитон", "group": null },
+        { "id": 3, "type": "result", "text": "позже испытано термоядерное оружие", "group": null },
+        { "id": 4, "type": "detail", "text": "в это время началась холодная война", "group": null }
+      ],
+      "reigns": ["reign-stalin"]
+    },
+    {
+      "id": "stalin-1953",
+      "title": "Смерть Сталина",
+      "other_names": [],
+      "date": { "display": "5 марта 1953", "start": 1953, "end": 1953 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Смерть Сталина открыла путь к «оттепели».",
+      "parent": null,
+      "confusable_with": ["lenin-1924"],
+      "pair_notes": {"lenin-1924": "Смерть Ленина — начало борьбы за власть, в которой победил Сталин; смерть Сталина — начало «оттепели»"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "незадолго до этого — «дело врачей»", "group": null },
+        { "id": 2, "type": "result", "text": "борьба за власть Берии, Маленкова и Хрущёва", "group": null },
+        { "id": 3, "type": "result", "text": "амнистия и реабилитация заключённых", "group": null },
+        { "id": 4, "type": "result", "text": "СССР вышел из Корейской войны", "group": null }
+      ],
+      "reigns": ["reign-stalin", "reign-malenkov", "reign-khrushchev"]
+    },
+    {
+      "id": "xx-congress-1956",
+      "title": "XX съезд КПСС",
+      "other_names": ["ХХ съезд"],
+      "date": { "display": "25 февраля 1956", "start": 1956, "end": 1956 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Съезд, на котором осудили культ личности Сталина.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "доклад Хрущёва «О культе личности и его последствиях»", "group": null },
+        { "id": 2, "type": "detail", "text": "доклад прочитан на закрытом заседании", "group": null },
+        { "id": 3, "type": "detail", "text": "курс на мирное сосуществование с капитализмом", "group": null },
+        { "id": 4, "type": "detail", "text": "коллективизацию и индустриализацию не критиковали", "group": null },
+        { "id": 5, "type": "result", "text": "реабилитация жертв репрессий", "group": null }
+      ],
+      "reigns": ["reign-khrushchev"]
+    },
+    {
+      "id": "sputnik-1957",
+      "title": "Запуск первого искусственного спутника Земли",
+      "other_names": ["Первый спутник"],
+      "date": { "display": "4 октября 1957", "start": 1957, "end": 1957 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "СССР первым вывел спутник на орбиту.",
+      "parent": null,
+      "confusable_with": ["gagarin-1961"],
+      "pair_notes": {"gagarin-1961": "Спутник — первый аппарат на орбите; через четыре года в космос полетел человек"},
+      "facts": [
+        { "id": 1, "type": "person", "text": "главный конструктор — С. П. Королёв", "group": "korolev", "src": "extra" },
+        { "id": 2, "type": "detail", "text": "в том же году — разгром «антипартийной группы»", "group": null },
+        { "id": 3, "type": "result", "text": "СССР опередил США в освоении космоса", "group": null, "src": "extra" }
+      ],
+      "reigns": ["reign-khrushchev"]
+    },
+    {
+      "id": "gagarin-1961",
+      "title": "Полёт Гагарина",
+      "other_names": ["Первый полёт человека в космос"],
+      "date": { "display": "12 апреля 1961", "start": 1961, "end": 1961 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Первый полёт человека в космос.",
+      "parent": null,
+      "confusable_with": ["sputnik-1957"],
+      "pair_notes": {"sputnik-1957": "Спутник — первый аппарат на орбите; через четыре года в космос полетел человек"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "корабль «Восток-1»", "group": null, "src": "extra" },
+        { "id": 2, "type": "detail", "text": "в том же году — денежная реформа", "group": null },
+        { "id": 3, "type": "detail", "text": "в том же году — Берлинская стена", "group": null },
+        { "id": 4, "type": "person", "text": "главный конструктор — С. П. Королёв", "group": "korolev", "src": "extra" },
+        { "id": 5, "type": "detail", "text": "в том же году — XXII съезд и программа построения коммунизма", "group": null }
+      ],
+      "reigns": ["reign-khrushchev"]
+    },
+    {
+      "id": "caribbean-1962",
+      "title": "Карибский кризис",
+      "other_names": ["Карибский ракетный кризис"],
+      "date": { "display": "Октябрь 1962", "start": 1962, "end": 1962 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Ядерное противостояние СССР и США из-за ракет на Кубе.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "СССР разместил ракеты на Кубе", "group": null },
+        { "id": 2, "type": "detail", "text": "США объявили морскую блокаду Кубы", "group": null },
+        { "id": 3, "type": "person", "text": "компромисс Хрущёва и Кеннеди", "group": null },
+        { "id": 4, "type": "result", "text": "США вывезли ракеты из Турции", "group": null },
+        { "id": 5, "type": "result", "text": "прямая линия связи Кремль — Белый дом", "group": null }
+      ],
+      "reigns": ["reign-khrushchev"]
+    },
+    {
+      "id": "khrushchev-1964",
+      "title": "Отстранение Хрущёва",
+      "other_names": ["Отставка Хрущёва"],
+      "date": { "display": "Октябрь 1964", "start": 1964, "end": 1964 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Хрущёва сместили с постов, к власти пришёл Брежнев.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "обвинён в «волюнтаризме и субъективизме»", "group": null },
+        { "id": 2, "type": "cause", "text": "причина: недовольство совнархозами", "group": null },
+        { "id": 3, "type": "cause", "text": "причина: военные недовольны сокращением армии", "group": null },
+        { "id": 4, "type": "cause", "text": "причина: раздел парткомов на промышленные и сельские", "group": null },
+        { "id": 5, "type": "result", "text": "к власти пришёл Л. И. Брежнев", "group": null, "src": "extra" }
+      ],
+      "reigns": ["reign-khrushchev", "reign-brezhnev"]
+    },
+    {
+      "id": "afghan-1979",
+      "title": "Война в Афганистане",
+      "other_names": ["Афганская война"],
+      "date": { "display": "1979–1989", "start": 1979, "end": 1989 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Ввод и десятилетнее пребывание советских войск в Афганистане.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "свергнут и убит Х. Амин", "group": null },
+        { "id": 2, "type": "person", "text": "к власти приведён Б. Кармаль", "group": null },
+        { "id": 3, "type": "detail", "text": "противник — моджахеды", "group": null },
+        { "id": 4, "type": "result", "text": "США бойкотировали Олимпиаду в Москве", "group": null },
+        { "id": 5, "type": "result", "text": "конец политики разрядки", "group": null },
+        { "id": 6, "type": "person", "text": "Сахаров сослан в Горький за критику войны", "group": null }
+      ],
+      "reigns": ["reign-brezhnev"]
+    },
+    {
+      "id": "perestroika-1985",
+      "title": "Начало перестройки",
+      "other_names": ["Перестройка"],
+      "date": { "display": "1985", "start": 1985, "end": 1985 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Горбачёв начал курс реформ.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "курс на «ускорение»", "group": null },
+        { "id": 2, "type": "detail", "text": "антиалкогольная кампания", "group": null },
+        { "id": 3, "type": "detail", "text": "введена госприёмка", "group": null },
+        { "id": 4, "type": "detail", "text": "создан Госагропром", "group": null },
+        { "id": 5, "type": "detail", "text": "до этого умер Черненко", "group": null }
+      ],
+      "reigns": ["reign-chernenko", "reign-gorbachev"]
+    },
+    {
+      "id": "chernobyl-1986",
+      "title": "Авария на Чернобыльской АЭС",
+      "other_names": ["Чернобыльская авария"],
+      "date": { "display": "26 апреля 1986", "start": 1986, "end": 1986 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Крупнейшая техногенная катастрофа в истории атомной энергетики.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "result", "text": "эвакуированы жители Чернобыля и Припяти", "group": null },
+        { "id": 2, "type": "result", "text": "образована закрытая зона", "group": null },
+        { "id": 3, "type": "result", "text": "власть дискредитирована — шаг к распаду СССР", "group": null },
+        { "id": 4, "type": "result", "text": "остановка атомных проектов в Европе", "group": null }
+      ],
+      "reigns": ["reign-gorbachev"]
+    },
+    {
+      "id": "berlin-wall-1989",
+      "title": "Падение Берлинской стены",
+      "other_names": [],
+      "date": { "display": "9 ноября 1989", "start": 1989, "end": 1989 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Открытие границы между ГДР и Западным Берлином.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "«бархатные революции» в Восточной Европе", "group": null },
+        { "id": 2, "type": "detail", "text": "вывод советских войск из Восточной Европы", "group": null },
+        { "id": 3, "type": "result", "text": "ГДР вошла в состав ФРГ", "group": null },
+        { "id": 4, "type": "detail", "text": "в том же году завершён вывод войск из Афганистана", "group": null },
+        { "id": 5, "type": "detail", "text": "в том же году — I съезд народных депутатов СССР", "group": null }
+      ],
+      "reigns": ["reign-gorbachev"]
+    },
+    {
+      "id": "gkchp-1991",
+      "title": "Путч ГКЧП",
+      "other_names": ["Августовский путч", "ГКЧП"],
+      "date": { "display": "19–21 августа 1991", "start": 1991, "end": 1991 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Попытка консервативного руководства отстранить Горбачёва от власти.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "Янаев, Крючков, Павлов, Язов", "group": null },
+        { "id": 2, "type": "detail", "text": "Горбачёв находился в Крыму", "group": null },
+        { "id": 3, "type": "detail", "text": "москвичи строили баррикады у Белого дома", "group": null },
+        { "id": 4, "type": "cause", "text": "причина: путчисты боялись нового союзного договора", "group": null },
+        { "id": 5, "type": "result", "text": "Ельцин запретил КПСС в РСФСР", "group": null }
+      ],
+      "reigns": ["reign-gorbachev", "reign-yeltsin"]
+    },
+    {
+      "id": "belovezh-1991",
+      "title": "Беловежские соглашения",
+      "other_names": [],
+      "date": { "display": "8 декабря 1991", "start": 1991, "end": 1991 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Лидеры России, Украины и Белоруссии констатировали распад СССР.",
+      "parent": null,
+      "confusable_with": ["gorbachev-1991"],
+      "pair_notes": {"gorbachev-1991": "В Беловежской пуще констатировали распад СССР и создали СНГ; через 17 дней Горбачёв сложил полномочия"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "встреча в Беловежской пуще", "group": null },
+        { "id": 2, "type": "person", "text": "Ельцин, Кравчук и Шушкевич", "group": null, "src": "extra" },
+        { "id": 3, "type": "result", "text": "создано Содружество Независимых Государств", "group": null },
+        { "id": 4, "type": "result", "text": "декларацию о СНГ подписали 11 республик", "group": null }
+      ],
+      "reigns": ["reign-gorbachev", "reign-yeltsin"]
+    },
+    {
+      "id": "gorbachev-1991",
+      "title": "Отставка Горбачёва",
+      "other_names": [],
+      "date": { "display": "25 декабря 1991", "start": 1991, "end": 1991 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Президент СССР сложил полномочия, СССР прекратил существование.",
+      "parent": null,
+      "confusable_with": ["belovezh-1991", "yeltsin-1999"],
+      "pair_notes": {"belovezh-1991": "В Беловежской пуще констатировали распад СССР и создали СНГ; через 17 дней Горбачёв сложил полномочия", "yeltsin-1999": "Горбачёв — президент СССР, ушёл вместе с распадом страны; Ельцин — президент России, ушёл досрочно, поддержав Путина"},
+      "facts": [
+        { "id": 1, "type": "result", "text": "СССР прекратил существование", "group": null },
+        { "id": 2, "type": "cause", "text": "причина: республики объявили независимость", "group": null },
+        { "id": 3, "type": "detail", "text": "годом ранее — Нобелевская премия мира", "group": null },
+        { "id": 4, "type": "cause", "text": "причина: падение цен на нефть и дефицит товаров", "group": null }
+      ],
+      "reigns": ["reign-gorbachev", "reign-yeltsin"]
+    },
+    {
+      "id": "constitution-1993",
+      "title": "Конституция Российской Федерации",
+      "other_names": ["Конституция 1993 года"],
+      "date": { "display": "12 декабря 1993", "start": 1993, "end": 1993 },
+      "era": 8,
+      "level": 1,
+      "image": null,
+      "summary": "Принята всенародным голосованием действующая Конституция России.",
+      "parent": null,
+      "confusable_with": ["constitution-1936", "amendments-2020"],
+      "pair_notes": {"constitution-1936": "1936 — «сталинская», провозгласила победу социализма; 1993 — Конституция России, президентская республика", "amendments-2020": "1993 — новая Конституция России; 2020 — поправки к ней"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "принята всенародным голосованием", "group": null },
+        { "id": 2, "type": "detail", "text": "президентская республика с широкими полномочиями президента", "group": null },
+        { "id": 3, "type": "detail", "text": "до этого — противостояние Ельцина и Верховного Совета", "group": null },
+        { "id": 4, "type": "detail", "text": "одновременно избрана Государственная дума", "group": null },
+        { "id": 5, "type": "detail", "text": "до этого — указ № 1400 о конституционной реформе", "group": null },
+        { "id": 6, "type": "detail", "text": "до этого — октябрьские события, обстрел здания Верховного Совета", "group": null }
+      ],
+      "reigns": ["reign-yeltsin"]
+    },
+    {
+      "id": "chechnya-1994",
+      "title": "Первая чеченская война",
+      "other_names": ["Первая чеченская кампания"],
+      "date": { "display": "1994–1996", "start": 1994, "end": 1996 },
+      "era": 8,
+      "level": 1,
+      "image": null,
+      "summary": "Военный конфликт федеральных сил с непризнанной Ичкерией.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "Дудаев провозгласил независимую Ичкерию", "group": null },
+        { "id": 2, "type": "detail", "text": "теракт Басаева в Будённовске", "group": null },
+        { "id": 3, "type": "result", "text": "Хасавюртовские соглашения", "group": null },
+        { "id": 4, "type": "result", "text": "федеральные войска выведены из Чечни", "group": null },
+        { "id": 5, "type": "person", "text": "перемирие подписали Лебедь и Масхадов", "group": null }
+      ],
+      "reigns": ["reign-yeltsin"]
+    },
+    {
+      "id": "default-1998",
+      "title": "Финансовый кризис и дефолт",
+      "other_names": ["Дефолт"],
+      "date": { "display": "17 августа 1998", "start": 1998, "end": 1998 },
+      "era": 8,
+      "level": 1,
+      "image": null,
+      "summary": "Государство отказалось платить по долгам, рубль обвалился.",
+      "parent": null,
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "прекращены выплаты по ГКО", "group": null },
+        { "id": 2, "type": "detail", "text": "отменён валютный коридор", "group": null },
+        { "id": 3, "type": "result", "text": "рубль подешевел в 4 раза", "group": null },
+        { "id": 4, "type": "result", "text": "отставка правительства Кириенко", "group": null },
+        { "id": 5, "type": "result", "text": "правительство Примакова", "group": null }
+      ],
+      "reigns": ["reign-yeltsin"]
+    },
+    {
+      "id": "yeltsin-1999",
+      "title": "Отставка Ельцина",
+      "other_names": [],
+      "date": { "display": "31 декабря 1999", "start": 1999, "end": 1999 },
+      "era": 8,
+      "level": 1,
+      "image": null,
+      "summary": "Первый президент России досрочно ушёл в отставку.",
+      "parent": null,
+      "confusable_with": ["gorbachev-1991"],
+      "pair_notes": {"gorbachev-1991": "Горбачёв — президент СССР, ушёл вместе с распадом страны; Ельцин — президент России, ушёл досрочно, поддержав Путина"},
+      "facts": [
+        { "id": 1, "type": "result", "text": "Ельцин поддержал кандидатуру Путина", "group": null },
+        { "id": 2, "type": "cause", "text": "причина: экономика не оправилась после дефолта", "group": null },
+        { "id": 3, "type": "detail", "text": "в том же году — попытка импичмента", "group": null },
+        { "id": 4, "type": "cause", "text": "причина: боевые действия на Северном Кавказе", "group": null },
+        { "id": 5, "type": "detail", "text": "в том же году боевики вторглись в Дагестан", "group": null }
+      ],
+      "reigns": ["reign-yeltsin"]
+    },
+    {
+      "id": "crimea-2014",
+      "title": "Воссоединение России и Крыма",
+      "other_names": ["Воссоединение Крыма с Россией"],
+      "date": { "display": "18 марта 2014", "start": 2014, "end": 2014 },
+      "era": 8,
+      "level": 1,
+      "image": null,
+      "summary": "Крым и Севастополь вошли в состав России.",
+      "parent": null,
+      "confusable_with": ["crimea-1783"],
+      "pair_notes": {"crimea-1783": "1783 — присоединение Крымского ханства при Екатерине II; 2014 — воссоединение после референдума"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "референдум в Крыму", "group": null },
+        { "id": 2, "type": "detail", "text": "до этого — свержение Януковича на Украине", "group": null },
+        { "id": 3, "type": "result", "text": "санкции США и ЕС", "group": null },
+        { "id": 4, "type": "result", "text": "Россия исключена из «Большой восьмёрки»", "group": null }
+      ],
+      "reigns": ["reign-putin2"]
+    },
+    {
+      "id": "amendments-2020",
+      "title": "Поправки к Конституции",
+      "other_names": ["Поправки к Конституции 2020 года"],
+      "date": { "display": "1 июля 2020", "start": 2020, "end": 2020 },
+      "era": 8,
+      "level": 1,
+      "image": null,
+      "summary": "Общероссийское голосование одобрило поправки к Конституции.",
+      "parent": null,
+      "confusable_with": ["constitution-1993"],
+      "pair_notes": {"constitution-1993": "1993 — новая Конституция России; 2020 — поправки к ней"},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "одобрены на общероссийском голосовании", "group": null, "src": "extra" },
+        { "id": 2, "type": "detail", "text": "приоритет Конституции над международными решениями", "group": null, "src": "extra" },
+        { "id": 3, "type": "detail", "text": "обнулены президентские сроки действующего президента", "group": null, "src": "extra" }
+      ],
+      "reigns": ["reign-putin2"]
+    }
+  ],
+  "reigns": [
+    {
+      "id": "reign-rurik",
+      "title": "Рюрик",
+      "other_names": [],
+      "date": { "display": "862–879", "start": 862, "end": 879 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Варяг, призванный на княжение; основатель династии Рюриковичей.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "призван на княжение племенами", "group": null },
+        { "id": 2, "type": "detail", "text": "княжил в Новгороде", "group": null },
+        { "id": 3, "type": "person", "text": "братья — Синеус и Трувор", "group": null },
+        { "id": 4, "type": "result", "text": "основатель княжеской династии", "group": null, "src": "extra" }
+      ]
+    },
+    {
+      "id": "reign-oleg",
+      "title": "Олег Вещий",
+      "other_names": ["Олег"],
+      "date": { "display": "879–912", "start": 879, "end": 912 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Правил вместо малолетнего Игоря, объединил Новгород и Киев.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "объединил Новгород и Киев", "group": null },
+        { "id": 2, "type": "detail", "text": "перенёс столицу в Киев", "group": null },
+        { "id": 3, "type": "detail", "text": "прибил щит на врата Царьграда", "group": null },
+        { "id": 4, "type": "result", "text": "первый письменный договор с Византией", "group": null }
+      ]
+    },
+    {
+      "id": "reign-igor",
+      "title": "Игорь",
+      "other_names": ["Игорь Рюрикович"],
+      "date": { "display": "912–945", "start": 912, "end": 945 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Сын Рюрика, погиб при повторном сборе дани с древлян.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "походы на Византию, поражение от «греческого огня»", "group": null },
+        { "id": 2, "type": "result", "text": "новый договор с Византией хуже прежнего", "group": null },
+        { "id": 3, "type": "result", "text": "убит древлянами при повторном сборе дани", "group": null }
+      ]
+    },
+    {
+      "id": "reign-olga",
+      "title": "Ольга",
+      "other_names": ["Княгиня Ольга"],
+      "date": { "display": "945–964", "start": 945, "end": 964 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Вдова Игоря, упорядочила сбор дани и первой из правителей Руси крестилась.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "ввела уроки и погосты", "group": null },
+        { "id": 2, "type": "detail", "text": "приняла крещение в Константинополе", "group": null },
+        { "id": 3, "type": "person", "text": "крёстный отец — император Константин VII", "group": null },
+        { "id": 4, "type": "detail", "text": "правила при малолетнем сыне", "group": null, "src": "extra" }
+      ]
+    },
+    {
+      "id": "reign-svyatoslav",
+      "title": "Святослав",
+      "other_names": ["Святослав Игоревич"],
+      "date": { "display": "964–972", "start": 964, "end": 972 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Князь-воин, разгромивший Хазарский каганат.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "разгромил Хазарский каганат", "group": null },
+        { "id": 2, "type": "detail", "text": "покорил вятичей", "group": null },
+        { "id": 3, "type": "detail", "text": "задумал перенести столицу в Переяславец на Дунае", "group": null },
+        { "id": 4, "type": "result", "text": "убит печенегами", "group": null }
+      ]
+    },
+    {
+      "id": "reign-vladimir",
+      "title": "Владимир Святославич",
+      "other_names": ["Владимир Красное Солнышко", "Владимир I"],
+      "date": { "display": "980–1015", "start": 980, "end": 1015 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Князь, крестивший Русь.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "крещение Руси", "group": null },
+        { "id": 2, "type": "detail", "text": "языческая реформа — пантеон во главе с Перуном", "group": null },
+        { "id": 3, "type": "detail", "text": "Десятинная церковь — первая каменная", "group": null },
+        { "id": 4, "type": "detail", "text": "города-крепости и богатыри против печенегов", "group": null }
+      ]
+    },
+    {
+      "id": "reign-yaroslav",
+      "title": "Ярослав Мудрый",
+      "other_names": [],
+      "date": { "display": "1019–1054", "start": 1019, "end": 1054 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Расцвет Древнерусского государства.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "«Русская Правда»", "group": null },
+        { "id": 2, "type": "detail", "text": "Софийский собор на месте разгрома печенегов", "group": null },
+        { "id": 3, "type": "person", "text": "первый русский митрополит — Иларион", "group": null },
+        { "id": 4, "type": "detail", "text": "лествичный порядок наследования", "group": null }
+      ]
+    },
+    {
+      "id": "reign-monomakh",
+      "title": "Владимир Мономах",
+      "other_names": [],
+      "date": { "display": "1113–1125", "start": 1113, "end": 1125 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Последний сильный киевский князь, временно восстановивший единство Руси.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "«Устав о резах» ограничил проценты по займам", "group": null },
+        { "id": 2, "type": "detail", "text": "«Поучение» детям", "group": null },
+        { "id": 3, "type": "cause", "text": "почему призван: киевляне восстали против ростовщиков", "group": null },
+        { "id": 4, "type": "detail", "text": "разгромил половцев", "group": null }
+      ]
+    },
+    {
+      "id": "reign-mstislav",
+      "title": "Мстислав Великий",
+      "other_names": [],
+      "date": { "display": "1125–1132", "start": 1125, "end": 1132 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Сын Мономаха, при котором Русь ещё оставалась единой.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "сын Владимира Мономаха", "group": null },
+        { "id": 2, "type": "detail", "text": "продолжал курс отца", "group": null },
+        { "id": 3, "type": "result", "text": "после его смерти началась раздробленность", "group": null }
+      ]
+    },
+    {
+      "id": "reign-dolgoruky",
+      "title": "Юрий Долгорукий",
+      "other_names": [],
+      "date": { "display": "1125–1157", "start": 1125, "end": 1157 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Ростово-Суздальский князь, при котором впервые упомянута Москва.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "первое упоминание Москвы", "group": null },
+        { "id": 2, "type": "person", "text": "шестой сын Владимира Мономаха", "group": null },
+        { "id": 3, "type": "detail", "text": "строил города: Кострому, Дмитров", "group": null },
+        { "id": 4, "type": "result", "text": "занял Киев и был там отравлен", "group": null }
+      ]
+    },
+    {
+      "id": "reign-bogolyubsky",
+      "title": "Андрей Боголюбский",
+      "other_names": [],
+      "date": { "display": "1157–1174", "start": 1157, "end": 1174 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Владимиро-Суздальский князь, стремившийся к самодержавию.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "столица — город Владимир", "group": null },
+        { "id": 2, "type": "detail", "text": "разгромил Киев", "group": null },
+        { "id": 3, "type": "detail", "text": "перенёс икону Богоматери из Вышгорода во Владимир", "group": null },
+        { "id": 4, "type": "result", "text": "убит заговорщиками во главе с Кучковичами", "group": null }
+      ]
+    },
+    {
+      "id": "reign-vsevolod",
+      "title": "Всеволод Большое Гнездо",
+      "other_names": [],
+      "date": { "display": "1176–1212", "start": 1176, "end": 1212 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Расцвет Владимиро-Суздальского княжества.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "у князя было 12 детей", "group": null },
+        { "id": 2, "type": "detail", "text": "образование получил в Византии", "group": null },
+        { "id": 3, "type": "detail", "text": "влияние вышло далеко за пределы княжества", "group": null }
+      ]
+    },
+    {
+      "id": "reign-nevsky",
+      "title": "Александр Невский",
+      "other_names": [],
+      "date": { "display": "1252–1263", "start": 1252, "end": 1263 },
+      "era": 1,
+      "level": 1,
+      "image": null,
+      "summary": "Великий князь Владимирский, победитель шведов и рыцарей, сторонник мира с Ордой.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "Невская битва и Ледовое побоище", "group": null },
+        { "id": 2, "type": "detail", "text": "получил ярлык на великое княжение", "group": null },
+        { "id": 3, "type": "detail", "text": "подавил восстание новгородцев против переписи", "group": null },
+        { "id": 4, "type": "detail", "text": "вёл компромиссную политику с Ордой", "group": null }
+      ]
+    },
+    {
+      "id": "reign-daniil-moscow",
+      "title": "Даниил Московский",
+      "other_names": ["Даниил Александрович"],
+      "date": { "display": "1276–1303", "start": 1276, "end": 1303 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Первый московский князь.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "сын Александра Невского", "group": null },
+        { "id": 2, "type": "detail", "text": "первый московский князь", "group": null },
+        { "id": 3, "type": "detail", "text": "присоединил Коломну и Переяславль", "group": null, "src": "extra" }
+      ]
+    },
+    {
+      "id": "reign-yuri-danilovich",
+      "title": "Юрий Данилович",
+      "other_names": [],
+      "date": { "display": "1303–1325", "start": 1303, "end": 1325 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Московский князь, боровшийся с Тверью за ярлык.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "женился на сестре хана Узбека", "group": null },
+        { "id": 2, "type": "result", "text": "убит тверским князем", "group": null },
+        { "id": 3, "type": "detail", "text": "первым из московских князей получил ярлык", "group": null, "src": "extra" }
+      ]
+    },
+    {
+      "id": "reign-kalita",
+      "title": "Иван Калита",
+      "other_names": ["Иван I"],
+      "date": { "display": "1325–1340", "start": 1325, "end": 1340 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Московский князь, при котором Москва стала центром объединения.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "кафедра митрополита перенесена в Москву", "group": null },
+        { "id": 2, "type": "detail", "text": "после Тверского восстания получил ярлык", "group": null },
+        { "id": 3, "type": "detail", "text": "получил право собирать дань для Орды", "group": null },
+        { "id": 4, "type": "detail", "text": "построил дубовый Кремль", "group": null },
+        { "id": 5, "type": "detail", "text": "«Великая тишина» — передышка от набегов", "group": null }
+      ]
+    },
+    {
+      "id": "reign-semyon",
+      "title": "Семён Гордый",
+      "other_names": ["Симеон Гордый"],
+      "date": { "display": "1340–1353", "start": 1340, "end": 1353 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Старший сын Ивана Калиты.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "сын Ивана Калиты", "group": "kalita-sons" },
+        { "id": 2, "type": "detail", "text": "продолжал сотрудничество с ханами", "group": "kalita-sons-horde" },
+        { "id": 3, "type": "result", "text": "умер от чумы", "group": null, "src": "extra" }
+      ]
+    },
+    {
+      "id": "reign-ivan2",
+      "title": "Иван II Красный",
+      "other_names": ["Иван Красный"],
+      "date": { "display": "1353–1359", "start": 1353, "end": 1359 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Сын Ивана Калиты, отец Дмитрия Донского.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "сын Ивана Калиты", "group": "kalita-sons" },
+        { "id": 2, "type": "detail", "text": "продолжал сотрудничество с ханами", "group": "kalita-sons-horde" },
+        { "id": 3, "type": "person", "text": "отец Дмитрия Донского", "group": null, "src": "extra" }
+      ]
+    },
+    {
+      "id": "reign-donskoy",
+      "title": "Дмитрий Донской",
+      "other_names": ["Дмитрий Иванович"],
+      "date": { "display": "1359–1389", "start": 1359, "end": 1389 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Московский князь, победитель Мамая.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "Куликовская битва", "group": null },
+        { "id": 2, "type": "detail", "text": "построен белокаменный Кремль", "group": null },
+        { "id": 3, "type": "detail", "text": "отразил походы Ольгерда", "group": null },
+        { "id": 4, "type": "detail", "text": "победа на реке Воже", "group": null }
+      ]
+    },
+    {
+      "id": "reign-vasily1",
+      "title": "Василий I",
+      "other_names": ["Василий Дмитриевич"],
+      "date": { "display": "1389–1425", "start": 1389, "end": 1425 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Сын Дмитрия Донского.",
+      "confusable_with": ["reign-vasily2", "reign-vasily3"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "женат на дочери Витовта", "group": null },
+        { "id": 2, "type": "detail", "text": "поход Тамерлана", "group": null },
+        { "id": 3, "type": "detail", "text": "набег хана Едигея", "group": null }
+      ]
+    },
+    {
+      "id": "reign-vasily2",
+      "title": "Василий II Тёмный",
+      "other_names": ["Василий Тёмный"],
+      "date": { "display": "1425–1462", "start": 1425, "end": 1462 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Московский князь, победивший в феодальной войне.",
+      "confusable_with": ["reign-vasily1", "reign-vasily3"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "феодальная война с Василием Косым и Шемякой", "group": null },
+        { "id": 2, "type": "detail", "text": "был в плену у Улу-Мухаммеда", "group": null },
+        { "id": 3, "type": "result", "text": "Русская церковь стала автокефальной", "group": null },
+        { "id": 4, "type": "result", "text": "престол стал переходить от отца к сыну", "group": null }
+      ]
+    },
+    {
+      "id": "reign-ivan3",
+      "title": "Иван III",
+      "other_names": ["Иван Великий"],
+      "date": { "display": "1462–1505", "start": 1462, "end": 1505 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Государь всея Руси, завершивший освобождение от Орды.",
+      "confusable_with": ["reign-ivan4"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "присоединение Новгорода", "group": null },
+        { "id": 2, "type": "detail", "text": "стояние на реке Угре", "group": null },
+        { "id": 3, "type": "detail", "text": "Судебник", "group": null },
+        { "id": 4, "type": "detail", "text": "титул «государь всея Руси», двуглавый орёл", "group": null }
+      ]
+    },
+    {
+      "id": "reign-vasily3",
+      "title": "Василий III",
+      "other_names": [],
+      "date": { "display": "1505–1533", "start": 1505, "end": 1533 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Завершил объединение русских земель вокруг Москвы.",
+      "confusable_with": ["reign-vasily1", "reign-vasily2"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "присоединение Пскова", "group": null },
+        { "id": 2, "type": "detail", "text": "присоединение Смоленска", "group": null },
+        { "id": 3, "type": "detail", "text": "присоединение Рязани", "group": null }
+      ]
+    },
+    {
+      "id": "reign-glinskaya",
+      "title": "Елена Глинская",
+      "other_names": [],
+      "date": { "display": "1533–1538", "start": 1533, "end": 1538 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Регент при малолетнем Иване IV.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "регент при малолетнем сыне", "group": null },
+        { "id": 2, "type": "detail", "text": "денежная реформа — введена копейка", "group": null },
+        { "id": 3, "type": "detail", "text": "губная реформа", "group": null },
+        { "id": 4, "type": "detail", "text": "построена крепость Китай-город", "group": null }
+      ]
+    },
+    {
+      "id": "reign-ivan4",
+      "title": "Иван IV Грозный",
+      "other_names": ["Иван Грозный"],
+      "date": { "display": "1533–1584", "start": 1533, "end": 1584 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Первый русский царь.",
+      "confusable_with": ["reign-ivan3"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "венчание на царство", "group": null },
+        { "id": 2, "type": "detail", "text": "реформы Избранной рады", "group": null },
+        { "id": 3, "type": "detail", "text": "опричнина", "group": null },
+        { "id": 4, "type": "detail", "text": "Ливонская война", "group": null },
+        { "id": 5, "type": "detail", "text": "присоединение Казани и Астрахани", "group": null }
+      ]
+    },
+    {
+      "id": "reign-fedor-ioannovich",
+      "title": "Фёдор Иоаннович",
+      "other_names": ["Фёдор Иванович"],
+      "date": { "display": "1584–1598", "start": 1584, "end": 1598 },
+      "era": 2,
+      "level": 1,
+      "image": null,
+      "summary": "Последний царь из династии Рюриковичей.",
+      "confusable_with": ["reign-fedor-alexeevich"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "страной фактически управлял Борис Годунов", "group": null },
+        { "id": 2, "type": "detail", "text": "учреждено патриаршество", "group": null },
+        { "id": 3, "type": "detail", "text": "гибель царевича Дмитрия в Угличе", "group": null },
+        { "id": 4, "type": "detail", "text": "урочные лета — сыск беглых 5 лет", "group": null }
+      ]
+    },
+    {
+      "id": "reign-godunov",
+      "title": "Борис Годунов",
+      "other_names": [],
+      "date": { "display": "1598–1605", "start": 1598, "end": 1605 },
+      "era": 3,
+      "level": 1,
+      "image": null,
+      "summary": "Первый выборный царь.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "избран Земским собором", "group": "zs-elected" },
+        { "id": 2, "type": "detail", "text": "голод, царь раздавал хлеб", "group": null },
+        { "id": 3, "type": "detail", "text": "посылал дворян учиться в Европу", "group": null },
+        { "id": 4, "type": "detail", "text": "восстание Хлопка", "group": null }
+      ]
+    },
+    {
+      "id": "reign-lzhedmitry1",
+      "title": "Лжедмитрий I",
+      "other_names": [],
+      "date": { "display": "1605–1606", "start": 1605, "end": 1606 },
+      "era": 3,
+      "level": 1,
+      "image": null,
+      "summary": "Самозванец, выдававший себя за царевича Дмитрия.",
+      "confusable_with": ["reign-lzhedmitry2"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "монах Григорий Отрепьев", "group": null },
+        { "id": 2, "type": "person", "text": "женился на Марине Мнишек", "group": null },
+        { "id": 3, "type": "detail", "text": "получил деньги от Польши", "group": null }
+      ]
+    },
+    {
+      "id": "reign-shuisky",
+      "title": "Василий Шуйский",
+      "other_names": [],
+      "date": { "display": "1606–1610", "start": 1606, "end": 1610 },
+      "era": 3,
+      "level": 1,
+      "image": null,
+      "summary": "Боярский царь Смутного времени.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "избран Земским собором", "group": "zs-elected" },
+        { "id": 2, "type": "detail", "text": "крестоцеловальная запись", "group": null },
+        { "id": 3, "type": "detail", "text": "нанял шведскую армию Делагарди", "group": null },
+        { "id": 4, "type": "result", "text": "свергнут и пострижен в монахи", "group": null }
+      ]
+    },
+    {
+      "id": "reign-lzhedmitry2",
+      "title": "Лжедмитрий II",
+      "other_names": ["Тушинский вор"],
+      "date": { "display": "1607–1610", "start": 1607, "end": 1610 },
+      "era": 3,
+      "level": 1,
+      "image": null,
+      "summary": "Второй самозванец Смуты.",
+      "confusable_with": ["reign-lzhedmitry1"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "прозвище «тушинский вор»", "group": null },
+        { "id": 2, "type": "detail", "text": "лагерь в селе Тушино", "group": null },
+        { "id": 3, "type": "person", "text": "Марина Мнишек признала его мужем", "group": null }
+      ]
+    },
+    {
+      "id": "reign-semiboyarshchina",
+      "title": "Семибоярщина",
+      "other_names": [],
+      "date": { "display": "1610–1612", "start": 1610, "end": 1612 },
+      "era": 3,
+      "level": 1,
+      "image": null,
+      "summary": "Правительство семи бояр после свержения Шуйского.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "на престол призвали королевича Владислава", "group": null },
+        { "id": 2, "type": "person", "text": "против выступил патриарх Гермоген", "group": null },
+        { "id": 3, "type": "detail", "text": "в Москве стоял польский гарнизон", "group": null }
+      ]
+    },
+    {
+      "id": "reign-mikhail",
+      "title": "Михаил Фёдорович",
+      "other_names": ["Михаил Романов"],
+      "date": { "display": "1613–1645", "start": 1613, "end": 1645 },
+      "era": 3,
+      "level": 1,
+      "image": null,
+      "summary": "Первый царь из династии Романовых.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "регулярно созывались Земские соборы", "group": null },
+        { "id": 2, "type": "person", "text": "соправитель — патриарх Филарет", "group": null },
+        { "id": 3, "type": "detail", "text": "Смоленская война", "group": null },
+        { "id": 4, "type": "detail", "text": "полки нового строя", "group": null }
+      ]
+    },
+    {
+      "id": "reign-alexey",
+      "title": "Алексей Михайлович",
+      "other_names": ["Алексей Тишайший"],
+      "date": { "display": "1645–1676", "start": 1645, "end": 1676 },
+      "era": 3,
+      "level": 1,
+      "image": null,
+      "summary": "«Бунташный век»: правление второго Романова.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "прозвище «Тишайший»", "group": null },
+        { "id": 2, "type": "detail", "text": "Соляной и Медный бунты", "group": null },
+        { "id": 3, "type": "detail", "text": "Соборное уложение", "group": null },
+        { "id": 4, "type": "detail", "text": "церковная реформа Никона", "group": null },
+        { "id": 5, "type": "detail", "text": "восстание Разина", "group": null }
+      ]
+    },
+    {
+      "id": "reign-fedor-alexeevich",
+      "title": "Фёдор Алексеевич",
+      "other_names": [],
+      "date": { "display": "1676–1682", "start": 1676, "end": 1682 },
+      "era": 3,
+      "level": 1,
+      "image": null,
+      "summary": "Старший брат Петра I.",
+      "confusable_with": ["reign-fedor-ioannovich"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "отмена местничества", "group": null },
+        { "id": 2, "type": "detail", "text": "подворное налогообложение", "group": null },
+        { "id": 3, "type": "detail", "text": "Чигиринские походы", "group": null }
+      ]
+    },
+    {
+      "id": "reign-sofia",
+      "title": "Царевна Софья",
+      "other_names": ["Софья Алексеевна"],
+      "date": { "display": "1682–1689", "start": 1682, "end": 1689 },
+      "date_src": "derived",
+      "era": 3,
+      "level": 1,
+      "image": null,
+      "summary": "Правительница при малолетних братьях Иване и Петре.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "правительница при братьях Иване и Петре", "group": null },
+        { "id": 2, "type": "person", "text": "фаворит — В. В. Голицын", "group": null },
+        { "id": 3, "type": "detail", "text": "открыта Славяно-греко-латинская академия", "group": null },
+        { "id": 4, "type": "detail", "text": "«Вечный мир» с Польшей", "group": null },
+        { "id": 5, "type": "detail", "text": "неудачные Крымские походы", "group": null }
+      ]
+    },
+    {
+      "id": "reign-ivan5",
+      "title": "Иван V",
+      "other_names": ["Иван Алексеевич"],
+      "date": { "display": "1682–1696", "start": 1682, "end": 1696 },
+      "date_src": "extra",
+      "era": 3,
+      "level": 1,
+      "image": null,
+      "summary": "Соправитель Петра I.",
+      "confusable_with": ["reign-ivan6"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "провозглашён царём вместе с Петром после стрелецкого бунта", "group": null },
+        { "id": 2, "type": "detail", "text": "соправитель младшего брата", "group": null },
+        { "id": 3, "type": "person", "text": "отец Анны Иоанновны", "group": null }
+      ]
+    },
+    {
+      "id": "reign-peter1",
+      "title": "Пётр I",
+      "other_names": ["Пётр Великий"],
+      "date": { "display": "1682–1725", "start": 1682, "end": 1725 },
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "Первый российский император.",
+      "confusable_with": ["reign-peter2", "reign-peter3"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "Северная война", "group": null },
+        { "id": 2, "type": "detail", "text": "Табель о рангах", "group": null },
+        { "id": 3, "type": "detail", "text": "Синод вместо патриаршества", "group": null },
+        { "id": 4, "type": "detail", "text": "коллегии вместо приказов", "group": null },
+        { "id": 5, "type": "detail", "text": "указ о единонаследии", "group": null }
+      ]
+    },
+    {
+      "id": "reign-catherine1",
+      "title": "Екатерина I",
+      "other_names": [],
+      "date": { "display": "1725–1727", "start": 1725, "end": 1727 },
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "Вдова Петра I, первая императрица.",
+      "confusable_with": ["reign-catherine2"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "создан Верховный тайный совет", "group": null },
+        { "id": 2, "type": "detail", "text": "открыта Академия наук", "group": null },
+        { "id": 3, "type": "person", "text": "фактически правил Меншиков", "group": null }
+      ]
+    },
+    {
+      "id": "reign-peter2",
+      "title": "Пётр II",
+      "other_names": [],
+      "date": { "display": "1727–1730", "start": 1727, "end": 1730 },
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "Внук Петра I, умерший юношей.",
+      "confusable_with": ["reign-peter1", "reign-peter3"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "внук Петра I", "group": null },
+        { "id": 2, "type": "detail", "text": "Меншиков сослан в Берёзов", "group": null },
+        { "id": 3, "type": "detail", "text": "попал под влияние Долгоруких", "group": null }
+      ]
+    },
+    {
+      "id": "reign-anna",
+      "title": "Анна Иоанновна",
+      "other_names": [],
+      "date": { "display": "1730–1740", "start": 1730, "end": 1740 },
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "Императрица, приглашённая верховниками на условиях «кондиций».",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "разорвала «кондиции»", "group": null },
+        { "id": 2, "type": "person", "text": "фаворит — Бирон", "group": null },
+        { "id": 3, "type": "detail", "text": "ликвидирован Верховный тайный совет", "group": null },
+        { "id": 4, "type": "detail", "text": "Канцелярия тайных розыскных дел", "group": null }
+      ]
+    },
+    {
+      "id": "reign-ivan6",
+      "title": "Иван VI",
+      "other_names": ["Иван Антонович"],
+      "date": { "display": "1740–1741", "start": 1740, "end": 1741 },
+      "date_src": "extra",
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "Император-младенец, свергнутый Елизаветой.",
+      "confusable_with": ["reign-ivan5"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "император-младенец", "group": null },
+        { "id": 2, "type": "person", "text": "регенты — Бирон, затем Анна Леопольдовна", "group": null },
+        { "id": 3, "type": "result", "text": "узник Шлиссельбургской крепости", "group": null }
+      ]
+    },
+    {
+      "id": "reign-elizabeth",
+      "title": "Елизавета Петровна",
+      "other_names": [],
+      "date": { "display": "1741–1761", "start": 1741, "end": 1761 },
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "Дочь Петра I, пришедшая к власти с помощью гвардии.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "основан Московский университет", "group": null },
+        { "id": 2, "type": "detail", "text": "Семилетняя война", "group": null },
+        { "id": 3, "type": "detail", "text": "обещала не применять смертную казнь", "group": null },
+        { "id": 4, "type": "detail", "text": "отменены внутренние таможенные пошлины", "group": null }
+      ]
+    },
+    {
+      "id": "reign-peter3",
+      "title": "Пётр III",
+      "other_names": [],
+      "date": { "display": "1761–1762", "start": 1761, "end": 1762 },
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "Император, свергнутый женой через полгода.",
+      "confusable_with": ["reign-peter1", "reign-peter2"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "Манифест о вольности дворянства", "group": null },
+        { "id": 2, "type": "detail", "text": "упразднена Тайная канцелярия", "group": null },
+        { "id": 3, "type": "detail", "text": "секуляризация церковных земель", "group": null },
+        { "id": 4, "type": "result", "text": "свергнут женой", "group": null }
+      ]
+    },
+    {
+      "id": "reign-catherine2",
+      "title": "Екатерина II",
+      "other_names": ["Екатерина Великая"],
+      "date": { "display": "1762–1796", "start": 1762, "end": 1796 },
+      "date_src": "derived",
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "Эпоха просвещённого абсолютизма.",
+      "confusable_with": ["reign-catherine1"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "Уложенная комиссия", "group": null },
+        { "id": 2, "type": "detail", "text": "присоединение Крыма", "group": null },
+        { "id": 3, "type": "detail", "text": "Жалованные грамоты", "group": null },
+        { "id": 4, "type": "detail", "text": "восстание Пугачёва", "group": null },
+        { "id": 5, "type": "detail", "text": "губернская реформа", "group": null }
+      ]
+    },
+    {
+      "id": "reign-paul",
+      "title": "Павел I",
+      "other_names": [],
+      "date": { "display": "1796–1801", "start": 1796, "end": 1801 },
+      "era": 4,
+      "level": 1,
+      "image": null,
+      "summary": "Император, убитый заговорщиками.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "закон о престолонаследии по мужской линии", "group": null },
+        { "id": 2, "type": "detail", "text": "армия на прусский манер", "group": null },
+        { "id": 3, "type": "detail", "text": "вернул Радищева из ссылки", "group": null },
+        { "id": 4, "type": "detail", "text": "союз с Наполеоном, поход в Индию", "group": null }
+      ]
+    },
+    {
+      "id": "reign-alexander1",
+      "title": "Александр I",
+      "other_names": [],
+      "date": { "display": "1801–1825", "start": 1801, "end": 1825 },
+      "era": 5,
+      "level": 1,
+      "image": null,
+      "summary": "Победитель Наполеона.",
+      "confusable_with": ["reign-alexander2", "reign-alexander3"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "Негласный комитет", "group": null },
+        { "id": 2, "type": "detail", "text": "министерства вместо коллегий", "group": null },
+        { "id": 3, "type": "detail", "text": "указ о вольных хлебопашцах", "group": null },
+        { "id": 4, "type": "detail", "text": "Отечественная война", "group": null }
+      ]
+    },
+    {
+      "id": "reign-nicholas1",
+      "title": "Николай I",
+      "other_names": [],
+      "date": { "display": "1825–1855", "start": 1825, "end": 1855 },
+      "era": 5,
+      "level": 1,
+      "image": null,
+      "summary": "Император, начавший правление с подавления декабристов.",
+      "confusable_with": ["reign-nicholas2"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "III отделение и корпус жандармов", "group": null },
+        { "id": 2, "type": "detail", "text": "«чугунный» цензурный устав", "group": null },
+        { "id": 3, "type": "detail", "text": "реформа государственной деревни Киселёва", "group": null },
+        { "id": 4, "type": "detail", "text": "Крымская война", "group": null }
+      ]
+    },
+    {
+      "id": "reign-alexander2",
+      "title": "Александр II",
+      "other_names": ["Царь-Освободитель"],
+      "date": { "display": "1855–1881", "start": 1855, "end": 1881 },
+      "era": 5,
+      "level": 1,
+      "image": null,
+      "summary": "Эпоха Великих реформ.",
+      "confusable_with": ["reign-alexander1", "reign-alexander3"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "отмена крепостного права", "group": null },
+        { "id": 2, "type": "detail", "text": "земская и судебная реформы", "group": null },
+        { "id": 3, "type": "detail", "text": "русско-турецкая война за Балканы", "group": null },
+        { "id": 4, "type": "result", "text": "убит народовольцами", "group": null }
+      ]
+    },
+    {
+      "id": "reign-alexander3",
+      "title": "Александр III",
+      "other_names": ["Миротворец"],
+      "date": { "display": "1881–1894", "start": 1881, "end": 1894 },
+      "era": 5,
+      "level": 1,
+      "image": null,
+      "summary": "Эпоха контрреформ.",
+      "confusable_with": ["reign-alexander1", "reign-alexander2"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "Манифест о незыблемости самодержавия", "group": null },
+        { "id": 2, "type": "person", "text": "советник — Победоносцев", "group": null },
+        { "id": 3, "type": "detail", "text": "введены земские начальники", "group": null },
+        { "id": 4, "type": "detail", "text": "«Временные правила о печати»", "group": null }
+      ]
+    },
+    {
+      "id": "reign-nicholas2",
+      "title": "Николай II",
+      "other_names": [],
+      "date": { "display": "1894–1917", "start": 1894, "end": 1917 },
+      "era": 6,
+      "level": 1,
+      "image": null,
+      "summary": "Последний российский император.",
+      "confusable_with": ["reign-nicholas1"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "Ходынская трагедия", "group": null },
+        { "id": 2, "type": "detail", "text": "русско-японская война", "group": null },
+        { "id": 3, "type": "detail", "text": "Манифест 17 октября", "group": null },
+        { "id": 4, "type": "result", "text": "отрёкся от престола", "group": null }
+      ]
+    },
+    {
+      "id": "reign-lenin",
+      "title": "В. И. Ленин",
+      "other_names": ["Ленин"],
+      "date": { "display": "1917–1924", "start": 1917, "end": 1924 },
+      "date_src": "extra",
+      "era": 6,
+      "level": 1,
+      "image": null,
+      "summary": "Глава первого советского правительства.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "председатель Совнаркома", "group": null },
+        { "id": 2, "type": "detail", "text": "Брестский мир", "group": null },
+        { "id": 3, "type": "detail", "text": "переход к НЭПу", "group": null },
+        { "id": 4, "type": "detail", "text": "образование СССР", "group": null }
+      ]
+    },
+    {
+      "id": "reign-stalin",
+      "title": "И. В. Сталин",
+      "other_names": ["Сталин"],
+      "date": { "display": "1924–1953", "start": 1924, "end": 1953 },
+      "date_src": "extra",
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Единоличный лидер СССР.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "индустриализация", "group": null },
+        { "id": 2, "type": "detail", "text": "коллективизация", "group": null },
+        { "id": 3, "type": "detail", "text": "Большой террор", "group": null },
+        { "id": 4, "type": "detail", "text": "Великая Отечественная война", "group": null }
+      ]
+    },
+    {
+      "id": "reign-malenkov",
+      "title": "Г. М. Маленков",
+      "other_names": ["Маленков"],
+      "date": { "display": "1953–1955", "start": 1953, "end": 1955 },
+      "date_src": "extra",
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Глава правительства после смерти Сталина.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "председатель Совета министров после Сталина", "group": null },
+        { "id": 2, "type": "detail", "text": "борьба за власть с Берией и Хрущёвым", "group": null },
+        { "id": 3, "type": "result", "text": "позже объявлен членом «антипартийной группы»", "group": null }
+      ]
+    },
+    {
+      "id": "reign-khrushchev",
+      "title": "Н. С. Хрущёв",
+      "other_names": ["Хрущёв"],
+      "date": { "display": "1953–1964", "start": 1953, "end": 1964 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Эпоха «оттепели».",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "XX съезд, осуждение культа личности", "group": null },
+        { "id": 2, "type": "detail", "text": "совнархозы", "group": null },
+        { "id": 3, "type": "detail", "text": "кукурузная кампания", "group": null },
+        { "id": 4, "type": "detail", "text": "Карибский кризис", "group": null }
+      ]
+    },
+    {
+      "id": "reign-brezhnev",
+      "title": "Л. И. Брежнев",
+      "other_names": ["Брежнев"],
+      "date": { "display": "1964–1982", "start": 1964, "end": 1982 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Эпоха «застоя».",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "«стабильность кадров»", "group": null },
+        { "id": 2, "type": "detail", "text": "упразднены совнархозы", "group": null },
+        { "id": 3, "type": "detail", "text": "ввод войск в Афганистан", "group": null },
+        { "id": 4, "type": "detail", "text": "период назван «застоем»", "group": null }
+      ]
+    },
+    {
+      "id": "reign-andropov",
+      "title": "Ю. В. Андропов",
+      "other_names": ["Андропов"],
+      "date": { "display": "1982–1984", "start": 1982, "end": 1984 },
+      "date_src": "derived",
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Генсек, начавший борьбу за дисциплину.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "облавы на прогульщиков, борьба за дисциплину", "group": null },
+        { "id": 2, "type": "detail", "text": "экономический эксперимент", "group": null },
+        { "id": 3, "type": "detail", "text": "тезис о «совершенствовании развитого социализма»", "group": null }
+      ]
+    },
+    {
+      "id": "reign-chernenko",
+      "title": "К. У. Черненко",
+      "other_names": ["Черненко"],
+      "date": { "display": "1984–1985", "start": 1984, "end": 1985 },
+      "date_src": "derived",
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Тяжело больной генсек.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "тяжело больной генсек", "group": null },
+        { "id": 2, "type": "detail", "text": "«мини-застой»", "group": null },
+        { "id": 3, "type": "detail", "text": "хотел продолжить курс Андропова", "group": null }
+      ]
+    },
+    {
+      "id": "reign-gorbachev",
+      "title": "М. С. Горбачёв",
+      "other_names": ["Горбачёв"],
+      "date": { "display": "1985–1991", "start": 1985, "end": 1991 },
+      "era": 7,
+      "level": 1,
+      "image": null,
+      "summary": "Перестройка и распад СССР.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "перестройка", "group": null },
+        { "id": 2, "type": "detail", "text": "политика гласности", "group": null },
+        { "id": 3, "type": "detail", "text": "вывод войск из Афганистана", "group": null },
+        { "id": 4, "type": "detail", "text": "Нобелевская премия мира", "group": null }
+      ]
+    },
+    {
+      "id": "reign-yeltsin",
+      "title": "Б. Н. Ельцин",
+      "other_names": ["Ельцин"],
+      "date": { "display": "1991–1999", "start": 1991, "end": 1999 },
+      "date_src": "derived",
+      "era": 8,
+      "level": 1,
+      "image": null,
+      "summary": "Первый президент России.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "либерализация цен", "group": null },
+        { "id": 2, "type": "detail", "text": "Конституция России", "group": null },
+        { "id": 3, "type": "detail", "text": "первая чеченская война", "group": null },
+        { "id": 4, "type": "detail", "text": "дефолт", "group": null }
+      ]
+    },
+    {
+      "id": "reign-putin1",
+      "title": "В. В. Путин (первые два срока)",
+      "other_names": ["Путин"],
+      "date": { "display": "2000–2008", "start": 2000, "end": 2008 },
+      "date_src": "extra",
+      "era": 8,
+      "level": 1,
+      "image": null,
+      "summary": "Первые два президентских срока В. В. Путина.",
+      "confusable_with": ["reign-putin2"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "монетизация льгот", "group": null },
+        { "id": 2, "type": "detail", "text": "приоритетные национальные проекты", "group": null },
+        { "id": 3, "type": "detail", "text": "единый налог на доходы 13%", "group": null },
+        { "id": 4, "type": "detail", "text": "материнский капитал", "group": null }
+      ]
+    },
+    {
+      "id": "reign-medvedev",
+      "title": "Д. А. Медведев",
+      "other_names": ["Медведев"],
+      "date": { "display": "2008–2012", "start": 2008, "end": 2012 },
+      "era": 8,
+      "level": 1,
+      "image": null,
+      "summary": "Президентство Д. А. Медведева.",
+      "confusable_with": [],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "person", "text": "председатель правительства — В. В. Путин", "group": null },
+        { "id": 2, "type": "detail", "text": "война в Южной Осетии", "group": null },
+        { "id": 3, "type": "detail", "text": "расширены права Федерального собрания", "group": null }
+      ]
+    },
+    {
+      "id": "reign-putin2",
+      "title": "В. В. Путин (после Медведева)",
+      "other_names": [],
+      "date": { "display": "с 2012", "start": 2012, "end": null },
+      "date_src": "extra",
+      "era": 8,
+      "level": 1,
+      "image": null,
+      "summary": "Нынешнее президентство В. В. Путина, после президентства Д. А. Медведева.",
+      "confusable_with": ["reign-putin1"],
+      "pair_notes": {},
+      "facts": [
+        { "id": 1, "type": "detail", "text": "воссоединение России и Крыма", "group": null },
+        { "id": 2, "type": "detail", "text": "поправки к Конституции", "group": null },
+        { "id": 3, "type": "detail", "text": "специальная военная операция", "group": null }
+      ]
+    }
+  ]
+}

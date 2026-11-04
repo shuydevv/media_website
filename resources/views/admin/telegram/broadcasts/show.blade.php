@@ -78,7 +78,16 @@
             @if ($editable && $tab === 'out')
                 <x-ui.button type="submit" name="action" value="return" size="xs" variant="outline">Вернуть</x-ui.button>
             @endif
+            @if ($tab === 'late')
+                <x-ui.button type="submit" formaction="{{ route('admin.telegram.broadcasts.latecomers', $broadcast) }}" size="xs" variant="outline"
+                    onclick="return confirm('Дослать рассылку отмеченным? Отозвать отправленное нельзя.')">Дослать отмеченным</x-ui.button>
+                <x-ui.button type="submit" formaction="{{ route('admin.telegram.broadcasts.latecomers', $broadcast) }}" name="all" value="1" size="xs"
+                    onclick="return confirm('Дослать рассылку всем, кто зашёл позже ({{ $counts['late'] }})? Отозвать отправленное нельзя.')">Дослать всем {{ $counts['late'] }}</x-ui.button>
+            @endif
         </div>
+        @if ($tab === 'late')
+            <p class="text-sm text-zinc-500 mb-3">Попали бы в эту рассылку сейчас, но не получали её: запустили бота после отправки или вернулись, разблокировав. Уйдёт то же сообщение из темы «📣 Рассылка».</p>
+        @endif
 
         <x-ui.table>
             <thead>
@@ -114,7 +123,7 @@
                             @endif
                         </td>
                         @unless ($editable)
-                            <td data-label="Ответил" class="text-sm md:whitespace-nowrap">{{ $row['recipient']->replied_at?->format('d.m H:i') ?? '—' }}</td>
+                            <td data-label="Ответил" class="text-sm md:whitespace-nowrap">{{ $row['recipient']?->replied_at?->format('d.m H:i') ?? '—' }}</td>
                         @endunless
                     </tr>
                 @endforeach

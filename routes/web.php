@@ -303,6 +303,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
             Route::get('/broadcasts', 'Broadcasts\IndexController')->name('admin.telegram.broadcasts.index');
             Route::get('/broadcasts/{broadcast}', 'Broadcasts\ShowController')->name('admin.telegram.broadcasts.show');
             Route::post('/broadcasts/{broadcast}/people', 'Broadcasts\PeopleController')->name('admin.telegram.broadcasts.people');
+            Route::post('/broadcasts/{broadcast}/latecomers', 'Broadcasts\LatecomersController')->name('admin.telegram.broadcasts.latecomers');
         });
 
         Route::group(['namespace' => 'Crm', 'prefix' => 'crm'], function () {
@@ -561,6 +562,38 @@ Route::middleware(['auth', 'terms.access'])
 
         Route::get('/{term}', [TermTrainerController::class, 'term'])->whereNumber('term')->name('show');
     });
+
+// Тренажёр дат по истории — устроен как тренажёр терминов, доступ свой
+// (dates.access, см. App\Service\Dates\HistAccess).
+use App\Http\Controllers\Student\DateTrainerController;
+
+Route::middleware(['auth', 'dates.access'])
+    ->prefix('student/dates')
+    ->name('student.dates.')
+    ->group(function () {
+        Route::get('/', [DateTrainerController::class, 'index'])->name('index');
+        Route::post('/start/{kind}', [DateTrainerController::class, 'start'])
+            ->whereIn('kind', ['learn', 'review', 'free'])
+            ->name('start');
+
+        Route::get('/sessions/{histSession}', [DateTrainerController::class, 'show'])->name('session');
+        Route::post('/sessions/{histSession}/card', [DateTrainerController::class, 'card'])->name('session.card');
+        Route::post('/sessions/{histSession}/hint', [DateTrainerController::class, 'hint'])->name('session.hint');
+        Route::post('/sessions/{histSession}/answer', [DateTrainerController::class, 'answer'])->name('session.answer');
+        Route::post('/sessions/{histSession}/choose', [DateTrainerController::class, 'choose'])->name('session.choose');
+        Route::post('/sessions/{histSession}/next', [DateTrainerController::class, 'next'])->name('session.next');
+        Route::post('/sessions/{histSession}/report', [DateTrainerController::class, 'report'])
+            ->middleware('throttle:20,1')
+            ->name('session.report');
+
+        Route::get('/{histEvent}', [DateTrainerController::class, 'item'])->whereNumber('histEvent')->name('show');
+    });
+
+// Общая страница тренажёров — кнопка «Тренажёры» у рыбы ведёт сюда, когда
+// ученику открыто больше одного тренажёра (см. App\Service\Trainers\TrainerHub).
+Route::middleware(['auth'])
+    ->get('/student/trainers', [\App\Http\Controllers\Student\TrainersController::class, 'index'])
+    ->name('student.trainers.index');
 
 // Проверка домашних ментором
 Route::middleware(['auth', 'mentor'])

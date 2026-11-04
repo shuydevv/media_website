@@ -11,8 +11,8 @@
      refresh не помог).
 
      На страницах, где ученик решает задания, — выполнение домашки
-     (student.submissions.question) и сессия тренажёра терминов
-     (student.terms.session) — меню изначально свёрнуто, на любой ширине:
+     (student.submissions.question) и сессии тренажёров терминов и дат
+     (student.terms.session, student.dates.session) — меню изначально свёрнуто, на любой ширине:
      случайный тап по нему посреди задания уводил бы со страницы. Вместо
      меню в правом нижнем углу кнопка "Раскрыть меню". Когда меню раскрыто,
      на том же месте та же кнопка — "Скрыть меню": сворачивает обратно.
@@ -21,7 +21,8 @@
      student/terms/session.blade.php). --}}
 @php
     $isHomeworkSolvingPage = request()->routeIs('student.submissions.question')
-        || request()->routeIs('student.terms.session');
+        || request()->routeIs('student.terms.session')
+        || request()->routeIs('student.dates.session');
 @endphp
 <style>
     /* Одна и та же "стеклянная таблетка" на мобилке и на ПК — раньше

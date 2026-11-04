@@ -371,6 +371,35 @@ class BroadcastTest extends TestCase
             ->assertSessionHas('error');
     }
 
+    public function test_latecomers_get_broadcast_once(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $this->contact(TelegramBots::LESSON, 1301);
+        $broadcast = $this->draft();
+        BroadcastSender::make()->start($broadcast);
+        $this->assertSame(1, $this->countSent('copyMessages'));
+
+        $this->contact(TelegramBots::LESSON, 1302, ['first_name' => 'Галя']);
+        $this->contact(TelegramBots::DIAG, 1301); // тот же человек во втором боте — уже получил
+        $this->contact(TelegramBots::LESSON, 1303, ['first_name' => 'Дима', 'broadcast_opt_out_at' => now()]);
+
+        $this->assertSame([1302], BroadcastSender::latecomers($broadcast->fresh())->pluck('telegram_user_id')->map(fn ($id) => (int) $id)->all());
+        $this->actingAs($admin)->get(route('admin.telegram.broadcasts.index'))->assertOk()->assertSee('Посмотреть и дослать');
+        $this->actingAs($admin)->get(route('admin.telegram.broadcasts.show', ['broadcast' => $broadcast, 'tab' => 'late']))
+            ->assertOk()->assertSee('Галя')->assertDontSee('Дима');
+
+        $this->actingAs($admin)->post(route('admin.telegram.broadcasts.latecomers', $broadcast), ['all' => 1])->assertSessionHas('success');
+
+        $broadcast->refresh();
+        $this->assertSame(TelegramBroadcast::STATUS_DONE, $broadcast->status);
+        $this->assertSame(2, $broadcast->recipients()->where('status', TelegramBroadcastRecipient::STATUS_SENT)->count());
+        $this->assertSame(1, $this->countSent('copyMessages', fn (Request $r) => (int) $r['chat_id'] === 1302));
+        $this->assertSame(2, $this->countSent('copyMessages'));
+
+        $this->actingAs($admin)->post(route('admin.telegram.broadcasts.latecomers', $broadcast), ['all' => 1])->assertSessionHas('error');
+        $this->assertSame(2, $this->countSent('copyMessages'), 'второй раз досылать некому');
+    }
+
     // ---------- помощники ----------
 
     private function fakeTelegram(): void

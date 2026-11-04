@@ -44,6 +44,9 @@ class FishController extends Controller
             if ($result['leveled_up']) {
                 $response->headers->set('HX-Trigger', json_encode([
                     'fish-level-up' => [
+                        // Номер — для значка уровня на углу маскота (он вне
+                        // #fish-card и htmx-свапом не обновляется).
+                        'level' => $fishLevel,
                         'defaultSrc' => $fish->mascotImageUrl($fishLevel),
                         'eatingSrc' => $fish->mascotImageUrl($fishLevel, 'eating'),
                     ],
