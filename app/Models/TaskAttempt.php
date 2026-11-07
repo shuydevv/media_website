@@ -13,9 +13,12 @@ class TaskAttempt extends Model
     protected $fillable = [
         'task_id',
         'user_id',
+        'round_id',
+        'position',
         'answer',
         'status',
         'score',
+        'ms',
     ];
 
     public function task()

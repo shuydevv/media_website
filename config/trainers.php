@@ -50,6 +50,8 @@ return [
     'list' => [
         App\Service\Trainers\TermsTrainerCard::class,
         App\Service\Trainers\DatesTrainerCard::class,
+        App\Service\Trainers\StatementsTrainerCard::class,
+        App\Service\Trainers\TasksTrainerCard::class,
     ],
 
     // Показывать ли снаряды «в разработке» (станции без 'trainer'). Пока
@@ -139,8 +141,20 @@ return [
                     'emoji' => '📚',
                     'tagline' => 'Гантели понятий',
                     'image' => 'img/trainers/stations/terms.webp',
-                    'x' => 50, 'y' => 94, 'scale' => 1.0, 'size' => 1.5, 'msize' => 1.3,
-                    'mx' => 50, 'my' => 96,
+                    // Два открытых тренажёра — рядом спереди по центру (решение
+                    // автора от 06.11.2026), а не один по центру, как в схеме выше.
+                    'x' => 37, 'y' => 94, 'scale' => 1.0, 'size' => 1.4, 'msize' => 1.15,
+                    'mx' => 33, 'my' => 96,
+                ],
+                [
+                    'trainer' => App\Service\Trainers\StatementsTrainerCard::class,
+                    'emoji' => '🃏',
+                    'tagline' => 'Скакалка «верно — неверно»',
+                    'about' => 'Решаем, верно суждение или нет, и сразу видим, почему.',
+                    // Картинку снаряда автор загрузит позже — пока заглушка.
+                    'image' => null,
+                    'x' => 63, 'y' => 94, 'scale' => 1.0, 'size' => 1.4, 'msize' => 1.15,
+                    'mx' => 67, 'my' => 96,
                 ],
                 [
                     'title' => 'Графики',
@@ -161,10 +175,12 @@ return [
                     'mx' => 84, 'my' => 93,
                 ],
                 [
-                    'title' => 'Задания',
+                    // Станция открыта 07.11.2026 (docs/bank/Задания — механика.md).
+                    'trainer' => App\Service\Trainers\TasksTrainerCard::class,
                     'emoji' => '🥊',
                     'tagline' => 'Боксёрская груша',
-                    'about' => 'Решаем задания ЕГЭ по обществознанию из банка и разбираем накопившиеся ошибки.',
+                    'about' => 'Задания ЕГЭ: первая часть раундами, вторая — с проверкой куратора.',
+                    // Картинку снаряда автор загрузит позже — пока заглушка.
                     'image' => null,
                     'x' => 14, 'y' => 93, 'scale' => 1.0, 'size' => 1.2, 'msize' => 1.0,
                     'mx' => 16, 'my' => 93,

@@ -154,8 +154,10 @@ class TrainerGym
             Trainer::REVIEW => ['Пора повторить: '.$what, 'Повторить '.$what, 'Повторить'],
             Trainer::NEW_NEAR_LEVEL => ['Можно учить: '.Text::plural($count, $words['new_what']).'. До нового уровня совсем чуть-чуть', 'Выучить '.Text::plural($count, $words['new_what']), 'Учить'],
             Trainer::NEW => ['Можно учить: '.Text::plural($count, $words['new_what']), 'Выучить '.Text::plural($count, $words['new_what']), 'Учить'],
+            // note — своя подпись тренажёра для «всё сделано» (у карточек
+            // суждений: сколько ещё сессий с кормом), см. Trainer::statusFor().
             default => [
-                'Сегодня всё сделано'.($status['next'] ? '. Завтра на повторение — '.Text::plural((int) $status['next'], $words['what']) : ''),
+                $status['note'] ?? 'Сегодня всё сделано'.($status['next'] ? '. Завтра на повторение — '.Text::plural((int) $status['next'], $words['what']) : ''),
                 'Сделано на сегодня',
                 'Открыть',
             ],

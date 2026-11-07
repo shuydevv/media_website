@@ -28,6 +28,9 @@
         'secondary' => 'bg-zinc-100 hover:bg-zinc-200 text-zinc-800',
         'ghost' => 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900',
         'danger-soft' => 'bg-white border border-apple-red-200 text-apple-red-650 hover:bg-apple-red-50',
+        // «Игровые» кнопки тренажёров (partials/game-buttons): серо-голубая и голубая.
+        'game' => 'game-btn',
+        'game-main' => 'game-btn game-btn--main',
     ];
 
     $sizeClasses = match ($size) {
@@ -42,7 +45,8 @@
     // проп (не голый $attributes->has()), иначе :disabled="false" всё равно
     // считался бы «есть атрибут» — has() смотрит на наличие ключа, а не на
     // истинность значения.
-    $colorClasses = $disabled
+    // У игровых кнопок своё выключенное состояние (через :disabled).
+    $colorClasses = $disabled && ! str_starts_with($variant, 'game')
         ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
         : ($variants[$variant] ?? $variants['primary']);
 

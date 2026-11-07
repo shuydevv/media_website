@@ -126,7 +126,7 @@
           @if($row['button'])
             <form method="POST" action="{{ route('student.dates.start', $kind) }}">
               @csrf
-              <x-ui.button type="submit" size="sm" block :variant="$kind === 'free' ? 'outline' : 'accent'">{{ $row['button'] }}</x-ui.button>
+              <x-ui.button type="submit" size="sm" block :variant="$kind === 'free' ? 'game' : 'game-main'">{{ $row['button'] }}</x-ui.button>
             </form>
           @else
             <div class="flex items-center justify-center gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm {{ $isDone ? 'text-emerald-700' : 'text-zinc-400' }}">

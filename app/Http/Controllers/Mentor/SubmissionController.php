@@ -89,8 +89,11 @@ class SubmissionController extends Controller
             ];
         }
 
+        // Ответы второй части со станции «Задания» — отдельный блок очереди.
+        $taskReviews = app(\App\Service\Bank\WrittenPractice::class)->queue((int) $user->id);
+
         $subs = Submission::with(['user','homework'])->latest()->paginate(20);
-        return view('mentor.submissions.index', ['submissions' => $subs, 'mine' => $mine, 'queue' => $queue, 'retrying' => $retrying, 'skipped' => $skipped, 'aiBatch' => $aiBatch, 'aiDesktop' => $aiDesktop], );
+        return view('mentor.submissions.index', ['submissions' => $subs, 'mine' => $mine, 'queue' => $queue, 'retrying' => $retrying, 'skipped' => $skipped, 'aiBatch' => $aiBatch, 'aiDesktop' => $aiDesktop, 'taskReviews' => $taskReviews], );
     }
 
     public function show(Submission $submission)

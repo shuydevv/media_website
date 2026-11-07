@@ -70,5 +70,7 @@ class Kernel extends HttpKernel
         'billing.current' => \App\Http\Middleware\EnsureCourseBillingCurrent::class,
         'terms.access' => \App\Http\Middleware\EnsureTermTrainerAccess::class,
         'dates.access' => \App\Http\Middleware\EnsureDateTrainerAccess::class,
+        'statements.access' => \App\Http\Middleware\EnsureStatementTrainerAccess::class,
+        'tasks.access' => \App\Http\Middleware\EnsureTaskTrainerAccess::class,
     ];
 }

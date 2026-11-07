@@ -83,7 +83,7 @@
       @csrf
       <textarea name="comment" rows="2" maxlength="500" placeholder="Что не так? Можно не писать — вопрос уже прикреплён."
                 class="w-full border border-zinc-300 rounded-xl px-3 py-2 text-sm"></textarea>
-      <x-ui.button type="submit" variant="outline" size="sm" class="mt-2 text-sm">Отправить</x-ui.button>
+      <x-ui.button type="submit" variant="game" size="sm" class="mt-2 text-sm">Отправить</x-ui.button>
     </form>
   </details>
 @endif

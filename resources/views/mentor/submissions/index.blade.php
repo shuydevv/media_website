@@ -24,6 +24,9 @@
     <div class="mb-4 rounded-xl border border-green-200 bg-green-50 text-green-800 px-3 py-2">{{ session('success') }}</div>
   @endif
 
+  {{-- Ответы второй части со станции «Задания» (ученики отправили сами). --}}
+  @include('mentor.submissions.partials.task-reviews', ['taskReviews' => $taskReviews ?? collect()])
+
   {{-- ИИ-проверка через Claude Desktop: выгрузить порцию → проверить скиллом → загрузить результат --}}
   @if($aiDesktop)
     @include('mentor.submissions.partials.ai-desktop')

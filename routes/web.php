@@ -589,6 +589,58 @@ Route::middleware(['auth', 'dates.access'])
         Route::get('/{histEvent}', [DateTrainerController::class, 'item'])->whereNumber('histEvent')->name('show');
     });
 
+// Тренажёр «Верные суждения» (зал обществоведов) — доступ как у терминов
+// (statements.access → App\Service\Terms\TermAccess).
+use App\Http\Controllers\Student\StatementTrainerController;
+
+Route::middleware(['auth', 'statements.access'])
+    ->prefix('student/statements')
+    ->name('student.statements.')
+    ->group(function () {
+        Route::get('/', [StatementTrainerController::class, 'index'])->name('index');
+        Route::post('/start', [StatementTrainerController::class, 'start'])->name('start');
+        Route::get('/sessions/{statementSession}', [StatementTrainerController::class, 'show'])->name('session');
+        Route::post('/sessions/{statementSession}/answer', [StatementTrainerController::class, 'answer'])
+            ->middleware('throttle:120,1')
+            ->name('session.answer');
+        Route::post('/sessions/{statementSession}/mistakes', [StatementTrainerController::class, 'mistakes'])->name('mistakes');
+        Route::post('/sessions/{statementSession}/report', [StatementTrainerController::class, 'report'])
+            ->middleware('throttle:20,1')
+            ->name('session.report');
+    });
+
+// Станция «Задания» (зал обществоведов): первая часть раундами, вторая —
+// подходами с самопроверкой или отправкой куратору. Доступ — курс
+// обществознания (tasks.access → App\Service\Terms\TermAccess).
+use App\Http\Controllers\Student\TaskStationController;
+
+Route::middleware(['auth', 'tasks.access'])
+    ->prefix('student/ege')
+    ->name('student.ege.')
+    ->group(function () {
+        Route::get('/', [TaskStationController::class, 'index'])->name('index');
+        Route::post('/rounds', [TaskStationController::class, 'start'])->name('start');
+        Route::get('/rounds/{taskRound}', [TaskStationController::class, 'round'])->name('round');
+        Route::post('/rounds/{taskRound}/answer', [TaskStationController::class, 'answer'])
+            ->middleware('throttle:120,1')
+            ->name('round.answer');
+        Route::post('/rounds/{taskRound}/mistakes', [TaskStationController::class, 'mistakes'])->name('mistakes');
+        Route::post('/report', [TaskStationController::class, 'report'])
+            ->middleware('throttle:20,1')
+            ->name('report');
+
+        Route::post('/written', [TaskStationController::class, 'writtenStart'])->name('written.start');
+        Route::get('/written/{taskReview}', [TaskStationController::class, 'written'])->name('written');
+        Route::post('/written/{taskReview}/draft', [TaskStationController::class, 'writtenDraft'])
+            ->middleware('throttle:60,1')
+            ->name('written.draft');
+        Route::post('/written/{taskReview}/self', [TaskStationController::class, 'writtenSelf'])->name('written.self');
+        Route::post('/written/{taskReview}/send', [TaskStationController::class, 'writtenSend'])->name('written.send');
+        Route::post('/written/{taskReview}/marks', [TaskStationController::class, 'writtenMarks'])
+            ->middleware('throttle:60,1')
+            ->name('written.marks');
+    });
+
 // Общая страница тренажёров — кнопка «Тренажёры» у рыбы ведёт сюда, когда
 // ученику открыто больше одного тренажёра (см. App\Service\Trainers\TrainerHub).
 Route::middleware(['auth'])
@@ -606,6 +658,11 @@ Route::middleware(['auth', 'mentor'])
         // Удаление попытки — только админ (проверка внутри контроллера, 'mentor'
         // middleware пускает и кураторов тоже, им это действие не должно быть доступно).
         Route::delete('/submissions/{submission}', [MentorSubmissionController::class, 'destroy'])->name('submissions.destroy');
+
+        // Ответы второй части со станции «Задания».
+        Route::get('/task-reviews/{taskReview}', [\App\Http\Controllers\Mentor\TaskReviewController::class, 'show'])->name('task-reviews.show');
+        Route::put('/task-reviews/{taskReview}', [\App\Http\Controllers\Mentor\TaskReviewController::class, 'update'])->name('task-reviews.update');
+        Route::post('/task-reviews/{taskReview}/unlock', [\App\Http\Controllers\Mentor\TaskReviewController::class, 'unlock'])->name('task-reviews.unlock');
     });
 
 Route::middleware(['auth'])->group(function () {

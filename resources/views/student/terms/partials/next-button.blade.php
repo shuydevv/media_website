@@ -6,7 +6,7 @@
       hx-post="{{ route('student.terms.session.next', $session) }}"
       hx-target="#terms-app" hx-swap="innerHTML" hx-disabled-elt="find button">
   @csrf
-  <x-ui.button type="submit" variant="accent" class="relative text-sm sm:text-base" data-autofocus>
+  <x-ui.button type="submit" variant="game-main" class="relative text-sm sm:text-base" data-autofocus>
     <span class="btn-label">{{ $label }}</span>
     @include('student.terms.partials.spinner')
   </x-ui.button>

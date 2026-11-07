@@ -124,6 +124,15 @@ row-lock промокодов на SQLite пропускается. Старые
   доступ — `HistAccess` + `dates.access`. Скрипт экрана сессии общий с терминами —
   `student/terms/partials/session-script.blade.php` (ищет элементы по id: экраны дат
   держат ту же разметку). «Следующий день» — `php artisan dates:shift`.
+- «Верные суждения» — `/student/statements`, верно/неверно по суждениям из заданий ЕГЭ
+  с пояснением после ответа. Правила — `docs/statements/Верные суждения — механика.md`.
+  База — `docs/statements/statements.json` (собрана из выгрузки ege-hub скриптом
+  `tools/statements/build_from_egehub.py`, дальше правится руками в JSON — сборку не
+  перезапускать), заливается `php artisan statements:import`. Ученику — только
+  `status = active`. Код — `app/Service/Statements/`: чистая логика `StatementSchedule`,
+  `StatementPicker` (тесты — `tests/Unit/Service/Statements`), `StatementTrainer` —
+  сессии и прогресс (`user_statements`, `statement_sessions`, лог `statement_answers`).
+  Доступ — `TermAccess` через middleware `statements.access`. Корм — `awardTermSession()`.
 - Тренажёры на дашборде — в блоке с рыбой: кнопка «Тренажёры» и реплика рыбы в облачке.
   Тренажёров несколько — кнопка ведёт на общую страницу `/student/trainers`.
   Тренажёр регистрируется в `config/trainers.php` (класс с интерфейсом

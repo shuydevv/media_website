@@ -50,10 +50,11 @@
           <div class="font-medium mb-1">Образцовый ответ</div>
           <div class="whitespace-pre-wrap">{{ $task->answer ?: '—' }}</div>
         </div>
-        @if($task->comment)
+        {{-- Разбор — поле explanation (раньше читалось несуществующее comment). --}}
+        @if($task->explanation)
           <div class="mb-4 p-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-zinc-700">
-            <div class="font-medium mb-1 text-zinc-900">Комментарий</div>
-            <div class="whitespace-pre-wrap">{{ $task->comment }}</div>
+            <div class="font-medium mb-1 text-zinc-900">Разбор</div>
+            <div class="whitespace-pre-wrap">{{ $task->explanation }}</div>
           </div>
         @endif
       @else

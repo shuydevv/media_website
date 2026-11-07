@@ -105,7 +105,7 @@
       <div class="fixed inset-x-0 bottom-0 z-30 border-t border-gray-200 bg-white px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]
                   lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:mt-4">
         <div class="max-w-3xl mx-auto lg:max-w-none flex flex-col gap-2 lg:flex-row lg:items-center">
-          <x-ui.button href="{{ route('student.dates.index') }}" variant="accent" block class="text-sm sm:text-base whitespace-nowrap lg:w-auto lg:px-8">К тренажёру</x-ui.button>
+          <x-ui.button href="{{ route('student.dates.index') }}" variant="game-main" block class="text-sm sm:text-base whitespace-nowrap lg:w-auto lg:px-8">К тренажёру</x-ui.button>
           @if($secondary)
             <form method="POST" action="{{ route('student.dates.start', 'free') }}" class="lg:inline">
               @csrf

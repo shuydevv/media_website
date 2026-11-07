@@ -26,8 +26,9 @@ class TaskPracticeController extends Controller
         if ($cid = $request->get('category_id')) {
             $q->where('category_id', (int) $cid);
         }
-        if ($n = $request->get('number')) {
-            $q->where('number', 'like', "%{$n}%");
+        // Точное совпадение: с LIKE «1» находил и 10–19, и 21.
+        if ($n = trim((string) $request->get('number'))) {
+            $q->where('number', $n);
         }
 
         $tasks = $q->orderByDesc('id')->paginate(20)->withQueryString();

@@ -38,12 +38,13 @@ class TrainersPageTest extends TestCase
         $this->importBoth();
         $user = $this->studentWith(['term_trainer_users', 'hist_trainer_users']);
 
+        // Доступ к обществознанию открывает термины, «Верные суждения» и «Задания».
         $hub = app(TrainerHub::class)->forUser($user);
-        $this->assertCount(2, $hub['trainers']);
+        $this->assertCount(4, $hub['trainers']);
         $this->assertSame(route('student.trainers.index'), $hub['url']);
 
         $this->actingAs($user)->get(route('student.trainers.index'))
-            ->assertOk()->assertSee('Термины')->assertSee('Даты');
+            ->assertOk()->assertSee('Термины')->assertSee('Даты')->assertSee('Верные суждения');
     }
 
     /** @test */

@@ -24,6 +24,7 @@
              обслуживает — просто нельзя было держать его блокирующим. --}}
         <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
         @vite('resources/css/app.css')
+        @include('partials.game-buttons')
 
         <!-- htmx: AJAX-переходы без перезагрузки страницы -->
         {{-- Самохостится (public/js), а не с unpkg.com: если CDN не ответил

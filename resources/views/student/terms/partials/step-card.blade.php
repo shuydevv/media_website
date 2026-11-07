@@ -5,7 +5,7 @@
 @include('student.terms.partials.term-card', ['term' => $term])
 
 <div class="mt-6 grid gap-2 sm:grid-cols-2">
-  @foreach([['1', 'accent', 'Запомнил'], ['0', 'outline', 'Ещё не запомнил']] as [$value, $variant, $label])
+  @foreach([['1', 'game-main', 'Запомнил'], ['0', 'game', 'Ещё не запомнил']] as [$value, $variant, $label])
     <form method="POST" action="{{ route('student.terms.session.card', $session) }}"
           hx-post="{{ route('student.terms.session.card', $session) }}"
           hx-target="#terms-app" hx-swap="innerHTML" hx-disabled-elt="find button">

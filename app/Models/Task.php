@@ -46,7 +46,14 @@ class Task extends Model
         'image_auto_options'   => 'array',
         'order_matters'        => 'boolean',
         'is_public'            => 'boolean',
+        'also'                 => 'array',
     ];
+
+    /** Задания, которые выдаёт станция «Задания» (импорт ege-hub и т. п.). */
+    public function scopeForTrainer($query)
+    {
+        return $query->where('status', 'active')->whereNotNull('block');
+    }
 
     // Тот же список ролей, что и у HomeworkTask — единственный источник
     // истины не дублируем, ссылаемся на него напрямую.

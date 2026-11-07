@@ -22,7 +22,9 @@
 @php
     $isHomeworkSolvingPage = request()->routeIs('student.submissions.question')
         || request()->routeIs('student.terms.session')
-        || request()->routeIs('student.dates.session');
+        || request()->routeIs('student.dates.session')
+        || request()->routeIs('student.ege.round')
+        || request()->routeIs('student.ege.written');
 @endphp
 <style>
     /* Одна и та же "стеклянная таблетка" на мобилке и на ПК — раньше
