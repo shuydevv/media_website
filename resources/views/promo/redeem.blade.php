@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="max-w-md sm:mx-auto mx-2 p-6 bg-white rounded shadow mt-12">
-    <h1 class="md:text-2xl text-xl font-bold sans mb-6">Активация промокода</h1>
+    <h1 class="md:text-2xl text-xl font-semibold sans mb-6">Активация промокода</h1>
 
     @if (session('success'))
         <div class="mb-3 text-green-600 text-sm">{{ session('success') }}</div>

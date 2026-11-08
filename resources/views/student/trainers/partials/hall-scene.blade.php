@@ -21,7 +21,7 @@
       @php
         $tipSide = $s['x'] < 22 ? 'tip-start' : ($s['x'] > 78 ? 'tip-end' : '');
       @endphp
-      <div class="gym-station is-{{ $s['state'] }} {{ $tipSide }}" style="--x: {{ $s['x'] }}%; --y: {{ $s['y'] }}%; --mx: {{ $s['mx'] }}%; --my: {{ $s['my'] }}%; --s: {{ $s['scale'] }}; --z: {{ $s['size'] }}; --mz: {{ $s['msize'] }}; z-index: {{ (int) round($s['y']) }};">
+      <div class="gym-station is-{{ $s['state'] }} {{ $tipSide }} {{ ($s['shadow'] ?? true) ? '' : 'no-shadow' }}" style="--x: {{ $s['x'] }}%; --y: {{ $s['y'] }}%; --mx: {{ $s['mx'] }}%; --my: {{ $s['my'] }}%; --s: {{ $s['scale'] }}; --z: {{ $s['size'] }}; --mz: {{ $s['msize'] }}; --to: {{ $s['tag_overlap'] ?? 0 }}; z-index: {{ (int) round($s['y']) }};">
         @if($s['state'] === 'open')
           <a href="{{ $s['url'] }}" class="gym-hit" aria-label="{{ $s['title'] }}: {{ $s['quest'] ?? $s['note'] }}">
         @else

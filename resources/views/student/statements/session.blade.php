@@ -77,7 +77,7 @@
   .st-shark { display: flex; align-items: flex-end; gap: 10px; margin-top: 14px; }
   .st-shark img { width: 56px; height: 56px; object-fit: contain; flex: none; }
   /* Серия верных ответов — оранжево-красная плашка с бликом. */
-  .st-combo { position: relative; overflow: hidden; display: table; margin-top: 6px; padding: 3px 11px; border-radius: 99px; background: linear-gradient(90deg, #f97316, #ef4444); color: #fff; font-size: 13px; font-weight: 700; }
+  .st-combo { position: relative; overflow: hidden; display: table; margin-top: 6px; padding: 3px 11px; border-radius: 99px; background: linear-gradient(90deg, #f97316, #ef4444); color: #fff; font-size: 13px; font-weight: 600; }
   .st-combo span { position: relative; }
   .st-combo-shine { position: absolute; top: 0; left: 0; width: 40%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .55), transparent); transform: translateX(-120%) skewX(-20deg); pointer-events: none; }
   /* Маскот с репликой слева, «Дальше» — справа в той же строке. */
@@ -108,13 +108,13 @@
   .st-ring-fill { fill: none; stroke-width: 8; stroke-linecap: round; }
   .st-ring-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   /* Счёт: верные — крупно, «/ 15» — мельче и серым, иначе «14 / 15» не влезало в кольцо. */
-  .st-score { display: flex; align-items: baseline; gap: 3px; line-height: 1; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .st-score { display: flex; align-items: baseline; gap: 3px; line-height: 1; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .st-score-n { font-size: 40px; letter-spacing: -0.02em; }
   .st-score-of { font-size: 18px; color: #a1a1aa; font-weight: 600; }
   .st-ring-label { font-size: 12px; color: #71717a; margin-top: 2px; }
   .st-corm { margin-top: 4px; color: #52525b; }
   .st-corm-note { font-size: 14px; color: #71717a; }
-  .st-corm-plus { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 99px; background: #fff7ed; color: #c2410c; font-weight: 700; }
+  .st-corm-plus { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 99px; background: #fff7ed; color: #c2410c; font-weight: 600; }
   .st-corm-plus img { width: 20px; height: 20px; }
   .st-section { background: #fff; border: 1px solid #e4e4e7; border-radius: 16px; padding: 14px 16px; margin-top: 12px; }
   .st-section h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: #a1a1aa; margin-bottom: 8px; font-weight: 600; }

@@ -170,7 +170,7 @@
   .stc-slot { width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; }
   .stc-slot.is-free { background: #eff6ff; box-shadow: inset 0 0 0 1.5px #bfdbfe; }
   .stc-slot.is-free img { width: 26px; height: 26px; }
-  .stc-slot.is-used { background: #f4f4f5; color: #a1a1aa; font-size: 18px; font-weight: 700; }
+  .stc-slot.is-used { background: #f4f4f5; color: #a1a1aa; font-size: 18px; font-weight: 600; }
   .stc-text { min-width: 0; flex: 1; line-height: 1.3; }
   .stc-text b { display: block; font-size: 16px; font-weight: 600; color: #18181b; }
   .stc-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 2px; font-size: 13px; color: #71717a; }
@@ -182,8 +182,8 @@
   .stc-wallet { height: 28px; box-sizing: border-box; }
   .stc-wallet img { width: 18px; height: 18px; }
   .stc-wallet b { font-weight: 600; }
-  .stc-plus { font-weight: 700; color: #15803d; }
-  .stc-help { flex: none; width: 28px; height: 28px; border-radius: 99px; border: 1px solid #e4e4e7; background: #fff; color: #71717a; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .stc-plus { font-weight: 600; color: #15803d; }
+  .stc-help { flex: none; width: 28px; height: 28px; border-radius: 99px; border: 1px solid #e4e4e7; background: #fff; color: #71717a; font-size: 13px; font-weight: 600; cursor: pointer; }
   .stc-help:hover, .stc-help[aria-expanded="true"] { color: #18181b; border-color: #a1a1aa; }
   .stc-tiers { position: absolute; z-index: 20; top: calc(100% + 6px); right: 0; width: 220px; padding: 12px 14px; border-radius: 14px; border: 1px solid #e4e4e7; background: #fff; box-shadow: 0 10px 30px rgba(15, 23, 42, .12); }
   .stc-tiers-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #a1a1aa; margin-bottom: 4px; }

@@ -26,8 +26,11 @@ class AccessController extends Controller
      *    expires_at.
      * В обоих случаях доступ ещё и жёстко заперт на status==='active' —
      * без этого дата в любом поле ни на что не влияет и следующий ночной
-     * прогон enrollments:expire её же и погасит. Пишем правильное поле сами,
-     * а не заставляем админа знать про эту развилку.
+     * прогон enrollments:expire её же и погасит. Дата из CRM всегда
+     * переводит запись на обычный биллинг (next_payment_due_at, интервал 30
+     * по умолчанию) — по окончании периода ученик становится "Просрочена
+     * оплата", а не замороженным без следа курса (см. миграцию
+     * 2026_11_05_000001 — то же для уже существующих CRM-записей).
      *
      * Сумма необязательна намеренно: продление без неё (доброй волей,
      * исправление ошибки) — не платёж, писать 0 и не уведомлять ученика.
@@ -73,16 +76,22 @@ class AccessController extends Controller
         $payment = DB::transaction(function () use ($pivot, $until, $user, $course, $amountCents) {
             $pivot->status = 'active';
 
-            if ($pivot->billing_interval_days === null) {
-                $pivot->expires_at = $until;
-            } else {
-                $pivot->next_payment_due_at = $until;
-                $pivot->promised_payment_used_at = null;
-                $pivot->promised_payment_expires_at = null;
-                $pivot->reminder_sent_at = null;
-                $pivot->overdue_notified_at = null;
-                $pivot->promise_expiring_notified_at = null;
-            }
+            // Дата из CRM — это всегда оплаченный период, поэтому запись
+            // переводим на регулярную оплату, даже если до этого она была
+            // ручной/промо (billing_interval_days пусто). Раньше в этом случае
+            // писался expires_at, и по окончании периода enrollments:expire
+            // переводил запись в suspended — ученик выглядел так, будто курса
+            // никогда не было, вместо честного "Просрочена оплата", которую
+            // админ закрывает простой сменой даты. expires_at обнуляем, иначе
+            // тот же enrollments:expire всё равно заморозит запись по старой дате.
+            $pivot->billing_interval_days ??= 30;
+            $pivot->expires_at = null;
+            $pivot->next_payment_due_at = $until;
+            $pivot->promised_payment_used_at = null;
+            $pivot->promised_payment_expires_at = null;
+            $pivot->reminder_sent_at = null;
+            $pivot->overdue_notified_at = null;
+            $pivot->promise_expiring_notified_at = null;
 
             $pivot->save();
 

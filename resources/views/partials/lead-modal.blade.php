@@ -58,7 +58,7 @@
 
         @endunless
 
-        <button type="submit" class="w-full bg-pink-500 text-white font-bold py-3 rounded-lg hover:brightness-110 active:scale-[0.99]">
+        <button type="submit" class="w-full bg-pink-500 text-white font-semibold py-3 rounded-lg hover:brightness-110 active:scale-[0.99]">
           Записаться
         </button>
 

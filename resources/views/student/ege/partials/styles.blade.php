@@ -31,7 +31,7 @@
   .egc-slot + .egc-slot { margin-left: -9px; }
   .egc-slot.is-free { background: #eff6ff; box-shadow: 0 0 0 2px #fff, inset 0 0 0 1.5px #bfdbfe; }
   .egc-slot.is-free img { width: 26px; height: 26px; }
-  .egc-slot.is-used { background: #F1F6F9; color: #94A9B8; font-size: 18px; font-weight: 700; }
+  .egc-slot.is-used { background: #F1F6F9; color: #94A9B8; font-size: 18px; font-weight: 600; }
   .egc-earned { display: inline-flex; align-items: center; gap: 3px; }
   .egc-earned b { display: inline !important; color: #15803d; font-size: 13px !important; }
   .egc-earned img { width: 16px; height: 16px; }
@@ -46,7 +46,7 @@
     .egc-slot { width: 28px; height: 28px; border-radius: 9px; font-size: 15px; }
     .egc-slot.is-free img { width: 19px; height: 19px; }
   }
-  .egc-help { flex: none; width: 28px; height: 28px; border-radius: 99px; border: 1px solid #DCEAF3; background: #fff; color: #657B8B; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .egc-help { flex: none; width: 28px; height: 28px; border-radius: 99px; border: 1px solid #DCEAF3; background: #fff; color: #657B8B; font-size: 13px; font-weight: 600; cursor: pointer; }
   .egc-tiers { position: absolute; z-index: 20; top: calc(100% + 6px); right: 0; width: 250px; padding: 12px 14px; border-radius: 14px; border: 1px solid #DCEAF3; background: #fff; box-shadow: 0 10px 30px rgba(15, 23, 42, .12); font-size: 14px; color: #344856; }
   .egc-tiers div { display: flex; justify-content: space-between; padding: 3px 0; }
   .egc-tiers p { margin: 6px 0 0; padding-top: 8px; border-top: 1px solid #E2EEF6; font-size: 12px; color: #657B8B; }
@@ -102,7 +102,7 @@
   /* На проверке */
   .eg-rev { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid #E2EEF6; text-decoration: none; color: inherit; }
   .eg-rev:first-of-type { border-top: 0; }
-  .eg-rev-n { flex: none; width: 36px; height: 36px; border-radius: 10px; background: #F1F6F9; display: grid; place-items: center; font-weight: 700; color: #344856; }
+  .eg-rev-n { flex: none; width: 36px; height: 36px; border-radius: 10px; background: #F1F6F9; display: grid; place-items: center; font-weight: 600; color: #344856; }
   .eg-rev-text { flex: 1; min-width: 0; font-size: 14px; color: #344856; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .eg-rev-status { flex: none; font-size: 13px; color: #657B8B; }
   .eg-rev-status.is-checked { color: #15803d; font-weight: 600; }

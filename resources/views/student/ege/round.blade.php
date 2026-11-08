@@ -42,7 +42,7 @@
 <style>
   .egr { max-width: 680px; margin: 0 auto; padding: 16px 16px 40px; color: #0F1E29; }
   .egr-top { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-  #egr-num { flex: none; padding: 4px 12px; font-size: 14px; font-weight: 700; color: #0F1E29; background: #fff; border: 1px solid #DCEAF3; }
+  #egr-num { flex: none; padding: 4px 12px; font-size: 14px; font-weight: 600; color: #0F1E29; background: #fff; border: 1px solid #DCEAF3; }
   #egr-num:empty { display: none; }
   .egr-progress { flex: 1; height: 8px; border-radius: 99px; background: #E1E9EF; overflow: hidden; }
   .egr-progress-bar { height: 100%; width: 0; background: #2563eb; border-radius: 99px; }
@@ -61,7 +61,7 @@
 
   .egr-opts { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 6px; }
   .egr-opt { display: flex; gap: 10px; align-items: flex-start; width: 100%; padding: 10px 12px; border-radius: 12px; border: 1.5px solid #DCEAF3; background: #fff; text-align: left; font-size: 15px; line-height: 1.45; color: #0F1E29; cursor: pointer; }
-  .egr-opt-n { flex: none; width: 26px; height: 26px; border-radius: 8px; background: #F1F6F9; display: grid; place-items: center; font-weight: 700; font-size: 14px; color: #485C6A; }
+  .egr-opt-n { flex: none; width: 26px; height: 26px; border-radius: 8px; background: #F1F6F9; display: grid; place-items: center; font-weight: 600; font-size: 14px; color: #485C6A; }
   .egr-opt.is-on { border-color: #93c5fd; background: #f8fbff; }
   .egr-opt.is-on .egr-opt-n { background: #bfdbfe; color: #1e40af; }
   .egr-opt:disabled { cursor: default; }
@@ -82,7 +82,7 @@
   .egr-lrow-text { flex: 1 1 0; min-width: 0; font-size: 15px; line-height: 1.4; }
   .egr-lrow-text b { margin-right: 6px; }
   .egr-picks { flex: none; max-width: 50%; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
-  .egr-pick { min-width: 28px; height: 28px; padding: 0 4px; border-radius: 8px; font-size: 13px; border: 1.5px solid #DCEAF3; background: #fff; font-weight: 700; color: #485C6A; cursor: pointer; }
+  .egr-pick { min-width: 28px; height: 28px; padding: 0 4px; border-radius: 8px; font-size: 13px; border: 1.5px solid #DCEAF3; background: #fff; font-weight: 600; color: #485C6A; cursor: pointer; }
   .egr-pick.is-on { background: #bfdbfe; border-color: #93c5fd; color: #1e40af; }
   .egr-pick:disabled { cursor: default; }
   .egr-lrow.r-ok { border-color: #86efac; background: #f0fdf4; }
@@ -90,7 +90,7 @@
   .egr-lrow-fix { flex-basis: 100%; margin-top: 0; font-size: 13px; font-weight: 600; color: #15803d; }
   .egr-right { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
   .egr-right li { display: flex; gap: 8px; font-size: 15px; line-height: 1.4; }
-  .egr-right li span:first-child { flex: none; font-weight: 700; color: #485C6A; }
+  .egr-right li span:first-child { flex: none; font-weight: 600; color: #485C6A; }
 
   /* Ответ — клеточки, как в бланке. Поверх лежит прозрачный input:
      он ловит набор (и цифровую клавиатуру на телефоне), клеточки — рисуют.
@@ -105,7 +105,7 @@
   @media (max-width: 640px) { .egr-input-row .pin-field { width: 100%; } }
   .egr-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
   .egr-cell .pin-box { width: 100%; }
-  .egr-cell-l { font-size: 12px; font-weight: 700; color: #94A9B8; line-height: 1; }
+  .egr-cell-l { font-size: 12px; font-weight: 600; color: #94A9B8; line-height: 1; }
   .egr-pin-input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; border: 0; padding: 0; font-size: 16px; color: transparent; caret-color: transparent; background: transparent; cursor: text; }
   .egr-pin-input:disabled { cursor: default; }
   .egr-check { min-height: 44px; padding: 0 28px; }
@@ -117,7 +117,7 @@
   .egr-foot .egr-keys { margin: 0; text-align: left; }
   @media (hover: none) { .egr-foot .egr-keys { display: none; } }
 
-  .egr-verdict { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 16px; font-size: 17px; font-weight: 700; }
+  .egr-verdict { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 16px; font-size: 17px; font-weight: 600; }
   .egr-verdict.right { color: #15803d; }
   .egr-verdict.partial { color: #b45309; }
   .egr-verdict small { font-size: 13px; font-weight: 600; opacity: .75; }
@@ -135,7 +135,7 @@
     .egr-hud { position: fixed; z-index: 20; top: 112px; left: calc(50% + 352px); width: 170px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
     /* ПК: прогресс — кольцом у Кеши, номер — в строке вопроса; верхняя строка не нужна. */
     .egr-top { display: none; }
-    .egr-qnum { display: inline-flex; align-items: center; margin-right: 8px; padding: 1px 10px; border-radius: 99px; background: #F1F6F9; color: #657B8B; font-size: 14px; font-weight: 700; vertical-align: 1px; white-space: nowrap; }
+    .egr-qnum { display: inline-flex; align-items: center; margin-right: 8px; padding: 1px 10px; border-radius: 99px; background: #F1F6F9; color: #657B8B; font-size: 14px; font-weight: 600; vertical-align: 1px; white-space: nowrap; }
     .egr-shark { display: none !important; }
   }
   .egr-hud-pic { position: relative; width: 160px; height: 160px; }
@@ -145,7 +145,7 @@
   .egr-hud-pic-bg { position: absolute; inset: 7%; border-radius: 50%; background: #eff6ff; overflow: hidden; }
   .egr-hud-pic-bg img { width: 100%; height: 100%; object-fit: contain; display: block; }
   .egr-hud-count { font-size: 14px; font-weight: 600; color: #485C6A; font-variant-numeric: tabular-nums; }
-  .egr-hud-streak { padding: 2px 10px; border-radius: 99px; background: #fff7ed; color: #c2410c; font-size: 13px; font-weight: 700; }
+  .egr-hud-streak { padding: 2px 10px; border-radius: 99px; background: #fff7ed; color: #c2410c; font-size: 13px; font-weight: 600; }
   .egr-hud-streak:empty, .egr-hud-say:empty { display: none; }
   .egr-hud-say.is-ok { border-color: #a7f3d0 !important; color: #065f46 !important; }
   .egr-hud-say { width: 100%; box-sizing: border-box; padding: 10px 14px; font-weight: 500; border-radius: 16px; background: #fff; border: 1px solid #DCEAF3; box-shadow: 0 1px 2px rgba(11, 102, 162, .05), 0 4px 16px rgba(11, 102, 162, .06); font-size: 14px; line-height: 1.35; color: #344856; }
@@ -179,9 +179,9 @@
   .egr-toast { width: 220px; padding: 14px 16px; border-radius: 20px; background: #fff; box-shadow: 0 6px 24px rgba(15, 30, 41, .12); display: flex; flex-direction: column; align-items: center; gap: 8px; }
   .egr-toast-pic { width: 96px; height: 96px; border-radius: 50%; background: #F1F6F9; display: grid; place-items: center; overflow: hidden; }
   .egr-toast-pic img { width: 100%; height: 100%; object-fit: contain; }
-  .egr-toast-text { width: 100%; padding: 6px 10px; border-radius: 12px; background: #f0fdf4; color: #15803d; font-size: 15px; font-weight: 700; text-align: center; }
+  .egr-toast-text { width: 100%; padding: 6px 10px; border-radius: 12px; background: #f0fdf4; color: #15803d; font-size: 15px; font-weight: 600; text-align: center; }
   /* Комбо — как в «Верных суждениях»: оранжево-красная плашка с бликом. */
-  .egr-combo { position: relative; overflow: hidden; display: table; margin: 6px auto 0; padding: 3px 11px; border-radius: 99px; background: linear-gradient(90deg, #f97316, #ef4444); color: #fff; font-size: 13px; font-weight: 700; }
+  .egr-combo { position: relative; overflow: hidden; display: table; margin: 6px auto 0; padding: 3px 11px; border-radius: 99px; background: linear-gradient(90deg, #f97316, #ef4444); color: #fff; font-size: 13px; font-weight: 600; }
   .egr-combo span { position: relative; }
   .egr-combo-shine { position: absolute; top: 0; left: 0; width: 40%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .55), transparent); transform: translateX(-120%) skewX(-20deg); pointer-events: none; }
   .egr-keys { margin-top: 8px; text-align: center; font-size: 12px; color: #94A9B8; }
@@ -204,18 +204,18 @@
   .egr-ring-track { fill: none; stroke: #E1E9EF; stroke-width: 8; }
   .egr-ring-fill { fill: none; stroke-width: 8; stroke-linecap: round; }
   .egr-ring-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .egr-score { display: flex; align-items: baseline; gap: 3px; line-height: 1; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .egr-score { display: flex; align-items: baseline; gap: 3px; line-height: 1; font-weight: 600; font-variant-numeric: tabular-nums; }
   .egr-score-n { font-size: 40px; letter-spacing: -0.02em; }
   .egr-score-of { font-size: 18px; color: #94A9B8; font-weight: 600; }
   .egr-ring-label { font-size: 12px; color: #657B8B; margin-top: 2px; }
-  .egr-corm-plus { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; padding: 4px 12px; border-radius: 99px; background: #fff7ed; color: #c2410c; font-weight: 700; }
+  .egr-corm-plus { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; padding: 4px 12px; border-radius: 99px; background: #fff7ed; color: #c2410c; font-weight: 600; }
   .egr-corm-plus img { width: 20px; height: 20px; }
   .egr-corm-note { margin-top: 6px; font-size: 14px; color: #657B8B; }
   .egr-section { background: #fff; border: 1px solid #DCEAF3; border-radius: 16px; padding: 14px 16px; margin-top: 12px; }
   .egr-section h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: #94A9B8; margin: 0 0 8px; font-weight: 600; }
   .egr-section-note { margin: -4px 0 4px; font-size: 13px; color: #657B8B; }
   .egr-row { display: flex; align-items: center; gap: 10px; font-size: 14px; margin: 8px 0; }
-  .egr-row-n { flex: none; width: 28px; height: 28px; border-radius: 8px; background: #F1F6F9; display: grid; place-items: center; font-weight: 700; color: #344856; }
+  .egr-row-n { flex: none; width: 28px; height: 28px; border-radius: 8px; background: #F1F6F9; display: grid; place-items: center; font-weight: 600; color: #344856; }
   .egr-row-title { flex: none; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .egr-meter { flex: 1; min-width: 40px; height: 8px; border-radius: 99px; background: #E1E9EF; overflow: hidden; }
   .egr-meter i { display: block; height: 100%; border-radius: 99px; }
@@ -224,17 +224,17 @@
   .egr-mistake:first-of-type { border-top: 0; }
   .egr-mistake .q { font-size: 15px; line-height: 1.45; white-space: pre-line; }
   .egr-mistake-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-  .egr-mistake-pts { font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 99px; background: #fef2f2; color: #b91c1c; }
+  .egr-mistake-pts { font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 99px; background: #fef2f2; color: #b91c1c; }
   .egr-mistake-pts.is-partial { background: #fffbeb; color: #b45309; }
   /* Ответ ученика цифрами: зелёная — верно, жёлтая — лишняя, пунктир — пропущена. */
   .egr-digits { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .egr-dg { min-width: 28px; height: 28px; padding: 0 6px; border-radius: 8px; display: inline-grid; place-items: center; font-size: 14px; font-weight: 700; border: 1.5px solid transparent; }
+  .egr-dg { min-width: 28px; height: 28px; padding: 0 6px; border-radius: 8px; display: inline-grid; place-items: center; font-size: 14px; font-weight: 600; border: 1.5px solid transparent; }
   .egr-dg.hit { background: #16a34a; color: #fff; }
   .egr-dg.extra { background: #f59e0b; color: #fff; }
   .egr-dg.miss { border: 1.5px dashed #16a34a; color: #15803d; background: #fff; }
   .egr-mcell { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-  .egr-mcell-l { font-size: 11px; font-weight: 700; color: #94A9B8; }
-  .egr-mcell-fix { font-size: 12px; font-weight: 700; color: #15803d; line-height: 1; }
+  .egr-mcell-l { font-size: 11px; font-weight: 600; color: #94A9B8; }
+  .egr-mcell-fix { font-size: 12px; font-weight: 600; color: #15803d; line-height: 1; }
   .egr-mistake details { margin-top: 4px; font-size: 14px; color: #485C6A; }
   .egr-mistake summary { cursor: pointer; color: #2563eb; font-size: 13px; }
   .egr-mistake details div { white-space: pre-line; margin-top: 4px; }
@@ -476,16 +476,11 @@
       if (card.left_title) left.appendChild(el('div', { class: 'egr-col-title', text: card.left_title }));
       var rights = card.matches.right || [];
       (card.matches.left || []).forEach(function (text, i) {
+        // Кнопок с цифрами у строк нет (решение автора от 08.11.2026): ответ
+        // вводится с клавиатуры в клеточки, как в бланке. Строка остаётся в
+        // picks — по ней красится разбор (верно / неверно по буквам).
         var row = el('div', { class: 'egr-lrow' }, [el('div', { class: 'egr-lrow-text' }, [el('b', { text: LETTERS[i] + ')' }), text])]);
-        var line = el('div', { class: 'egr-picks' });
-        var buttons = rights.map(function (_, j) {
-          var b = el('button', { type: 'button', class: 'egr-pick', text: String(j + 1), 'aria-label': LETTERS[i] + ' — ' + (j + 1) });
-          b.addEventListener('click', function () { setMatch(i, j + 1); });
-          line.appendChild(b);
-          return b;
-        });
-        row.appendChild(line);
-        picks.push({ row: row, buttons: buttons });
+        picks.push({ row: row, buttons: [] });
         left.appendChild(row);
       });
       var right = el('div');

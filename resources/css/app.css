@@ -9,6 +9,13 @@
 @import './admin.css';
 
 @tailwind base;
+
+/* Максимальная жирность в проекте — 600 (решение автора от 08.11.2026): у Golos
+   есть только 400/500/600, всё жирнее браузер рисует искусственно и грубо.
+   <b>/<strong> по умолчанию — bolder (700), поэтому явно 600. */
+@layer base {
+    b, strong { font-weight: 600; }
+}
 @tailwind components;
 @tailwind utilities;
 
@@ -133,7 +140,7 @@ body {
 h1, h2 {
     font-family: 'serif';
     /* letter-spacing: 0.05em; */
-    /* font-weight: 700 !important; */
+    /* font-weight: 600 !important; */
 }
 
 /* Личный кабинет ученика (layouts/main.blade.php: <body class="student-portal">

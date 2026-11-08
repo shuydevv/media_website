@@ -589,6 +589,34 @@ Route::middleware(['auth', 'dates.access'])
         Route::get('/{histEvent}', [DateTrainerController::class, 'item'])->whereNumber('histEvent')->name('show');
     });
 
+// Тренажёр личностей по истории — устроен как тренажёр дат, доступ тот же
+// (persons.access → App\Service\Dates\HistAccess).
+use App\Http\Controllers\Student\PersonTrainerController;
+
+Route::middleware(['auth', 'persons.access'])
+    ->prefix('student/persons')
+    ->name('student.persons.')
+    ->group(function () {
+        Route::get('/', [PersonTrainerController::class, 'index'])->name('index');
+        Route::post('/start/{kind}', [PersonTrainerController::class, 'start'])
+            ->whereIn('kind', ['learn', 'review', 'free'])
+            ->name('start');
+
+        Route::get('/sessions/{personSession}', [PersonTrainerController::class, 'show'])->name('session');
+        Route::post('/sessions/{personSession}/card', [PersonTrainerController::class, 'card'])->name('session.card');
+        Route::post('/sessions/{personSession}/hint', [PersonTrainerController::class, 'hint'])->name('session.hint');
+        Route::post('/sessions/{personSession}/answer', [PersonTrainerController::class, 'answer'])->name('session.answer');
+        Route::post('/sessions/{personSession}/choose', [PersonTrainerController::class, 'choose'])->name('session.choose');
+        Route::post('/sessions/{personSession}/match', [PersonTrainerController::class, 'match'])->name('session.match');
+        Route::post('/sessions/{personSession}/next', [PersonTrainerController::class, 'next'])->name('session.next');
+        Route::post('/sessions/{personSession}/report', [PersonTrainerController::class, 'report'])
+            ->middleware('throttle:20,1')
+            ->name('session.report');
+
+        Route::get('/all', [PersonTrainerController::class, 'all'])->name('all');
+        Route::get('/{person}', [PersonTrainerController::class, 'item'])->whereNumber('person')->name('show');
+    });
+
 // Тренажёр «Верные суждения» (зал обществоведов) — доступ как у терминов
 // (statements.access → App\Service\Terms\TermAccess).
 use App\Http\Controllers\Student\StatementTrainerController;

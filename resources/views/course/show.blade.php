@@ -72,7 +72,7 @@
                     <summary class="list-none mb-2 "><span class="open:bg-zinc-100 mb-2 px-8 py-4 border-2 border-black text-black font-semimedium tracking-wider rounded-lg mb-4">Посмотреть ответы</span>
                     </summary>
                     <div class="rounded-xl mt-10 bg-zinc-100 w-100 p-2 mt-8 text-sm leading-6 text-zinc-900">
-                      <ul class="p-2 tracking-wide "> <span class="font-bold">Правильный ответ:</span> 123
+                      <ul class="p-2 tracking-wide "> <span class="font-semibold">Правильный ответ:</span> 123
                         <div class="mt-2 text-start">
                             <li>1. Верно. </li>
                             <li>2. Верно. </li>

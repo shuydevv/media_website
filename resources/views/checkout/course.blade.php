@@ -33,7 +33,7 @@
         </div>
 
         <div class="mt-3 text-xl">
-            Итог к оплате: <span class="font-bold">{{ Money::format($finalCents, $baseCurrency) }}</span>
+            Итог к оплате: <span class="font-semibold">{{ Money::format($finalCents, $baseCurrency) }}</span>
         </div>
     </div>
 

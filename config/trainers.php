@@ -45,11 +45,15 @@
 //   image      — снаряд на прозрачном фоне (PNG/WebP), низ картинки = пол;
 //                лежат в img/trainers/stations/, квадрат, обрезан по снаряду.
 //   emoji      — значок перед названием на табличке снаряда.
+//   shadow     — false: без тени на полу под снарядом (по умолчанию тень есть).
+//   tag_overlap — насколько табличка заходит на картинку снаряда: доля
+//                высоты картинки (0.3 — на треть); по умолчанию 0, над снарядом.
 
 return [
     'list' => [
         App\Service\Trainers\TermsTrainerCard::class,
         App\Service\Trainers\DatesTrainerCard::class,
+        App\Service\Trainers\PersonsTrainerCard::class,
         App\Service\Trainers\StatementsTrainerCard::class,
         App\Service\Trainers\TasksTrainerCard::class,
     ],
@@ -75,17 +79,21 @@ return [
                     'emoji' => '⏳',
                     'tagline' => 'Беговая дорожка времени',
                     'image' => 'img/trainers/stations/dates.webp',
-                    'x' => 50, 'y' => 94, 'scale' => 1.0, 'size' => 1.5, 'msize' => 1.35,
-                    'mx' => 50, 'my' => 96,
+                    // Два открытых тренажёра — рядом спереди по центру, как в зале
+                    // обществоведов (решение автора от 06.11.2026).
+                    'x' => 37, 'y' => 94, 'scale' => 1.0, 'size' => 1.4, 'msize' => 1.15,
+                    'mx' => 33, 'my' => 96,
                 ],
                 [
-                    'title' => 'Личности',
+                    // Станция открыта 08.11.2026 (docs/personalities/Тренажёр личностей — механика.md).
+                    'trainer' => App\Service\Trainers\PersonsTrainerCard::class,
                     'emoji' => '🎖️',
                     'tagline' => 'Скамья полководцев',
-                    'about' => 'Узнаём деятелей по портрету, делам и эпохе.',
-                    'image' => null,
-                    'x' => 28, 'y' => 56, 'scale' => 0.9, 'size' => 1.2, 'msize' => 1.0,
-                    'mx' => 25, 'my' => 60,
+                    'about' => 'Узнаём деятелей по делам и эпохе, как в задании ЕГЭ на соответствие.',
+                    // Адмирал Клешня на скамье (из img/characters/admiral_kleshnya_bench_press.png).
+                    'image' => 'img/trainers/stations/persons.webp',
+                    'x' => 63, 'y' => 94, 'scale' => 1.0, 'size' => 1.4, 'msize' => 1.15,
+                    'mx' => 67, 'my' => 96,
                 ],
                 [
                     'title' => 'Карты',
@@ -141,20 +149,26 @@ return [
                     'emoji' => '📚',
                     'tagline' => 'Гантели понятий',
                     'image' => 'img/trainers/stations/terms.webp',
-                    // Два открытых тренажёра — рядом спереди по центру (решение
-                    // автора от 06.11.2026), а не один по центру, как в схеме выше.
-                    'x' => 37, 'y' => 94, 'scale' => 1.0, 'size' => 1.4, 'msize' => 1.15,
-                    'mx' => 33, 'my' => 96,
+                    // Три открытых тренажёра спереди в ряд, поровну места каждому:
+                    // крупные «Задания» и «Термины» по краям, маленькая скакалка —
+                    // между ними по центру (08.11.2026; раньше «Термины» стояли на
+                    // x 37 вплотную к «Заданиям»). Когда откроются «Планы»
+                    // (x 86), этот ряд нужно будет переставить.
+                    'x' => 84, 'y' => 94, 'scale' => 1.0, 'size' => 1.4, 'msize' => 1.15,
+                    'mx' => 83, 'my' => 96,
                 ],
                 [
                     'trainer' => App\Service\Trainers\StatementsTrainerCard::class,
                     'emoji' => '🃏',
                     'tagline' => 'Скакалка «верно — неверно»',
                     'about' => 'Решаем, верно суждение или нет, и сразу видим, почему.',
-                    // Картинку снаряда автор загрузит позже — пока заглушка.
-                    'image' => null,
-                    'x' => 63, 'y' => 94, 'scale' => 1.0, 'size' => 1.4, 'msize' => 1.15,
-                    'mx' => 67, 'my' => 96,
+                    'image' => 'img/trainers/stations/statements.webp',
+                    // Скакалка лежит на полу: меньше соседей, без тени, табличка
+                    // заходит прямо на картинку (решение автора от 08.11.2026).
+                    'shadow' => false,
+                    'tag_overlap' => 0.28,
+                    'x' => 50, 'y' => 94, 'scale' => 1.0, 'size' => 0.85, 'msize' => 0.72,
+                    'mx' => 50, 'my' => 96,
                 ],
                 [
                     'title' => 'Графики',
@@ -180,10 +194,10 @@ return [
                     'emoji' => '🥊',
                     'tagline' => 'Боксёрская груша',
                     'about' => 'Задания ЕГЭ: первая часть раундами, вторая — с проверкой куратора.',
-                    // Картинку снаряда автор загрузит позже — пока заглушка.
-                    'image' => null,
-                    'x' => 14, 'y' => 93, 'scale' => 1.0, 'size' => 1.2, 'msize' => 1.0,
-                    'mx' => 16, 'my' => 93,
+                    // Кеша с грушей (из img/characters/kesha_boxer.png).
+                    'image' => 'img/trainers/stations/tasks.webp',
+                    'x' => 16, 'y' => 94, 'scale' => 1.0, 'size' => 1.2, 'msize' => 1.0,
+                    'mx' => 16, 'my' => 96,
                 ],
             ],
         ],

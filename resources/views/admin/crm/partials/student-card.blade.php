@@ -82,13 +82,18 @@
     </div>
 
     <div class="mt-3 space-y-2">
-        @forelse($student->courses->where('pivot.status', 'active') as $course)
+        {{-- suspended тоже показываем: enrollments:expire переводит просроченную
+             запись в suspended, но это всё ещё "его" курс — админ должен видеть
+             его и просто переставить дату (AccessController вернёт status в
+             active), а не записывать ученика на курс заново. --}}
+        @forelse($student->courses->whereIn('pivot.status', ['active', 'suspended']) as $course)
             @php
                 $pivot = $course->pivot;
+                $isSuspended = $pivot->status === 'suspended';
                 $isBilling = $pivot->billing_interval_days !== null;
                 $rawUntil = $isBilling ? $pivot->next_payment_due_at : $pivot->expires_at;
                 $until = $rawUntil ? \Illuminate\Support\Carbon::parse($rawUntil) : null;
-                $isOverdue = $until && $until->isPast();
+                $isOverdue = $isSuspended || ($until && $until->isPast());
                 $isSoon = $until && !$isOverdue && now()->diffInDays($until) <= \App\Models\User::CRM_SOON_THRESHOLD_DAYS;
                 $dateColor = $isOverdue ? 'text-rose-600' : ($isSoon ? 'text-amber-600' : 'text-zinc-700');
                 $lastPayment = $student->payments->firstWhere('course_id', $course->id);
@@ -96,6 +101,9 @@
             <div class="flex flex-wrap items-center gap-2 border border-zinc-200 rounded-lg px-3 py-2 text-sm"
                  data-course-row data-course-id="{{ $course->id }}">
                 <span class="sans-medium text-zinc-800 min-w-0 truncate">{{ $course->title }}</span>
+                @if($isSuspended)
+                    <x-ui.badge tone="red" data-course-suspended title="Доступ приостановлен — оплата просрочена. Поставьте новую дату, чтобы вернуть доступ.">Просрочен</x-ui.badge>
+                @endif
                 <span class="text-zinc-300">·</span>
 
                 <span data-field-group class="inline-flex flex-wrap items-center gap-1.5">

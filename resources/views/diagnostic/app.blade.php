@@ -100,7 +100,7 @@
         .say img { width: 64px; height: 64px; flex: none; }
         .bubble { background: var(--paper); color: var(--ink); padding: 10px 14px; border-radius: 18px 18px 18px 6px; max-width: 85%; white-space: pre-line;
             box-shadow: 0 1px 3px rgba(20, 60, 100, .08); }
-        .bubble b { font-weight: 700; }
+        .bubble b { font-weight: 600; }
         .bubble.ok { background: var(--ok-bg); }
         .bubble.bad { background: var(--bad-bg); }
         @keyframes pop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
@@ -108,7 +108,7 @@
         .card { background: var(--paper); border-radius: var(--radius); padding: 16px; margin: 10px 0; box-shadow: 0 1px 3px rgba(20, 60, 100, .08); }
         .character { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; color: var(--hint); }
         .avatar { width: 44px; height: 44px; flex: none; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center;
-            font-weight: 700; font-size: 18px; }
+            font-weight: 600; font-size: 18px; }
         .avatar.emoji { background: none; font-size: 38px; line-height: 1; border-radius: 0; }
         /* Арт персонажа — PNG/WebP с прозрачным фоном, без кружка. */
         img.avatar { width: 76px; height: 76px; background: none; border-radius: 0; object-fit: contain; }
@@ -124,7 +124,7 @@
         .btn {
             border: 0; border-radius: 14px; padding: 13px 16px; background: var(--sun); color: #3a2a00; --e: var(--sun-edge);
             box-shadow: 0 4px 0 var(--e); margin-bottom: 4px;
-            font-weight: 700; cursor: pointer; flex: 1; transition: transform .08s, box-shadow .08s, opacity .15s;
+            font-weight: 600; cursor: pointer; flex: 1; transition: transform .08s, box-shadow .08s, opacity .15s;
         }
         .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--e); }
         /* Выключенная — нейтральная, а не бледная: бледный жёлтый ночью выглядит грязным. */
@@ -162,7 +162,7 @@
         .opt.bad { border-color: var(--bad); --e: var(--bad-edge); background: var(--bad-bg); }
         .opt.missed { border-color: var(--ok); border-style: dashed; }
         .opt[disabled] { cursor: default; }
-        .opt .mark { float: right; margin-left: 8px; font-weight: 700; }
+        .opt .mark { float: right; margin-left: 8px; font-weight: 600; }
         .fragment { font-size: 15px; }
         .fragment.sel { text-decoration: line-through; text-decoration-color: var(--bad); }
 
@@ -249,7 +249,7 @@
         /* Заставка блока и переходы. */
         .center { text-align: center; padding: 28px 8px; }
         .center img { width: 160px; height: 160px; }
-        .big { font-size: 24px; font-weight: 700; margin: 8px 0 6px; }
+        .big { font-size: 24px; font-weight: 600; margin: 8px 0 6px; }
         .done-chip { display: inline-block; margin-bottom: 10px; padding: 5px 12px; border-radius: 999px; background: var(--ok-bg); color: var(--ok);
             font-weight: 600; font-size: 14px; animation: pop .4s ease-out .15s both; }
         .countdown { flex: 1; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; margin: 8px 0; }
@@ -257,14 +257,14 @@
         @keyframes countdown { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
         /* Цель. */
-        .target-value { font-size: 56px; font-weight: 800; text-align: center; margin: 8px 0; }
+        .target-value { font-size: 56px; font-weight: 600; text-align: center; margin: 8px 0; }
         input[type=range] { width: 100%; accent-color: var(--accent); }
 
         /* Итог — без карточек: блоки разделены отступами и заголовками. */
         .hero { text-align: center; margin: 14px 0 6px; }
-        .score { font-size: 52px; font-weight: 800; text-align: center; margin: 0; line-height: 1.1; }
+        .score { font-size: 52px; font-weight: 600; text-align: center; margin: 0; line-height: 1.1; }
         .hero-note { margin: 6px 0 0; font-weight: 600; }
-        .goal { display: inline-block; margin-bottom: 4px; padding: 6px 14px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 15px; }
+        .goal { display: inline-block; margin-bottom: 4px; padding: 6px 14px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; font-size: 15px; }
         .res-sec { margin: 22px 0; }
         .res-sec h3 { font-size: 15px; margin: 0 0 8px; }
         .chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -292,7 +292,7 @@
         .radar .vertex.weak { fill: var(--bad); }
         @keyframes grow { from { transform: scale(0); opacity: 0; } to { transform: none; opacity: 1; } }
         .radar text { font-size: 11px; fill: var(--hint); }
-        .radar text .pct { font-size: 13px; font-weight: 700; fill: var(--accent); }
+        .radar text .pct { font-size: 13px; font-weight: 600; fill: var(--accent); }
         .radar text.weak .pct { fill: var(--bad); }
 
         /* ---- Движение: по одному короткому на событие. ---- */
@@ -317,7 +317,7 @@
         @keyframes dot { 0%, 60%, 100% { opacity: .3; transform: none; } 30% { opacity: 1; transform: translateY(-3px); } }
         .toast {
             position: fixed; left: 50%; top: 64px; transform: translateX(-50%); z-index: 20; pointer-events: none;
-            background: var(--ink); color: var(--bg); font-weight: 700; padding: 8px 16px; border-radius: 999px; animation: toast 1.8s ease-out both;
+            background: var(--ink); color: var(--bg); font-weight: 600; padding: 8px 16px; border-radius: 999px; animation: toast 1.8s ease-out both;
         }
         @keyframes toast { 0% { opacity: 0; transform: translate(-50%, -8px) scale(.9); } 15% { opacity: 1; transform: translate(-50%, 0) scale(1.05); }
             25% { transform: translate(-50%, 0) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -6px); } }
@@ -364,7 +364,7 @@
         .isle .palm { fill: none; stroke: #2F7D43; stroke-width: 4; stroke-linecap: round; }
         .isle.lvl-2 .land { fill: #9BCF6A; }
         .isle.lvl-0, .isle.lvl-1 { opacity: .55; filter: grayscale(.7); }
-        .isle-name { font-size: 12px; font-weight: 700; background: var(--paper); border-radius: 8px; padding: 1px 6px; margin-top: -4px; }
+        .isle-name { font-size: 12px; font-weight: 600; background: var(--paper); border-radius: 8px; padding: 1px 6px; margin-top: -4px; }
         .isle.sel .isle-name { outline: 2px solid var(--accent); }
         .isle-dots { font-size: 11px; letter-spacing: 2px; color: var(--accent-edge); }
         .isle-info { margin-top: 10px; padding: 12px; border-radius: var(--radius); background: var(--paper); }

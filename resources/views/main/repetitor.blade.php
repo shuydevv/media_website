@@ -76,7 +76,7 @@
   <!-- Хедер -->
   <header class="w-full bg-white fixed top-0 z-50">
     <div class="max-w-7xl mx-auto flex items-center justify-between md:px-4 px-2 py-4">
-      <div class="flex items-center space-x-4 text-purple-600 md:text-xl text-sm font-bold tracking-wide">
+      <div class="flex items-center space-x-4 text-purple-600 md:text-xl text-sm font-semibold tracking-wide">
         Школа Полтавского
       </div>
       <!-- <nav class="hidden md:flex space-x-6 text-sm">
@@ -101,7 +101,7 @@
           <button class="bg-purple-900 text-white text-sm px-4 py-1 rounded-full">УЧЕНИКАМ</button>
           <button class="text-purple-800 text-sm px-4 py-1 rounded-full">РОДИТЕЛЯМ</button>
         </div> -->
-        <h1 class="text-2xl md:text-5xl font-bold text-gray-900 tracking-wide">
+        <h1 class="text-2xl md:text-5xl font-semibold text-gray-900 tracking-wide">
           Готовлю к ЕГЭ по обществу и истории. <br>
           <span class="text-purple-700 md:mt-2 mt-2 inline-block">Нескучно и эффективно!</span>
         </h1>
@@ -174,7 +174,7 @@
             </p>
             </div>
           <input required name="phone" type="text" placeholder="Номер телефона или Username" class="w-full bg-purple-50 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300">
-          <button class="w-full bg-pink-500 text-white font-bold py-3 rounded-lg">Начать обучение</button>
+          <button class="w-full bg-pink-500 text-white font-semibold py-3 rounded-lg">Начать обучение</button>
           <p class="text-xs text-gray-500">Нажимая кнопку, вы принимаете <a href="#" class="underline">положение об обработке персональных данных</a></p>
             @error('form')
                 <div class="mt-2 text-red-600 text-sm">{{ $message }}</div>
@@ -190,7 +190,7 @@
    <!-- Блок "Онлайн-школа, которой доверяют" -->
   <section class="max-w-6xl mx-auto bg-white md:py-20 py-12 px-4">
     <div class="max-w-6xl mx-auto text-center">
-      <h2 class="text-2xl md:text-4xl font-bold text-gray-900 md:mb-6 mb-4">Преподаватель, которому доверяют</h2>
+      <h2 class="text-2xl md:text-4xl font-semibold text-gray-900 md:mb-6 mb-4">Преподаватель, которому доверяют</h2>
       <!-- <p class="text-gray-700 mb-10 max-w-2xl mx-auto">Нам доверяют десятки тысяч учеников и их родителей — и это не просто слова.</p> -->
 
       <div class="flex justify-between md:flex-row flex-col">
@@ -227,7 +227,7 @@
   <section class="md:bg-gradient-to-r bg-gradient-to-b from-blue-100 via-blue-50 to-blue-100 md:py-20 py-8 relative overflow-hidden">
     <div class="max-w-6xl mx-auto px-4">
       <div class="relative md:mb-14 mb-10">
-        <h2 class="text-2xl md:text-4xl font-bold text-gray-900 inline-block relative">
+        <h2 class="text-2xl md:text-4xl font-semibold text-gray-900 inline-block relative">
           Уютная и результативная подготовка
           <!-- <span class="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-1/3">
             <div class="bg-white shadow-lg w-12 h-12 rounded-full flex items-center justify-center">
@@ -373,7 +373,7 @@
 
     <!-- Текст -->
     <div class="w-full md:w-1/2 md:space-y-6 space-y-4">
-      <h2 class="text-2xl md:text-4xl font-bold leading-tight">
+      <h2 class="text-2xl md:text-4xl font-semibold leading-tight">
         <span class="text-purple-400">Твой преподаватель <span class="md:inline hidden">—</span></span>
         Александр Полтавский
       </h2>
@@ -406,7 +406,7 @@
 
       <!-- Левая часть -->
       <div class="md:w-1/2 text-center md:text-left">
-        <h2 class="text-2xl md:text-4xl font-bold text-gray-900 md:mb-4 mb-3">Попробуйте бесплатное занятие!</h2>
+        <h2 class="text-2xl md:text-4xl font-semibold text-gray-900 md:mb-4 mb-3">Попробуйте бесплатное занятие!</h2>
         <p class="text-black md:text-xl text-base md:mb-6 mb-4">
           Оставьте свои контакты – я свяжусь любым удобным для вас способом и всё подробно расскажу!
         </p>
@@ -472,7 +472,7 @@
 
   <!-- <section class="bg-[#fdf3e8] py-16">
   <div class="max-w-6xl container mx-auto px-4">
-    <h2 class="text-2xl md:text-4xl font-bold text-gray-900 text-center mb-10">
+    <h2 class="text-2xl md:text-4xl font-semibold text-gray-900 text-center mb-10">
       Что говорят ученики
     </h2>
 
@@ -518,7 +518,7 @@
 </section> -->
 
 <section class="px-3">
-    <h2 class="max-w-6xl mx-auto text-2xl md:text-4xl font-bold md:mb-8 mb-4">Отзывы моих учеников</h2>
+    <h2 class="max-w-6xl mx-auto text-2xl md:text-4xl font-semibold md:mb-8 mb-4">Отзывы моих учеников</h2>
 {{-- Тот же приём, что у Tailwind-стилей выше — не блокируем рендер в ожидании CDN. --}}
 <link rel="preload" as="style" href="https://unpkg.com/swiper@10/swiper-bundle.min.css" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://unpkg.com/swiper@10/swiper-bundle.min.css"></noscript>
@@ -676,7 +676,7 @@
 
 <!-- Блок "Единый тариф для всех" -->
   <section style="background-color: oklch(93% 0.034 272.788);" class=" md:py-20 py-8 md:px-4 px-3">
-        <h2 class="max-w-6xl mx-auto text-2xl md:text-4xl font-bold md:mb-6 mb-4">
+        <h2 class="max-w-6xl mx-auto text-2xl md:text-4xl font-semibold md:mb-6 mb-4">
       Стоимость занятий
     </h2>
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-end justify-between md:gap-8 gap-4">
@@ -688,7 +688,7 @@
 
           <!-- Цена -->
           <div class="text-start">
-            <p class="md:text-4xl text-3xl font-bold text-gray-900 text-purple-600 mb-6">540 ₽<span class="text-lg font-semibold text-gray-400"> / за урок</span></p>
+            <p class="md:text-4xl text-3xl font-semibold text-gray-900 text-purple-600 mb-6">540 ₽<span class="text-lg font-semibold text-gray-400"> / за урок</span></p>
           </div>
 
           <!-- Скидки и бонусы -->
@@ -696,8 +696,8 @@
             <div class="rounded-xl bg-purple-50 border border-purple-200 p-3 flex md:items-center items-start gap-3 justify-center">
                 <img class="rounded-full border-4 border-blue-200 p-2" src="img/discount.svg" alt="discount">
                 <div>
-                    <p class="text-lg font-bold text-gray-800 md:mb-1 mb-3 leading-tight">250 ₽ <span class="font-normal text-base">за второй предмет!</span></p>
-                    <p class="text-xs text-green-600 font-bold">СКИДКА 50% на второй предмет (история и общество)</p>
+                    <p class="text-lg font-semibold text-gray-800 md:mb-1 mb-3 leading-tight">250 ₽ <span class="font-normal text-base">за второй предмет!</span></p>
+                    <p class="text-xs text-green-600 font-semibold">СКИДКА 50% на второй предмет (история и общество)</p>
                 </div>
             </div>
           </div>
@@ -713,7 +713,7 @@
 
           <!-- Цена -->
           <div class="text-start">
-            <p class="md:text-4xl text-3xl font-bold text-gray-900 text-purple-600 mb-6">2000 ₽<span class="text-lg font-semibold text-gray-400"> / за урок</span></p>
+            <p class="md:text-4xl text-3xl font-semibold text-gray-900 text-purple-600 mb-6">2000 ₽<span class="text-lg font-semibold text-gray-400"> / за урок</span></p>
           </div>
 
           <!-- Скидки и бонусы -->
@@ -721,8 +721,8 @@
             <div class="rounded-xl bg-purple-50 border border-purple-200 p-3 flex items-center gap-3 justify-center">
                 <img class="rounded-full border-4 border-blue-200 p-2" src="img/discount.svg" alt="discount">
                 <div>
-                    <p class="text-lg font-bold text-gray-800 md:mb-1 mb-3 leading-tight">1800 ₽ <span class="font-normal text-base">за занятие при оплате за сразу месяц!</span></p>
-                    <p class="text-xs text-green-600 font-bold">СКИДКА 10% на абонемент!</p>
+                    <p class="text-lg font-semibold text-gray-800 md:mb-1 mb-3 leading-tight">1800 ₽ <span class="font-normal text-base">за занятие при оплате за сразу месяц!</span></p>
+                    <p class="text-xs text-green-600 font-semibold">СКИДКА 10% на абонемент!</p>
                 </div>
             </div>
           </div>
@@ -759,7 +759,7 @@
 <!-- Блок "Вопросы и ответы" -->
   <section class="bg-white md:py-20 py-10 px-4">
     <div class="max-w-4xl mx-auto">
-      <h2 class="text-2xl md:text-4xl font-bold text-center text-gray-900 md:mb-10 mb-6">Вопросы и ответы</h2>
+      <h2 class="text-2xl md:text-4xl font-semibold text-center text-gray-900 md:mb-10 mb-6">Вопросы и ответы</h2>
       <div class="md:space-y-4 space-y-3">
 
         <!-- Вопрос 1 -->
@@ -824,7 +824,7 @@
 
       <!-- Левая часть -->
       <div class="md:w-1/2 text-left md:text-left">
-        <h2 class="text-2xl md:text-4xl font-bold text-gray-900 md:mb-6 mb-4">
+        <h2 class="text-2xl md:text-4xl font-semibold text-gray-900 md:mb-6 mb-4">
           Попробуйте бесплатное занятие
           <!-- <span class="hidden md:inline-block align-middle ml-2">
             <svg class="w-8 h-8 text-pink-500 inline-block" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
@@ -886,7 +886,7 @@
             </p>
             </div>
             <input required name="phone" type="text" placeholder="Номер телефона или @Username" class="w-full bg-purple-50 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300">
-            <button class="w-full bg-pink-500 text-white font-bold py-3 rounded-lg">Начать обучение</button>
+            <button class="w-full bg-pink-500 text-white font-semibold py-3 rounded-lg">Начать обучение</button>
             <p class="text-xs text-gray-500">Нажимая кнопку, вы принимаете <a href="#" class="underline">положение об обработке персональных данных</a></p>
         </div>
         </form>
@@ -1004,7 +1004,7 @@
           <input required name="phone" type="text" placeholder="Номер телефона или @Username"
                  class="w-full bg-purple-50 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300">
 
-          <button class="w-full bg-pink-500 text-white font-bold py-3 rounded-lg hover:brightness-110 active:scale-[0.99]">
+          <button class="w-full bg-pink-500 text-white font-semibold py-3 rounded-lg hover:brightness-110 active:scale-[0.99]">
             Начать обучение
           </button>
 

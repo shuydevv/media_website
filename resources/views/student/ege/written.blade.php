@@ -174,7 +174,7 @@
   .egw-banner { margin-bottom: 14px; padding: 14px 16px; border-radius: 18px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a8a; font-size: 14px; line-height: 1.45; }
   .egw-banner b { display: block; font-size: 16px; margin-bottom: 2px; }
   .egw-banner.is-checked { background: #f0fdf4; border-color: #86efac; color: #14532d; }
-  .egw-corm { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; padding: 3px 10px; border-radius: 99px; background: #fff7ed; color: #c2410c; font-weight: 700; }
+  .egw-corm { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; padding: 3px 10px; border-radius: 99px; background: #fff7ed; color: #c2410c; font-weight: 600; }
   .egw-corm img { width: 18px; height: 18px; }
   .egw-comment { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: #fff; color: #18181b; white-space: pre-line; }
   .egw-comment span { display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #a1a1aa; margin-bottom: 2px; }
@@ -182,7 +182,7 @@
   .egw-passage summary { cursor: pointer; font-weight: 600; color: #2563eb; margin-bottom: 4px; }
   .egw-passage .eg-q { margin-top: 8px; font-size: 15px; }
   .egw-task + .egw-task { margin-top: 14px; }
-  .egw-n { font-size: 13px; font-weight: 700; color: #2563eb; margin-bottom: 6px; }
+  .egw-n { font-size: 13px; font-weight: 600; color: #2563eb; margin-bottom: 6px; }
   .egw-label { display: block; margin-top: 16px; font-size: 13px; font-weight: 600; color: #52525b; }
   .egw-area { display: block; width: 100%; box-sizing: border-box; margin-top: 6px; padding: 12px 14px; border-radius: 14px; border: 1.5px solid #d4d4d8; font-size: 16px; line-height: 1.5; resize: vertical; min-height: 180px; font-family: inherit; }
   .egw-area:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, .12); }
@@ -218,7 +218,7 @@
   .egw-seg button { min-width: 40px; height: 34px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; font-size: 14px; font-weight: 600; color: #52525b; cursor: pointer; }
   .egw-seg button.is-on { background: #fff; color: #18181b; box-shadow: 0 1px 3px rgba(0, 0, 0, .1); }
   @media (max-width: 560px) { .egw-item { flex-direction: column; align-items: stretch; } .egw-seg { align-self: flex-start; } }
-  .egw-total { margin-top: 14px; padding: 12px 16px; border-radius: 14px; background: #fff; border: 1px solid #e4e4e7; font-size: 16px; font-weight: 700; text-align: center; color: #18181b; }
+  .egw-total { margin-top: 14px; padding: 12px 16px; border-radius: 14px; background: #fff; border: 1px solid #e4e4e7; font-size: 16px; font-weight: 600; text-align: center; color: #18181b; }
 </style>
 <script>
   (function () {

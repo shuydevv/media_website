@@ -71,6 +71,11 @@ class TrainerGym
                     // Размер самой картинки снаряда (табличка не растёт).
                     'size' => (float) ($station['size'] ?? 1),
                     'msize' => (float) ($station['msize'] ?? $station['size'] ?? 1),
+                    // Без тени на полу (картинка, у которой «пол» уже нарисован
+                    // или тень лишняя) и насколько табличка заходит на снаряд:
+                    // доля высоты картинки, 0 — табличка над снарядом.
+                    'shadow' => (bool) ($station['shadow'] ?? true),
+                    'tag_overlap' => (float) ($station['tag_overlap'] ?? 0),
                     'state' => $class === null ? 'soon' : ($entry ? 'open' : 'locked'),
                     'url' => $entry['url'] ?? null,
                     'pending' => 0,

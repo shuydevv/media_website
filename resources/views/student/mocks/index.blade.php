@@ -151,7 +151,7 @@
     }
     .mock-chart-score {
         font-size: 2.1rem;
-        font-weight: 700;
+        font-weight: 600;
         color: rgb(var(--c-zinc-900, 24 24 27));
     }
     .mock-chart-score-max {

@@ -149,7 +149,7 @@
             background: #2563EB;
             color: #fff;
             font-size: .75rem;
-            font-weight: 700;
+            font-weight: 600;
             line-height: 1.25rem;
             text-align: center;
             box-shadow: 0 0 0 2px #fff;
@@ -511,7 +511,7 @@
             font-size: .75rem;
             color: #657B8B;
         }
-        .fish-xp-caption b { color: #1D2E3A; font-weight: 700; }
+        .fish-xp-caption b { color: #1D2E3A; font-weight: 600; }
         .fish-xp-caption img { vertical-align: -3px; }
 
         /* Пока есть корм — «Покормить» мягко светится, зовёт нажать.
@@ -547,7 +547,7 @@
             position: fixed;
             z-index: 50;
             pointer-events: none;
-            font-weight: 800;
+            font-weight: 600;
             font-size: 15px;
             line-height: 1;
             transform: translate(-50%, -50%);
@@ -569,7 +569,7 @@
             top: 14%;
             z-index: 7;
             pointer-events: none;
-            font-weight: 900;
+            font-weight: 600;
             font-size: 30px;
             line-height: 1;
             color: #FBBF24;
@@ -657,7 +657,7 @@
             justify-content: center;
             background: linear-gradient(180deg, #7DB5F5 0%, #2563EB 100%);
             color: #fff;
-            font-weight: 800;
+            font-weight: 600;
             font-size: 18px;
             line-height: 1;
             text-shadow: 0 1px 0 rgba(0,0,0,.25);
@@ -706,7 +706,7 @@
             box-shadow: inset 0 -3px 0 #C3DAF3;
         }
         .fish-daily-icon img { width: 1.75rem; height: 1.75rem; }
-        .fish-daily-title { font-weight: 700; font-size: .9375rem; color: #1D2E3A; }
+        .fish-daily-title { font-weight: 600; font-size: .9375rem; color: #1D2E3A; }
         .fish-daily-title b { color: #2563EB; }
         .fish-daily-text { font-size: .8125rem; color: #657B8B; margin-top: 1px; }
         .fish-daily-close {

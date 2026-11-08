@@ -8,7 +8,7 @@
     <div class="divide-y divide-gray-100">
       @foreach($taskReviews as $r)
         <a href="{{ route('mentor.task-reviews.show', $r) }}" class="flex items-center gap-3 py-2 hover:bg-gray-50 rounded-lg px-2 -mx-2">
-          <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 font-bold text-gray-700">{{ (int) $r->task->number }}</span>
+          <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 font-semibold text-gray-700">{{ (int) $r->task->number }}</span>
           <span class="flex-1 min-w-0">
             <span class="block font-medium text-gray-900 truncate">{{ $r->user->name ?? 'Ученик #'.$r->user_id }}</span>
             <span class="block text-sm text-gray-500 truncate">{{ \Illuminate\Support\Str::limit($r->task->question_text, 110) }}</span>

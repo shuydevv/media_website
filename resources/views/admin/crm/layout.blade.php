@@ -440,6 +440,10 @@
                     }).then(function (data) {
                         dateText.textContent = 'до ' + data.access_until;
                         dateText.className = 'sans text-zinc-700';
+                        // Сохранение даты возвращает приостановленную запись в
+                        // active (AccessController) — метка "Просрочен" больше не нужна.
+                        const suspendedBadge = courseRow.querySelector('[data-course-suspended]');
+                        if (suspendedBadge) suspendedBadge.remove();
                         if (data.payment) {
                             lastPaymentEl.textContent = 'платёж: ' + data.payment.amount_rub + ' ₽ (' + data.payment.paid_at + ')';
                         }

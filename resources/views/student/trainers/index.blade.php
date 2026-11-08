@@ -46,7 +46,7 @@
   .gym-aside-title { margin: 0; padding-top: 14px; min-height: 40px; display: flex; align-items: center; }
   .gym-scene-bar { position: absolute; top: 14px; left: 14px; right: 14px; z-index: 130; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; pointer-events: none; }
   .gym-scene-bar > * { pointer-events: auto; box-shadow: 0 4px 14px rgba(15,30,41,.18); }
-  .gym-count { min-width: 24px; height: 24px; padding: 0 7px; box-sizing: border-box; border-radius: 999px; color: #fff; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+  .gym-count { min-width: 24px; height: 24px; padding: 0 7px; box-sizing: border-box; border-radius: 999px; color: #fff; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; }
   .gym-done { width: 22px; height: 22px; border-radius: 50%; background: #15803D; color: #fff; display: inline-flex; align-items: center; justify-content: center; }
   .gym-done svg { width: 13px; height: 13px; }
 
@@ -110,6 +110,12 @@
   .is-soon .gym-object img, .is-locked .gym-object img { filter: grayscale(1) opacity(.75); }
   .gym-hit:hover .gym-object, .gym-hit:focus-visible .gym-object, .gym-station.tip-open .gym-object { transform: translateY(-6px); }
   .gym-floor { position: absolute; left: -7%; right: -7%; bottom: -10%; height: 20%; border-radius: 50%; background: rgba(15,30,41,.35); filter: blur(4px); z-index: -1; }
+  /* Настройки станции из config/trainers.php: shadow => false — без тени;
+     tag_overlap — табличка заходит на картинку на эту долю её высоты. */
+  .gym-station.no-shadow .gym-floor { display: none; }
+  .gym-station.no-shadow .gym-object img { filter: none; }
+  .gym-station.no-shadow.is-soon .gym-object img, .gym-station.no-shadow.is-locked .gym-object img { filter: grayscale(1) opacity(.75); }
+  .gym-tag { z-index: 2; margin-bottom: calc(-120px * var(--z, 1) * var(--to, 0)); }
   .gym-ring { position: absolute; left: -12%; right: -12%; bottom: -12%; height: 25%; border-radius: 50%; border: 3px solid var(--accent); box-shadow: 0 0 18px var(--accent); animation: gym-ring 1.8s ease-out infinite; z-index: -1; }
 
   /* Снаряд без картинки (в разработке) — полупрозрачный силуэт того же
@@ -159,6 +165,7 @@
      читаемыми (масштаб всей станции сделал бы их мельче 8px). */
   .gym-mini .gym-station { left: var(--mx); top: var(--my); transform: translate(-50%, -100%); width: auto; }
   .gym-mini .gym-hit { gap: 4px; }
+  .gym-mini .gym-tag { margin-bottom: calc(-76px * var(--s, 1) * var(--mz, 1) * var(--to, 0)); }
   .gym-mini .gym-object { width: calc(76px * var(--s, 1) * var(--mz, 1)); height: calc(76px * var(--s, 1) * var(--mz, 1)); }
   .gym-mini .gym-hit:hover .gym-object, .gym-mini .gym-station.tip-open .gym-object { transform: translateY(-3px); }
   .gym-mini .gym-tag { font-size: 10px; gap: 3px; padding: 1px 5px; border-radius: 8px; border-bottom-width: 2px; }

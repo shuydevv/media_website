@@ -108,7 +108,7 @@ class TaskStationFlowTest extends TestCase
     {
         $user = $this->student();
         $this->actingAs($user)->get(route('student.ege.index'))->assertOk()
-            ->assertSee('Какие номера качаем?')->assertSee('Суждения')->assertSee('Решено: 0');
+            ->assertSee('Какие номера решаем?')->assertSee('Суждения')->assertSee('Решено: 0');
         $this->actingAs($user)->get(route('student.ege.index', ['part' => 2]))->assertOk()
             ->assertSee('Какой номер решаем?')->assertSee('Примеры');
 
