@@ -2,6 +2,7 @@
 
 namespace App\Service\Persons;
 
+use App\Service\Demo\DemoMode;
 use App\Models\Person;
 use App\Models\PersonSession;
 use App\Models\User;
@@ -128,7 +129,10 @@ class PersonTrainer
     public function nextBatch(User $user)
     {
         $learned = UserPerson::where('user_id', $user->id)->pluck('person_id');
-        $base = Person::active()->whereNotIn('id', $learned);
+        // Демо-ученик изучает только лёгкий набор (config/demo.php); неверные
+        // варианты и соответствия — по-прежнему из всей базы, иначе рядом
+        // с Лениным оказались бы Пётр I и Кутузов.
+        $base = DemoMode::restrict(Person::active()->whereNotIn('id', $learned), 'persons', 'slug');
 
         $level = (int) (clone $base)->min('level');
 
@@ -194,7 +198,10 @@ class PersonTrainer
     public function nearNextLevel(User $user): bool
     {
         $learned = UserPerson::where('user_id', $user->id)->pluck('person_id');
-        $base = Person::active()->whereNotIn('id', $learned);
+        // Демо-ученик изучает только лёгкий набор (config/demo.php); неверные
+        // варианты и соответствия — по-прежнему из всей базы, иначе рядом
+        // с Лениным оказались бы Пётр I и Кутузов.
+        $base = DemoMode::restrict(Person::active()->whereNotIn('id', $learned), 'persons', 'slug');
         $level = (clone $base)->min('level');
         if ($level === null || !(clone $base)->where('level', '>', $level)->exists()) {
             return false;

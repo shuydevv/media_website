@@ -29,17 +29,22 @@ class DemoModeTest extends TestCase
         return User::where('email', 'demo@poltavskiy')->firstOrFail();
     }
 
-    public function test_demo_user_sees_only_the_easy_set(): void
+    public function test_demo_user_learns_only_the_easy_set_but_options_come_from_the_whole_base(): void
     {
         config(['demo.persons' => ['petr-i']]);
         $this->person('petr-i');
         $this->person('hard-one');
+        $trainer = app(\App\Service\Persons\PersonTrainer::class);
 
-        Auth::login(User::factory()->create());
+        $real = User::factory()->create();
+        Auth::login($real);
+        $this->assertSame(2, $trainer->nextBatch($real)->count());
+
+        $demo = $this->demoUser();
+        Auth::login($demo);
+        $this->assertSame(['petr-i'], $trainer->nextBatch($demo)->pluck('slug')->all());
+        // Неверные варианты — из всей базы, не из лёгкого набора.
         $this->assertSame(2, Person::active()->count());
-
-        Auth::login($this->demoUser());
-        $this->assertSame(['petr-i'], Person::active()->pluck('slug')->all());
     }
 
     public function test_create_sets_the_fish_preset_and_refuses_real_accounts(): void

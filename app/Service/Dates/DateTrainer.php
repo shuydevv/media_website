@@ -2,6 +2,7 @@
 
 namespace App\Service\Dates;
 
+use App\Service\Demo\DemoMode;
 use App\Models\HistEvent;
 use App\Models\HistFact;
 use App\Models\HistSession;
@@ -133,7 +134,10 @@ class DateTrainer
     public function nextBatch(User $user)
     {
         $learned = UserHistEvent::where('user_id', $user->id)->pluck('event_id');
-        $base = HistEvent::active()->whereNotIn('id', $learned);
+        // Демо-ученик изучает только лёгкий набор (config/demo.php); неверные
+        // варианты и соответствия — по-прежнему из всей базы, иначе рядом
+        // с Лениным оказались бы Пётр I и Кутузов.
+        $base = DemoMode::restrict(HistEvent::active()->whereNotIn('id', $learned), 'dates', 'slug');
 
         $level = (int) (clone $base)->min('level');
 
@@ -197,7 +201,10 @@ class DateTrainer
     public function nearNextLevel(User $user): bool
     {
         $learned = UserHistEvent::where('user_id', $user->id)->pluck('event_id');
-        $base = HistEvent::active()->whereNotIn('id', $learned);
+        // Демо-ученик изучает только лёгкий набор (config/demo.php); неверные
+        // варианты и соответствия — по-прежнему из всей базы, иначе рядом
+        // с Лениным оказались бы Пётр I и Кутузов.
+        $base = DemoMode::restrict(HistEvent::active()->whereNotIn('id', $learned), 'dates', 'slug');
         $level = (clone $base)->min('level');
         if ($level === null || !(clone $base)->where('level', '>', $level)->exists()) {
             return false;

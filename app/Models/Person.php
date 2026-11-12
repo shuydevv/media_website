@@ -38,8 +38,7 @@ class Person extends Model
 
     public function scopeActive($query)
     {
-        // Демо-ученику — только лёгкий набор из config/demo.php.
-        return \App\Service\Demo\DemoMode::restrict($query->where('is_active', true), 'persons', 'slug');
+        return $query->where('is_active', true);
     }
 
     /**

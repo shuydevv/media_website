@@ -50,8 +50,7 @@ class HistEvent extends Model
 
     public function scopeActive($query)
     {
-        // Демо-ученику — только лёгкий набор из config/demo.php.
-        return \App\Service\Demo\DemoMode::restrict($query->where('is_active', true), 'dates', 'slug');
+        return $query->where('is_active', true);
     }
 
     public function isReign(): bool

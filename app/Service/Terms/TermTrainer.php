@@ -2,6 +2,7 @@
 
 namespace App\Service\Terms;
 
+use App\Service\Demo\DemoMode;
 use App\Models\Term;
 use App\Models\TermFeature;
 use App\Models\TermSession;
@@ -145,7 +146,10 @@ class TermTrainer
     public function nextBatch(User $user)
     {
         $learned = UserTerm::where('user_id', $user->id)->pluck('term_id');
-        $base = Term::active()->whereNotIn('id', $learned);
+        // Демо-ученик изучает только лёгкий набор (config/demo.php); неверные
+        // варианты и соответствия — по-прежнему из всей базы, иначе рядом
+        // с Лениным оказались бы Пётр I и Кутузов.
+        $base = DemoMode::restrict(Term::active()->whereNotIn('id', $learned), 'terms', 'slug');
 
         // Самый лёгкий уровень, в котором ещё есть неизученные термины.
         $priority = (int) (clone $base)->min('priority');
@@ -248,7 +252,10 @@ class TermTrainer
     public function nearNextLevel(User $user): bool
     {
         $learned = UserTerm::where('user_id', $user->id)->pluck('term_id');
-        $base = Term::active()->whereNotIn('id', $learned);
+        // Демо-ученик изучает только лёгкий набор (config/demo.php); неверные
+        // варианты и соответствия — по-прежнему из всей базы, иначе рядом
+        // с Лениным оказались бы Пётр I и Кутузов.
+        $base = DemoMode::restrict(Term::active()->whereNotIn('id', $learned), 'terms', 'slug');
         $priority = (clone $base)->min('priority');
         if ($priority === null || !(clone $base)->where('priority', '>', $priority)->exists()) {
             return false;
