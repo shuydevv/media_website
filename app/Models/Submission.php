@@ -133,6 +133,8 @@ class Submission extends Model
                   ->orWhere('lock_expires_at', '<=', now());
             })
             ->whereIn('status', ['pending', 'expired'])
+            // Работы демо-ученика (показ курса) куратору не нужны.
+            ->whereHas('user', fn (Builder $q) => $q->where('is_demo', false))
             ->orderBy('created_at')
             ->get()
             ->reject(fn (Submission $s) => $s->status === 'expired' && $s->allManualTasksClosedForMentor())

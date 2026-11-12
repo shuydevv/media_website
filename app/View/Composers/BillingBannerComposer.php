@@ -14,7 +14,8 @@ class BillingBannerComposer
     public function compose(View $view): void
     {
         $user = auth()->user();
-        if (!$user) {
+        // Демо-ученику (показ курса) плашки об оплате не показываем.
+        if (!$user || $user->is_demo) {
             $view->with(['billingDueSoon' => collect(), 'billingOverdue' => collect(), 'billingPromised' => collect()]);
             return;
         }

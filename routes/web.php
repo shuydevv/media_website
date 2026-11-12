@@ -675,6 +675,14 @@ Route::middleware(['auth'])
     ->get('/student/trainers', [\App\Http\Controllers\Student\TrainersController::class, 'index'])
     ->name('student.trainers.index');
 
+// Управление демо-режимом (показ курса покупателям) — только из
+// демо-аккаунта, остальным 404 (App\Http\Controllers\DemoController).
+Route::middleware(['auth'])->prefix('demo')->group(function () {
+    Route::get('/', [\App\Http\Controllers\DemoController::class, 'show'])->name('demo.show');
+    Route::post('/next-day', [\App\Http\Controllers\DemoController::class, 'nextDay'])->name('demo.next-day');
+    Route::post('/reset', [\App\Http\Controllers\DemoController::class, 'reset'])->name('demo.reset');
+});
+
 // Проверка домашних ментором
 Route::middleware(['auth', 'mentor'])
     ->prefix('mentor')

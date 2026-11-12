@@ -140,6 +140,16 @@ row-lock промокодов на SQLite пропускается. Старые
   `FishSpeech` + `config/fish_speech.php` (фразы согласованы с автором, не переписывать).
   Закрытые крестиком реплики помнит браузер; вернуть — `/student/dashboard?fish=reset`.
 
+- Демо-ученик для показа курса покупателям — `users.is_demo`, `App\Service\Demo\DemoMode`,
+  настройки и лёгкий набор контента — `config/demo.php`. Заводится `php artisan demo:create
+  --password=…` (логин по умолчанию `demo@poltavskiy`), курсы — как обычному ученику.
+  Тренажёры о демо не знают: лёгкий набор подставляется в scope `active()`/`forTrainer()`
+  моделей `Term`, `HistEvent`, `Person`, `Statement`, `Task`. Прогресс стирается при выходе и
+  входе через форму (`Listeners\ResetDemoProgress`), уведомления не уходят
+  (`SkipDemoNotifications`). Скрыт из CRM, очередей куратора, аналитики активности, баннера
+  оплаты. Скрытая страница `/demo` (только из демо-аккаунта): «Наступило завтра», сброс. Новая
+  таблица прогресса ученика — добавь её в `DemoMode::PROGRESS_TABLES` (и даты — в `DATED_COLUMNS`).
+
 - Отчёт по ученику — `/admin/users/{id}` (`Admin\User\ShowController` → `Service\StudentReport`,
   только читает). Данные для него собираются в других местах: просмотр уроков —
   `lesson_views` (скрипт плеера Kinescope `student/lessons/partials/watch-tracker.blade.php` →

@@ -55,7 +55,8 @@ class Term extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        // Демо-ученику — только лёгкий набор из config/demo.php.
+        return \App\Service\Demo\DemoMode::restrict($query->where('is_active', true), 'terms', 'slug');
     }
 
     /**

@@ -269,6 +269,8 @@ class WrittenPractice
     {
         return TaskReview::with(['user', 'task'])
             ->where('status', TaskReview::SENT)
+            // Ответы демо-ученика (показ курса) куратору не нужны.
+            ->whereHas('user', fn ($q) => $q->where('is_demo', false))
             ->where(fn ($q) => $q->whereNull('locked_by')
                 ->orWhere('locked_by', $mentorId)
                 ->orWhere('lock_expires_at', '<', now()))

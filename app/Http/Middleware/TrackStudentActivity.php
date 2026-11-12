@@ -28,7 +28,8 @@ class TrackStudentActivity
 
         // Вход админа под учеником (Admin\User\ImpersonateController) —
         // не активность самого ученика, в его историю не пишем.
-        if (! $user || (int) $user->role !== User::ROLE_READER || $request->session()->has('impersonator_id')) {
+        // Демо-ученик (показ курса) — тоже не настоящая активность.
+        if (! $user || (int) $user->role !== User::ROLE_READER || $user->is_demo || $request->session()->has('impersonator_id')) {
             return $response;
         }
 

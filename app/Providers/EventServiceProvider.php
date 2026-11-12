@@ -22,6 +22,13 @@ class EventServiceProvider extends ServiceProvider
         ],
         Login::class => [
             EnforceSessionLimit::class,
+            \App\Listeners\ResetDemoProgress::class,
+        ],
+        \Illuminate\Auth\Events\Logout::class => [
+            \App\Listeners\ResetDemoProgress::class,
+        ],
+        \Illuminate\Notifications\Events\NotificationSending::class => [
+            \App\Listeners\SkipDemoNotifications::class,
         ],
     ];
 

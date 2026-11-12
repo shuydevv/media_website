@@ -52,7 +52,8 @@ class Task extends Model
     /** Задания, которые выдаёт станция «Задания» (импорт ege-hub и т. п.). */
     public function scopeForTrainer($query)
     {
-        return $query->where('status', 'active')->whereNotNull('block');
+        // Демо-ученику — только лёгкий набор из config/demo.php.
+        return \App\Service\Demo\DemoMode::restrict($query->where('status', 'active')->whereNotNull('block'), 'tasks', 'external_id');
     }
 
     // Тот же список ролей, что и у HomeworkTask — единственный источник

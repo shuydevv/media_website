@@ -358,6 +358,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function scopeBotCandidates($query)
     {
         return $query->where('role', self::ROLE_READER)
+            ->where('is_demo', false)
             ->whereNull('email_verified_at')
             ->whereNull('phone_verified_at')
             ->doesntHave('courses')
@@ -376,7 +377,8 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function scopeVisibleInCrm($query)
     {
-        return $query->where(function ($q) {
+        // Демо-ученик (DemoMode) — не лид и не ученик, в CRM ему не место.
+        return $query->where('is_demo', false)->where(function ($q) {
             $q->whereNotNull('created_by_admin_id')
                 ->orWhereNotNull('email_verified_at')
                 ->orWhereNotNull('phone_verified_at');
@@ -572,6 +574,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'profile_completed_at' => 'datetime',
         'invite_sent_at' => 'datetime',
         'notification_preferences' => 'array',
+        'is_demo' => 'boolean',
         'fish_last_active_date' => 'date',
         'fish_milestones' => 'array',
         'fish_unlocked_backgrounds' => 'array',
