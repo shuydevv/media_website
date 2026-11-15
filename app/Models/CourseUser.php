@@ -19,6 +19,7 @@ class CourseUser extends Model
         'overdue_notified_at' => 'datetime',
         'promise_expiring_notified_at' => 'datetime',
         'autopay_enabled' => 'boolean',
+        'admin_reminded_at' => 'datetime',
     ];
 
     public function user()

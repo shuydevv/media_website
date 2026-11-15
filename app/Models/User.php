@@ -40,7 +40,7 @@ class User extends Authenticatable implements MustVerifyEmail
                 'status', 'enrolled_at', 'expires_at', 'source', 'payment_id', 'promo_code',
                 'billing_interval_days', 'next_payment_due_at', 'autopay_enabled',
                 'promised_payment_expires_at', 'promised_payment_used_at', 'reminder_sent_at',
-                'target_score', 'entry_score',
+                'target_score', 'entry_score', 'admin_reminded_at', 'admin_reminded_by',
             ])
             ->withTimestamps();
     }
@@ -219,6 +219,16 @@ class User extends Authenticatable implements MustVerifyEmail
      * relation (см. IndexController/ArchiveController, крутят её в цикле по
      * всем ученикам списка), отдельного запроса не делает.
      */
+    /**
+     * Админ отметил «Напомнил» хотя бы по одному курсу, а оплаты с тех пор
+     * не было (пометка снимается при оплате — BillingService::recordPayment()).
+     */
+    public function crmRemindedUnpaid(): bool
+    {
+        return $this->courses->contains(fn ($course) => $course->pivot->admin_reminded_at !== null
+            && in_array($course->pivot->status, ['active', 'suspended'], true));
+    }
+
     public function hasActiveCrmReminder(): bool
     {
         return $this->crmReminders->contains(fn (CrmReminder $r) => $r->isActive());

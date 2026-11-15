@@ -54,6 +54,13 @@
         [data-view][hidden], [data-edit][hidden] {
             display: none;
         }
+        {{-- Окно «Оплатил» и галочки в строке курса — свои стили, а не новые
+             Tailwind-классы (те требуют пересборки ассетов). --}}
+        .crm-paid-dialog { width: calc(100vw - 2rem); max-width: 24rem; border: 1px solid #e4e4e7; box-shadow: 0 20px 40px rgba(0,0,0,.12); }
+        .crm-paid-dialog::backdrop { background: rgba(24,24,27,.35); }
+        .crm-paid-dialog [hidden] { display: none; }
+        .crm-paid-dialog [data-paid-submit]:disabled { opacity: .5; cursor: default; }
+        .crm-mark-box { width: 15px; height: 15px; accent-color: #27272a; cursor: pointer; }
     </style>
 @endpush
 
@@ -68,6 +75,42 @@
     <template id="crm-reminder-body-row-template">
         @include('admin.crm.partials.reminder-body-row', ['reminder' => new \App\Models\CrmReminder(['due_at' => now(), 'note' => ''])])
     </template>
+
+    <dialog id="crm-paid-dialog" class="crm-paid-dialog rounded-2xl p-0 w-[calc(100vw-2rem)] max-w-sm">
+        <form class="p-5 space-y-3" novalidate>
+            <div>
+                <div class="sans-medium text-base text-zinc-900">Оплатил</div>
+                <div class="sans text-sm text-zinc-500" data-paid-title></div>
+            </div>
+            <label class="block">
+                <span class="sans text-xs text-zinc-500">Сумма, ₽</span>
+                <input type="number" name="amount_rub" min="0" step="1" required
+                       class="mt-1 w-full border rounded-lg px-3 py-2 input-focus sans text-base md:text-sm">
+                <span class="sans text-xs text-zinc-400" data-paid-hint></span>
+            </label>
+            <div class="flex gap-2">
+                <label class="block flex-1">
+                    <span class="sans text-xs text-zinc-500">Дата оплаты</span>
+                    <input type="date" name="paid_at" required
+                           class="mt-1 w-full border rounded-lg px-3 py-2 input-focus sans text-base md:text-sm">
+                </label>
+                <label class="block">
+                    <span class="sans text-xs text-zinc-500">Период</span>
+                    <select name="billing_interval_days" class="mt-1 border rounded-lg px-2 py-2 input-focus sans text-base md:text-sm">
+                        <option value="30">месяц</option>
+                        <option value="14">2 недели</option>
+                    </select>
+                </label>
+            </div>
+            <div class="sans text-sm text-zinc-700">Доступ продлится до <span class="sans-medium" data-paid-preview>—</span></div>
+            <div class="sans text-xs text-zinc-400" data-paid-notify>Ученику придёт уведомление «Оплата получена».</div>
+            <div class="sans text-sm text-rose-600" data-paid-error hidden></div>
+            <div class="flex justify-end gap-2 pt-1">
+                <button type="button" data-paid-cancel class="px-3 min-h-10 md:min-h-9 text-sm text-zinc-500 hover:text-zinc-800 sans">Отмена</button>
+                <button type="submit" data-paid-submit class="rounded-lg px-4 min-h-10 md:min-h-9 bg-zinc-800 text-white text-sm sans-medium hover:bg-zinc-900">ОК</button>
+            </div>
+        </form>
+    </dialog>
 
     <script>
     (function () {
@@ -415,7 +458,6 @@
                 const saveBtn = group.querySelector('.crm-access-save');
                 const cancelBtn = group.querySelector('.crm-access-cancel');
                 const saved = group.querySelector('.crm-access-saved');
-                const lastPaymentEl = courseRow.querySelector('.crm-last-payment');
                 const originalDate = dateInput.value;
 
                 function revert() {
@@ -438,36 +480,182 @@
                         access_until: dateInput.value,
                         amount_rub: amountInput.value || null,
                     }).then(function (data) {
-                        dateText.textContent = 'до ' + data.access_until;
-                        dateText.className = 'sans text-zinc-700';
-                        // Сохранение даты возвращает приостановленную запись в
-                        // active (AccessController) — метка "Просрочен" больше не нужна.
-                        const suspendedBadge = courseRow.querySelector('[data-course-suspended]');
-                        if (suspendedBadge) suspendedBadge.remove();
-                        if (data.payment) {
-                            lastPaymentEl.textContent = 'платёж: ' + data.payment.amount_rub + ' ₽ (' + data.payment.paid_at + ')';
-                        }
                         amountInput.value = '';
                         flash(saved);
                         revert();
-
-                        // Оплата/дата могли автоматически поменять статус
-                        // (например, из "Новый" в "Активный ученик") — обновляем
-                        // селект тем же способом, что и при ручном выборе.
-                        if (data.status) {
-                            rebuildSelectOptions(stageSelect, data.status.options);
-                            stageOriginal = stageSelect.value;
-                            applySelectColor(stageSelect, data.status.color);
-
-                            const isClosedNow = data.status.key === 'completed' || data.status.key === 'lost';
-                            if (isClosedNow !== window.CRM_ARCHIVE_VIEW) {
-                                removeRow(row);
-                            }
-                        }
+                        applyCourseState(data);
                     }).catch(function () {
                         alert('Не удалось сохранить, попробуйте ещё раз.');
                     });
                 });
+
+                // Ответ любого действия со строкой курса (дата, «Напомнил»,
+                // «Оплатил», отмена платежа) — CrmCourseState::response():
+                // блок оплаты приходит готовым HTML, поэтому обработчики ниже
+                // делегированные — на courseRow, который не перерисовывается.
+                function applyCourseState(data) {
+                    dateText.textContent = 'до ' + data.access_until;
+                    dateText.className = data.date_class;
+                    // Оплата/дата возвращают приостановленную запись в active —
+                    // метка "Просрочен" больше не нужна.
+                    const suspendedBadge = courseRow.querySelector('[data-course-suspended]');
+                    if (suspendedBadge && !data.suspended) suspendedBadge.remove();
+                    const block = courseRow.querySelector('[data-course-billing]');
+                    if (block && data.billing_html) block.outerHTML = data.billing_html;
+
+                    // Оплата/дата могли автоматически поменять статус
+                    // (например, из "Новый" в "Активный ученик") — обновляем
+                    // селект тем же способом, что и при ручном выборе.
+                    if (data.status) {
+                        rebuildSelectOptions(stageSelect, data.status.options);
+                        stageOriginal = stageSelect.value;
+                        applySelectColor(stageSelect, data.status.color);
+
+                        const isClosedNow = data.status.key === 'completed' || data.status.key === 'lost';
+                        if (isClosedNow !== window.CRM_ARCHIVE_VIEW) {
+                            removeRow(row);
+                        }
+                    }
+                }
+
+                const courseUrl = '/admin/crm/users/' + userId + '/courses/' + courseId;
+
+                courseRow.addEventListener('change', function (e) {
+                    const box = e.target;
+                    if (box.matches('[data-mark-reminded]')) {
+                        box.disabled = true;
+                        patch(courseUrl + '/reminded', { reminded: box.checked })
+                            .then(applyCourseState)
+                            .catch(function () {
+                                box.checked = !box.checked;
+                                box.disabled = false;
+                                alert('Не удалось сохранить, попробуйте ещё раз.');
+                            });
+                    } else if (box.matches('[data-mark-paid]')) {
+                        // Галочка ставится только после «ОК» в окне (тогда блок
+                        // перерисуется) — пока окно открыто или его закрыли, она снята.
+                        box.checked = false;
+                        const block = box.closest('[data-course-billing]');
+                        openPaidDialog({
+                            title: courseRow.dataset.courseTitle,
+                            amount: block.dataset.defaultAmount,
+                            lastHint: block.dataset.lastHint,
+                            interval: block.dataset.interval,
+                            baseline: block.dataset.baseline,
+                            url: courseUrl + '/payments',
+                            onDone: applyCourseState,
+                        });
+                    }
+                });
+
+                courseRow.addEventListener('click', function (e) {
+                    const undo = e.target.closest('[data-payment-undo]');
+                    if (!undo) return;
+                    if (!confirm('Удалить этот платёж и вернуть прежнюю дату?\nУведомление ученику об оплате уже ушло — его не отозвать.')) return;
+                    undo.disabled = true;
+                    del('/admin/crm/payments/' + undo.dataset.paymentUndo)
+                        .then(applyCourseState)
+                        .catch(function () {
+                            undo.disabled = false;
+                            alert('Не удалось отменить платёж.');
+                        });
+                });
+            });
+        });
+
+        // ── Окно «Оплатил» ────────────────────────────────────────────
+        const paidDialog = document.getElementById('crm-paid-dialog');
+        const paidForm = paidDialog.querySelector('form');
+        const paidAmount = paidDialog.querySelector('[name=amount_rub]');
+        const paidDate = paidDialog.querySelector('[name=paid_at]');
+        const paidInterval = paidDialog.querySelector('[name=billing_interval_days]');
+        const paidPreview = paidDialog.querySelector('[data-paid-preview]');
+        const paidHint = paidDialog.querySelector('[data-paid-hint]');
+        const paidNotify = paidDialog.querySelector('[data-paid-notify]');
+        const paidError = paidDialog.querySelector('[data-paid-error]');
+        const paidSubmit = paidDialog.querySelector('[data-paid-submit]');
+        const MONTHS = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+        const MAX_CATCH_UP_DAYS = @json(\App\Service\BillingService::MAX_CATCH_UP_DAYS);
+        let paidCtx = null;
+
+        function isoDate(d) {
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+        function parseIso(v) {
+            const p = v.split('-');
+            return new Date(+p[0], +p[1] - 1, +p[2]);
+        }
+        function addDays(d, n) {
+            const r = new Date(d.getTime());
+            r.setDate(r.getDate() + n);
+            return r;
+        }
+
+        // Повторяет BillingService::nextDueAfterPayment() — только для
+        // предпросмотра, итоговую дату считает сервер.
+        function updatePaidPreview() {
+            paidNotify.hidden = !(parseFloat(paidAmount.value) > 0);
+            if (!paidDate.value) { paidPreview.textContent = '—'; return; }
+            const paid = parseIso(paidDate.value);
+            let base = paidCtx.baseline ? parseIso(paidCtx.baseline) : null;
+            if (!base || addDays(base, MAX_CATCH_UP_DAYS) < paid) base = paid;
+            const due = addDays(base, parseInt(paidInterval.value, 10));
+            paidPreview.textContent = String(due.getDate()).padStart(2, '0') + ' ' + MONTHS[due.getMonth()] + ' ' + due.getFullYear();
+        }
+
+        function openPaidDialog(ctx) {
+            paidCtx = ctx;
+            paidDialog.querySelector('[data-paid-title]').textContent = ctx.title;
+            paidAmount.value = ctx.amount;
+            paidHint.textContent = ctx.lastHint ? 'Прошлая оплата: ' + ctx.lastHint : 'Оплат ещё не было — подставлена цена курса';
+            const today = new Date();
+            paidDate.value = isoDate(today);
+            paidDate.max = isoDate(today);
+            paidDate.min = isoDate(addDays(today, -60));
+            paidInterval.value = ctx.interval === '14' ? '14' : '30';
+            paidError.hidden = true;
+            paidSubmit.disabled = false;
+            updatePaidPreview();
+            paidDialog.showModal();
+            paidAmount.focus();
+            paidAmount.select();
+        }
+
+        [paidAmount, paidDate, paidInterval].forEach(function (el) {
+            el.addEventListener('input', updatePaidPreview);
+            el.addEventListener('change', updatePaidPreview);
+        });
+        paidDialog.querySelector('[data-paid-cancel]').addEventListener('click', function () { paidDialog.close(); });
+        paidDialog.addEventListener('click', function (e) { if (e.target === paidDialog) paidDialog.close(); });
+
+        paidForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (paidSubmit.disabled || !paidCtx) return;
+            if (paidAmount.value === '' || !paidDate.value) return;
+            // Блокировка от двойного нажатия; сервер дополнительно отклоняет
+            // такой же платёж в течение пары минут (409).
+            paidSubmit.disabled = true;
+            paidError.hidden = true;
+            fetch(paidCtx.url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+                body: JSON.stringify({
+                    amount_rub: paidAmount.value,
+                    paid_at: paidDate.value,
+                    billing_interval_days: paidInterval.value,
+                }),
+            }).then(function (res) {
+                return res.json().catch(function () { return {}; }).then(function (body) {
+                    if (!res.ok) throw new Error(body.message || 'Не удалось сохранить, попробуйте ещё раз.');
+                    return body;
+                });
+            }).then(function (data) {
+                paidDialog.close();
+                paidCtx.onDone(data);
+            }).catch(function (err) {
+                paidError.textContent = err.message;
+                paidError.hidden = false;
+                paidSubmit.disabled = false;
             });
         });
     })();

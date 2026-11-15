@@ -88,18 +88,13 @@
              active), а не записывать ученика на курс заново. --}}
         @forelse($student->courses->whereIn('pivot.status', ['active', 'suspended']) as $course)
             @php
-                $pivot = $course->pivot;
-                $isSuspended = $pivot->status === 'suspended';
-                $isBilling = $pivot->billing_interval_days !== null;
-                $rawUntil = $isBilling ? $pivot->next_payment_due_at : $pivot->expires_at;
-                $until = $rawUntil ? \Illuminate\Support\Carbon::parse($rawUntil) : null;
-                $isOverdue = $isSuspended || ($until && $until->isPast());
-                $isSoon = $until && !$isOverdue && now()->diffInDays($until) <= \App\Models\User::CRM_SOON_THRESHOLD_DAYS;
-                $dateColor = $isOverdue ? 'text-rose-600' : ($isSoon ? 'text-amber-600' : 'text-zinc-700');
-                $lastPayment = $student->payments->firstWhere('course_id', $course->id);
+                $s = \App\Support\CrmCourseState::for($student, $course);
+                $isSuspended = $s['isSuspended'];
+                $until = $s['until'];
+                $dateColor = $s['dateColor'];
             @endphp
             <div class="flex flex-wrap items-center gap-2 border border-zinc-200 rounded-lg px-3 py-2 text-sm"
-                 data-course-row data-course-id="{{ $course->id }}">
+                 data-course-row data-course-id="{{ $course->id }}" data-course-title="{{ $course->title }}">
                 <span class="sans-medium text-zinc-800 min-w-0 truncate">{{ $course->title }}</span>
                 @if($isSuspended)
                     <x-ui.badge tone="red" data-course-suspended title="Доступ приостановлен — оплата просрочена. Поставьте новую дату, чтобы вернуть доступ.">Просрочен</x-ui.badge>
@@ -128,13 +123,7 @@
                 </span>
 
                 <span class="text-zinc-300">·</span>
-                <span class="crm-last-payment sans text-zinc-400 text-xs">
-                    @if($lastPayment)
-                        платёж: {{ number_format($lastPayment->amount_cents / 100, 0, ',', ' ') }} ₽ ({{ \App\Support\CrmDate::format($lastPayment->paid_at) }})
-                    @else
-                        платежей нет
-                    @endif
-                </span>
+                @include('admin.crm.partials.course-billing', ['s' => $s])
             </div>
         @empty
             <div class="sans text-sm text-zinc-400">Курсов нет</div>

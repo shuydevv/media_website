@@ -205,22 +205,21 @@ class BillingService
             $intervalDays = $meta['billing_interval_days'] ?? $pivot->billing_interval_days ?? 30;
             $paidAt = isset($meta['paid_at']) ? Carbon::parse($meta['paid_at']) : now();
 
-            // Новый период всегда считается поверх уже установленной даты платежа,
-            // а не от дня фактической оплаты — уроки за период с 5 по 5 число всё
-            // равно шли по расписанию, даже если оплатили 10-го. Это верно и для
-            // досрочной оплаты, и для небольшого опоздания. Откатываемся к дате
-            // оплаты только если старой даты вообще нет (самый первый платёж) или
-            // просрочка больше MAX_CATCH_UP_DAYS — порог фиксированный и одинаковый
-            // для любой периодичности (в том числе для двухнедельного плана), не
-            // привязан к billing_interval_days.
-            $baseline = $pivot->next_payment_due_at;
-            if ($baseline === null || $baseline->copy()->addDays(self::MAX_CATCH_UP_DAYS)->lt($paidAt)) {
-                $baseline = $paidAt;
+            // Снимок до платежа — для кнопки «отменить» в CRM (rollbackPayment()).
+            $rollbackState = [];
+            foreach (self::ROLLBACK_FIELDS as $field) {
+                $value = $pivot->getAttribute($field);
+                $rollbackState[$field] = $value instanceof \DateTimeInterface ? $value->format('Y-m-d H:i:s') : $value;
             }
 
             $pivot->status = 'active';
+            $pivot->next_payment_due_at = $this->nextDueAfterPayment($pivot, $paidAt, $intervalDays);
             $pivot->billing_interval_days = $intervalDays;
-            $pivot->next_payment_due_at = $baseline->copy()->addDays($intervalDays);
+            // Платёж всегда переводит запись на регулярную оплату — дата
+            // ручного/промо зачисления (expires_at) дальше не нужна, а если
+            // её оставить, enrollments:expire заморозит запись по старой дате
+            // (то же, что делает AccessController).
+            $pivot->expires_at = null;
             $pivot->promised_payment_used_at = null;
             $pivot->promised_payment_expires_at = null;
             $pivot->reminder_sent_at = null;
@@ -230,6 +229,9 @@ class BillingService
             // занятой с первого раза).
             $pivot->overdue_notified_at = null;
             $pivot->promise_expiring_notified_at = null;
+            // Пометка админа «напомнил» относится к закрытому периоду.
+            $pivot->admin_reminded_at = null;
+            $pivot->admin_reminded_by = null;
             $pivot->save();
 
             $payment = Payment::create([
@@ -244,12 +246,95 @@ class BillingService
                 'paid_at' => $paidAt,
                 'recorded_by_user_id' => $meta['recorded_by_user_id'] ?? null,
                 'note' => $meta['note'] ?? null,
+                'rollback_state' => $rollbackState,
             ]);
 
-            $user->notify(new PaymentConfirmedNotification($payment));
+            // 0 ₽ — второй курс пакета (вся сумма записана на первый, см.
+            // AccessController): «оплата получена» на ноль рублей ученика запутает.
+            if ($amountCents > 0) {
+                $user->notify(new PaymentConfirmedNotification($payment));
+            }
 
             return $payment;
         });
+    }
+
+    /**
+     * Поля course_user, которые меняет recordPayment() — их снимок кладётся
+     * в payments.rollback_state.
+     */
+    public const ROLLBACK_FIELDS = [
+        'status', 'billing_interval_days', 'next_payment_due_at', 'expires_at',
+        'promised_payment_used_at', 'promised_payment_expires_at', 'reminder_sent_at',
+        'overdue_notified_at', 'promise_expiring_notified_at',
+        'admin_reminded_at', 'admin_reminded_by',
+    ];
+
+    /**
+     * До какой даты продлится доступ после оплаты от $paidAt.
+     *
+     * Новый период всегда считается поверх уже установленной даты платежа,
+     * а не от дня фактической оплаты — уроки за период с 5 по 5 число всё
+     * равно шли по расписанию, даже если оплатили 10-го. Это верно и для
+     * досрочной оплаты, и для небольшого опоздания. Откатываемся к дате
+     * оплаты только если старой даты вообще нет (самый первый платёж) или
+     * просрочка больше MAX_CATCH_UP_DAYS — порог фиксированный и одинаковый
+     * для любой периодичности (в том числе для двухнедельного плана), не
+     * привязан к billing_interval_days. Для ручного/промо зачисления
+     * (billing_interval_days пусто) старая дата — expires_at.
+     * Тот же расчёт повторяет окно «Оплатил» в CRM (layout.blade.php) для
+     * предпросмотра — при правке меняй оба места.
+     */
+    public function nextDueAfterPayment(CourseUser $pivot, \DateTimeInterface $paidAt, int $intervalDays): Carbon
+    {
+        $paidAt = Carbon::instance($paidAt);
+        $baseline = $pivot->next_payment_due_at
+            ?? ($pivot->billing_interval_days === null ? $pivot->expires_at : null);
+
+        if ($baseline === null || $baseline->copy()->addDays(self::MAX_CATCH_UP_DAYS)->lt($paidAt)) {
+            $baseline = $paidAt;
+        }
+
+        return $baseline->copy()->addDays($intervalDays);
+    }
+
+    /**
+     * Отмена ошибочно внесённого платежа: удаляет его и возвращает запись
+     * course_user в состояние до него. Только последний платёж по записи и
+     * только со снимком (rollback_state) — иначе «вернуть как было» не к чему.
+     * Уведомление «оплата получена» уже ушло, его не отозвать.
+     */
+    public function rollbackPayment(Payment $payment): CourseUser
+    {
+        return DB::transaction(function () use ($payment) {
+            $pivot = CourseUser::whereKey($payment->course_user_id)->lockForUpdate()->firstOrFail();
+
+            if (!$this->canRollback($payment)) {
+                throw new \DomainException('Этот платёж отменить нельзя.');
+            }
+
+            foreach (self::ROLLBACK_FIELDS as $field) {
+                if (array_key_exists($field, $payment->rollback_state)) {
+                    $pivot->setAttribute($field, $payment->rollback_state[$field]);
+                }
+            }
+            $pivot->save();
+            $payment->delete();
+
+            return $pivot;
+        });
+    }
+
+    public function canRollback(Payment $payment): bool
+    {
+        if ($payment->is_promise || !is_array($payment->rollback_state)) {
+            return false;
+        }
+
+        $latestId = Payment::where('course_user_id', $payment->course_user_id)
+            ->orderByDesc('id')->value('id');
+
+        return $latestId === $payment->id;
     }
 
     public function grantPromisedPayment(User $user, Course $course): Payment

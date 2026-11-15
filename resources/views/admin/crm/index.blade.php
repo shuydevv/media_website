@@ -4,7 +4,7 @@
 
 @section('content')
     @php
-        $hasFilters = !empty($q) || !empty($status) || !empty($dateFrom) || !empty($dateTo) || ($sort ?? 'urgency') !== 'urgency' || !empty($soonOnly) || !empty($remindersOnly);
+        $hasFilters = !empty($q) || !empty($status) || !empty($dateFrom) || !empty($dateTo) || ($sort ?? 'urgency') !== 'urgency' || !empty($soonOnly) || !empty($remindersOnly) || !empty($remindedOnly);
     @endphp
 
     <x-ui.page-header title="CRM">
@@ -64,6 +64,9 @@
         @endif
         @if($remindersOnly)
             <input type="hidden" name="reminders" value="1">
+        @endif
+        @if($remindedOnly)
+            <input type="hidden" name="reminded" value="1">
         @endif
     </form>
 
@@ -127,6 +130,20 @@
                        class="{{ $chipClass }} {{ $badgeColorClasses['amber'] }} {{ $remindersOnly ? 'ring-2 ring-offset-1 ring-zinc-400' : 'opacity-80 hover:opacity-100' }}">
                         Уведомления
                         <span class="opacity-70">{{ $reminderCount }}</span>
+                    </a>
+                    @php
+                        $remindedTarget = $filterParams;
+                        if ($remindedOnly) {
+                            unset($remindedTarget['reminded']);
+                        } else {
+                            $remindedTarget['reminded'] = 1;
+                        }
+                    @endphp
+                    <a href="{{ route('admin.crm.index', $remindedTarget) }}"
+                       title="Отмечено «Напомнил», оплаты пока не было"
+                       class="{{ $chipClass }} {{ $badgeColorClasses['rose'] }} {{ $remindedOnly ? 'ring-2 ring-offset-1 ring-zinc-400' : 'opacity-80 hover:opacity-100' }}">
+                        Напомнил, не оплатил
+                        <span class="opacity-70">{{ $remindedCount }}</span>
                     </a>
                 </div>
             </div>

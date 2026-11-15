@@ -39,6 +39,7 @@ class IndexController extends Controller
         $sort = trim($request->string('sort')->toString()) ?: 'urgency';
         $soonOnly = $request->boolean('soon');
         $remindersOnly = $request->boolean('reminders');
+        $remindedOnly = $request->boolean('reminded');
         $dateFrom = trim($request->string('date_from')->toString());
         $dateTo = trim($request->string('date_to')->toString());
 
@@ -87,6 +88,7 @@ class IndexController extends Controller
         $statusCounts = array_fill_keys(self::PIPELINE_STATUS_KEYS, 0);
         $soonCount = 0;
         $reminderCount = 0;
+        $remindedCount = 0;
         foreach ($base as $student) {
             $key = $student->crmStatus()['key'];
             if (array_key_exists($key, $statusCounts)) {
@@ -97,6 +99,9 @@ class IndexController extends Controller
             }
             if ($student->hasActiveCrmReminder()) {
                 $reminderCount++;
+            }
+            if ($student->crmRemindedUnpaid()) {
+                $remindedCount++;
             }
         }
 
@@ -142,6 +147,7 @@ class IndexController extends Controller
             ->when($status !== '', fn ($c) => $c->filter(fn (User $u) => $u->crmStatus()['key'] === $status))
             ->when($soonOnly, fn ($c) => $c->filter(fn (User $u) => $u->crmExpiresSoon()))
             ->when($remindersOnly, fn ($c) => $c->filter(fn (User $u) => $u->hasActiveCrmReminder()))
+            ->when($remindedOnly, fn ($c) => $c->filter(fn (User $u) => $u->crmRemindedUnpaid()))
             ->when($dateFromParsed, fn ($c) => $c->filter(fn (User $u) => $u->created_at && $u->created_at->greaterThanOrEqualTo($dateFromParsed)))
             ->when($dateToParsed, fn ($c) => $c->filter(fn (User $u) => $u->created_at && $u->created_at->lessThanOrEqualTo($dateToParsed)))
             ->values();
@@ -171,6 +177,7 @@ class IndexController extends Controller
             'date_to' => $dateTo ?: null,
             'soon' => $soonOnly ? 1 : null,
             'reminders' => $remindersOnly ? 1 : null,
+            'reminded' => $remindedOnly ? 1 : null,
         ]);
 
         return view('admin.crm.index', [
@@ -183,6 +190,8 @@ class IndexController extends Controller
             'soonCount' => $soonCount,
             'remindersOnly' => $remindersOnly,
             'reminderCount' => $reminderCount,
+            'remindedOnly' => $remindedOnly,
+            'remindedCount' => $remindedCount,
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
             'filterParams' => $filterParams,

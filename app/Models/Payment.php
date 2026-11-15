@@ -13,6 +13,7 @@ class Payment extends Model
         'is_promise' => 'boolean',
         'promise_expires_at' => 'datetime',
         'paid_at' => 'datetime',
+        'rollback_state' => 'array',
     ];
 
     public function courseUser()

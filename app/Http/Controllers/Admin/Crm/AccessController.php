@@ -8,7 +8,7 @@ use App\Models\CourseUser;
 use App\Models\Payment;
 use App\Models\User;
 use App\Notifications\PaymentConfirmedNotification;
-use App\Support\CrmDate;
+use App\Support\CrmCourseState;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -92,6 +92,9 @@ class AccessController extends Controller
             $pivot->reminder_sent_at = null;
             $pivot->overdue_notified_at = null;
             $pivot->promise_expiring_notified_at = null;
+            // Пометка «напомнил» относится к закрытому периоду.
+            $pivot->admin_reminded_at = null;
+            $pivot->admin_reminded_by = null;
 
             $pivot->save();
 
@@ -117,19 +120,8 @@ class AccessController extends Controller
         }
 
         // Продление доступа/платёж могли поменять итоговый статус (Новый →
-        // Активный, Заморожен → Активный и т.п.) — courses уже загруженная
-        // коллекция на $user, перезагружаем, иначе crmStatus() увидит старый
-        // pivot и вернёт то же значение, что было до сохранения.
-        $user->load('courses');
-
-        return response()->json([
-            'ok' => true,
-            'access_until' => CrmDate::format($until),
-            'payment' => $amountCents > 0 ? [
-                'amount_rub' => number_format($amountCents / 100, 0, ',', ' '),
-                'paid_at' => CrmDate::format(now()),
-            ] : null,
-            'status' => $user->crmStatusPayload(),
-        ]);
+        // Активный, Заморожен → Активный и т.п.) — CrmCourseState::response()
+        // перечитывает courses/payments, иначе crmStatus() увидел бы старый pivot.
+        return response()->json(CrmCourseState::response($user, $course));
     }
 }
