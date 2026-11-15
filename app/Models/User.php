@@ -387,6 +387,22 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function scopeVisibleInCrm($query)
     {
+        return $query->crmCandidates()->where('crm_excluded', false);
+    }
+
+    /**
+     * Свои/тестовые аккаунты, отмеченные «Не учитывать» (crm_excluded): доступ
+     * у них настоящий, но в статусы, счётчики и доход они не идут — только
+     * на вкладку CRM «Не учитываются» (Admin\Crm\ExcludedListController).
+     */
+    public function scopeExcludedFromCrm($query)
+    {
+        return $query->crmCandidates()->where('crm_excluded', true);
+    }
+
+    /** Общая база CRM: без демо-ученика и без неподтверждённых регистраций. */
+    public function scopeCrmCandidates($query)
+    {
         // Демо-ученик (DemoMode) — не лид и не ученик, в CRM ему не место.
         return $query->where('is_demo', false)->where(function ($q) {
             $q->whereNotNull('created_by_admin_id')
@@ -585,6 +601,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'invite_sent_at' => 'datetime',
         'notification_preferences' => 'array',
         'is_demo' => 'boolean',
+        'crm_excluded' => 'boolean',
         'fish_last_active_date' => 'date',
         'fish_milestones' => 'array',
         'fish_unlocked_backgrounds' => 'array',

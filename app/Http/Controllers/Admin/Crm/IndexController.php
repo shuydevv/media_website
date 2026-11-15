@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin\Crm;
 
 use App\Http\Controllers\Controller;
-use App\Models\Course;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -47,16 +46,28 @@ class IndexController extends Controller
             $sort = 'urgency';
         }
 
+        // Чипы над списком (статусы + «Скоро истекает»/«Уведомления»/
+        // «Напомнил, не оплатил») — один быстрый фильтр за раз, не
+        // комбинируются. Если в ссылке пришло несколько — побеждает первый.
+        if (! in_array($status, self::PIPELINE_STATUS_KEYS, true)) {
+            $status = '';
+        }
+        if ($status !== '') {
+            $soonOnly = $remindersOnly = $remindedOnly = false;
+        } elseif ($soonOnly) {
+            $remindersOnly = $remindedOnly = false;
+        } elseif ($remindersOnly) {
+            $remindedOnly = false;
+        }
+
         // isClosedInCrm() (completed/lost) зависит от статусов курсов и
         // ручного crm_stage вперемешку — не сводится к простому WHERE без
         // риска разъехаться с App\Models\User::crmStatus(). CRM у одной
         // школы — это десятки-сотни, не миллионы строк, поэтому фильтруем
         // и пагинируем уже в памяти, одним источником правды на статус.
         //
-        // Поиск/фильтр по статусу намеренно НЕ идут в этот запрос: номер
-        // ученика (ниже) должен быть его позицией среди ВСЕХ, кто сейчас в
-        // CRM, а не среди только тех, кто прошёл текущий поиск — иначе
-        // номера "скакали" бы при каждом вводе в поле поиска.
+        // Поиск/фильтры намеренно НЕ идут в этот запрос: счётчики над
+        // списком считаются по всей базе (см. ниже).
         $base = User::query()
             ->where('role', User::ROLE_READER)
             ->visibleInCrm()
@@ -71,16 +82,6 @@ class IndexController extends Controller
             ->get()
             ->reject(fn (User $u) => $u->isClosedInCrm())
             ->values();
-
-        // Номер ("снизу вверх") — это позиция по хронологии регистрации среди
-        // всех, кто сейчас в CRM, стабильный ярлык "какой ты по счёту", а не
-        // позиция на экране — считаем его ДО поиска/фильтра по статусу и ДО
-        // пересортировки по срочности, иначе номера скакали бы при каждом
-        // запросе.
-        $baseTotal = $base->count();
-        foreach ($base as $index => $student) {
-            $student->crmNumber = $baseTotal - $index;
-        }
 
         // Счётчики "сколько учеников в каждом статусе"/"скоро истекает" — по
         // той же полной базе, до поиска/фильтров, чтобы цифры над списком не
@@ -105,7 +106,7 @@ class IndexController extends Controller
             }
         }
 
-        // "Пользователей" в блоке статистики — только те, с кем сейчас реально
+        // «В работе» в блоке статистики — только те, с кем сейчас реально
         // работают: та же база CRM (без неподтверждённых регистраций-ботов,
         // без архива completed/lost), минус замороженные.
         $totalUsers = array_sum($statusCounts) - $statusCounts['frozen'];
@@ -166,18 +167,14 @@ class IndexController extends Controller
 
         $statusOptions = array_intersect_key(User::crmStatusOptions(), array_flip(self::PIPELINE_STATUS_KEYS));
 
-        // Общие для чипов-фильтров параметры (без 'page' и без того
-        // параметра, который переключает сам чип) — чтобы клик по одному
-        // фильтру не сбрасывал остальные уже выбранные.
+        // Параметры, которые чип сохраняет при клике (поиск, сортировка,
+        // даты), — БЕЗ самих чип-фильтров: чипы взаимоисключающие, клик по
+        // одному снимает другой.
         $filterParams = array_filter([
             'q' => $q ?: null,
-            'status' => $status ?: null,
             'sort' => $sort !== 'urgency' ? $sort : null,
             'date_from' => $dateFrom ?: null,
             'date_to' => $dateTo ?: null,
-            'soon' => $soonOnly ? 1 : null,
-            'reminders' => $remindersOnly ? 1 : null,
-            'reminded' => $remindedOnly ? 1 : null,
         ]);
 
         return view('admin.crm.index', [
@@ -198,8 +195,18 @@ class IndexController extends Controller
             'statusOptions' => $statusOptions,
             'statusCounts' => $statusCounts,
             'totalUsers' => $totalUsers,
-            'courseStats' => $this->courseStats(),
-            'monthlyRevenueRub' => $this->monthlyRevenue() / 100,
+            'courseStats' => $this->courseStats($base),
+            'monthlyRevenueRub' => $this->revenueBetween(now()->startOfMonth(), now()) / 100,
+            // Прошлый месяц за тот же отрезок (1-е … сегодняшнее число) —
+            // честное сравнение посреди месяца; и за весь прошлый месяц.
+            'prevSamePeriodRevenueRub' => $this->revenueBetween(
+                now()->subMonthNoOverflow()->startOfMonth(),
+                now()->subMonthNoOverflow()->min(now()->subMonthNoOverflow()->endOfMonth())
+            ) / 100,
+            'prevMonthRevenueRub' => $this->revenueBetween(
+                now()->subMonthNoOverflow()->startOfMonth(),
+                now()->subMonthNoOverflow()->endOfMonth()
+            ) / 100,
         ]);
     }
 
@@ -232,38 +239,41 @@ class IndexController extends Controller
     }
 
     /**
-     * Сколько активных учеников на каждом курсе. Намеренно БЕЗ денег по
-     * курсу отдельно — при пакетной оплате (см. AccessController) вся сумма
-     * пишется на один курс из пары, а второй продлевается за 0, так что
-     * разбивка "сколько принёс каждый курс" была бы неточной. Общая сумма
-     * не искажается (см. monthlyRevenue()), только её распределение по
-     * курсам — так и оставляем нераспределённой.
+     * Сколько учеников с активным доступом на каждом курсе + сколько это
+     * уникальных людей (ученик на двух курсах — один человек). Считаем по
+     * той же базе CRM, что и счётчики: без демо, фейков и архива. Денег по
+     * курсу отдельно нет — при пакетной оплате (AccessController) вся сумма
+     * пишется на один курс из пары, разбивка была бы неточной.
      */
-    private function courseStats()
+    private function courseStats($base): array
     {
-        return Course::query()
-            ->withCount(['students as active_students_count' => function ($q) {
-                $q->where('course_user.status', 'active');
-            }])
-            ->get()
-            ->map(fn (Course $course) => [
-                'title' => $course->title,
-                'students' => $course->active_students_count,
-            ])
-            ->sortByDesc('students')
-            ->values();
+        $perCourse = [];
+        $unique = 0;
+        foreach ($base as $student) {
+            $active = $student->courses->filter(fn ($c) => $c->pivot->status === 'active');
+            if ($active->isNotEmpty()) {
+                $unique++;
+            }
+            foreach ($active as $course) {
+                $perCourse[$course->id] ??= ['title' => $course->title, 'students' => 0];
+                $perCourse[$course->id]['students']++;
+            }
+        }
+
+        usort($perCourse, fn ($a, $b) => $b['students'] <=> $a['students']);
+
+        return ['courses' => $perCourse, 'unique' => $unique];
     }
 
-    /**
-     * Один общий доход за текущий календарный месяц, без разбивки по
-     * курсам — см. courseStats().
-     */
-    private function monthlyRevenue(): int
+    /** Доход (подтверждённые оплаты, без обещанных) за отрезок. */
+    private function revenueBetween($from, $to): int
     {
         return (int) Payment::query()
             ->where('status', 'succeeded')
             ->where('is_promise', false)
-            ->whereBetween('paid_at', [now()->startOfMonth(), now()->endOfMonth()])
+            ->whereBetween('paid_at', [$from, $to])
+            // Оплаты своих/тестовых аккаунтов в доход не идут.
+            ->whereHas('user', fn ($q) => $q->where('is_demo', false)->where('crm_excluded', false))
             ->sum('amount_cents');
     }
 }

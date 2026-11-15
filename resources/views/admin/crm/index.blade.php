@@ -16,15 +16,11 @@
         </x-slot:actions>
     </x-ui.page-header>
 
-    <x-ui.tabs class="mb-4">
-        <x-ui.tab href="{{ route('admin.crm.index') }}" :active="true">В работе</x-ui.tab>
-        <x-ui.tab href="{{ route('admin.crm.archive') }}">Завершили / отказались</x-ui.tab>
-    </x-ui.tabs>
+    @include('admin.crm.partials.tabs', ['active' => 'index'])
 
     <form method="GET" class="mb-5">
         <div class="flex flex-wrap items-center gap-2">
-            <x-ui.input name="q" type="search" value="{{ $q ?? '' }}" placeholder="Поиск: имя, email, телефон…" wrap="flex-1 min-w-[220px]" />
-            <x-ui.button type="submit" size="xs">Искать</x-ui.button>
+            <x-ui.input name="q" type="search" value="{{ $q ?? '' }}" placeholder="Поиск: имя, email, телефон…" wrap="flex-1 min-w-[220px]" data-crm-live-search autocomplete="off" />
         </div>
 
         {{-- Остальные фильтры на телефоне свёрнуты под одну кнопку — иначе они
@@ -37,14 +33,6 @@
             @if($hasFilters)<x-ui.badge tone="blue">заданы</x-ui.badge>@endif
         </button>
         <div class="mt-1 md:mt-2 flex flex-wrap items-center gap-2 {{ $hasFilters ? '' : 'max-md:hidden' }}" data-crm-filters>
-            <x-ui.select name="status" wrap="w-full sm:w-auto" aria-label="Статус">
-                <option value="">Все статусы</option>
-                @foreach($statusOptions as $key => $opt)
-                    <option value="{{ $key }}" @selected(($status ?? '') === $key)>
-                        {{ $opt['label'] }} ({{ $statusCounts[$key] ?? 0 }})
-                    </option>
-                @endforeach
-            </x-ui.select>
             <x-ui.select name="sort" wrap="w-full sm:w-auto" aria-label="Сортировка">
                 @foreach($sortOptions as $key => $label)
                     <option value="{{ $key }}" @selected(($sort ?? 'urgency') === $key)>{{ $label }}</option>
@@ -59,6 +47,10 @@
                 <x-ui.button href="{{ route('admin.crm.index') }}" variant="secondary" size="xs">Сброс</x-ui.button>
             @endif
         </div>
+        {{-- Выбранный чип (он один) сохраняется при поиске. --}}
+        @if(!empty($status))
+            <input type="hidden" name="status" value="{{ $status }}">
+        @endif
         @if($soonOnly)
             <input type="hidden" name="soon" value="1">
         @endif
@@ -70,10 +62,42 @@
         @endif
     </form>
 
+    {{-- Блок результатов — его целиком подменяет живой поиск (layout.blade.php). --}}
+    <div data-crm-results>
     <x-ui.card class="mb-5">
         <div class="flex flex-wrap gap-x-6 sm:gap-x-8 gap-y-4">
-            <x-ui.stat label="Пользователей">{{ $totalUsers }}</x-ui.stat>
-            <x-ui.stat :label="'Доход за '.now()->translatedFormat('F')">{{ number_format($monthlyRevenueRub, 0, ',', ' ') }} ₽</x-ui.stat>
+            <x-ui.stat label="В работе">
+                {{ $totalUsers }}
+                <x-slot:sub>без замороженных</x-slot:sub>
+            </x-ui.stat>
+            @php
+                $rub = fn ($v) => number_format($v, 0, ',', ' ').' ₽';
+                $prevMonthName = now()->subMonthNoOverflow()->translatedFormat('F');
+                $revenueDelta = $prevSamePeriodRevenueRub > 0
+                    ? (int) round(($monthlyRevenueRub - $prevSamePeriodRevenueRub) / $prevSamePeriodRevenueRub * 100)
+                    : null;
+            @endphp
+            <x-ui.stat :label="'Доход за '.now()->translatedFormat('F')">
+                {{ $rub($monthlyRevenueRub) }}
+                <x-slot:sub>
+                    <span title="Прошлый месяц с 1-го по {{ now()->day }}-е число">
+                        {{ $prevMonthName }} к {{ now()->day }}-му: {{ $rub($prevSamePeriodRevenueRub) }}
+                        @if($revenueDelta !== null)
+                            <span class="{{ $revenueDelta >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">{{ $revenueDelta >= 0 ? '+' : '−' }}{{ abs($revenueDelta) }}%</span>
+                        @endif
+                    </span>
+                    <br>за весь {{ $prevMonthName }}: {{ $rub($prevMonthRevenueRub) }}
+                </x-slot:sub>
+            </x-ui.stat>
+            <x-ui.stat label="Учатся сейчас">
+                {{ $courseStats['unique'] }}
+                <x-slot:sub>
+                    уникальных учеников
+                    @foreach($courseStats['courses'] as $c)
+                        <br>{{ $c['title'] }}: {{ $c['students'] }}
+                    @endforeach
+                </x-slot:sub>
+            </x-ui.stat>
             <div class="flex-1 min-w-[260px]">
                 <div class="sans-medium text-xs text-zinc-400 uppercase tracking-wide mb-2">По статусам</div>
                 <div class="flex flex-wrap gap-1.5">
@@ -90,12 +114,7 @@
                     @foreach($statusOptions as $key => $opt)
                         @php
                             $isActiveBadge = ($status ?? '') === $key;
-                            $target = $filterParams;
-                            if ($isActiveBadge) {
-                                unset($target['status']);
-                            } else {
-                                $target['status'] = $key;
-                            }
+                            $target = $isActiveBadge ? $filterParams : $filterParams + ['status' => $key];
                         @endphp
                         <a href="{{ route('admin.crm.index', $target) }}"
                            class="{{ $chipClass }} {{ $badgeColorClasses[$opt['color']] }} {{ $isActiveBadge ? 'ring-2 ring-offset-1 ring-zinc-400' : 'opacity-80 hover:opacity-100' }}">
@@ -104,12 +123,7 @@
                         </a>
                     @endforeach
                     @php
-                        $soonTarget = $filterParams;
-                        if ($soonOnly) {
-                            unset($soonTarget['soon']);
-                        } else {
-                            $soonTarget['soon'] = 1;
-                        }
+                        $soonTarget = $soonOnly ? $filterParams : $filterParams + ['soon' => 1];
                     @endphp
                     <a href="{{ route('admin.crm.index', $soonTarget) }}"
                        title="Активный доступ, до истечения которого осталось не больше {{ \App\Models\User::CRM_SOON_THRESHOLD_DAYS }} дней"
@@ -118,12 +132,7 @@
                         <span class="opacity-70">{{ $soonCount }}</span>
                     </a>
                     @php
-                        $remindersTarget = $filterParams;
-                        if ($remindersOnly) {
-                            unset($remindersTarget['reminders']);
-                        } else {
-                            $remindersTarget['reminders'] = 1;
-                        }
+                        $remindersTarget = $remindersOnly ? $filterParams : $filterParams + ['reminders' => 1];
                     @endphp
                     <a href="{{ route('admin.crm.index', $remindersTarget) }}"
                        title="Наступившие напоминания, поставленные в карточках учеников"
@@ -132,12 +141,7 @@
                         <span class="opacity-70">{{ $reminderCount }}</span>
                     </a>
                     @php
-                        $remindedTarget = $filterParams;
-                        if ($remindedOnly) {
-                            unset($remindedTarget['reminded']);
-                        } else {
-                            $remindedTarget['reminded'] = 1;
-                        }
+                        $remindedTarget = $remindedOnly ? $filterParams : $filterParams + ['reminded' => 1];
                     @endphp
                     <a href="{{ route('admin.crm.index', $remindedTarget) }}"
                        title="Отмечено «Напомнил», оплаты пока не было"
@@ -152,7 +156,7 @@
 
     <div class="space-y-4">
         @forelse($students as $student)
-            @include('admin.crm.partials.student-card', ['student' => $student, 'number' => $student->crmNumber])
+            @include('admin.crm.partials.student-card', ['student' => $student])
         @empty
             <x-ui.empty>Ничего не найдено</x-ui.empty>
         @endforelse
@@ -160,5 +164,6 @@
 
     <div class="mt-4">
         {{ $students->links('pagination.ui') }}
+    </div>
     </div>
 @endsection

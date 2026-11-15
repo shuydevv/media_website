@@ -311,6 +311,8 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
             Route::get('/archive', 'ArchiveController')->name('admin.crm.archive');
             Route::patch('/users/{user}/checklist', 'ChecklistController')->name('admin.crm.checklist.update');
             Route::patch('/users/{user}/note', 'NoteController')->name('admin.crm.note.update');
+            Route::patch('/users/{user}/excluded', 'ExcludedController')->name('admin.crm.excluded.update');
+            Route::get('/excluded', 'ExcludedListController')->name('admin.crm.excluded');
             Route::patch('/users/{user}/courses/{course}/access', 'AccessController')->name('admin.crm.access.update');
             Route::patch('/users/{user}/courses/{course}/reminded', 'RemindedController')->name('admin.crm.reminded.update');
             Route::post('/users/{user}/courses/{course}/payments', 'Payment\StoreController')->name('admin.crm.payments.store');

@@ -11,10 +11,7 @@
     <style>
         {{-- .input-focus:not(:placeholder-shown) в app.css красит синим любое
              непустое поле — в плотном списке это шумно и читается как
-             предупреждение, а не обычное значение. .crm-note-view показывается
-             ТОЛЬКО когда заметка не пуста, то есть :not(:placeholder-shown)
-             для неё матчился бы всегда — без перебивки была бы синей постоянно.
-             Перебиваем для всех полей CRM (нужна специфичность выше одного
+             предупреждение, а не обычное значение. Перебиваем для всех полей CRM (нужна специфичность выше одного
              класса+псевдокласса из app.css). --}}
         .input-focus.crm-note-input:not(:placeholder-shown),
         .input-focus.crm-access-input:not(:placeholder-shown),
@@ -22,17 +19,7 @@
             border-color: #d4d4d8;
             background-color: #fff;
         }
-        {{-- .crm-note-view показывается ТОЛЬКО когда заметка не пуста, то есть
-             :not(:placeholder-shown) для неё матчился бы всегда — своя
-             override-запись (не в общей группе выше: там фон #fff, здесь
-             нарочно чуть темнее #fafafa, чтобы на глаз было видно "это не
-             поле ввода сейчас, а просто текст"). --}}
-        .input-focus.crm-note-view:not(:placeholder-shown) {
-            border-color: #d4d4d8;
-            background-color: #fafafa;
-        }
-        textarea.crm-note-input,
-        textarea.crm-note-view {
+        textarea.crm-note-input {
             resize: none;
         }
         {{-- Селект статуса — сам себе бейдж, цвет меняется классами из JS. --}}
@@ -168,7 +155,8 @@
 
         // Карандашик рядом с полем: клик прячет текст и показывает инпут(ы) —
         // у даты доступа их несколько (дата + сумма + кнопки), у комментария один.
-        document.querySelectorAll('[data-field-group]').forEach(function (group) {
+        function initFieldGroups(root) {
+        root.querySelectorAll('[data-field-group]').forEach(function (group) {
             const view = group.querySelector('[data-view]');
             const editEls = group.querySelectorAll('[data-edit]');
             const toggle = group.querySelector('[data-field-edit-toggle]');
@@ -178,6 +166,7 @@
                 editEls[0].focus();
             });
         });
+        }
 
         const selectColorClasses = {
             gray:    ['bg-gray-100', 'text-gray-700', 'border-gray-300'],
@@ -247,7 +236,11 @@
             return row;
         }
 
-        document.querySelectorAll('[data-student-row]').forEach(function (row) {
+        // Карточки инициализируются и при загрузке, и после живого поиска
+        // (список приходит новым HTML — см. блок «Поиск» ниже).
+        function initCards(root) {
+        initFieldGroups(root);
+        root.querySelectorAll('[data-student-row]').forEach(function (row) {
             const userId = row.dataset.userId;
 
             // Статус: селект со всеми состояниями сразу — при выборе сохраняет
@@ -389,6 +382,18 @@
 
             reminderPopoverList.querySelectorAll('[data-reminder-row]').forEach(wireReminderRow);
 
+            // «Завтра / Через 3 дня / Через неделю» — подставляют дату и
+            // переводят курсор в поле «Что сделать».
+            reminderPopover.querySelectorAll('[data-reminder-preset]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    reminderNewDate.value = btn.dataset.reminderPreset;
+                    reminderNewNote.focus();
+                });
+            });
+            reminderNewNote.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') { e.preventDefault(); reminderAddBtn.click(); }
+            });
+
             reminderAddBtn.addEventListener('click', function () {
                 if (!reminderNewDate.value || !reminderNewNote.value) return;
                 postJson('/admin/crm/users/' + userId + '/reminders', {
@@ -407,41 +412,20 @@
                 });
             });
 
-            // Комментарий: открытие редактирования — общий обработчик
-            // [data-field-group] выше (прячет data-view целиком, неважно,
-            // был там readonly-текстарий или "Заметок нет"). Здесь только
-            // сохранение по blur и переключение между "есть заметка"/"нет".
-            const noteGroup = row.querySelector('.crm-note-input').closest('[data-field-group]');
-            const noteViewText = noteGroup.querySelector('.crm-note-view');
-            const noteEmptyText = noteGroup.querySelector('.crm-note-empty');
-            const noteInput = noteGroup.querySelector('.crm-note-input');
-            const noteSaved = noteGroup.querySelector('.crm-note-saved');
+            // Заметка: обычное поле, сохраняется само при уходе из него.
+            const noteInput = row.querySelector('.crm-note-input');
+            const noteSaved = row.querySelector('.crm-note-saved');
             let noteOriginal = noteInput.value;
-
             noteInput.addEventListener('blur', function () {
-                const view = noteGroup.querySelector('[data-view]');
-                if (noteInput.value === noteOriginal) {
-                    noteInput.hidden = true;
-                    view.hidden = false;
-                    return;
-                }
-                patch('/admin/crm/users/' + userId + '/note', { note: noteInput.value })
+                if (noteInput.value === noteOriginal) return;
+                const value = noteInput.value;
+                patch('/admin/crm/users/' + userId + '/note', { note: value })
                     .then(function () {
-                        noteOriginal = noteInput.value;
-                        if (noteInput.value) {
-                            noteViewText.value = noteInput.value;
-                            noteViewText.hidden = false;
-                            noteEmptyText.hidden = true;
-                        } else {
-                            noteViewText.hidden = true;
-                            noteEmptyText.hidden = false;
-                        }
+                        noteOriginal = value;
                         flash(noteSaved);
-                        noteInput.hidden = true;
-                        view.hidden = false;
                     })
                     .catch(function () {
-                        alert('Не удалось сохранить комментарий, попробуйте ещё раз.');
+                        alert('Не удалось сохранить заметку, попробуйте ещё раз.');
                     });
             });
 
@@ -562,6 +546,54 @@
                 });
             });
         });
+        }
+
+        initCards(document);
+
+        // ── Поиск во время ввода ──────────────────────────────────────
+        // Пауза 350 мс после ввода → тянем ту же страницу с новым q и
+        // заменяем блок результатов (счётчики, список, пагинация). URL
+        // обновляется через replaceState — «назад» не засоряется каждой буквой.
+        const searchInput = document.querySelector('[data-crm-live-search]');
+        const resultsBox = document.querySelector('[data-crm-results]');
+        if (searchInput && resultsBox) {
+            const searchForm = searchInput.form;
+            let searchTimer = null;
+            let searchSeq = 0;
+            function runSearch() {
+                const params = new URLSearchParams(new FormData(searchForm));
+                Array.from(params.keys()).forEach(function (k) { if (params.get(k) === '') params.delete(k); });
+                const url = searchForm.getAttribute('action') || window.location.pathname;
+                const full = url.split('?')[0] + (params.toString() ? '?' + params.toString() : '');
+                const seq = ++searchSeq;
+                fetch(full, { headers: { 'Accept': 'text/html' } })
+                    .then(function (res) { return res.text(); })
+                    .then(function (html) {
+                        if (seq !== searchSeq) return;
+                        const doc = new DOMParser().parseFromString(html, 'text/html');
+                        const fresh = doc.querySelector('[data-crm-results]');
+                        if (!fresh) return;
+                        resultsBox.innerHTML = fresh.innerHTML;
+                        initCards(resultsBox);
+                        history.replaceState(null, '', full);
+                    });
+            }
+            searchInput.addEventListener('input', function () {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(runSearch, 350);
+            });
+            // Сортировка и даты применяются сразу, без кнопки.
+            searchForm.addEventListener('change', function (e) {
+                if (e.target === searchInput) return;
+                clearTimeout(searchTimer);
+                runSearch();
+            });
+            searchForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                clearTimeout(searchTimer);
+                runSearch();
+            });
+        }
 
         // ── Окно «Оплатил» ────────────────────────────────────────────
         const paidDialog = document.getElementById('crm-paid-dialog');

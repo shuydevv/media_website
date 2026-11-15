@@ -14,7 +14,6 @@
         <div class="flex items-start gap-3 min-w-0">
             <div class="min-w-0">
                 <div class="flex items-center gap-2 flex-wrap mb-1.5">
-                    <span class="sans text-sm text-zinc-500 shrink-0 border border-zinc-200 rounded-md px-1.5 py-0.5">{{ $number }}</span>
                     <a href="{{ route('admin.user.show', $student) }}" class="sans-medium text-base text-zinc-900 hover:underline">
                         {{ trim(($student->first_name ?? '').' '.($student->last_name ?? '')) ?: '—' }}
                     </a>
@@ -36,7 +35,21 @@
                 @if($student->phone)
                     <div class="sans text-sm text-zinc-500 mt-1">{{ $student->phone }}</div>
                 @endif
-                <div class="sans text-xs text-zinc-400 mt-0.5">Регистрация: {{ optional($student->created_at)->translatedFormat('j F Y') }}</div>
+                <div class="sans text-xs text-zinc-400 mt-0.5 flex flex-wrap items-center gap-x-2">
+                    <span>Регистрация: {{ optional($student->created_at)->translatedFormat('j F Y') }}</span>
+                    <span class="text-zinc-300">·</span>
+                    {{-- Свой/тестовый аккаунт: доступ остаётся, но в статусы,
+                         счётчики и доход не идёт (Crm\ExcludedController). --}}
+                    <form method="POST" action="{{ route('admin.crm.excluded.update', $student) }}" class="inline">
+                        @csrf
+                        @method('PATCH')
+                        <input type="hidden" name="excluded" value="{{ $student->crm_excluded ? 0 : 1 }}">
+                        <button type="submit" class="py-2 -my-2 text-zinc-400 hover:text-zinc-800 underline decoration-dotted underline-offset-2"
+                                title="{{ $student->crm_excluded ? 'Вернуть в статусы, счётчики и доход' : 'Свой или тестовый аккаунт: доступ сохранится, но в статусы, счётчики и доход не пойдёт' }}">
+                            {{ $student->crm_excluded ? 'Снова учитывать' : 'Не учитывать' }}
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
 
@@ -57,6 +70,14 @@
                     @endforeach
                 </div>
                 <div class="flex flex-col gap-1.5 border-t border-zinc-100 pt-2">
+                    <div class="flex flex-wrap gap-1.5">
+                        @foreach([1 => 'Завтра', 3 => 'Через 3 дня', 7 => 'Через неделю'] as $days => $label)
+                            <button type="button" data-reminder-preset="{{ now()->addDays($days)->toDateString() }}"
+                                    class="px-2.5 min-h-9 md:min-h-7 rounded-full border border-zinc-200 text-xs sans text-zinc-600 hover:border-zinc-400 hover:text-zinc-900">
+                                {{ $label }}
+                            </button>
+                        @endforeach
+                    </div>
                     <input type="date" data-reminder-new-date
                            class="border rounded-lg px-2 py-1.5 input-focus sans text-base md:text-sm">
                     <input type="text" data-reminder-new-note placeholder="Что сделать…" maxlength="500"
@@ -136,25 +157,12 @@
         @endforeach
     </div>
 
-    <div class="mt-3" data-field-group>
-        <div data-view class="flex items-center gap-2">
-            {{-- Есть заметка — сама показывается как инпут (readonly, пока не
-                 нажали карандашик). Пустой заметки не бывает как инпута —
-                 только обычный текст, чтобы не выглядело как пустое поле
-                 ввода, которое почему-то нельзя нажать. --}}
-            <textarea readonly rows="2"
-                      class="crm-note-view flex-1 w-full border rounded-lg px-3 py-2 text-sm input-focus sans text-zinc-600"
-                      {{ $student->crm_note ? '' : 'hidden' }}>{{ $student->crm_note }}</textarea>
-            <div class="crm-note-empty flex-1 sans text-sm text-zinc-400" {{ $student->crm_note ? 'hidden' : '' }}>
-                Заметок нет
-            </div>
-            <button type="button" data-field-edit-toggle class="shrink-0 p-2.5 -m-2 text-zinc-400 hover:text-zinc-700" title="Изменить комментарий" aria-label="Изменить комментарий">
-                <x-icon name="edit-02" class="w-3.5 h-3.5" />
-            </button>
-        </div>
-        <textarea data-edit hidden rows="2"
-                  class="crm-note-input w-full border rounded-lg px-3 py-2 text-base md:text-sm input-focus sans"
-                  placeholder="Заметка…">{{ $student->crm_note }}</textarea>
+    {{-- Заметка — сразу обычное поле: пишешь и уходишь, сохраняется само
+         по blur (без карандаша). --}}
+    <div class="mt-3" data-note-group>
+        <textarea rows="2"
+                  class="crm-note-input w-full border rounded-lg px-3 py-2 text-base md:text-sm input-focus sans text-zinc-700"
+                  placeholder="Заметка… (сохранится сама)">{{ $student->crm_note }}</textarea>
         <span class="crm-note-saved text-emerald-600 text-xs sans opacity-0 transition-opacity">Сохранено ✓</span>
     </div>
 </div>

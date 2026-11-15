@@ -72,6 +72,7 @@ class IndexController extends Controller
             ->where('status', 'succeeded')
             ->where('is_promise', false)
             ->whereBetween('paid_at', [now()->startOfMonth(), now()->endOfMonth()])
+            ->whereHas('user', fn ($q) => $q->where('is_demo', false)->where('crm_excluded', false))
             ->sum('amount_cents');
     }
 }
