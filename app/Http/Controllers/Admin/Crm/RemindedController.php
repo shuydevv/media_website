@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Crm;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\CourseUser;
+use App\Models\CrmEvent;
 use App\Models\User;
 use App\Support\CrmCourseState;
 use Illuminate\Http\Request;
@@ -28,6 +29,10 @@ class RemindedController extends Controller
         $pivot->admin_reminded_at = $data['reminded'] ? now() : null;
         $pivot->admin_reminded_by = $data['reminded'] ? auth()->id() : null;
         $pivot->save();
+
+        if ($data['reminded']) {
+            CrmEvent::log($user, 'reminded', 'Напомнил об оплате', $course->id);
+        }
 
         return response()->json(CrmCourseState::response($user, $course));
     }

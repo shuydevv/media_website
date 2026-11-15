@@ -4,7 +4,7 @@
 
 @section('content')
     @php
-        $hasFilters = !empty($q) || !empty($status) || !empty($dateFrom) || !empty($dateTo) || ($sort ?? 'urgency') !== 'urgency' || !empty($soonOnly) || !empty($remindersOnly) || !empty($remindedOnly);
+        $hasFilters = !empty($q) || !empty($status) || !empty($dateFrom) || !empty($dateTo) || ($sort ?? 'urgency') !== 'urgency' || !empty($soonOnly) || !empty($remindersOnly) || !empty($remindedOnly) || !empty($inactiveOnly);
     @endphp
 
     <x-ui.page-header title="CRM">
@@ -60,6 +60,9 @@
         @if($remindedOnly)
             <input type="hidden" name="reminded" value="1">
         @endif
+        @if($inactiveOnly)
+            <input type="hidden" name="inactive" value="1">
+        @endif
     </form>
 
     {{-- Блок результатов — его целиком подменяет живой поиск (layout.blade.php). --}}
@@ -87,6 +90,26 @@
                         @endif
                     </span>
                     <br>за весь {{ $prevMonthName }}: {{ $rub($prevMonthRevenueRub) }}
+                </x-slot:sub>
+            </x-ui.stat>
+            {{-- Прогноз: у кого дата «до» до конца месяца (или просрочена не
+                 больше 30 дней), по сумме их прошлой оплаты — CrmBoard::forecast(). --}}
+            <x-ui.stat label="Ожидается до конца месяца">
+                {{ $rub($forecast['rub']) }}
+                <x-slot:sub>
+                    <details class="inline">
+                        <summary class="cursor-pointer underline decoration-dotted underline-offset-2 inline">
+                            {{ $forecast['students'] }} учен.@if($forecast['overdue']), из них просрочили {{ $forecast['overdue'] }}@endif
+                        </summary>
+                        <ul class="mt-1 space-y-0.5">
+                            @foreach($forecast['rows'] as $row)
+                                @php $n = trim(($row['student']->first_name ?? '').' '.($row['student']->last_name ?? '')) ?: ($row['student']->email ?? '—'); @endphp
+                                <li class="{{ $row['overdue'] ? 'text-rose-600' : '' }}">
+                                    {{ \Illuminate\Support\Str::beforeLast(\App\Support\CrmDate::format($row['until']), ' ') }} · {{ $n }} · {{ $rub($row['rub']) }}
+                                </li>
+                            @endforeach
+                        </ul>
+                    </details>
                 </x-slot:sub>
             </x-ui.stat>
             <x-ui.stat label="Учатся сейчас">
@@ -148,6 +171,15 @@
                        class="{{ $chipClass }} {{ $badgeColorClasses['rose'] }} {{ $remindedOnly ? 'ring-2 ring-offset-1 ring-zinc-400' : 'opacity-80 hover:opacity-100' }}">
                         Напомнил, не оплатил
                         <span class="opacity-70">{{ $remindedCount }}</span>
+                    </a>
+                    @php
+                        $inactiveTarget = $inactiveOnly ? $filterParams : $filterParams + ['inactive' => 1];
+                    @endphp
+                    <a href="{{ route('admin.crm.index', $inactiveTarget) }}"
+                       title="Есть доступ, но не заходил на платформу {{ \App\Models\User::CRM_INACTIVE_DAYS }}+ дней — риск, что не продлит"
+                       class="{{ $chipClass }} {{ $badgeColorClasses['amber'] }} {{ $inactiveOnly ? 'ring-2 ring-offset-1 ring-zinc-400' : 'opacity-80 hover:opacity-100' }}">
+                        Не занимается
+                        <span class="opacity-70">{{ $inactiveCount }}</span>
                     </a>
                 </div>
             </div>

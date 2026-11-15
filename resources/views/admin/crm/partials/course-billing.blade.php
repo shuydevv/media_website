@@ -11,7 +11,8 @@
       data-default-amount="{{ $s['defaultAmountRub'] }}"
       data-last-hint="{{ $lastReal ? number_format($lastReal->amount_cents / 100, 0, ',', ' ').' ₽ — '.\App\Support\CrmDate::format($lastReal->paid_at) : '' }}"
       data-interval="{{ $s['intervalDays'] }}"
-      data-baseline="{{ $s['baselineDate']?->format('Y-m-d') }}">
+      data-baseline="{{ $s['baselineDate']?->format('Y-m-d') }}"
+      data-anchor-day="{{ $s['anchorDay'] }}">
     <span class="crm-last-payment sans text-zinc-400 text-xs">
         @if($s['lastPayment'])
             платёж: {{ number_format($s['lastPayment']->amount_cents / 100, 0, ',', ' ') }} ₽ ({{ \App\Support\CrmDate::format($s['lastPayment']->paid_at) }})

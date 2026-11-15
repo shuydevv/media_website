@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Service\BillingService;
 use App\Support\CrmCourseState;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 
@@ -29,6 +30,10 @@ class StoreController extends Controller
             'amount_rub' => ['required', 'numeric', 'min:0', 'max:1000000'],
             'paid_at' => ['required', 'date', 'before_or_equal:today', 'after_or_equal:'.now()->subDays(60)->toDateString()],
             'billing_interval_days' => ['required', Rule::in(BillingService::ALLOWED_INTERVALS)],
+            // Пакет: сумма пишется на этот курс, остальные продлеваются
+            // тем же действием за 0 ₽ (см. «ПАКЕТНАЯ ЦЕНА» в AccessController).
+            'also_course_ids' => ['nullable', 'array', 'max:5'],
+            'also_course_ids.*' => ['integer'],
         ], [
             'paid_at.before_or_equal' => 'Дата оплаты не может быть в будущем.',
             'paid_at.after_or_equal' => 'Дата оплаты — не раньше чем 60 дней назад.',
@@ -56,13 +61,34 @@ class StoreController extends Controller
         $paidAt = Carbon::parse($data['paid_at']);
         $paidAt = $paidAt->isToday() ? now() : $paidAt->setTime(12, 0);
 
-        $billing->recordPayment($user, $course, $amountCents, 'manual', [
-            'paid_at' => $paidAt,
-            'billing_interval_days' => (int) $data['billing_interval_days'],
-            'recorded_by_user_id' => auth()->id(),
-            'note' => 'CRM: «Оплатил»',
-        ]);
+        $alsoCourses = $user->courses()
+            ->whereIn('courses.id', array_diff($data['also_course_ids'] ?? [], [$course->id]))
+            ->wherePivotIn('status', ['active', 'suspended'])
+            ->get();
 
-        return response()->json(CrmCourseState::response($user, $course));
+        DB::transaction(function () use ($billing, $user, $course, $amountCents, $paidAt, $data, $alsoCourses) {
+            $billing->recordPayment($user, $course, $amountCents, 'manual', [
+                'paid_at' => $paidAt,
+                'billing_interval_days' => (int) $data['billing_interval_days'],
+                'recorded_by_user_id' => auth()->id(),
+                'note' => $alsoCourses->isEmpty() ? 'CRM: «Оплатил»' : 'CRM: «Оплатил» — пакет',
+            ]);
+
+            foreach ($alsoCourses as $other) {
+                $billing->recordPayment($user, $other, 0, 'manual', [
+                    'paid_at' => $paidAt,
+                    'billing_interval_days' => (int) $data['billing_interval_days'],
+                    'recorded_by_user_id' => auth()->id(),
+                    'note' => 'CRM: пакет — оплата за оба курса записана на «'.$course->title.'»',
+                ]);
+            }
+        });
+
+        $response = CrmCourseState::response($user, $course);
+        $response['also'] = $alsoCourses
+            ->mapWithKeys(fn (Course $other) => [$other->id => CrmCourseState::response($user, $other)])
+            ->all();
+
+        return response()->json($response);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Crm;
 
 use App\Http\Controllers\Controller;
+use App\Models\CrmEvent;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -19,6 +20,8 @@ class ExcludedController extends Controller
 
         $user->crm_excluded = (bool) $data['excluded'];
         $user->save();
+
+        CrmEvent::log($user, 'excluded', $user->crm_excluded ? 'Не учитывается в CRM (свой/тестовый аккаунт)' : 'Снова учитывается в CRM');
 
         $name = trim(($user->first_name ?? '').' '.($user->last_name ?? '')) ?: ($user->email ?: 'Ученик');
 

@@ -14,7 +14,7 @@ class ExcludedListController extends Controller
      * карточки, что в «В работе»: дату доступа и оплату можно менять как
      * обычно, просто эти ученики не идут в статусы, счётчики и доход.
      */
-    public function __invoke(Request $request)
+    public function __invoke(Request $request, \App\Service\Crm\CrmBoard $board)
     {
         $q = trim($request->string('q')->toString());
 
@@ -25,6 +25,8 @@ class ExcludedListController extends Controller
                 'courses',
                 'payments' => fn ($query) => $query->orderByDesc('paid_at'),
                 'crmReminders',
+                'crmEvents.course',
+                'crmEvents.creator',
             ])
             ->when($q, function ($query) use ($q) {
                 $query->where(function ($s) use ($q) {
@@ -37,6 +39,8 @@ class ExcludedListController extends Controller
             })
             ->orderByDesc('created_at')
             ->get();
+
+        $board->attachLastActivity($all);
 
         $perPage = 20;
         $page = (int) $request->input('page', 1);

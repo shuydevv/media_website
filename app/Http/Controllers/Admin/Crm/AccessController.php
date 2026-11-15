@@ -87,6 +87,9 @@ class AccessController extends Controller
             $pivot->billing_interval_days ??= 30;
             $pivot->expires_at = null;
             $pivot->next_payment_due_at = $until;
+            // Дату поставили руками — это и есть новое число графика: дальше
+            // помесячные оплаты идут к нему (BillingService::scheduleAfterPayment()).
+            $pivot->billing_anchor_day = $until->day;
             $pivot->promised_payment_used_at = null;
             $pivot->promised_payment_expires_at = null;
             $pivot->reminder_sent_at = null;

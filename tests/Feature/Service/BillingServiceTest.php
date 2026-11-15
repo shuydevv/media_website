@@ -108,7 +108,7 @@ class BillingServiceTest extends TestCase
         ]);
 
         $pivot = $this->pivot($user, $course);
-        $this->assertTrue($pivot->next_payment_due_at->equalTo($paidAt->copy()->addDays(30)));
+        $this->assertTrue($pivot->next_payment_due_at->equalTo($paidAt->copy()->addMonthNoOverflow()));
     }
 
     /** @test */
@@ -121,7 +121,7 @@ class BillingServiceTest extends TestCase
             'billing_interval_days' => 30,
             'paid_at' => Carbon::parse('2026-01-05 12:00:00'),
         ]);
-        $firstDue = $this->pivot($user, $course)->next_payment_due_at; // 2026-02-04
+        $firstDue = $this->pivot($user, $course)->next_payment_due_at; // 2026-02-05
 
         // Второй платёж приходит на 2 дня раньше срока — расписание не должно
         // "поехать" на дату фактической оплаты, урок за период всё равно шёл
@@ -133,8 +133,8 @@ class BillingServiceTest extends TestCase
         ]);
 
         $secondDue = $this->pivot($user, $course)->next_payment_due_at;
-        $this->assertTrue($secondDue->equalTo($firstDue->copy()->addDays(30)));
-        $this->assertFalse($secondDue->equalTo($secondPaidAt->copy()->addDays(30)));
+        $this->assertTrue($secondDue->equalTo($firstDue->copy()->addMonthNoOverflow()));
+        $this->assertFalse($secondDue->equalTo($secondPaidAt->copy()->addMonthNoOverflow()));
     }
 
     /** @test */
@@ -147,7 +147,7 @@ class BillingServiceTest extends TestCase
             'billing_interval_days' => 30,
             'paid_at' => Carbon::parse('2026-01-05 12:00:00'),
         ]);
-        $firstDue = $this->pivot($user, $course)->next_payment_due_at; // 2026-02-04
+        $firstDue = $this->pivot($user, $course)->next_payment_due_at; // 2026-02-05
 
         // Опоздание на 10 дней — меньше MAX_CATCH_UP_DAYS (30), расписание
         // остаётся привязано к исходной дате, а не к дате фактической оплаты.
@@ -158,7 +158,7 @@ class BillingServiceTest extends TestCase
         ]);
 
         $secondDue = $this->pivot($user, $course)->next_payment_due_at;
-        $this->assertTrue($secondDue->equalTo($firstDue->copy()->addDays(30)));
+        $this->assertTrue($secondDue->equalTo($firstDue->copy()->addMonthNoOverflow()));
     }
 
     /** @test */
@@ -171,7 +171,7 @@ class BillingServiceTest extends TestCase
             'billing_interval_days' => 30,
             'paid_at' => Carbon::parse('2026-01-05 12:00:00'),
         ]);
-        $firstDue = $this->pivot($user, $course)->next_payment_due_at; // 2026-02-04
+        $firstDue = $this->pivot($user, $course)->next_payment_due_at; // 2026-02-05
 
         // Опоздание на 31 день — больше MAX_CATCH_UP_DAYS (30), это уже
         // "возврат после долгого перерыва": график пересчитывается от
@@ -183,7 +183,118 @@ class BillingServiceTest extends TestCase
         ]);
 
         $secondDue = $this->pivot($user, $course)->next_payment_due_at;
-        $this->assertTrue($secondDue->equalTo($latePaidAt->copy()->addDays(30)));
+        $this->assertTrue($secondDue->equalTo($latePaidAt->copy()->addMonthNoOverflow()));
+    }
+
+    /** @test */
+    public function monthly_period_is_a_calendar_month_and_does_not_drift()
+    {
+        $user = $this->makeUser();
+        $course = $this->makeCourse();
+
+        foreach (['2026-10-16' => '2026-11-16', '2026-11-15' => '2026-12-16'] as $paid => $expected) {
+            $this->billing->recordPayment($user, $course, 100000, 'manual', [
+                'billing_interval_days' => 30,
+                'paid_at' => Carbon::parse($paid.' 12:00:00'),
+            ]);
+            $this->assertSame($expected, $this->pivot($user, $course)->next_payment_due_at->toDateString());
+        }
+    }
+
+    /** @test */
+    public function monthly_period_from_the_31st_ends_on_the_last_day_of_a_short_month()
+    {
+        $user = $this->makeUser();
+        $course = $this->makeCourse();
+
+        $this->billing->recordPayment($user, $course, 100000, 'manual', [
+            'billing_interval_days' => 30,
+            'paid_at' => Carbon::parse('2027-01-31 12:00:00'),
+        ]);
+
+        $this->assertSame('2027-02-28', $this->pivot($user, $course)->next_payment_due_at->toDateString());
+    }
+
+    /** @test */
+    public function monthly_date_returns_to_the_31st_after_february()
+    {
+        $user = $this->makeUser();
+        $course = $this->makeCourse();
+
+        foreach (['2027-01-31' => '2027-02-28', '2027-02-27' => '2027-03-31'] as $paid => $expected) {
+            $this->billing->recordPayment($user, $course, 100000, 'manual', [
+                'billing_interval_days' => 30,
+                'paid_at' => Carbon::parse($paid.' 12:00:00'),
+            ]);
+            $this->assertSame($expected, $this->pivot($user, $course)->next_payment_due_at->toDateString());
+        }
+    }
+
+    /** @test */
+    public function a_drifted_date_snaps_back_to_the_first_payment_day_but_a_gifted_week_is_kept()
+    {
+        $user = $this->makeUser();
+        $course = $this->makeCourse();
+
+        $this->billing->recordPayment($user, $course, 100000, 'manual', [
+            'billing_interval_days' => 30,
+            'paid_at' => Carbon::parse('2026-09-16 12:00:00'),
+        ]);
+
+        // Старая запись (до billing_anchor_day): дата сползла на день, так
+        // считалось «+30 дней» — 17 ноя. Опора — число первой оплаты (16).
+        CourseUser::whereKey($this->pivot($user, $course)->id)->update(['next_payment_due_at' => '2026-11-17 12:00:00', 'billing_anchor_day' => null]);
+        $this->billing->recordPayment($user, $course, 100000, 'manual', [
+            'billing_interval_days' => 30,
+            'paid_at' => Carbon::parse('2026-11-15 12:00:00'),
+        ]);
+        $this->assertSame('2026-12-16', $this->pivot($user, $course)->next_payment_due_at->toDateString());
+
+        // Подарили неделю: 23 дек — к 16-му не притягиваем.
+        CourseUser::whereKey($this->pivot($user, $course)->id)->update(['next_payment_due_at' => '2026-12-23 12:00:00']);
+        $this->billing->recordPayment($user, $course, 100000, 'manual', [
+            'billing_interval_days' => 30,
+            'paid_at' => Carbon::parse('2026-12-20 12:00:00'),
+        ]);
+        $this->assertSame('2027-01-23', $this->pivot($user, $course)->next_payment_due_at->toDateString());
+    }
+
+    /** @test */
+    public function a_manual_crm_date_becomes_the_new_monthly_day()
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $user = $this->makeUser();
+        $course = $this->makeCourse();
+
+        $this->billing->recordPayment($user, $course, 100000, 'manual', [
+            'billing_interval_days' => 30,
+            'paid_at' => Carbon::parse('2026-10-16 12:00:00'),
+        ]);
+
+        $this->actingAs($admin)->patchJson(route('admin.crm.access.update', [$user, $course]), [
+            'access_until' => '2026-11-18',
+        ])->assertOk();
+
+        $this->billing->recordPayment($user, $course, 100000, 'manual', [
+            'billing_interval_days' => 30,
+            'paid_at' => Carbon::parse('2026-11-17 12:00:00'),
+        ]);
+
+        $this->assertSame('2026-12-18', $this->pivot($user, $course)->next_payment_due_at->toDateString());
+    }
+
+    /** @test */
+    public function two_week_period_stays_exactly_fourteen_days()
+    {
+        $user = $this->makeUser();
+        $course = $this->makeCourse();
+
+        $this->billing->recordPayment($user, $course, 100000, 'manual', [
+            'billing_interval_days' => 14,
+            'paid_at' => Carbon::parse('2026-11-15 12:00:00'),
+        ]);
+
+        $this->assertSame('2026-11-29', $this->pivot($user, $course)->next_payment_due_at->toDateString());
     }
 
     private static function catchUpThreshold(): int

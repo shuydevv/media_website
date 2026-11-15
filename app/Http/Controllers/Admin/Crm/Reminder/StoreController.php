@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Crm\Reminder;
 
 use App\Http\Controllers\Controller;
+use App\Models\CrmEvent;
 use App\Models\CrmReminder;
 use App\Models\User;
 use App\Support\CrmDate;
@@ -24,6 +25,8 @@ class StoreController extends Controller
             'due_at' => Carbon::parse($data['due_at']),
             'note' => $data['note'],
         ]);
+
+        CrmEvent::log($user, 'reminder', 'Напоминание на '.$reminder->due_at->format('d.m').': '.$reminder->note);
 
         return response()->json([
             'ok' => true,

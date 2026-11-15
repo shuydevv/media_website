@@ -25,6 +25,16 @@
     </form>
 
     <div data-crm-results>
+    @if(!empty($lostReasons) && $lostReasons->isNotEmpty() && empty($q))
+        <x-ui.card class="mb-5">
+            <div class="sans-medium text-xs text-zinc-400 uppercase tracking-wide mb-2">Почему отказываются</div>
+            <div class="flex flex-wrap gap-x-5 gap-y-1 sans text-sm text-zinc-700">
+                @foreach($lostReasons as $key => $count)
+                    <span>{{ \App\Models\User::CRM_LOST_REASONS[$key] ?? 'Без причины (до 15.11.2026)' }}: <span class="sans-medium">{{ $count }}</span></span>
+                @endforeach
+            </div>
+        </x-ui.card>
+    @endif
     <div class="space-y-4">
         @forelse($students as $student)
             @include('admin.crm.partials.student-card', ['student' => $student])

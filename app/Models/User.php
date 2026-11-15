@@ -38,7 +38,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsToMany(\App\Models\Course::class, 'course_user')
             ->withPivot([
                 'status', 'enrolled_at', 'expires_at', 'source', 'payment_id', 'promo_code',
-                'billing_interval_days', 'next_payment_due_at', 'autopay_enabled',
+                'billing_interval_days', 'billing_anchor_day', 'next_payment_due_at', 'autopay_enabled',
                 'promised_payment_expires_at', 'promised_payment_used_at', 'reminder_sent_at',
                 'target_score', 'entry_score', 'admin_reminded_at', 'admin_reminded_by',
             ])
@@ -207,6 +207,48 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         return false;
+    }
+
+    /**
+     * Причины отказа (окно при выборе «Отказался» в CRM) — для сводки в
+     * архиве: через пару месяцев видно, из-за чего уходят.
+     */
+    public const CRM_LOST_REASONS = [
+        'expensive' => 'Дорого',
+        'no_time' => 'Нет времени',
+        'other_school' => 'Ушёл к репетитору / в другую школу',
+        'format' => 'Не подошёл формат',
+        'exam_passed' => 'Сдал экзамен',
+        'ghosted' => 'Пропал, не отвечает',
+        'other' => 'Другое',
+    ];
+
+    /**
+     * Сколько дней без захода на платформу — уже «не занимается» (значок в
+     * карточке CRM, чип-фильтр, утренняя сводка). Только для тех, у кого
+     * есть доступ (активный или просроченная оплата).
+     */
+    public const CRM_INACTIVE_DAYS = 7;
+
+    /**
+     * Последний день на платформе — проставляет App\Service\Crm\CrmBoard::attachLastActivity()
+     * одним запросом на весь список (не relation, чтобы не было N+1).
+     */
+    public ?\Illuminate\Support\Carbon $crmLastActiveDate = null;
+
+    public function crmIsInactive(): bool
+    {
+        if (! in_array($this->crmStatus()['key'], ['active', 'past_due'], true)) {
+            return false;
+        }
+
+        return $this->crmLastActiveDate === null
+            || $this->crmLastActiveDate->lt(now()->startOfDay()->subDays(self::CRM_INACTIVE_DAYS));
+    }
+
+    public function crmEvents()
+    {
+        return $this->hasMany(\App\Models\CrmEvent::class)->latest('created_at');
     }
 
     public function crmReminders()
@@ -570,7 +612,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'role',
         'phone', 'phone_verified_at', 'timezone', 'locale', 'created_by_admin_id', 'invite_sent_at',
-        'crm_stage', 'crm_note',
+        'crm_stage', 'crm_note', 'crm_lost_reason',
         'fish_corm_balance', 'fish_total_fed', 'fish_last_active_date', 'fish_milestones',
         'fish_name', 'fish_background', 'fish_unlocked_backgrounds',
         'fish_accessory', 'fish_unlocked_accessories',

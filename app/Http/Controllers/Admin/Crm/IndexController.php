@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Crm;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Service\Crm\CrmBoard;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -31,7 +32,7 @@ class IndexController extends Controller
         'name' => 'По имени (А-Я)',
     ];
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request, CrmBoard $board)
     {
         $q = trim($request->string('q')->toString());
         $status = trim($request->string('status')->toString());
@@ -39,6 +40,7 @@ class IndexController extends Controller
         $soonOnly = $request->boolean('soon');
         $remindersOnly = $request->boolean('reminders');
         $remindedOnly = $request->boolean('reminded');
+        $inactiveOnly = $request->boolean('inactive');
         $dateFrom = trim($request->string('date_from')->toString());
         $dateTo = trim($request->string('date_to')->toString());
 
@@ -53,11 +55,13 @@ class IndexController extends Controller
             $status = '';
         }
         if ($status !== '') {
-            $soonOnly = $remindersOnly = $remindedOnly = false;
+            $soonOnly = $remindersOnly = $remindedOnly = $inactiveOnly = false;
         } elseif ($soonOnly) {
-            $remindersOnly = $remindedOnly = false;
+            $remindersOnly = $remindedOnly = $inactiveOnly = false;
         } elseif ($remindersOnly) {
-            $remindedOnly = false;
+            $remindedOnly = $inactiveOnly = false;
+        } elseif ($remindedOnly) {
+            $inactiveOnly = false;
         }
 
         // isClosedInCrm() (completed/lost) зависит от статусов курсов и
@@ -68,20 +72,7 @@ class IndexController extends Controller
         //
         // Поиск/фильтры намеренно НЕ идут в этот запрос: счётчики над
         // списком считаются по всей базе (см. ниже).
-        $base = User::query()
-            ->where('role', User::ROLE_READER)
-            ->visibleInCrm()
-            ->with([
-                'courses',
-                // Отсортированы по дате платежа заранее — для каждого курса берём
-                // firstWhere('course_id', ...) в шаблоне, без доп. запросов на строку.
-                'payments' => fn ($query) => $query->orderByDesc('paid_at'),
-                'crmReminders',
-            ])
-            ->orderByDesc('created_at')
-            ->get()
-            ->reject(fn (User $u) => $u->isClosedInCrm())
-            ->values();
+        $base = $board->workingSet(['crmEvents.course', 'crmEvents.creator']);
 
         // Счётчики "сколько учеников в каждом статусе"/"скоро истекает" — по
         // той же полной базе, до поиска/фильтров, чтобы цифры над списком не
@@ -90,6 +81,7 @@ class IndexController extends Controller
         $soonCount = 0;
         $reminderCount = 0;
         $remindedCount = 0;
+        $inactiveCount = 0;
         foreach ($base as $student) {
             $key = $student->crmStatus()['key'];
             if (array_key_exists($key, $statusCounts)) {
@@ -103,6 +95,9 @@ class IndexController extends Controller
             }
             if ($student->crmRemindedUnpaid()) {
                 $remindedCount++;
+            }
+            if ($student->crmIsInactive()) {
+                $inactiveCount++;
             }
         }
 
@@ -149,6 +144,7 @@ class IndexController extends Controller
             ->when($soonOnly, fn ($c) => $c->filter(fn (User $u) => $u->crmExpiresSoon()))
             ->when($remindersOnly, fn ($c) => $c->filter(fn (User $u) => $u->hasActiveCrmReminder()))
             ->when($remindedOnly, fn ($c) => $c->filter(fn (User $u) => $u->crmRemindedUnpaid()))
+            ->when($inactiveOnly, fn ($c) => $c->filter(fn (User $u) => $u->crmIsInactive()))
             ->when($dateFromParsed, fn ($c) => $c->filter(fn (User $u) => $u->created_at && $u->created_at->greaterThanOrEqualTo($dateFromParsed)))
             ->when($dateToParsed, fn ($c) => $c->filter(fn (User $u) => $u->created_at && $u->created_at->lessThanOrEqualTo($dateToParsed)))
             ->values();
@@ -189,6 +185,9 @@ class IndexController extends Controller
             'reminderCount' => $reminderCount,
             'remindedOnly' => $remindedOnly,
             'remindedCount' => $remindedCount,
+            'inactiveOnly' => $inactiveOnly,
+            'inactiveCount' => $inactiveCount,
+            'forecast' => $board->forecast($base),
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
             'filterParams' => $filterParams,

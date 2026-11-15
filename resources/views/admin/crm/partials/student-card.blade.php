@@ -35,8 +35,24 @@
                 @if($student->phone)
                     <div class="sans text-sm text-zinc-500 mt-1">{{ $student->phone }}</div>
                 @endif
+                @php
+                    $lastActive = $student->crmLastActiveDate;
+                    $daysAway = $lastActive ? (int) $lastActive->diffInDays(now()->startOfDay()) : null;
+                    $activityText = $lastActive === null ? 'на платформу не заходил'
+                        : ($daysAway === 0 ? 'заходил сегодня' : ($daysAway === 1 ? 'заходил вчера' : 'заходил '.$daysAway.' дн. назад'));
+                @endphp
                 <div class="sans text-xs text-zinc-400 mt-0.5 flex flex-wrap items-center gap-x-2">
+                    @if($student->crmIsInactive())
+                        <x-ui.badge tone="orange" title="Есть доступ, но не заходил {{ \App\Models\User::CRM_INACTIVE_DAYS }}+ дней — риск, что не продлит">{{ \Illuminate\Support\Str::ucfirst($activityText) }}</x-ui.badge>
+                    @else
+                        <span>{{ \Illuminate\Support\Str::ucfirst($activityText) }}</span>
+                    @endif
+                    <span class="text-zinc-300">·</span>
                     <span>Регистрация: {{ optional($student->created_at)->translatedFormat('j F Y') }}</span>
+                    @if($student->crm_stage === 'lost' && $student->crm_lost_reason)
+                        <span class="text-zinc-300">·</span>
+                        <span class="text-rose-600">Причина: {{ \App\Models\User::CRM_LOST_REASONS[$student->crm_lost_reason] ?? $student->crm_lost_reason }}</span>
+                    @endif
                     <span class="text-zinc-300">·</span>
                     {{-- Свой/тестовый аккаунт: доступ остаётся, но в статусы,
                          счётчики и доход не идёт (Crm\ExcludedController). --}}
@@ -156,6 +172,30 @@
             @include('admin.crm.partials.reminder-body-row', ['reminder' => $reminder])
         @endforeach
     </div>
+
+    {{-- История: платежи + события CRM (App\Support\CrmTimeline), новые
+         сверху; видны последние 3, остальное — по «Вся история». --}}
+    @php $timeline = \App\Support\CrmTimeline::for($student); @endphp
+    @if($timeline)
+        <details class="mt-3 group" data-crm-history>
+            <summary class="list-none cursor-pointer select-none">
+                <div class="sans text-xs text-zinc-400 uppercase tracking-wide mb-1">История</div>
+                <ul class="space-y-0.5">
+                    @foreach(array_slice($timeline, 0, 3) as $item)
+                        @include('admin.crm.partials.timeline-item', ['item' => $item])
+                    @endforeach
+                </ul>
+                @if(count($timeline) > 3)
+                    <span class="sans text-xs text-zinc-500 underline decoration-dotted underline-offset-2 group-open:hidden inline-block mt-1 min-h-8">Вся история ({{ count($timeline) }})</span>
+                @endif
+            </summary>
+            <ul class="space-y-0.5">
+                @foreach(array_slice($timeline, 3) as $item)
+                    @include('admin.crm.partials.timeline-item', ['item' => $item])
+                @endforeach
+            </ul>
+        </details>
+    @endif
 
     {{-- Заметка — сразу обычное поле: пишешь и уходишь, сохраняется само
          по blur (без карандаша). --}}

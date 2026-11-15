@@ -79,22 +79,49 @@
                 <label class="block flex-1">
                     <span class="sans text-xs text-zinc-500">Дата оплаты</span>
                     <input type="date" name="paid_at" required
-                           class="mt-1 w-full border rounded-lg px-3 py-2 input-focus sans text-base md:text-sm">
+                           class="mt-1 block w-full h-10 border rounded-lg px-3 input-focus sans text-base md:text-sm">
                 </label>
-                <label class="block">
+                <label class="block w-32 shrink-0">
                     <span class="sans text-xs text-zinc-500">Период</span>
-                    <select name="billing_interval_days" class="mt-1 border rounded-lg px-2 py-2 input-focus sans text-base md:text-sm">
+                    <select name="billing_interval_days" class="mt-1 block w-full h-10 border rounded-lg px-2 input-focus sans text-base md:text-sm">
                         <option value="30">месяц</option>
                         <option value="14">2 недели</option>
                     </select>
                 </label>
             </div>
+            {{-- Пакет: другие курсы ученика продлеваются тем же действием за 0 ₽. --}}
+            <div class="space-y-1" data-paid-also></div>
             <div class="sans text-sm text-zinc-700">Доступ продлится до <span class="sans-medium" data-paid-preview>—</span></div>
             <div class="sans text-xs text-zinc-400" data-paid-notify>Ученику придёт уведомление «Оплата получена».</div>
             <div class="sans text-sm text-rose-600" data-paid-error hidden></div>
             <div class="flex justify-end gap-2 pt-1">
                 <button type="button" data-paid-cancel class="px-3 min-h-10 md:min-h-9 text-sm text-zinc-500 hover:text-zinc-800 sans">Отмена</button>
                 <button type="submit" data-paid-submit class="rounded-lg px-4 min-h-10 md:min-h-9 bg-zinc-800 text-white text-sm sans-medium hover:bg-zinc-900">ОК</button>
+            </div>
+        </form>
+    </dialog>
+
+    {{-- «Отказался»: причина обязательна — по ней сводка в архиве. --}}
+    <dialog id="crm-lost-dialog" class="crm-paid-dialog rounded-2xl p-0 w-[calc(100vw-2rem)] max-w-sm">
+        <form class="p-5 space-y-3" novalidate>
+            <div>
+                <div class="sans-medium text-base text-zinc-900">Почему отказался?</div>
+                <div class="sans text-sm text-zinc-500">Ученик уйдёт в архив «Завершили / отказались».</div>
+            </div>
+            <div class="space-y-1">
+                @foreach(\App\Models\User::CRM_LOST_REASONS as $key => $label)
+                    <label class="flex items-center gap-2 sans text-sm text-zinc-700 cursor-pointer min-h-9">
+                        <input type="radio" name="lost_reason" value="{{ $key }}" class="crm-mark-box">
+                        {{ $label }}
+                    </label>
+                @endforeach
+            </div>
+            <input type="text" name="lost_comment" maxlength="300" placeholder="Комментарий (необязательно)"
+                   class="block w-full h-10 border rounded-lg px-3 input-focus sans text-base md:text-sm">
+            <div class="sans text-sm text-rose-600" data-lost-error hidden>Выберите причину.</div>
+            <div class="flex justify-end gap-2 pt-1">
+                <button type="button" data-lost-cancel class="px-3 min-h-10 md:min-h-9 text-sm text-zinc-500 hover:text-zinc-800 sans">Отмена</button>
+                <button type="submit" class="rounded-lg px-4 min-h-10 md:min-h-9 bg-zinc-800 text-white text-sm sans-medium hover:bg-zinc-900">В архив</button>
             </div>
         </form>
     </dialog>
@@ -167,6 +194,32 @@
             });
         });
         }
+
+        // Окно причины отказа: cb({reason, comment}) или cb(null) при отмене.
+        const lostDialog = document.getElementById('crm-lost-dialog');
+        const lostForm = lostDialog.querySelector('form');
+        let lostCb = null;
+        function askLostReason(cb) {
+            lostCb = cb;
+            lostForm.reset();
+            lostDialog.querySelector('[data-lost-error]').hidden = true;
+            lostDialog.showModal();
+        }
+        function finishLost(result) {
+            const cb = lostCb;
+            lostCb = null;
+            if (lostDialog.open) lostDialog.close();
+            if (cb) cb(result);
+        }
+        lostForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const picked = lostForm.querySelector('input[name=lost_reason]:checked');
+            if (!picked) { lostDialog.querySelector('[data-lost-error]').hidden = false; return; }
+            finishLost({ reason: picked.value, comment: lostForm.querySelector('[name=lost_comment]').value.trim() });
+        });
+        lostDialog.querySelector('[data-lost-cancel]').addEventListener('click', function () { finishLost(null); });
+        lostDialog.addEventListener('close', function () { if (lostCb) finishLost(null); });
+        lostDialog.addEventListener('click', function (e) { if (e.target === lostDialog) finishLost(null); });
 
         const selectColorClasses = {
             gray:    ['bg-gray-100', 'text-gray-700', 'border-gray-300'],
@@ -256,13 +309,21 @@
                 // "Отказался" переносит ученика в архив (пропадает из этого
                 // списка) — спрашиваем явно, чтобы случайный клик по селекту
                 // не увёл человека из вида молча.
-                if (stageSelect.value === 'lost' && !confirm('Отметить ученика как "Отказался"? Он уйдёт из основного списка CRM в архив.')) {
-                    stageSelect.value = stageOriginal;
+                if (stageSelect.value === 'lost') {
+                    askLostReason(function (reason) {
+                        if (!reason) { stageSelect.value = stageOriginal; return; }
+                        saveStage(reason);
+                    });
                     return;
                 }
+                saveStage(null);
+            });
 
+            function saveStage(lost) {
                 patch('/admin/crm/users/' + userId + '/checklist', {
                     stage: stageSelect.value || null,
+                    lost_reason: lost ? lost.reason : null,
+                    lost_comment: lost ? lost.comment : null,
                 }).then(function (data) {
                     rebuildSelectOptions(stageSelect, data.status.options);
                     stageOriginal = stageSelect.value;
@@ -276,7 +337,7 @@
                     stageSelect.value = stageOriginal;
                     alert('Не удалось сохранить, попробуйте ещё раз.');
                 });
-            });
+            }
 
             // Напоминания: колокольчик открывает поповер со списком всех
             // напоминаний ученика (правка/удаление) + форма добавления внизу.
@@ -502,6 +563,7 @@
                     }
                 }
 
+                courseRow.crmApplyState = applyCourseState;
                 const courseUrl = '/admin/crm/users/' + userId + '/courses/' + courseId;
 
                 courseRow.addEventListener('change', function (e) {
@@ -520,12 +582,25 @@
                         // перерисуется) — пока окно открыто или его закрыли, она снята.
                         box.checked = false;
                         const block = box.closest('[data-course-billing]');
+                        // Остальные курсы этого ученика с регулярной оплатой —
+                        // кандидаты «продлить пакетом». Отмечены сразу, если
+                        // их дата «до» в пределах 3 дней от этой (платят вместе).
+                        const otherCourses = Array.from(row.querySelectorAll('[data-course-row]'))
+                            .filter(function (r) { return r !== courseRow; })
+                            .map(function (r) {
+                                const b = r.querySelector('[data-course-billing]');
+                                const near = b && b.dataset.baseline && block.dataset.baseline
+                                    && Math.abs(parseIso(b.dataset.baseline) - parseIso(block.dataset.baseline)) <= 3 * 86400000;
+                                return { id: r.dataset.courseId, title: r.dataset.courseTitle, checked: !!near, row: r };
+                            });
                         openPaidDialog({
+                            others: otherCourses,
                             title: courseRow.dataset.courseTitle,
                             amount: block.dataset.defaultAmount,
                             lastHint: block.dataset.lastHint,
                             interval: block.dataset.interval,
                             baseline: block.dataset.baseline,
+                            anchorDay: parseInt(block.dataset.anchorDay, 10) || null,
                             url: courseUrl + '/payments',
                             onDone: applyCourseState,
                         });
@@ -623,6 +698,23 @@
             return r;
         }
 
+        // Как Carbon::addMonthNoOverflow(): то же число следующего месяца,
+        // а если его нет — последний день месяца.
+        function addMonthNoOverflow(d) {
+            const lastDay = new Date(d.getFullYear(), d.getMonth() + 2, 0).getDate();
+            return new Date(d.getFullYear(), d.getMonth() + 1, Math.min(d.getDate(), lastDay));
+        }
+
+        // Как BillingService::snapToAnchorDay(): притянуть к числу первой
+        // оплаты, если разница не больше ANCHOR_SNAP_DAYS.
+        const ANCHOR_SNAP_DAYS = @json(\App\Service\BillingService::ANCHOR_SNAP_DAYS);
+        function snapToAnchorDay(d, anchorDay) {
+            if (!anchorDay) return d;
+            const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+            const c = new Date(d.getFullYear(), d.getMonth(), Math.min(anchorDay, lastDay));
+            return Math.abs(Math.round((c - d) / 86400000)) <= ANCHOR_SNAP_DAYS ? c : d;
+        }
+
         // Повторяет BillingService::nextDueAfterPayment() — только для
         // предпросмотра, итоговую дату считает сервер.
         function updatePaidPreview() {
@@ -630,8 +722,10 @@
             if (!paidDate.value) { paidPreview.textContent = '—'; return; }
             const paid = parseIso(paidDate.value);
             let base = paidCtx.baseline ? parseIso(paidCtx.baseline) : null;
-            if (!base || addDays(base, MAX_CATCH_UP_DAYS) < paid) base = paid;
-            const due = addDays(base, parseInt(paidInterval.value, 10));
+            let anchorDay = paidCtx.anchorDay;
+            if (!base || addDays(base, MAX_CATCH_UP_DAYS) < paid) { base = paid; anchorDay = paid.getDate(); }
+            const days = parseInt(paidInterval.value, 10);
+            const due = days === 30 ? snapToAnchorDay(addMonthNoOverflow(base), anchorDay) : addDays(base, days);
             paidPreview.textContent = String(due.getDate()).padStart(2, '0') + ' ' + MONTHS[due.getMonth()] + ' ' + due.getFullYear();
         }
 
@@ -639,6 +733,20 @@
             paidCtx = ctx;
             paidDialog.querySelector('[data-paid-title]').textContent = ctx.title;
             paidAmount.value = ctx.amount;
+            const alsoBox = paidDialog.querySelector('[data-paid-also]');
+            alsoBox.innerHTML = '';
+            (ctx.others || []).forEach(function (o) {
+                const label = document.createElement('label');
+                label.className = 'flex items-center gap-2 sans text-sm text-zinc-700 cursor-pointer min-h-8';
+                const box = document.createElement('input');
+                box.type = 'checkbox';
+                box.className = 'crm-mark-box';
+                box.value = o.id;
+                box.checked = o.checked;
+                label.appendChild(box);
+                label.appendChild(document.createTextNode('Продлить и «' + o.title + '» (пакет, 0 ₽)'));
+                alsoBox.appendChild(label);
+            });
             paidHint.textContent = ctx.lastHint ? 'Прошлая оплата: ' + ctx.lastHint : 'Оплат ещё не было — подставлена цена курса';
             const today = new Date();
             paidDate.value = isoDate(today);
@@ -675,6 +783,7 @@
                     amount_rub: paidAmount.value,
                     paid_at: paidDate.value,
                     billing_interval_days: paidInterval.value,
+                    also_course_ids: Array.from(paidDialog.querySelectorAll('[data-paid-also] input:checked')).map(function (b) { return parseInt(b.value, 10); }),
                 }),
             }).then(function (res) {
                 return res.json().catch(function () { return {}; }).then(function (body) {
@@ -684,6 +793,9 @@
             }).then(function (data) {
                 paidDialog.close();
                 paidCtx.onDone(data);
+                (paidCtx.others || []).forEach(function (o) {
+                    if (data.also && data.also[o.id] && o.row.crmApplyState) o.row.crmApplyState(data.also[o.id]);
+                });
             }).catch(function (err) {
                 paidError.textContent = err.message;
                 paidError.hidden = false;

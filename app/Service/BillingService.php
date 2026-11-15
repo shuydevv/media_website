@@ -213,7 +213,9 @@ class BillingService
             }
 
             $pivot->status = 'active';
-            $pivot->next_payment_due_at = $this->nextDueAfterPayment($pivot, $paidAt, $intervalDays);
+            [$nextDue, $anchorDay] = $this->scheduleAfterPayment($pivot, $paidAt, $intervalDays);
+            $pivot->next_payment_due_at = $nextDue;
+            $pivot->billing_anchor_day = $anchorDay;
             $pivot->billing_interval_days = $intervalDays;
             // Платёж всегда переводит запись на регулярную оплату — дата
             // ручного/промо зачисления (expires_at) дальше не нужна, а если
@@ -264,7 +266,7 @@ class BillingService
      * в payments.rollback_state.
      */
     public const ROLLBACK_FIELDS = [
-        'status', 'billing_interval_days', 'next_payment_due_at', 'expires_at',
+        'status', 'billing_interval_days', 'billing_anchor_day', 'next_payment_due_at', 'expires_at',
         'promised_payment_used_at', 'promised_payment_expires_at', 'reminder_sent_at',
         'overdue_notified_at', 'promise_expiring_notified_at',
         'admin_reminded_at', 'admin_reminded_by',
@@ -287,15 +289,79 @@ class BillingService
      */
     public function nextDueAfterPayment(CourseUser $pivot, \DateTimeInterface $paidAt, int $intervalDays): Carbon
     {
+        return $this->scheduleAfterPayment($pivot, $paidAt, $intervalDays)[0];
+    }
+
+    /**
+     * [новая дата «до», число графика для course_user.billing_anchor_day].
+     *
+     * «Месяц» (30) — календарный: то же число следующего месяца, иначе дата
+     * сползала бы (16 окт → 15 ноя → 15 дек → 14 янв), и выравнивается по
+     * числу графика — так после февраля 28-е снова становится 31-м. Число
+     * графика: сохранённое у записи → число первой оплаты с суммой (старые
+     * записи) → день оплаты. При возврате после перерыва больше
+     * MAX_CATCH_UP_DAYS график начинается заново от дня оплаты.
+     * «2 недели» — ровно 14 дней, число графика не меняется.
+     */
+    public function scheduleAfterPayment(CourseUser $pivot, \DateTimeInterface $paidAt, int $intervalDays): array
+    {
         $paidAt = Carbon::instance($paidAt);
         $baseline = $pivot->next_payment_due_at
             ?? ($pivot->billing_interval_days === null ? $pivot->expires_at : null);
 
-        if ($baseline === null || $baseline->copy()->addDays(self::MAX_CATCH_UP_DAYS)->lt($paidAt)) {
+        $restart = $baseline === null || $baseline->copy()->addDays(self::MAX_CATCH_UP_DAYS)->lt($paidAt);
+        if ($restart) {
             $baseline = $paidAt;
         }
 
-        return $baseline->copy()->addDays($intervalDays);
+        if ($intervalDays !== 30) {
+            return [$baseline->copy()->addDays($intervalDays), $pivot->billing_anchor_day];
+        }
+
+        $anchorDay = $restart
+            ? $paidAt->day
+            : ($pivot->billing_anchor_day ?? $this->firstPaymentDay($pivot) ?? $baseline->day);
+
+        return [self::snapToAnchorDay($baseline->copy()->addMonthNoOverflow(), $anchorDay), $anchorDay];
+    }
+
+    /** Насколько далеко (в днях) дата может «притянуться» к числу первой оплаты. */
+    public const ANCHOR_SNAP_DAYS = 3;
+
+    /**
+     * Выравнивает дату по числу первой оплаты курса: после февраля 28-е
+     * снова становится 31-м, а сползшие на день-два старые даты (17-е при
+     * первой оплате 16-го) возвращаются к своему числу. Только если разница
+     * не больше ANCHOR_SNAP_DAYS — сознательно сдвинутую дату (подарили
+     * неделю) не трогаем. Тот же расчёт — в окне «Оплатил» (layout.blade.php).
+     */
+    public static function snapToAnchorDay(Carbon $date, ?int $anchorDay): Carbon
+    {
+        if ($anchorDay === null) {
+            return $date;
+        }
+
+        $candidate = $date->copy()->day(min($anchorDay, $date->daysInMonth));
+
+        return abs($candidate->diffInDays($date, false)) <= self::ANCHOR_SNAP_DAYS ? $candidate : $date;
+    }
+
+    /**
+     * Число месяца первой оплаты с суммой по этой записи — опора графика для
+     * старых записей без billing_anchor_day. Нулевые платежи не берём: так
+     * пишутся правки даты карандашом в CRM (paid_at = день правки).
+     */
+    public function firstPaymentDay(CourseUser $pivot): ?int
+    {
+        $first = Payment::query()
+            ->where('course_user_id', $pivot->id)
+            ->where('status', 'succeeded')
+            ->where('is_promise', false)
+            ->where('amount_cents', '>', 0)
+            ->orderBy('paid_at')
+            ->first();
+
+        return $first?->paid_at ? Carbon::parse($first->paid_at)->day : null;
     }
 
     /**

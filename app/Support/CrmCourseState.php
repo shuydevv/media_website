@@ -68,6 +68,11 @@ class CrmCourseState
             // Дата, от которой окно «Оплатил» считает продление (та же, что
             // берёт BillingService::nextDueAfterPayment()).
             'baselineDate' => $until,
+            // Число графика — к нему окно «Оплатил» притягивает помесячную дату
+            // (BillingService::scheduleAfterPayment()).
+            'anchorDay' => $pivot->billing_anchor_day
+                ?? optional($coursePayments->filter(fn (Payment $p) => !$p->is_promise && $p->amount_cents > 0 && $p->paid_at)->sortBy('paid_at')->first())->paid_at?->day
+                ?? $until?->day,
             'remindedAt' => $remindedAt,
             // Галочки — только когда срок подошёл или прошёл и ученик платит
             // сам: при автоплатеже напоминать и вносить руками нечего. Уже
