@@ -529,9 +529,9 @@
         }
 
         /* Сытость и радость на квадрате с рыбой (partials/fish-hud), как
-           полоска еды в Майнкрафте: внизу слева еда, справа смайлики, по 5
+           полоска еды в Майнкрафте: внизу слева еда, справа сердечки, по 5
            значков. Пустая еда — тёмный силуэт, недостающая радость —
-           грустные смайлики; частичный значок — полный обрезан по ширине
+           серые сердечки; частичный значок — полный обрезан по ширине
            (.fish-hud-full). Размер значка — от ширины квадрата (cqw).
            Над стеклом аквариума (z 4) и крошками (5), под баннером
            левел-апа (10). is-low — ниже порога: светлая красная подложка,
@@ -540,7 +540,7 @@
             container: fish-stage / inline-size;
             --hud: clamp(1.2rem, 11cqw, 2.4rem);
         }
-        /* Еда и смайлики — одной строкой внизу: еда слева, смайлики справа
+        /* Еда и сердечки — одной строкой внизу: еда слева, сердечки справа
            (16.11.2026), по центру друг друга по высоте (еда выше). */
         .fish-hud {
             position: absolute;
@@ -564,9 +564,7 @@
             gap: .6cqw;
             pointer-events: auto;
         }
-        /* Белая обводка. У смайликов — белое кольцо в самой картинке
-           (.fish-hud-ring, ≈1.1px — как у еды): тени со сдвигом давали на
-           круге кривой контур. У еды своего контура нет — обводка тенями с 4
+        /* Белая обводка. У сердечек — stroke в самой картинке (см. ниже). У еды своего контура нет — обводка тенями с 4
            сторон по .8px (тени складываются: каждая следующая обводит
            результат предыдущей, так что больше — толстая «капля»). Поверх —
            мягкая тень. */
@@ -603,7 +601,7 @@
             height: 100%;
             overflow: hidden;
         }
-        /* Еда (банка и т.п.) узкая — слот уже, чтобы шаг был как у смайликов.
+        /* Еда (банка и т.п.) узкая — слот уже, чтобы шаг был как у сердечек.
            Пустая еда — тёмный силуэт, как в Майнкрафте. */
         [data-mood="satiety"] .fish-hud-icon,
         [data-mood="satiety"] .fish-hud-icon img { width: calc(var(--hud) * .7); height: calc(var(--hud) * 1.3); }
@@ -611,6 +609,12 @@
            во всю ширину) иначе были огромными (16.11.2026). */
         [data-mood="joy"] .fish-hud-icon,
         [data-mood="joy"] .fish-hud-icon svg { width: clamp(1.05rem, 7.5cqw, 1.45rem); height: clamp(1.05rem, 7.5cqw, 1.45rem); }
+        /* ПК — еда чуть мельче (16.11.2026: крупная еда в анимации «тук-тук»
+           выбивалась сильнее сердечек). */
+        @media (min-width: 600px) {
+            [data-mood="satiety"] .fish-hud-icon,
+            [data-mood="satiety"] .fish-hud-icon img { width: calc(var(--hud) * .63); height: calc(var(--hud) * 1.17); }
+        }
         /* Телефон (рыба над карточкой, квадрат во всю ширину) — значки
            мельче, чем дали бы те же cqw на ПК (16.11.2026). */
         @media (max-width: 599px) {
@@ -622,13 +626,55 @@
             [data-mood="joy"] .fish-hud-icon,
             [data-mood="joy"] .fish-hud-icon svg { width: clamp(1rem, 5.9cqw, 1.3rem); height: clamp(1rem, 5.9cqw, 1.3rem); }
         }
-        .fish-hud-ring { fill: #fff; }
-        .fish-hud-happy .fish-hud-face { fill: #FFD23F; stroke: #E0A100; stroke-width: 1.2; }
-        .fish-hud-sad .fish-hud-face { fill: #AFC0CF; stroke: #8195A7; stroke-width: 1.2; }
-        .fish-hud-eye { fill: #3A2E1F; }
-        .fish-hud-sad .fish-hud-eye { fill: #3D4E5E; }
-        .fish-hud-mouth { fill: none; stroke: #3A2E1F; stroke-width: 1.6; stroke-linecap: round; }
-        .fish-hud-sad .fish-hud-mouth { stroke: #3D4E5E; }
+        /* Сердечки радости: красные, пустые — серо-голубые; белая обводка —
+           stroke под заливкой (paint-order), ≈1.1px как у еды. */
+        .fish-hud-heart path {
+            fill: #EF4444;
+            stroke: #fff;
+            stroke-width: 2.4;
+            stroke-linejoin: round;
+            paint-order: stroke;
+        }
+        .fish-hud-heart--empty path { fill: #9FB0BF; }
+        .fish-hud-heart-shine { fill: rgba(255, 255, 255, .7); }
+        /* Полоса от 90% (fish.mood.full; ровно 100% держалось бы ~полчаса —
+           падение 25% в сутки), и сытость, и радость: значки бьются «тук-тук» волной слева направо, над ними
+           изредка вспыхивают искорки (.fish-hud-spark, есть в разметке
+           только при is-full). Зелёный цвет не понравился (16.11.2026). */
+        .fish-hud-row.is-full { position: relative; }
+        .fish-hud-row.is-full .fish-hud-icon {
+            transform-origin: 50% 60%;
+            animation: fish-heart-beat 2.4s ease-in-out infinite;
+        }
+        .fish-hud-row.is-full .fish-hud-icon:nth-child(2) { animation-delay: .08s; }
+        .fish-hud-row.is-full .fish-hud-icon:nth-child(3) { animation-delay: .16s; }
+        .fish-hud-row.is-full .fish-hud-icon:nth-child(4) { animation-delay: .24s; }
+        .fish-hud-row.is-full .fish-hud-icon:nth-child(5) { animation-delay: .32s; }
+        @keyframes fish-heart-beat {
+            0%, 30%, 100% { transform: scale(1); }
+            8% { transform: scale(1.2); }
+            16% { transform: scale(1); }
+            23% { transform: scale(1.12); }
+        }
+        .fish-hud-spark {
+            position: absolute;
+            width: .55rem;
+            height: .55rem;
+            background: #FFF7C2;
+            clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+            filter: drop-shadow(0 0 2px rgba(255, 220, 90, .9));
+            opacity: 0;
+            pointer-events: none;
+            animation: fish-spark 3.2s ease-in-out infinite;
+        }
+        .fish-hud-spark:nth-of-type(1) { left: 12%; top: -45%; }
+        .fish-hud-spark:nth-of-type(2) { left: 55%; top: -60%; animation-delay: 1.1s; width: .45rem; height: .45rem; }
+        .fish-hud-spark:nth-of-type(3) { left: 88%; top: -35%; animation-delay: 2.2s; }
+        @keyframes fish-spark {
+            0%, 100% { opacity: 0; transform: scale(.3) rotate(0deg); }
+            12% { opacity: 1; transform: scale(1) rotate(45deg); }
+            25% { opacity: 0; transform: scale(.4) rotate(90deg); }
+        }
         .fish-hud-row.is-low .fish-hud-icon:first-child { animation: fish-mood-wobble 2.4s ease-in-out infinite; }
         @keyframes fish-mood-wobble {
             0%, 80%, 100% { transform: rotate(0); }
@@ -868,7 +914,9 @@
             .fish-water { display: none; }
             .fish-xp-fill, .fish-daily { transition: none; }
             .fish-hud-row.is-low .fish-hud-icon:first-child,
-            .fish-hud-icon.is-pop { animation: none; }
+            .fish-hud-icon.is-pop,
+            .fish-hud-row.is-full .fish-hud-icon { animation: none; }
+            .fish-hud-spark { display: none; }
             .fish-float, .fish-combo { animation-duration: .01s; animation-delay: .6s; }
         }
     </style>

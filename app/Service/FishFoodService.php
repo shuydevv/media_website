@@ -702,7 +702,9 @@ class FishFoodService
      * Обе полосы для UI, целыми процентами; hungry/sad — ниже порога
      * fish.mood.low (тогда маскот в позе wrong и своя реплика).
      *
-     * @return array{satiety: int, joy: int, hungry: bool, sad: bool}
+     * full_* — от fish.mood.full (сердечки бьются, обе полные — поза correct).
+     *
+     * @return array{satiety: int, joy: int, hungry: bool, sad: bool, full_satiety: bool, full_joy: bool}
      */
     public function moodFor(User $user): array
     {
@@ -715,16 +717,26 @@ class FishFoodService
             'joy' => (int) round($joy),
             'hungry' => $satiety < $low,
             'sad' => $joy < $low,
+            'full_satiety' => $satiety >= (float) config('fish.mood.full', 90),
+            'full_joy' => $joy >= (float) config('fish.mood.full', 90),
         ];
     }
 
-    /** Картинка маскота в покое с учётом полос: голодная/грустная — wrong. */
+    /** Картинка маскота в покое с учётом полос: голодная/грустная — wrong, обе полные — correct. */
     public function restingImageUrl(User $user, ?int $level = null): string
     {
         $level ??= $this->levelFor((int) $user->fish_total_fed);
         $mood = $this->moodFor($user);
 
-        return $this->mascotImageUrl($level, $mood['hungry'] || $mood['sad'] ? 'wrong' : 'default');
+        // Обе полосы полные — радостная поза, как при верном ответе
+        // (решение автора 16.11.2026).
+        $state = match (true) {
+            $mood['hungry'] || $mood['sad'] => 'wrong',
+            $mood['full_satiety'] && $mood['full_joy'] => 'correct',
+            default => 'default',
+        };
+
+        return $this->mascotImageUrl($level, $state);
     }
 
     /**
