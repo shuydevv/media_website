@@ -11,6 +11,13 @@
   $passage = $tasks->pluck('passage_text')->filter()->first();
   $answers = $review->answers ?? [];
   $scores = $review->scores ?? [];
+  // Черновики ИИ (выгрузка в Claude Desktop): балл подставляется, пока
+  // куратор не поставил свой; комментарий — если своего ещё нет.
+  $aiDrafts = collect($review->ai_drafts ?? [])->filter(fn ($d) => isset($d['score']));
+  $aiComment = $tasks->count() > 1
+      ? $tasks->filter(fn ($t) => trim((string) ($aiDrafts[(string) $t->id]['comment'] ?? '')) !== '')
+          ->map(fn ($t) => (int) $t->number . ': ' . trim($aiDrafts[(string) $t->id]['comment']))->implode("\n\n")
+      : trim((string) ($aiDrafts[(string) $tasks->first()->id]['comment'] ?? ''));
 @endphp
 
 @section('content')
@@ -73,10 +80,43 @@
           </details>
         @endif
 
+        @php
+          $ai = $aiDrafts[(string) $task->id] ?? null;
+          $current = $scores[(string) $task->id] ?? ($review->status === 'checked' ? -1 : ($ai['score'] ?? -1));
+        @endphp
+        @if($ai)
+          <div class="mt-4 rounded-xl border border-purple-200 bg-purple-50 p-3 text-sm text-purple-900">
+            <div class="flex flex-wrap items-center gap-2 font-medium">
+              Черновик ИИ: {{ $ai['score'] }} из {{ $task->max_score }}
+              @if(!empty($ai['needs_review']))
+                <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900">⚠ проверьте сами</span>
+              @endif
+            </div>
+            @if(!empty($ai['needs_review']) && !empty($ai['review_reason']))
+              <div class="mt-1 text-xs text-amber-900">{{ $ai['review_reason'] }}</div>
+            @endif
+            @if(!empty($ai['rationale']))
+              <div class="mt-2 whitespace-pre-line leading-relaxed">{{ $ai['rationale'] }}</div>
+            @endif
+            @if(!empty($ai['elements']))
+              <details class="mt-2" @if(!empty($ai['needs_review'])) open @endif>
+                <summary class="cursor-pointer text-xs text-purple-700">Разбор по элементам</summary>
+                <ul class="mt-1 space-y-1 text-xs">
+                  @foreach($ai['elements'] as $el)
+                    <li>{{ !empty($el['counted']) ? '✓' : '✗' }} <b class="font-semibold">{{ $el['element'] ?? '' }}</b>@if(!empty($el['student_wrote'])) — «{{ $el['student_wrote'] }}»@endif @if(!empty($el['reason']))<span class="text-purple-700">· {{ $el['reason'] }}</span>@endif</li>
+                  @endforeach
+                </ul>
+              </details>
+            @endif
+          </div>
+        @elseif(($review->ai_drafts[(string) $task->id]['status'] ?? null) === 'exported')
+          <div class="mt-4 text-xs text-purple-700">Выгружено на ИИ-проверку в Claude ({{ $review->ai_drafts[(string) $task->id]['exported_at'] ?? '' }}) — можно не ждать.</div>
+        @endif
+
         <label class="block mt-4 text-sm font-medium text-gray-700">Балл за задание {{ (int) $task->number }}</label>
         <select name="scores[{{ $task->id }}]" class="mt-1 rounded-lg border border-gray-300 px-3 py-2" @disabled($lockedByOther)>
           @for($s = 0; $s <= $task->max_score; $s++)
-            <option value="{{ $s }}" @selected((int) ($scores[(string) $task->id] ?? -1) === $s)>{{ $s }}</option>
+            <option value="{{ $s }}" @selected((int) $current === $s)>{{ $s }}</option>
           @endfor
         </select>
       </section>
@@ -84,7 +124,7 @@
 
     @error('scores')<div class="mb-3 text-red-600 text-sm">{{ $message }}</div>@enderror
     <label class="block text-sm font-medium text-gray-700">Комментарий ученику</label>
-    <textarea name="comment" rows="5" class="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2" placeholder="Что засчитано, что нет и почему" @disabled($lockedByOther)>{{ old('comment', $review->comment) }}</textarea>
+    <textarea name="comment" rows="5" class="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2" placeholder="Что засчитано, что нет и почему" @disabled($lockedByOther)>{{ old('comment', $review->comment ?? ($aiComment !== '' ? $aiComment : null)) }}</textarea>
 
     <div class="flex flex-wrap gap-3 mt-4">
       <button type="submit" class="rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5" @disabled($lockedByOther)>Сохранить оценку</button>

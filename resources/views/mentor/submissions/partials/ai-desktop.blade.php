@@ -1,5 +1,6 @@
 {{--
-  ИИ-проверка через Claude Desktop (только админ): ① выгрузить порцию →
+  ИИ-проверка через Claude Desktop (только админ): ① выгрузить всё, что ждёт
+  (домашки и ответы из тренажёра «Задания») →
   ② проверить в Claude навыком ege-homework-check → ③ загрузить результат.
   Данные — DesktopGradingExchange::stats() + версия правил + AiGradingStats.
 --}}
@@ -27,14 +28,23 @@
     <div class="mb-3 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-green-900">
       <div class="font-medium">
         Загружено черновиков: {{ $report['imported'] }}
-        @if(count($report['review'])) · «Проверьте сами»: {{ array_sum($report['review']) }} @endif
-        @if(count($report['missing'])) · не вернулись: {{ count($report['missing']) }} (уйдут в следующую порцию) @endif
+        @php($reviewTrainer = $report['review_trainer'] ?? [])
+        @if(count($report['review']) || count($reviewTrainer)) · «Проверьте сами»: {{ array_sum($report['review']) + array_sum($reviewTrainer) }} @endif
+        @if(count($report['missing'])) · не вернулись: {{ count($report['missing']) }} (уйдут в следующую выгрузку) @endif
       </div>
       @if(count($report['review']))
         <div class="mt-1">
           Начните с этих работ:
           @foreach($report['review'] as $submissionId => $n)
             <a href="{{ route('mentor.submissions.show', $submissionId) }}" class="underline">#{{ $submissionId }}</a>@if($n > 1) ({{ $n }} зад.)@endif{{ !$loop->last ? ',' : '' }}
+          @endforeach
+        </div>
+      @endif
+      @if(count($reviewTrainer))
+        <div class="mt-1">
+          Из тренажёра:
+          @foreach($reviewTrainer as $reviewId => $n)
+            <a href="{{ route('mentor.task-reviews.show', $reviewId) }}" class="underline">ответ #{{ $reviewId }}</a>@if($n > 1) ({{ $n }} зад.)@endif{{ !$loop->last ? ',' : '' }}
           @endforeach
         </div>
       @endif
@@ -52,9 +62,12 @@
   <div class="grid gap-3 md:grid-cols-3">
     {{-- ① Выгрузить --}}
     <div class="rounded-xl border p-3 {{ $stepCls(!$hasOpen) }}">
-      <div class="mb-1 font-medium"><span class="mr-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-purple-600 text-xs text-white">1</span> Выгрузить порцию</div>
+      <div class="mb-1 font-medium"><span class="mr-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-purple-600 text-xs text-white">1</span> Выгрузить задания</div>
       @if($aiDesktop['tasks'] > 0)
-        <div>Ждут: {{ $aiDesktop['tasks'] }} зад. в {{ $aiDesktop['submissions'] }} раб. · ≈ {{ $aiDesktop['portions'] }} порц.</div>
+        <div>
+          Ждут: {{ $aiDesktop['tasks'] }} зад. в {{ $aiDesktop['submissions'] }} раб.
+          @if($aiDesktop['trainer'] > 0) · из них из тренажёра: {{ $aiDesktop['trainer'] }} @endif
+        </div>
         <div class="mt-1 flex flex-wrap gap-1">
           @foreach($aiDesktop['by_subject'] as $subject => $n)
             <span class="rounded-full bg-purple-100 px-2 py-0.5 text-xs">{{ $subject }}: {{ $n }}</span>
@@ -71,10 +84,10 @@
             </select>
           @endif
           <button type="submit" class="rounded-lg bg-purple-600 px-4 py-2 text-white hover:bg-purple-700">
-            Выгрузить ~{{ min($aiDesktop['tasks'], \App\Service\Homework\DesktopGradingExchange::PORTION) }} зад.
+            Выгрузить все ({{ $aiDesktop['tasks'] }} зад.)
           </button>
         </form>
-        <div class="mt-1 text-xs text-purple-700">Работа ученика всегда целиком.</div>
+        <div class="mt-1 text-xs text-purple-700">Одним файлом: домашки и ответы из тренажёра «Задания».</div>
       @else
         <div class="text-purple-700">Новых письменных заданий нет.</div>
       @endif

@@ -14,6 +14,7 @@
             <span class="block text-sm text-gray-500 truncate">{{ \Illuminate\Support\Str::limit($r->task->question_text, 110) }}</span>
           </span>
           <span class="text-sm text-gray-500 whitespace-nowrap">
+            @if(collect($r->ai_drafts ?? [])->contains(fn ($d) => isset($d['score'])))<span class="rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-800">черновик ИИ</span> · @endif
             @if($r->locked_by && (int) $r->locked_by === (int) auth()->id()) у вас · @endif
             {{ $r->sent_at?->diffForHumans() }}
           </span>

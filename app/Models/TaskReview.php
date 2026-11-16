@@ -23,7 +23,7 @@ class TaskReview extends Model
     protected $fillable = [
         'user_id', 'task_id', 'items', 'answers', 'status', 'self_marks', 'self_score',
         'max_score', 'sent_at', 'scores', 'score', 'comment', 'checked_by', 'checked_at',
-        'seen_at', 'locked_by', 'lock_expires_at', 'corm_awarded',
+        'seen_at', 'locked_by', 'lock_expires_at', 'corm_awarded', 'ai_drafts',
     ];
 
     protected $casts = [
@@ -31,6 +31,8 @@ class TaskReview extends Model
         'answers' => 'array',
         'self_marks' => 'array',
         'scores' => 'array',
+        // Черновики ИИ-проверки по task_id (см. DesktopGradingExchange).
+        'ai_drafts' => 'array',
         'sent_at' => 'datetime',
         'checked_at' => 'datetime',
         'seen_at' => 'datetime',

@@ -4,6 +4,8 @@ namespace App\Service\Homework;
 
 use App\Models\HomeworkTask;
 use App\Models\Submission;
+use App\Models\Task;
+use App\Models\TaskReview;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -71,7 +73,59 @@ class AiGradingQueue
             return false;
         }
 
-        $draft = ($s->ai_drafts ?? [])[$key] ?? [];
+        return $this->draftAllowsGrading(($s->ai_drafts ?? [])[$key] ?? []);
+    }
+
+    /**
+     * Ответы второй части из тренажёра «Задания», отправленные куратору
+     * (WrittenPractice): не проверенные, не открытые сейчас у куратора,
+     * без демо-ученика. В подходе 17+18 — оба задания.
+     *
+     * @return Collection<int, array{review: TaskReview, tasks: Collection<int, Task>}>
+     */
+    public function trainerByReview(): Collection
+    {
+        $reviews = TaskReview::query()
+            ->where('status', TaskReview::SENT)
+            ->whereHas('user', fn ($q) => $q->where('is_demo', false))
+            ->where(fn ($q) => $q->whereNull('locked_by')->orWhere('lock_expires_at', '<=', now()))
+            ->orderBy('sent_at')
+            ->get();
+        if ($reviews->isEmpty()) {
+            return collect();
+        }
+
+        $tasks = Task::with('category')
+            ->whereIn('id', $reviews->pluck('items')->flatten()->map(fn ($id) => (int) $id)->unique()->all())
+            ->get()->keyBy('id');
+
+        $out = collect();
+        foreach ($reviews as $r) {
+            $own = collect($r->items ?? [])
+                ->map(fn ($id) => $tasks->get((int) $id))
+                ->filter(fn (?Task $t) => $t && $this->trainerNeedsGrading($r, $t))
+                ->values();
+            if ($own->isNotEmpty()) {
+                $out->push(['review' => $r, 'tasks' => $own]);
+            }
+        }
+
+        return $out;
+    }
+
+    private function trainerNeedsGrading(TaskReview $r, Task $t): bool
+    {
+        $key = (string) $t->id;
+        if (trim((string) (($r->answers ?? [])[$key] ?? '')) === '') {
+            return false;
+        }
+
+        return $this->draftAllowsGrading(($r->ai_drafts ?? [])[$key] ?? []);
+    }
+
+    /** Черновика ещё нет, либо выгрузка потерялась (старше EXPORT_TTL_DAYS). */
+    private function draftAllowsGrading(array $draft): bool
+    {
         if (isset($draft['score'])) {
             return false;
         }

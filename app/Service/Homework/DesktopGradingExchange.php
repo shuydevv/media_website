@@ -5,17 +5,28 @@ namespace App\Service\Homework;
 use App\Models\AiGradingBatch;
 use App\Models\HomeworkTask;
 use App\Models\Submission;
+use App\Models\Task;
+use App\Models\TaskReview;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
- * ИИ-проверка без API: админ выгружает порцию непроверенных письменных
- * заданий в JSON, проверяет её в Claude Desktop скиллом ege-homework-check
+ * ИИ-проверка без API: админ выгружает непроверенные письменные задания в
+ * JSON, проверяет их в Claude Desktop скиллом ege-homework-check
  * (resources/ai/skill) и загружает результат обратно. Результат становится
- * черновиком куратора в submissions.ai_drafts — так же, как при проверке
- * через API, куратор его подтверждает или правит.
+ * черновиком куратора — так же, как при проверке через API, куратор его
+ * подтверждает или правит.
+ *
+ * В выгрузку попадает всё, что ждёт проверки, одним файлом (раньше — порции
+ * по 30): письменные задания домашек и ответы второй части из тренажёра
+ * «Задания» (TaskReview). Ключ задания — «владелец» + задание:
+ *   s<submission_id>-t<homework_task_id> — домашка, черновик в submissions.ai_drafts;
+ *   r<task_review_id>-t<task_id>         — тренажёр, черновик в task_reviews.ai_drafts.
+ * У тренажёрных заданий поле submission_id в файле — строка «r<id>»: навык
+ * группирует по нему задания одной работы и возвращает как есть.
  *
  * Форматы файлов описаны в resources/ai/skill/ege-homework-check/references/format.md
  * — при изменении полей здесь поменяйте и там (и FORMAT/RESULT_FORMAT).
@@ -25,12 +36,7 @@ class DesktopGradingExchange
     public const FORMAT = 'poltavskiy-homework-check/v1';
     public const RESULT_FORMAT = 'poltavskiy-homework-check-result/v1';
 
-    /**
-     * Примерный размер порции. Работа ученика целиком попадает в одну
-     * порцию, поэтому порция может быть больше (одна большая работа —
-     * всё равно целиком).
-     */
-    public const PORTION = 30;
+    private const ID_PATTERN = '/^([sr])(\d+)-t(\d+)$/';
 
     public function __construct(
         private ClaudeGrader $grader,
@@ -42,26 +48,30 @@ class DesktopGradingExchange
 
     /**
      * Для блока на /mentor/submissions: сколько заданий / работ ждут
-     * выгрузки (всего и по предметам), открытые выгрузки без результата.
+     * выгрузки (всего, по предметам и из тренажёра), открытые выгрузки без
+     * результата.
      */
     public function stats(?Collection $queue = null): array
     {
-        $groups = $this->queue->bySubmission($queue);
-        $tasks = $groups->sum(fn ($g) => $g['tasks']->count());
+        $groups = $this->groups($queue);
 
         $bySubject = [];
+        $trainer = 0;
         foreach ($groups as $g) {
             foreach ($g['tasks'] as $t) {
-                $subject = $this->subjectOf($g['submission'], $t);
+                $subject = $this->subjectOf($g['owner'], $t);
                 $bySubject[$subject] = ($bySubject[$subject] ?? 0) + 1;
+                if ($g['owner'] instanceof TaskReview) {
+                    $trainer++;
+                }
             }
         }
         arsort($bySubject);
 
         return [
-            'tasks'       => $tasks,
+            'tasks'       => $groups->sum(fn ($g) => $g['tasks']->count()),
             'submissions' => $groups->count(),
-            'portions'    => (int) ceil($tasks / self::PORTION),
+            'trainer'     => $trainer,
             'by_subject'  => $bySubject,
             'open'        => AiGradingBatch::where('channel', AiGradingBatch::CHANNEL_DESKTOP)
                 ->where('status', 'in_progress')->orderBy('id')->get(),
@@ -69,7 +79,7 @@ class DesktopGradingExchange
     }
 
     /**
-     * Выгрузить следующую порцию (по всем предметам или по одному).
+     * Выгрузить всё, что ждёт проверки (по всем предметам или по одному).
      * null — выгружать нечего.
      *
      * @return array{record: AiGradingBatch, filename: string, json: string}|null
@@ -77,22 +87,12 @@ class DesktopGradingExchange
     public function export(?int $userId, ?string $subject = null): ?array
     {
         $pairs = [];
-        $count = 0;
-        foreach ($this->queue->bySubmission() as $group) {
-            $tasks = $subject === null
-                ? $group['tasks']
-                : $group['tasks']->filter(fn ($t) => $this->subjectOf($group['submission'], $t) === $subject);
-            if ($tasks->isEmpty()) {
-                continue;
+        foreach ($this->groups() as $group) {
+            foreach ($group['tasks'] as $t) {
+                if ($subject === null || $this->subjectOf($group['owner'], $t) === $subject) {
+                    $pairs[] = [$group['owner'], $t];
+                }
             }
-            // Работа ученика целиком — порция может чуть превысить PORTION.
-            if ($count > 0 && $count + $tasks->count() > self::PORTION) {
-                break;
-            }
-            foreach ($tasks as $t) {
-                $pairs[] = [$group['submission'], $t];
-            }
-            $count += $tasks->count();
         }
         if (!$pairs) {
             return null;
@@ -103,26 +103,28 @@ class DesktopGradingExchange
             'external_id'   => 'exp-' . now()->format('Ymd-Hi') . '-' . Str::lower(Str::random(4)),
             'status'        => 'in_progress',
             'request_count' => count($pairs),
-            'items'         => array_map(fn ($p) => "s{$p[0]->id}-t{$p[1]->id}", $pairs),
+            'items'         => array_map(fn ($p) => $this->itemId($p[0], $p[1]), $pairs),
             'created_by'    => $userId,
         ]);
 
         $marks = [];
-        foreach ($pairs as [$s, $t]) {
-            $marks[$s->id][(string) $t->id] = (int) ($t->max_score ?? 3);
+        foreach ($pairs as [$owner, $t]) {
+            $marks[$this->prefix($owner)][$owner->id][(string) $t->id] = (int) ($t->max_score ?? 3);
         }
-        foreach ($marks as $submissionId => $tasks) {
-            $this->updateDrafts($submissionId, function (array $drafts) use ($tasks, $record) {
-                foreach ($tasks as $key => $maxScore) {
-                    $drafts[$key] = [
-                        'status'      => 'exported',
-                        'batch'       => $record->id,
-                        'exported_at' => now()->toDateTimeString(),
-                        'max_score'   => $maxScore,
-                    ];
-                }
-                return $drafts;
-            });
+        foreach ($marks as $prefix => $owners) {
+            foreach ($owners as $ownerId => $tasks) {
+                $this->updateDrafts($prefix, $ownerId, function (array $drafts) use ($tasks, $record) {
+                    foreach ($tasks as $key => $maxScore) {
+                        $drafts[$key] = [
+                            'status'      => 'exported',
+                            'batch'       => $record->id,
+                            'exported_at' => now()->toDateTimeString(),
+                            'max_score'   => $maxScore,
+                        ];
+                    }
+                    return $drafts;
+                });
+            }
         }
 
         return $this->file($record, $pairs);
@@ -145,25 +147,55 @@ class DesktopGradingExchange
     public function cancel(AiGradingBatch $record): int
     {
         $returned = 0;
-        foreach ($this->itemsBySubmission($record) as $submissionId => $keys) {
-            $this->updateDrafts($submissionId, function (array $drafts) use ($keys, $record, &$returned) {
-                foreach ($keys as $key) {
-                    if ($this->isMarked($drafts[$key] ?? [], $record)) {
-                        unset($drafts[$key]);
-                        $returned++;
+        foreach ($this->itemsByOwner($record->items ?? []) as $prefix => $owners) {
+            foreach ($owners as $ownerId => $keys) {
+                $this->updateDrafts($prefix, $ownerId, function (array $drafts) use ($keys, $record, &$returned) {
+                    foreach ($keys as $key) {
+                        if ($this->isMarked($drafts[$key] ?? [], $record)) {
+                            unset($drafts[$key]);
+                            $returned++;
+                        }
                     }
-                }
-                return $drafts;
-            });
+                    return $drafts;
+                });
+            }
         }
         $record->update(['status' => 'canceled', 'ended_at' => now()]);
 
         return $returned;
     }
 
-    private function subjectOf(Submission $s, HomeworkTask $t): string
+    /**
+     * Всё, что ждёт выгрузки: сначала домашки, потом ответы из тренажёра.
+     *
+     * @return Collection<int, array{owner: Submission|TaskReview, tasks: Collection<int, HomeworkTask|Task>}>
+     */
+    private function groups(?Collection $queue = null): Collection
     {
-        return $this->grader->subjectFor($s, $t) ?: 'Предмет не указан';
+        return $this->queue->bySubmission($queue)
+            ->map(fn ($g) => ['owner' => $g['submission'], 'tasks' => $g['tasks']])
+            ->concat($this->queue->trainerByReview()
+                ->map(fn ($g) => ['owner' => $g['review'], 'tasks' => $g['tasks']]))
+            ->values();
+    }
+
+    private function prefix(Model $owner): string
+    {
+        return $owner instanceof TaskReview ? 'r' : 's';
+    }
+
+    private function itemId(Model $owner, Model $task): string
+    {
+        return $this->prefix($owner) . $owner->id . '-t' . $task->id;
+    }
+
+    private function subjectOf(Model $owner, Model $t): string
+    {
+        $subject = $owner instanceof TaskReview
+            ? $t->category?->title
+            : $this->grader->subjectFor($owner, $t);
+
+        return $subject ?: 'Предмет не указан';
     }
 
     /** Файл выгрузки для заданий $pairs из выгрузки $record. */
@@ -172,8 +204,10 @@ class DesktopGradingExchange
         // Текст-источник к 17–20 один на 4 задания — кладём один раз.
         $sources = [];
         $items = [];
-        foreach ($pairs as [$s, $t]) {
-            $p = $this->grader->payloadFor($s, $t);
+        foreach ($pairs as [$owner, $t]) {
+            $p = $owner instanceof TaskReview
+                ? $this->grader->payloadForTrainer($owner, $t)
+                : $this->grader->payloadFor($owner, $t);
 
             $sourceId = null;
             $passage = trim((string) $p['passage']);
@@ -184,8 +218,8 @@ class DesktopGradingExchange
 
             $rules = $this->grader->subjectRulesFile($p['subject']);
             $items[] = [
-                'id'                     => "s{$s->id}-t{$t->id}",
-                'submission_id'          => $s->id,
+                'id'                     => $this->itemId($owner, $t),
+                'submission_id'          => $owner instanceof TaskReview ? 'r' . $owner->id : $owner->id,
                 'task_id'                => $t->id,
                 'subject'                => $p['subject'],
                 'rules'                  => $rules !== null ? Str::beforeLast($rules, '.md') : null,
@@ -215,31 +249,52 @@ class DesktopGradingExchange
         return ['record' => $record, 'filename' => "homework-check-{$record->external_id}.json", 'json' => $json];
     }
 
-    /** Пары [Submission, HomeworkTask] выгрузки, которые ещё ждут её результата. */
+    /** Пары [владелец, задание] выгрузки, которые ещё ждут её результата. */
     private function pendingPairs(AiGradingBatch $record): \Generator
     {
-        $bySubmission = $this->itemsBySubmission($record);
-        $submissions = Submission::with(['homework.tasks.task.category', 'homework.course.category'])
-            ->whereKey(array_keys($bySubmission))->get();
+        $byOwner = $this->itemsByOwner($record->items ?? []);
 
-        foreach ($submissions as $s) {
-            $drafts = $s->ai_drafts ?? [];
-            foreach ($bySubmission[$s->id] as $key) {
-                $task = $s->homework?->tasks->firstWhere('id', (int) $key);
-                if ($task && $this->isMarked($drafts[$key] ?? [], $record)) {
-                    yield [$s, $task];
+        if (!empty($byOwner['s'])) {
+            $submissions = Submission::with(['homework.tasks.task.category', 'homework.course.category'])
+                ->whereKey(array_keys($byOwner['s']))->get();
+            foreach ($submissions as $s) {
+                $drafts = $s->ai_drafts ?? [];
+                foreach ($byOwner['s'][$s->id] as $key) {
+                    $task = $s->homework?->tasks->firstWhere('id', (int) $key);
+                    if ($task && $this->isMarked($drafts[$key] ?? [], $record)) {
+                        yield [$s, $task];
+                    }
+                }
+            }
+        }
+
+        if (!empty($byOwner['r'])) {
+            $reviews = TaskReview::whereKey(array_keys($byOwner['r']))->get();
+            $tasks = Task::with('category')
+                ->whereIn('id', collect($byOwner['r'])->flatten()->map(fn ($id) => (int) $id)->unique()->all())
+                ->get()->keyBy('id');
+            foreach ($reviews as $r) {
+                $drafts = $r->ai_drafts ?? [];
+                foreach ($byOwner['r'][$r->id] as $key) {
+                    $task = $tasks->get((int) $key);
+                    if ($task && $r->status === TaskReview::SENT && $this->isMarked($drafts[$key] ?? [], $record)) {
+                        yield [$r, $task];
+                    }
                 }
             }
         }
     }
 
-    /** @return array<int, list<string>> submission_id → ключи заданий выгрузки */
-    private function itemsBySubmission(AiGradingBatch $record): array
+    /**
+     * @param  iterable<string>  $ids
+     * @return array<string, array<int, list<string>>> префикс (s|r) → id владельца → ключи заданий
+     */
+    private function itemsByOwner(iterable $ids): array
     {
         $out = [];
-        foreach ($record->items ?? [] as $id) {
-            if (preg_match('/^s(\d+)-t(\d+)$/', $id, $m)) {
-                $out[(int) $m[1]][] = $m[2];
+        foreach ($ids as $id) {
+            if (preg_match(self::ID_PATTERN, (string) $id, $m)) {
+                $out[$m[1]][(int) $m[2]][] = $m[3];
             }
         }
         return $out;
@@ -254,9 +309,10 @@ class DesktopGradingExchange
     /**
      * Загрузить файл результата. Возвращает отчёт для админа.
      *
-     * review — работы с флагом «Проверьте сами»: submission_id → сколько таких заданий.
+     * review — работы с флагом «Проверьте сами»: submission_id → сколько таких заданий;
+     * review_trainer — то же для ответов из тренажёра: task_review_id → сколько.
      *
-     * @return array{export_id: string, imported: int, review: array<int,int>, skipped: list<string>, missing: list<string>}
+     * @return array{export_id: string, imported: int, review: array<int,int>, review_trainer: array<int,int>, skipped: list<string>, missing: list<string>}
      */
     public function import(string $json): array
     {
@@ -276,11 +332,11 @@ class DesktopGradingExchange
         }
 
         $expected = array_flip($record->items ?? []);
-        $bySubmission = [];
+        $byOwner = [];
         $skipped = [];
         foreach ((array) ($data['results'] ?? []) as $result) {
             $id = (string) ($result['id'] ?? '');
-            if (!isset($expected[$id]) || !preg_match('/^s(\d+)-t(\d+)$/', $id, $m)) {
+            if (!isset($expected[$id]) || !preg_match(self::ID_PATTERN, $id, $m)) {
                 $skipped[] = "{$id}: задания нет в этой выгрузке";
                 continue;
             }
@@ -288,54 +344,55 @@ class DesktopGradingExchange
                 $skipped[] = "{$id}: нет балла";
                 continue;
             }
-            $bySubmission[(int) $m[1]][$m[2]] = $result;
+            $byOwner[$m[1]][(int) $m[2]][$m[3]] = $result;
             unset($expected[$id]);
         }
 
         $imported = 0;
-        $review = [];
-        foreach ($bySubmission as $submissionId => $results) {
-            $this->updateDrafts($submissionId, function (array $drafts, Submission $s) use ($results, $record, &$imported, &$skipped, &$review) {
-                foreach ($results as $key => $result) {
-                    $id = "s{$s->id}-t{$key}";
-                    $current = $drafts[$key] ?? [];
-                    if (($current['status'] ?? null) !== 'exported' || ($current['batch'] ?? null) !== $record->id) {
-                        $skipped[] = "{$id}: уже загружено или перепроверено";
-                        continue;
+        $review = ['s' => [], 'r' => []];
+        foreach ($byOwner as $prefix => $owners) {
+            foreach ($owners as $ownerId => $results) {
+                $this->updateDrafts($prefix, $ownerId, function (array $drafts, Model $owner) use ($prefix, $results, $record, &$imported, &$skipped, &$review) {
+                    foreach ($results as $key => $result) {
+                        $id = "{$prefix}{$owner->id}-t{$key}";
+                        $current = $drafts[$key] ?? [];
+                        if (($current['status'] ?? null) !== 'exported' || ($current['batch'] ?? null) !== $record->id) {
+                            $skipped[] = "{$id}: уже загружено или перепроверено";
+                            continue;
+                        }
+                        $graded = $owner instanceof TaskReview
+                            ? $owner->status === TaskReview::CHECKED
+                            : isset((($owner->per_task_results ?? [])[$key] ?? [])['score']);
+                        if ($graded) {
+                            $skipped[] = "{$id}: куратор уже поставил оценку";
+                            unset($drafts[$key]);
+                            continue;
+                        }
+                        $drafts[$key] = $this->grader->draftFromData($result, (int) ($current['max_score'] ?? 0), 'claude-desktop');
+                        $imported++;
+                        if ($drafts[$key]['needs_review']) {
+                            $review[$prefix][$owner->id] = ($review[$prefix][$owner->id] ?? 0) + 1;
+                        }
                     }
-                    if (isset((($s->per_task_results ?? [])[$key] ?? [])['score'])) {
-                        $skipped[] = "{$id}: куратор уже поставил оценку";
-                        unset($drafts[$key]);
-                        continue;
-                    }
-                    $drafts[$key] = $this->grader->draftFromData($result, (int) ($current['max_score'] ?? 0), 'claude-desktop');
-                    $imported++;
-                    if ($drafts[$key]['needs_review']) {
-                        $review[$s->id] = ($review[$s->id] ?? 0) + 1;
-                    }
-                }
-                return $drafts;
-            });
+                    return $drafts;
+                });
+            }
         }
 
         // Не вернувшиеся задания снимаем с отметки «выгружено» — они попадут
         // в следующую выгрузку, а не будут ждать EXPORT_TTL_DAYS.
         $missing = array_keys($expected);
-        $missingBySubmission = [];
-        foreach ($missing as $id) {
-            if (preg_match('/^s(\d+)-t(\d+)$/', $id, $m)) {
-                $missingBySubmission[(int) $m[1]][] = $m[2];
-            }
-        }
-        foreach ($missingBySubmission as $submissionId => $keys) {
-            $this->updateDrafts($submissionId, function (array $drafts) use ($keys, $record) {
-                foreach ($keys as $key) {
-                    if (($drafts[$key]['status'] ?? null) === 'exported' && ($drafts[$key]['batch'] ?? null) === $record->id) {
-                        unset($drafts[$key]);
+        foreach ($this->itemsByOwner($missing) as $prefix => $owners) {
+            foreach ($owners as $ownerId => $keys) {
+                $this->updateDrafts($prefix, $ownerId, function (array $drafts) use ($keys, $record) {
+                    foreach ($keys as $key) {
+                        if ($this->isMarked($drafts[$key] ?? [], $record)) {
+                            unset($drafts[$key]);
+                        }
                     }
-                }
-                return $drafts;
-            });
+                    return $drafts;
+                });
+            }
         }
 
         $record->update([
@@ -346,24 +403,29 @@ class DesktopGradingExchange
         ]);
 
         return [
-            'export_id' => $record->external_id,
-            'imported'  => $imported,
-            'review'    => $review,
-            'skipped'   => $skipped,
-            'missing'   => $missing,
+            'export_id'      => $record->external_id,
+            'imported'       => $imported,
+            'review'         => $review['s'],
+            'review_trainer' => $review['r'],
+            'skipped'        => $skipped,
+            'missing'        => $missing,
         ];
     }
 
-    /** Перечитать работу под блокировкой: параллельно куратор может сохранять оценки. */
-    private function updateDrafts(int $submissionId, callable $mutate): void
+    /**
+     * Перечитать работу (или ответ из тренажёра) под блокировкой:
+     * параллельно куратор может сохранять оценки.
+     */
+    private function updateDrafts(string $prefix, int $ownerId, callable $mutate): void
     {
-        DB::transaction(function () use ($submissionId, $mutate) {
-            $s = Submission::whereKey($submissionId)->lockForUpdate()->first();
-            if (!$s) {
+        $class = $prefix === 'r' ? TaskReview::class : Submission::class;
+        DB::transaction(function () use ($class, $ownerId, $mutate) {
+            $owner = $class::whereKey($ownerId)->lockForUpdate()->first();
+            if (!$owner) {
                 return;
             }
-            $s->ai_drafts = $mutate($s->ai_drafts ?? [], $s);
-            $s->save();
+            $owner->ai_drafts = $mutate($owner->ai_drafts ?? [], $owner);
+            $owner->save();
         });
     }
 }

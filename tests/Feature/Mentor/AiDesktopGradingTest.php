@@ -8,6 +8,9 @@ use App\Models\Course;
 use App\Models\Homework;
 use App\Models\HomeworkTask;
 use App\Models\Submission;
+use App\Models\Task;
+use App\Models\TaskCriteria;
+use App\Models\TaskReview;
 use App\Models\User;
 use App\Service\Homework\AiGradingStats;
 use App\Service\Homework\DesktopGradingSkill;
@@ -106,6 +109,42 @@ class AiDesktopGradingTest extends TestCase
         $this->assertSame('ended', $batch->fresh()->status);
 
         $this->actingAs($this->admin)->get(route('mentor.submissions.index'))->assertSee('ИИ-черновик: 2 из 2');
+    }
+
+    /** @test */
+    public function trainer_answers_go_into_the_same_export_and_get_drafts()
+    {
+        $category = Category::firstWhere('title', 'Обществознание');
+        TaskCriteria::create(['category_id' => $category->id, 'number' => '19', 'criteria' => 'Три примера', 'max_score' => 3]);
+        $task = Task::create(['category_id' => $category->id, 'number' => '19', 'type' => 'written',
+            'question_text' => 'Приведите три примера', 'answer' => 'Образец 19']);
+        $review = TaskReview::create([
+            'user_id' => User::factory()->create(['role' => User::ROLE_READER])->id,
+            'task_id' => $task->id, 'items' => [$task->id],
+            'answers' => [(string) $task->id => 'Ответ ученика из тренажёра'],
+            'status' => TaskReview::SENT, 'max_score' => 3, 'sent_at' => now(),
+        ]);
+
+        $export = $this->exportFile();
+        $this->assertCount(3, $export['items'], 'домашка и тренажёр одним файлом');
+        $item = collect($export['items'])->firstWhere('id', "r{$review->id}-t{$task->id}");
+        $this->assertSame('r' . $review->id, $item['submission_id']);
+        $this->assertSame(3, $item['max_score']);
+        $this->assertSame('Ответ ученика из тренажёра', $item['student_answer']);
+        $this->assertSame('exported', $review->fresh()->ai_drafts[(string) $task->id]['status']);
+
+        $this->actingAs($this->admin)
+            ->post(route('mentor.review.ai_desktop.import'), ['result' => $this->resultFile($export, [
+                $item['id'] => ['score' => 2, 'comment' => 'Два примера засчитаны', 'needs_human_review' => true, 'review_reason' => 'Сомнительный пример'],
+            ])])
+            ->assertSessionHas('ai_report', fn ($r) => $r['imported'] === 3 && $r['review_trainer'] === [$review->id => 1]);
+
+        $this->assertSame(2, $review->fresh()->ai_drafts[(string) $task->id]['score']);
+        $this->actingAs($this->admin)->post(route('mentor.review.ai_desktop.export'))
+            ->assertRedirect()->assertSessionHas('success', 'Нет новых письменных заданий для выгрузки.');
+
+        $this->actingAs($this->admin)->get(route('mentor.task-reviews.show', $review))
+            ->assertOk()->assertSee('Черновик ИИ: 2 из 3')->assertSee('Сомнительный пример')->assertSee('Два примера засчитаны');
     }
 
     /** @test */

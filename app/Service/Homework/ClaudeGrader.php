@@ -5,6 +5,8 @@ namespace App\Service\Homework;
 use Anthropic\Client;
 use App\Models\HomeworkTask;
 use App\Models\Submission;
+use App\Models\Task;
+use App\Models\TaskReview;
 use GuzzleHttp\Client as GuzzleClient;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -60,6 +62,24 @@ class ClaudeGrader
             'exemplar'        => trim(implode("\n\n", array_filter([(string) $task->answer, (string) $task->explanation]))),
             'hint'            => $task->hint,
             'student_answer'  => (string) (($submission->answers ?? [])[(string) $task->id] ?? ''),
+        ];
+    }
+
+    /** То же для ответа из тренажёра «Задания»: задание всегда из банка. */
+    public function payloadForTrainer(TaskReview $review, Task $task): array
+    {
+        return [
+            'subject'         => $task->category?->title,
+            'number'          => $task->number,
+            'max_score'       => (int) ($task->max_score ?? 3),
+            'question'        => $task->question_text,
+            'passage'         => $task->passage_text,
+            'image_path'      => $task->image_path,
+            'criteria'        => $task->resolved_criteria,
+            'recommendations' => $task->resolvedCriteriaRecord()?->comment,
+            'exemplar'        => trim(implode("\n\n", array_filter([(string) $task->answer, (string) $task->explanation]))),
+            'hint'            => $task->hint,
+            'student_answer'  => (string) (($review->answers ?? [])[(string) $task->id] ?? ''),
         ];
     }
 
