@@ -22,7 +22,10 @@ class FishController extends Controller
         $fishBalance = (int) $user->fish_corm_balance;
         $fishName = $user->fish_name ?: $fish->levelName($fishLevel);
 
-        $html = view('student.partials.fish-card', compact('fishLevel', 'fishProgress', 'fishBalance', 'fishName'))->render();
+        $html = view('student.partials.fish-card', compact('fishLevel', 'fishProgress', 'fishBalance', 'fishName'))->render()
+            // Значки сытости на квадрате с рыбой — вне #fish-card, приходят
+            // OOB-свапом в том же ответе.
+            .view('student.partials.fish-hud', ['hudOob' => true])->render();
 
         if ($this->isHtmx($request)) {
             $response = response($html);
@@ -47,7 +50,7 @@ class FishController extends Controller
                         // Номер — для значка уровня на углу маскота (он вне
                         // #fish-card и htmx-свапом не обновляется).
                         'level' => $fishLevel,
-                        'defaultSrc' => $fish->mascotImageUrl($fishLevel),
+                        'defaultSrc' => $fish->restingImageUrl($user, $fishLevel),
                         'eatingSrc' => $fish->mascotImageUrl($fishLevel, 'eating'),
                     ],
                 ]));

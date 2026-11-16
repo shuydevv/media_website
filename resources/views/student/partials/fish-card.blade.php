@@ -17,11 +17,18 @@
         ? 100
         : (int) round(($fishProgress['needed'] > 0 ? $fishProgress['current'] / $fishProgress['needed'] : 0) * 100);
     // Цель на шкале опыта: силуэт следующей формы в конце полоски и подпись
-    // «Ещё N до <следующей формы>».
+    // над ней «Ещё N до <следующей формы>» (число на силуэте без подписи
+    // оказалось непонятным — 15.11.2026).
     $fishNextImage = $fishProgress['isMax'] ? null : $fishService->mascotImageUrl($fishLevel + 1);
     $fishNextName = config('fish.level_names_genitive.'.$fishLevel, 'нового уровня');
     $fishLeft = $fishProgress['isMax'] ? 0 : max(0, $fishProgress['needed'] - $fishProgress['current']);
     $fishFoodIcon = auth()->user()->fish_food_icon_url;
+    // Сытость (для скрипта кормления: «Сытость 100%») и картинка маскота в
+    // покое с учётом полос — её скрипт ставит после свапа (накормили —
+    // голодная поза могла смениться обычной). Сами полосы — на квадрате с
+    // рыбой, student/partials/fish-hud.blade.php.
+    $fishMood = $fishService->moodFor(auth()->user());
+    $fishRestingImage = $fishService->restingImageUrl(auth()->user(), $fishLevel);
 
     // Тренажёры (App\Service\Trainers\TrainerHub) — для кнопки рядом с
     // «Покормить». На дашборде уже посчитаны (там же облачко рыбы), после
@@ -39,6 +46,8 @@
      data-level="{{ $fishLevel }}"
      data-progress="{{ $fishProgressPercent }}"
      data-max="{{ $fishProgress['isMax'] ? 1 : 0 }}"
+     data-satiety="{{ $fishMood['satiety'] }}"
+     data-mascot-src="{{ $fishRestingImage }}"
      data-crumb-src="{{ auth()->user()->fish_food_crumb_url }}">
     {{-- Номер уровня — значком на углу маскота (.fish-level-badge в
          dashboard.blade.php), здесь только название формы. --}}
@@ -52,7 +61,16 @@
             <x-icon name="edit-02" class="fish-nameplate-edit w-3.5 h-3.5" />
         </a>
 
-        <div class="mt-5">
+        <div class="mt-5 fish-xp-block">
+            <div class="fish-xp-caption">
+                @if($fishProgress['isMax'])
+                    Максимальный уровень!
+                @else
+                    Ещё <b>{{ $fishLeft }}</b>
+                    <img src="{{ $fishFoodIcon }}" alt="корма" class="w-3.5 h-3.5 inline-block">
+                    до {{ $fishNextName }}
+                @endif
+            </div>
             {{-- Шкала опыта. Заливку после кормления доводит скрипт на
                  дашборде (старое значение → новое), а не прыжком. --}}
             <div class="fish-xp {{ $fishProgress['isMax'] ? 'is-max' : '' }}">
@@ -63,18 +81,10 @@
                     <img src="{{ $fishNextImage }}" alt="" class="fish-xp-next" title="Следующая форма — {{ config('fish.level_names.'.$fishLevel) }}">
                 @endif
             </div>
-            <div class="fish-xp-caption">
-                @if($fishProgress['isMax'])
-                    Максимальный уровень!
-                @else
-                    Ещё <b>{{ $fishLeft }}</b>
-                    <img src="{{ $fishFoodIcon }}" alt="корма" class="w-3.5 h-3.5 inline-block">
-                    до {{ $fishNextName }}
-                @endif
-            </div>
+
         </div>
 
-        <div class="mt-auto pt-5">
+        <div class="mt-auto fish-actions">
             {{-- Кнопки с небольшим объёмом: «Покормить» голубая, тренажёры серые (стили —
                  .fish-btn в dashboard.blade.php). Запас корма — в самой
                  кнопке «Покормить» (отдельной строки «Корм: N» больше нет).

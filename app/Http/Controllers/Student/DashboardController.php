@@ -409,7 +409,8 @@ foreach ($sessionsWithoutLesson as $session) {
         $fishLevel = $fish->levelFor((int) $user->fish_total_fed);
         $fishProgress = $fish->progressFor((int) $user->fish_total_fed);
         $fishBalance = (int) $user->fish_corm_balance;
-        $fishMascotImage = $fish->mascotImageUrl($fishLevel);
+        // Голодная/грустная акула (полосы ниже порога) — поза wrong.
+        $fishMascotImage = $fish->restingImageUrl($user, $fishLevel);
         $fishMascotEatingImage = $fish->mascotImageUrl($fishLevel, 'eating');
         $fishBackgroundImage = $fish->backgroundImageUrl($user->fish_background);
         $fishName = $user->fish_name ?: $fish->levelName($fishLevel);

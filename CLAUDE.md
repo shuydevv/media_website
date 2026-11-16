@@ -100,7 +100,12 @@ row-lock промокодов на SQLite пропускается. Старые
   PromoCodeRedemptionTest.php`.
 - Геймификация "рыба" — `User.fish_*` поля + `FishFoodService` + `Student\FishController`
   (`POST /student/fish/feed`), настройки уровней в `config/fish.php`. Косметика, намеренно
-  не завязана на billing-статус (см. комментарий у роута в `web.php`).
+  не завязана на billing-статус (см. комментарий у роута в `web.php`). Полосы «Сытость»/
+  «Радость» — `fish_satiety`/`fish_joy` + `*_at` (значение на момент, текущее считает
+  `FishMood` при показе, без крона), числа — `config('fish.mood')`; растут в
+  `FishFoodService` (кормление, `awardTermSession`, сдача домашки, покупки), низкие — поза
+  `wrong` и реплики `hungry`/`bored`/`mood_low` в `FishSpeech`. Ничего не отнимают. Показ —
+  значки на квадрате с рыбой (`student/partials/fish-hud`, OOB-свап при кормлении).
 
 - Тренажёр терминов (задание 18) — `/student/terms`, интервальное повторение 190 понятий
   обществознания. Правила целиком в `docs/terms/Механика тренажёра терминов задание 18.md` —

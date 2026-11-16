@@ -120,6 +120,10 @@ class DemoMode
                 'fish_unlocked_accessories' => null,
                 'fish_food' => null,
                 'fish_unlocked_foods' => null,
+                'fish_satiety' => 100,
+                'fish_satiety_at' => now(),
+                'fish_joy' => 100,
+                'fish_joy_at' => now(),
             ]);
         });
 
@@ -160,8 +164,12 @@ class DemoMode
 
             if ($user->fish_last_active_date !== null) {
                 $user->fish_last_active_date = $user->fish_last_active_date->copy()->subDay();
-                $user->save();
             }
+            // Полосы акулы «прожили» сутки — на показе видно, как они падают.
+            foreach (['fish_satiety_at', 'fish_joy_at'] as $column) {
+                $user->{$column} = ($user->{$column} ?? now())->copy()->subDay();
+            }
+            $user->save();
         });
     }
 

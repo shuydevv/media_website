@@ -112,22 +112,27 @@ class FishFoodService
      * Нет ни флэта за сам факт сдачи, ни разового бонуса за первую домашку —
      * единственная награда здесь — homework_on_time_bonus, и только при
      * сдаче не позже due_at. Просрочка (status === 'expired') не даёт ничего
-     * сверх уже начисленных баллов за задания.
+     * сверх уже начисленных баллов за задания. Радость (fish_joy) — за любую
+     * сдачу, см. ниже.
      */
     public function awardHomeworkCompletion(User $user, Submission $submission): void
     {
-        if ($submission->status === 'expired') {
-            return;
-        }
+        $this->withLockedUser($user, function (User $locked) use ($submission) {
+            // Радость — за любую сданную домашку, и после дедлайна тоже
+            // (решение автора 15.11.2026: для слабого ученика сдать хоть
+            // как-то — уже повод). Опоздание и так стоит бонуса ниже.
+            $this->addJoy($locked, (float) config('fish.mood.joy_homework', 100));
 
-        $this->withLockedUser($user, function (User $locked) {
-            $locked->fish_corm_balance = (int) $locked->fish_corm_balance + config('fish.corm.homework_on_time_bonus');
+            if ($submission->status !== 'expired') {
+                $locked->fish_corm_balance = (int) $locked->fish_corm_balance + config('fish.corm.homework_on_time_bonus');
+            }
             $locked->save();
         });
     }
 
     /**
-     * Корм за законченную сессию тренажёра терминов. Сумму (0–3) считает
+     * Корм (и радость акулы) за законченную сессию тренажёра — через этот
+     * метод идут все тренажёры, не только термины. Сумму (0–3) считает
      * App\Service\Terms\SessionReward, one-shot гарантирует вызывающий код:
      * TermTrainer начисляет под блокировкой строки сессии и сразу пишет
      * term_sessions.corm_awarded.
@@ -140,6 +145,9 @@ class FishFoodService
 
         $this->withLockedUser($user, function (User $locked) use ($corm) {
             $locked->fish_corm_balance = (int) $locked->fish_corm_balance + $corm;
+            // Радость — только за сессии с кормом: те же дневные лимиты, что
+            // и у корма (повтор ошибок, сверхлимит без корма её не дают).
+            $this->addJoy($locked, (float) config('fish.mood.joy_per_session', 35));
             $locked->save();
         });
     }
@@ -204,6 +212,8 @@ class FishFoodService
             $fed = 1;
             $locked->fish_total_fed = (int) $locked->fish_total_fed + $fed;
             $locked->fish_corm_balance = (int) $locked->fish_corm_balance - $fed;
+            // На 100% кормить можно дальше — опыт растёт, полоса стоит.
+            $this->addSatiety($locked, $fed * (float) config('fish.mood.satiety_per_feed', 10));
             $locked->save();
 
             $levelAfter = $this->levelFor((int) $locked->fish_total_fed);
@@ -438,6 +448,8 @@ class FishFoodService
             $locked->fish_unlocked_backgrounds = array_values(array_unique($unlocked));
             // Сразу выбираем купленный фон — если покупаешь, явно хочешь его применить.
             $locked->fish_background = $slug;
+            $this->addJoy($locked, (float) config('fish.mood.joy_purchase', 100));
+            $this->markPurchased($locked);
             $locked->save();
 
             return 'purchased';
@@ -518,6 +530,8 @@ class FishFoodService
             $locked->fish_unlocked_accessories = array_values(array_unique($unlocked));
             // Сразу выбираем купленный аксессуар — та же логика, что и у фонов.
             $locked->fish_accessory = $slug;
+            $this->addJoy($locked, (float) config('fish.mood.joy_purchase', 100));
+            $this->markPurchased($locked);
             $locked->save();
 
             return 'purchased';
@@ -646,6 +660,8 @@ class FishFoodService
             $locked->fish_unlocked_foods = array_values(array_unique($unlocked));
             // Сразу выбираем купленную еду — та же логика, что и у фонов.
             $locked->fish_food = $slug;
+            $this->addJoy($locked, (float) config('fish.mood.joy_purchase', 100));
+            $this->markPurchased($locked);
             $locked->save();
 
             return 'purchased';
@@ -661,6 +677,88 @@ class FishFoodService
         $purchased = $user->fish_unlocked_foods ?? [];
 
         return array_values(array_unique(array_merge($free, $purchased)));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Полосы «Сытость» и «Радость» (App\Service\FishMood, config fish.mood).
+    | В БД — значение на момент *_at; текущее считается здесь. *_at null —
+    | новый ученик, отсчёт с регистрации (у старых migration проставила
+    | момент выкладки).
+    |--------------------------------------------------------------------------
+    */
+
+    public function satiety(User $user): float
+    {
+        return FishMood::fromConfig()->current((float) ($user->fish_satiety ?? 100), $this->moodSince($user, 'fish_satiety_at'), now());
+    }
+
+    public function joy(User $user): float
+    {
+        return FishMood::fromConfig()->current((float) ($user->fish_joy ?? 100), $this->moodSince($user, 'fish_joy_at'), now());
+    }
+
+    /**
+     * Обе полосы для UI, целыми процентами; hungry/sad — ниже порога
+     * fish.mood.low (тогда маскот в позе wrong и своя реплика).
+     *
+     * @return array{satiety: int, joy: int, hungry: bool, sad: bool}
+     */
+    public function moodFor(User $user): array
+    {
+        $low = (float) config('fish.mood.low', 30);
+        $satiety = $this->satiety($user);
+        $joy = $this->joy($user);
+
+        return [
+            'satiety' => (int) round($satiety),
+            'joy' => (int) round($joy),
+            'hungry' => $satiety < $low,
+            'sad' => $joy < $low,
+        ];
+    }
+
+    /** Картинка маскота в покое с учётом полос: голодная/грустная — wrong. */
+    public function restingImageUrl(User $user, ?int $level = null): string
+    {
+        $level ??= $this->levelFor((int) $user->fish_total_fed);
+        $mood = $this->moodFor($user);
+
+        return $this->mascotImageUrl($level, $mood['hungry'] || $mood['sad'] ? 'wrong' : 'default');
+    }
+
+    /**
+     * Покупка была — на дашборде рыба один раз скажет «Обновка!» (см.
+     * FishSpeech). Кэш, а не колонка: реакция разовая и не страшно её
+     * потерять.
+     */
+    private function markPurchased(User $user): void
+    {
+        \Illuminate\Support\Facades\Cache::put('fish-bought:'.$user->id, true, now()->addDays(3));
+    }
+
+    /** Была ли покупка, о которой рыба ещё не сказала; сбрасывает отметку. */
+    public function pullPurchased(User $user): bool
+    {
+        return (bool) \Illuminate\Support\Facades\Cache::pull('fish-bought:'.$user->id);
+    }
+
+    // Вызываются внутри withLockedUser() — save() делает вызывающий код.
+    private function addSatiety(User $locked, float $amount): void
+    {
+        $locked->fish_satiety = FishMood::fromConfig()->add((float) ($locked->fish_satiety ?? 100), $this->moodSince($locked, 'fish_satiety_at'), now(), $amount);
+        $locked->fish_satiety_at = now();
+    }
+
+    private function addJoy(User $locked, float $amount): void
+    {
+        $locked->fish_joy = FishMood::fromConfig()->add((float) ($locked->fish_joy ?? 100), $this->moodSince($locked, 'fish_joy_at'), now(), $amount);
+        $locked->fish_joy_at = now();
+    }
+
+    private function moodSince(User $user, string $column): ?\Carbon\CarbonInterface
+    {
+        return $user->{$column} ?? $user->created_at;
     }
 
     public function levelFor(int $totalFed): int

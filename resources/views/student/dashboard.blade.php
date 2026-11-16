@@ -209,7 +209,7 @@
            приглушённым текстом. */
         .fish-bubble {
             position: absolute;
-            z-index: 5;
+            z-index: 7; /* выше значков сытости/радости (.fish-hud, 6) */
             right: 52%;
             width: max-content;
             max-width: 170px;
@@ -228,8 +228,9 @@
         .fish-bubble.is-top {
             top: -14px;
         }
+        /* Снизу на квадрате — значки сытости/радости: облачко встаёт над ними. */
         .fish-bubble.is-bottom {
-            bottom: 6px;
+            bottom: calc(var(--hud) + 6cqw);
         }
         .fish-bubble::after {
             content: "";
@@ -415,7 +416,7 @@
                 max-width: calc(50% - 10px);
             }
             .dashboard-mascot-row .fish-bubble.is-top { top: 12px; }
-            .dashboard-mascot-row .fish-bubble.is-bottom { bottom: 12px; }
+            .dashboard-mascot-row .fish-bubble.is-bottom { bottom: calc(var(--hud) + 7cqw); }
             .dashboard-mascot-row #fish-card {
                 width: 100%;
             }
@@ -507,12 +508,139 @@
             filter: brightness(0) opacity(.28);
         }
         .fish-xp-caption {
-            margin-top: .4rem;
+            /* Ряд шкалы высотой с силуэт (2.25rem), полоска в нём по центру —
+               без отрицательного отступа подпись висела бы высоко. */
+            margin-bottom: -.4rem;
+            line-height: 1.1;
             font-size: .75rem;
             color: #657B8B;
         }
         .fish-xp-caption b { color: #1D2E3A; font-weight: 600; }
         .fish-xp-caption img { vertical-align: -3px; }
+
+        /* Отступ над кнопками: на телефоне (рыба сверху, высота свободная)
+           просторнее, на ПК блок зажат в высоту квадрата — плотнее. */
+        .fish-actions { padding-top: 1.25rem; }
+        @media (min-width: 600px) {
+            .dashboard-mascot-row .fish-actions { padding-top: 1rem; }
+            /* Шкала роста на ПК чуть ниже — после переноса сытости/радости на
+               картинку колонка стала свободнее (16.11.2026). */
+            .dashboard-mascot-row .fish-xp-block { margin-top: 2rem; }
+        }
+
+        /* Сытость и радость на квадрате с рыбой (partials/fish-hud), как
+           полоска еды в Майнкрафте: внизу слева еда, справа смайлики, по 5
+           значков. Пустая еда — тёмный силуэт, недостающая радость —
+           грустные смайлики; частичный значок — полный обрезан по ширине
+           (.fish-hud-full). Размер значка — от ширины квадрата (cqw).
+           Над стеклом аквариума (z 4) и крошками (5), под баннером
+           левел-апа (10). is-low — ниже порога: светлая красная подложка,
+           первый значок вздрагивает. is-pop — значок только что пополнился. */
+        .fish-stage {
+            container: fish-stage / inline-size;
+            --hud: clamp(1.2rem, 11cqw, 2.4rem);
+        }
+        /* Еда и смайлики — одной строкой внизу: еда слева, смайлики справа
+           (16.11.2026), по центру друг друга по высоте (еда выше). */
+        .fish-hud {
+            position: absolute;
+            left: 3cqw;
+            right: 3cqw;
+            bottom: .5cqw;
+            z-index: 6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 3cqw;
+            pointer-events: none;
+        }
+        /* Без плашек (16.11.2026 — плашка с едой не понравилась): значки прямо
+           на картинке, как в Майнкрафте; читаются за счёт тени и светлой
+           обводки. Низкая полоса подсветкой не выделяется — видно по пустым
+           значкам и позе акулы (красное свечение убрано 16.11.2026). */
+        .fish-hud-row {
+            display: flex;
+            align-items: center;
+            gap: .6cqw;
+            pointer-events: auto;
+        }
+        /* Белая обводка. У смайликов — белое кольцо в самой картинке
+           (.fish-hud-ring, ≈1.1px — как у еды): тени со сдвигом давали на
+           круге кривой контур. У еды своего контура нет — обводка тенями с 4
+           сторон по .8px (тени складываются: каждая следующая обводит
+           результат предыдущей, так что больше — толстая «капля»). Поверх —
+           мягкая тень. */
+        /* Тёмная тень под всем рядом, а не под каждым значком: фильтр на ряду
+           рисует общую тень позади всех значков — тень одного не ложится на
+           соседа. */
+        .fish-hud-row { filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .52)); }
+        [data-mood="satiety"] .fish-hud-icon img {
+            filter: drop-shadow(.8px 0 0 #fff) drop-shadow(-.8px 0 0 #fff) drop-shadow(0 .8px 0 #fff) drop-shadow(0 -.8px 0 #fff);
+        }
+        /* Пустая еда — тёмный силуэт (сначала затемняем, потом обводим). */
+        [data-mood="satiety"] .fish-hud-icon img.fish-hud-empty {
+            filter: brightness(0) opacity(.55) drop-shadow(.8px 0 0 #fff) drop-shadow(-.8px 0 0 #fff) drop-shadow(0 .8px 0 #fff) drop-shadow(0 -.8px 0 #fff);
+        }
+        .fish-hud-icon {
+            position: relative;
+            display: block;
+            width: var(--hud);
+            height: var(--hud);
+            flex-shrink: 0;
+        }
+        .fish-hud-icon img,
+        .fish-hud-icon svg {
+            display: block;
+            width: var(--hud);
+            height: var(--hud);
+            max-width: none;
+            object-fit: contain;
+        }
+        .fish-hud-full {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        /* Еда (банка и т.п.) узкая — слот уже, чтобы шаг был как у смайликов.
+           Пустая еда — тёмный силуэт, как в Майнкрафте. */
+        [data-mood="satiety"] .fish-hud-icon,
+        [data-mood="satiety"] .fish-hud-icon img { width: calc(var(--hud) * .7); height: calc(var(--hud) * 1.3); }
+        /* Смайлики мельче еды и с потолком размера — на телефоне (квадрат
+           во всю ширину) иначе были огромными (16.11.2026). */
+        [data-mood="joy"] .fish-hud-icon,
+        [data-mood="joy"] .fish-hud-icon svg { width: clamp(1.05rem, 7.5cqw, 1.45rem); height: clamp(1.05rem, 7.5cqw, 1.45rem); }
+        /* Телефон (рыба над карточкой, квадрат во всю ширину) — значки
+           мельче, чем дали бы те же cqw на ПК (16.11.2026). */
+        @media (max-width: 599px) {
+            .fish-stage { --hud: clamp(1.15rem, 8cqw, 1.95rem); }
+            /* Квадрат на телефоне шире, чем выше, — фон обрезается сверху и
+               снизу. Сдвигаем к низу, чтобы было видно дно (позиция в
+               style у #greeting-mascot — поэтому !important). */
+            #greeting-mascot { background-position: center 80% !important; }
+            [data-mood="joy"] .fish-hud-icon,
+            [data-mood="joy"] .fish-hud-icon svg { width: clamp(1rem, 5.9cqw, 1.3rem); height: clamp(1rem, 5.9cqw, 1.3rem); }
+        }
+        .fish-hud-ring { fill: #fff; }
+        .fish-hud-happy .fish-hud-face { fill: #FFD23F; stroke: #E0A100; stroke-width: 1.2; }
+        .fish-hud-sad .fish-hud-face { fill: #AFC0CF; stroke: #8195A7; stroke-width: 1.2; }
+        .fish-hud-eye { fill: #3A2E1F; }
+        .fish-hud-sad .fish-hud-eye { fill: #3D4E5E; }
+        .fish-hud-mouth { fill: none; stroke: #3A2E1F; stroke-width: 1.6; stroke-linecap: round; }
+        .fish-hud-sad .fish-hud-mouth { stroke: #3D4E5E; }
+        .fish-hud-row.is-low .fish-hud-icon:first-child { animation: fish-mood-wobble 2.4s ease-in-out infinite; }
+        @keyframes fish-mood-wobble {
+            0%, 80%, 100% { transform: rotate(0); }
+            85% { transform: rotate(-12deg); }
+            90% { transform: rotate(10deg); }
+            95% { transform: rotate(-6deg); }
+        }
+        .fish-hud-icon.is-pop { animation: fish-mood-pop .45s cubic-bezier(.34, 1.56, .64, 1) both; }
+        @keyframes fish-mood-pop {
+            0% { transform: scale(.4); }
+            100% { transform: scale(1); }
+        }
 
         /* Пока есть корм — «Покормить» мягко светится, зовёт нажать.
            Внутренние тени повторяют .fish-btn, иначе анимация их бы затёрла.
@@ -739,6 +867,8 @@
             .fish-xp-fill.is-gain::after { animation: none; }
             .fish-water { display: none; }
             .fish-xp-fill, .fish-daily { transition: none; }
+            .fish-hud-row.is-low .fish-hud-icon:first-child,
+            .fish-hud-icon.is-pop { animation: none; }
             .fish-float, .fish-combo { animation-duration: .01s; animation-delay: .6s; }
         }
     </style>
@@ -825,6 +955,7 @@
                          alt="" class="w-full h-full object-contain">
                 </div>
             </div>
+            @include('student.partials.fish-hud')
             {{-- Значок уровня на углу маскота. Номер после левел-апа меняет
                  скрипт (событие 'fish-level-up', поле level). --}}
             @php $fishMaxLevel = count(config('fish.levels')) + 1; @endphp
@@ -843,6 +974,9 @@
                      data-key="{{ $fishSays['key'] }}" {{ $fishSays['daily'] ? 'data-daily' : '' }} {{ $fishSays['feed'] ? 'data-feed' : '' }}>
                     @if($fishSays['feed'])
                         <button type="button" class="fish-bubble-link" data-feed-bubble>{{ $fishSays['text'] }}</button>
+                    @elseif(!$fishSays['url'])
+                        {{-- Реплика без перехода (реакция на покупку). --}}
+                        <span class="fish-bubble-link">{{ $fishSays['text'] }}</span>
                     @else
                         <a href="{{ $fishSays['url'] }}" class="fish-bubble-link">
                             {{ $fishSays['text'] }}
@@ -1136,6 +1270,12 @@
                     say(pick(url ? 'empty_trainer' : 'empty'), url ? 4000 : 2500, url || null);
                     lockedUntil = Date.now() + (url ? 4000 : 2500);
                 },
+                // Ответ сервера: сытость дошла до 100%.
+                full: function () {
+                    if (Date.now() < lockedUntil) return; // уровень вырос — это важнее
+                    say(pick('full'), 2500);
+                    lockedUntil = Date.now() + 2500;
+                },
                 // Ответ сервера: рыба выросла.
                 levelUp: function () {
                     say(pick('level_up'), 3000);
@@ -1216,7 +1356,7 @@
             document.body.addEventListener('htmx:beforeSwap', function (evt) {
                 var card = evt.detail.target;
                 if (!card || card.id !== 'fish-card') return;
-                before = { level: +card.dataset.level, progress: +card.dataset.progress, balance: +card.dataset.balance };
+                before = { level: +card.dataset.level, progress: +card.dataset.progress, balance: +card.dataset.balance, satiety: +card.dataset.satiety };
             });
             document.body.addEventListener('htmx:afterSwap', function (evt) {
                 if (!evt.detail.target || evt.detail.target.id !== 'fish-card' || !before) return;
@@ -1228,6 +1368,27 @@
                 var fed = +card.dataset.balance < prev.balance;
                 var stock = card.querySelector('.fish-btn-stock');
                 if (stock && +card.dataset.balance !== prev.balance) stock.classList.add('is-bump');
+
+                // Поза в покое могла смениться (была голодная — накормили):
+                // таймер возврата с «ест» берёт её из data-default-src.
+                var mascotImg = document.getElementById('fish-mascot-img');
+                if (mascotImg && card.dataset.mascotSrc) mascotImg.dataset.defaultSrc = card.dataset.mascotSrc;
+
+                // Сытость (значки на квадрате, #fish-hud приходит OOB-свапом
+                // вместе с карточкой): значки, которые пополнились, подпрыгивают
+                // по очереди. Значок = 20%, как в partials/fish-hud.
+                if (fed) {
+                    var icons = document.querySelectorAll('#fish-hud [data-mood="satiety"] .fish-hud-icon');
+                    var k = 0;
+                    icons.forEach(function (icon, i) {
+                        var was = Math.max(0, Math.min(100, (prev.satiety - i * 20) * 5));
+                        if (+icon.dataset.fill > was) {
+                            icon.style.animationDelay = (k++ * 0.08) + 's';
+                            icon.classList.add('is-pop');
+                        }
+                    });
+                }
+                if (fed && prev.satiety < 100 && +card.dataset.satiety >= 100 && fishTalk) fishTalk.full();
 
                 var fill = card.querySelector('.fish-xp-fill');
                 if (!fill || !fed) return;

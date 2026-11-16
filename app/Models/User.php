@@ -617,6 +617,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'fish_name', 'fish_background', 'fish_unlocked_backgrounds',
         'fish_accessory', 'fish_unlocked_accessories',
         'fish_food', 'fish_unlocked_foods',
+        'fish_satiety', 'fish_satiety_at', 'fish_joy', 'fish_joy_at',
     ];
 
     /**
@@ -649,6 +650,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'fish_unlocked_backgrounds' => 'array',
         'fish_unlocked_accessories' => 'array',
         'fish_unlocked_foods' => 'array',
+        'fish_satiety' => 'float',
+        'fish_satiety_at' => 'datetime',
+        'fish_joy' => 'float',
+        'fish_joy_at' => 'datetime',
         'login_token' => 'encrypted',
         'login_token_used_at' => 'datetime',
     ];

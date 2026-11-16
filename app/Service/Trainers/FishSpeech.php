@@ -55,6 +55,36 @@ class FishSpeech
             ];
         }
 
+        // Полосы «Сытость»/«Радость» (FishFoodService::moodFor()). Ведущие в
+        // тренажёры — только если они у ученика есть (url общей страницы).
+        $mood = $this->fish->moodFor($user);
+        $hubUrl = $hub['url'] ?? null;
+        $fishSituations = [];
+        if ($mood['hungry'] && $mood['sad'] && $balance > 0) {
+            $fishSituations[] = 'mood_low';
+        } elseif ($mood['hungry'] && $balance > 0) {
+            $fishSituations[] = 'hungry';
+        }
+        if ($mood['hungry'] && $balance <= 0 && $hubUrl) {
+            $fishSituations[] = 'hungry_trainer';
+        }
+        if ($mood['sad'] && $hubUrl) {
+            $fishSituations[] = 'bored';
+        }
+        // Разовая реакция на покупку — отметку снимаем сразу.
+        if ($this->fish->pullPurchased($user)) {
+            $fishSituations[] = 'bought';
+        }
+        foreach ($fishSituations as $situation) {
+            $feeds = (bool) (config("fish_speech.situations.{$situation}.feed") ?? false);
+            $candidates[] = [
+                'situation' => $situation,
+                'corm' => $balance,
+                'url' => $feeds || $situation === 'bought' ? null : $hubUrl,
+                'key' => 'fish.'.$situation,
+            ];
+        }
+
         if (!$candidates) {
             return null;
         }
