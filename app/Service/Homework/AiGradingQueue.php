@@ -85,7 +85,7 @@ class AiGradingQueue
      */
     public function trainerByReview(): Collection
     {
-        $reviews = TaskReview::query()
+        $reviews = TaskReview::with('user')
             ->where('status', TaskReview::SENT)
             ->whereHas('user', fn ($q) => $q->where('is_demo', false))
             ->where(fn ($q) => $q->whereNull('locked_by')->orWhere('lock_expires_at', '<=', now()))

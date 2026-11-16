@@ -131,6 +131,8 @@ class AiDesktopGradingTest extends TestCase
         $this->assertSame('r' . $review->id, $item['submission_id']);
         $this->assertSame(3, $item['max_score']);
         $this->assertSame('Ответ ученика из тренажёра', $item['student_answer']);
+        $this->assertSame($review->user->name, $item['student_name'], 'по имени навык выбирает род');
+        $this->assertSame($this->submission->user->name, collect($export['items'])->firstWhere('submission_id', $this->submission->id)['student_name']);
         $this->assertSame('exported', $review->fresh()->ai_drafts[(string) $task->id]['status']);
 
         $this->actingAs($this->admin)

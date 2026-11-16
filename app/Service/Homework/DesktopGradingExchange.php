@@ -232,6 +232,7 @@ class DesktopGradingExchange
                 'exemplar_answer'        => $p['exemplar'] !== '' ? $p['exemplar'] : null,
                 'hint'                   => $p['hint'],
                 'student_answer'         => $p['student_answer'],
+                'student_name'           => trim((string) $p['student_name']) ?: null,
             ];
         }
 
@@ -255,7 +256,7 @@ class DesktopGradingExchange
         $byOwner = $this->itemsByOwner($record->items ?? []);
 
         if (!empty($byOwner['s'])) {
-            $submissions = Submission::with(['homework.tasks.task.category', 'homework.course.category'])
+            $submissions = Submission::with(['user', 'homework.tasks.task.category', 'homework.course.category'])
                 ->whereKey(array_keys($byOwner['s']))->get();
             foreach ($submissions as $s) {
                 $drafts = $s->ai_drafts ?? [];
@@ -269,7 +270,7 @@ class DesktopGradingExchange
         }
 
         if (!empty($byOwner['r'])) {
-            $reviews = TaskReview::whereKey(array_keys($byOwner['r']))->get();
+            $reviews = TaskReview::with('user')->whereKey(array_keys($byOwner['r']))->get();
             $tasks = Task::with('category')
                 ->whereIn('id', collect($byOwner['r'])->flatten()->map(fn ($id) => (int) $id)->unique()->all())
                 ->get()->keyBy('id');

@@ -62,6 +62,8 @@ class ClaudeGrader
             'exemplar'        => trim(implode("\n\n", array_filter([(string) $task->answer, (string) $task->explanation]))),
             'hint'            => $task->hint,
             'student_answer'  => (string) (($submission->answers ?? [])[(string) $task->id] ?? ''),
+            // По имени модель выбирает род в комментарии (см. base.md, «Род»).
+            'student_name'    => $submission->user?->name,
         ];
     }
 
@@ -80,6 +82,7 @@ class ClaudeGrader
             'exemplar'        => trim(implode("\n\n", array_filter([(string) $task->answer, (string) $task->explanation]))),
             'hint'            => $task->hint,
             'student_answer'  => (string) (($review->answers ?? [])[(string) $task->id] ?? ''),
+            'student_name'    => $review->user?->name,
         ];
     }
 
@@ -306,6 +309,7 @@ class ClaudeGrader
             'Предмет: ' . (trim((string) ($task['subject'] ?? '')) ?: 'не указан'),
             'Номер задания в ЕГЭ: ' . (trim((string) ($task['number'] ?? '')) ?: 'не указан'),
             "Максимальный балл: {$maxScore}",
+            'Имя ученика: ' . (trim((string) ($task['student_name'] ?? '')) ?: 'не указано'),
             $section('task_text', $task['question'] ?? null),
             $section('source_text', $task['passage'] ?? null),
             $section('criteria', $task['criteria'] ?? null),
