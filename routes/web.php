@@ -320,6 +320,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
             Route::get('/excluded', 'ExcludedListController')->name('admin.crm.excluded');
             Route::patch('/users/{user}/courses/{course}/access', 'AccessController')->name('admin.crm.access.update');
             Route::patch('/users/{user}/courses/{course}/reminded', 'RemindedController')->name('admin.crm.reminded.update');
+            Route::patch('/users/{user}/courses/{course}/remove', 'RemoveCourseController')->name('admin.crm.course.remove');
             Route::post('/users/{user}/courses/{course}/payments', 'Payment\StoreController')->name('admin.crm.payments.store');
             Route::delete('/payments/{payment}', 'Payment\DestroyController')->name('admin.crm.payments.destroy');
             Route::post('/users/{user}/reminders', 'Reminder\StoreController')->name('admin.crm.reminders.store');

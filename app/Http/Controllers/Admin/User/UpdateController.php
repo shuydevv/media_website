@@ -25,13 +25,20 @@ class UpdateController extends Controller
         // Снятая галочка не присылает id курса вовсе, поэтому активные
         // зачисления, которых нет среди $courseIds, нужно закрыть явно —
         // иначе course_user так и останется status=active навсегда.
+        // Закрываем как completed, а не suspended: suspended — это «не
+        // оплатил» (enrollments:expire), такой курс CRM и утренняя сводка
+        // показывают как просроченный. Админ курс убрал сам — напоминать
+        // о нём не нужно (часто человек просто перешёл на другой курс).
+        // Только active: приостановленные в форме без галочки (EditController),
+        // их трогать нельзя — иначе любая правка профиля молча убрала бы
+        // неоплаченный курс из CRM. Их убирают кнопкой в CRM (RemoveCourseController).
         $currentActiveCourseIds = $user->courses()
             ->wherePivot('status', 'active')
             ->pluck('courses.id')
             ->all();
 
         foreach (array_diff($currentActiveCourseIds, $courseIds) as $courseId) {
-            $enroll->suspend($user, Course::findOrFail($courseId));
+            $enroll->complete($user, Course::findOrFail($courseId));
         }
 
         // enrollUser() — upsert по (user_id, course_id): для уже выданного

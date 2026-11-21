@@ -161,6 +161,14 @@
 
                 <span class="text-zinc-300">·</span>
                 @include('admin.crm.partials.course-billing', ['s' => $s])
+
+                {{-- Сам снял ученика с курса (ушёл, перешёл на другой) —
+                     RemoveCourseController, курс уходит из сводки и карточки. --}}
+                <button type="button" data-course-remove
+                        class="ml-auto px-2 min-h-10 md:min-h-8 text-sm md:text-xs text-zinc-400 hover:text-rose-600 sans"
+                        title="Убрать курс: ученик больше на нём не учится">
+                    Убрать курс
+                </button>
             </div>
         @empty
             <div class="sans text-sm text-zinc-400">Курсов нет</div>

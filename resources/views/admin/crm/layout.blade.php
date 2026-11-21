@@ -608,6 +608,30 @@
                 });
 
                 courseRow.addEventListener('click', function (e) {
+                    const removeBtn = e.target.closest('[data-course-remove]');
+                    if (removeBtn) {
+                        if (!confirm('Убрать курс «' + courseRow.dataset.courseTitle + '»?\nДоступа к нему у ученика не будет, в CRM и утренней сводке курс больше не появится. Остальные курсы ученика не изменятся.')) return;
+                        removeBtn.disabled = true;
+                        patch(courseUrl + '/remove', {})
+                            .then(function (data) {
+                                // Последний курс убран — ученик стал «Завершил курс»
+                                // и строка ниже уедет в архив целиком.
+                                courseRow.remove();
+                                rebuildSelectOptions(stageSelect, data.status.options);
+                                stageOriginal = stageSelect.value;
+                                applySelectColor(stageSelect, data.status.color);
+                                const isClosedNow = data.status.key === 'completed' || data.status.key === 'lost';
+                                if (isClosedNow !== window.CRM_ARCHIVE_VIEW) {
+                                    removeRow(row);
+                                }
+                            })
+                            .catch(function () {
+                                removeBtn.disabled = false;
+                                alert('Не удалось убрать курс, попробуйте ещё раз.');
+                            });
+                        return;
+                    }
+
                     const undo = e.target.closest('[data-payment-undo]');
                     if (!undo) return;
                     if (!confirm('Удалить этот платёж и вернуть прежнюю дату?\nУведомление ученику об оплате уже ушло — его не отозвать.')) return;
