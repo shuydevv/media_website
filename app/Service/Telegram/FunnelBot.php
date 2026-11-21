@@ -2,7 +2,10 @@
 
 namespace App\Service\Telegram;
 
+use App\Jobs\Avito\ReplyToAvito;
 use App\Jobs\Telegram\RunFunnelStep;
+use App\Models\AvitoChat;
+use App\Models\AvitoMessage;
 use App\Models\SiteLead;
 use App\Models\TelegramContact;
 use App\Models\TelegramMessage;
@@ -597,6 +600,17 @@ class FunnelBot implements BotScenario
             return;
         }
 
+        if ($threadId === AdminTopics::serviceTopicId('avito')) {
+            $this->relayAvitoReply($message);
+
+            return;
+        }
+        if ($avitoChat = AvitoChat::where('topic_id', $threadId)->first()) {
+            $this->relayAvitoChat($avitoChat, $message);
+
+            return;
+        }
+
         // Группа общая для всех ботов: тема другого бота — не наша, ответ
         // туда отправит тот бот, которого этот человек запускал.
         $contact = TelegramContact::forBot(self::BOT)->where('topic_id', $threadId)->first();
@@ -605,6 +619,59 @@ class FunnelBot implements BotScenario
         }
 
         $this->dispatch($contact, 'admin_reply', ['message' => $message]);
+    }
+
+    /**
+     * Лента «🛒 Авито». Переписка теперь в темах чатов (relayAvitoChat), а
+     * здесь — только реплай на уведомление из времени до тем: уходит в тот
+     * чат Авито. Остальное — подсказка, где отвечать. Только текст.
+     */
+    private function relayAvitoReply(array $message): void
+    {
+        $threadId = (int) $message['message_thread_id'];
+        $say = fn (string $html) => $this->api->sendMessage($message['chat']['id'], $html, [
+            'message_thread_id' => $threadId,
+            'reply_parameters' => ['message_id' => (int) $message['message_id'], 'allow_sending_without_reply' => true],
+        ]);
+
+        // В теме форума у каждого сообщения reply_to_message — начало темы.
+        $reply = $message['reply_to_message'] ?? null;
+        $source = $reply && (int) $reply['message_id'] !== $threadId
+            ? AvitoMessage::where('telegram_message_id', $reply['message_id'])->latest('id')->first()
+            : null;
+        if (! $source) {
+            $say('Отвечать клиенту — в <b>его теме</b>: ссылка «тема» в строке о новом чате. Заметка для себя — с <code>//</code>.');
+
+            return;
+        }
+
+        $text = trim($message['text'] ?? '');
+        if ($text === '') {
+            $say('На Авито из бота уходит только текст — фото и файлы отправьте в чате на Авито.');
+
+            return;
+        }
+
+        ReplyToAvito::dispatch($source->chat_id, $source->user_id, $text, (int) $message['message_id'], $threadId)
+            ->onQueue(config('telegram_funnel.queue'));
+    }
+
+    /** Тема чата Авито (AvitoTopics): любое сообщение админа → клиенту. Только текст. */
+    private function relayAvitoChat(AvitoChat $chat, array $message): void
+    {
+        $threadId = (int) $message['message_thread_id'];
+        $text = trim($message['text'] ?? '');
+        if ($text === '') {
+            $this->api->sendMessage($message['chat']['id'], 'На Авито из бота уходит только текст — фото и файлы отправьте в чате на Авито.', [
+                'message_thread_id' => $threadId,
+                'reply_parameters' => ['message_id' => (int) $message['message_id'], 'allow_sending_without_reply' => true],
+            ]);
+
+            return;
+        }
+
+        ReplyToAvito::dispatch($chat->chat_id, $chat->user_id, $text, (int) $message['message_id'], $threadId)
+            ->onQueue(config('telegram_funnel.queue'));
     }
 
     /**

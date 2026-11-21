@@ -9,9 +9,14 @@ use Illuminate\Database\Eloquent\Model;
  */
 class AvitoMessage extends Model
 {
-    protected $fillable = ['message_id', 'chat_id', 'user_id', 'author_id', 'item_id', 'type', 'text', 'sent_at_avito', 'sent_at'];
+    protected $fillable = ['message_id', 'chat_id', 'user_id', 'author_id', 'item_id', 'type', 'direction', 'from_bot', 'text', 'telegram_message_id', 'sent_at_avito', 'sent_at'];
+
+    public const IN = 'in';
+
+    public const OUT = 'out';
 
     protected $casts = [
+        'from_bot' => 'boolean',
         'sent_at_avito' => 'datetime',
         'sent_at' => 'datetime',
     ];
@@ -20,11 +25,5 @@ class AvitoMessage extends Model
     public function chatUrl(): string
     {
         return 'https://www.avito.ru/profile/messenger/channel/'.rawurlencode($this->chat_id);
-    }
-
-    /** Первое сообщение в этом чате — значит, новый чат. */
-    public function opensChat(): bool
-    {
-        return ! self::where('chat_id', $this->chat_id)->where('id', '<', $this->id)->exists();
     }
 }

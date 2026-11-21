@@ -294,6 +294,11 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
         Route::group(['namespace' => 'Telegram', 'prefix' => 'telegram'], function () {
             Route::get('/', 'IndexController')->name('admin.telegram.index');
             Route::get('/diagnostic', 'DiagnosticStatsController')->name('admin.telegram.diagnostic');
+            Route::get('/avito', 'Avito\IndexController')->name('admin.telegram.avito.index');
+            Route::post('/avito', 'Avito\StoreController')->name('admin.telegram.avito.store');
+            Route::put('/avito/{account}', 'Avito\UpdateController')->name('admin.telegram.avito.update');
+            Route::post('/avito/{account}/connect', 'Avito\ConnectController')->name('admin.telegram.avito.connect');
+            Route::delete('/avito/{account}', 'Avito\DestroyController')->name('admin.telegram.avito.destroy');
             Route::get('/texts', 'Texts\EditController')->name('admin.telegram.texts.edit');
             Route::put('/texts', 'Texts\UpdateController')->name('admin.telegram.texts.update');
             Route::get('/contacts', 'Contacts\IndexController')->name('admin.telegram.contacts.index');

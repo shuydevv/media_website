@@ -2,26 +2,27 @@
 
 namespace App\Console\Commands;
 
-use App\Service\Avito\AvitoApi;
+use App\Models\AvitoAccount;
 use App\Service\Avito\AvitoApiException;
 use Illuminate\Console\Command;
 
 /**
- * Подписка на webhook мессенджера Авито. Запускается руками один раз на
- * сервере (и повторно — если поменялся домен или AVITO_WEBHOOK_SECRET:
- * тогда сначала --delete со старым секретом). Адрес — из APP_URL.
+ * Подписка аккаунтов Авито на webhook мессенджера. Обычно не нужна: аккаунт
+ * подписывается сам при добавлении в админке («Telegram-бот → Авито»).
+ * Руками — после смены домена или AVITO_WEBHOOK_SECRET (тогда сначала
+ * --delete со старым секретом). Адрес — из APP_URL, общий для всех аккаунтов.
  */
 class AvitoWebhook extends Command
 {
     protected $signature = 'avito:webhook {--info : только показать подписки} {--delete : отписать этот адрес}';
 
-    protected $description = 'Подписать сайт на сообщения мессенджера Авито (тема «🛒 Авито» в админ-группе)';
+    protected $description = 'Подписать аккаунты Авито на сообщения мессенджера (тема «🛒 Авито» в админ-группе)';
 
     public function handle(): int
     {
-        $api = new AvitoApi();
-        if (! $api->isConfigured()) {
-            $this->error('AVITO_CLIENT_ID / AVITO_CLIENT_SECRET не заданы в .env');
+        $accounts = AvitoAccount::orderBy('id')->get();
+        if ($accounts->isEmpty()) {
+            $this->error('Аккаунтов Авито нет — добавьте в админке: Telegram-бот → Авито.');
 
             return self::FAILURE;
         }
@@ -32,36 +33,47 @@ class AvitoWebhook extends Command
 
             return self::FAILURE;
         }
-        $url = route('avito.webhook', ['secret' => $secret ?: 'x']);
 
-        try {
-            if ($this->option('delete')) {
-                $api->unsubscribe($url);
-                $this->info('Отписано.');
-            } elseif (! $this->option('info')) {
-                $api->subscribe($url);
-                $this->info('Подписано: '.route('avito.webhook', ['secret' => '***']));
+        $failed = false;
+        foreach ($accounts as $account) {
+            $this->line("<info>{$account->name}</info> (client_id {$account->client_id})");
+
+            if (! $this->option('info')) {
+                if ($this->option('delete')) {
+                    $account->disconnect();
+                    $account->forceFill(['subscribed_at' => null])->save();
+                    $this->line('  отписано');
+                } elseif ($account->connect()) {
+                    $this->line('  подписано');
+                } else {
+                    $this->error('  '.$account->last_error);
+                    $failed = true;
+
+                    continue;
+                }
             }
 
-            $self = $api->self();
-            $subscriptions = $api->subscriptions();
-        } catch (AvitoApiException $e) {
-            $this->error($e->getMessage());
+            try {
+                $self = $account->api()->self();
+                $subscriptions = $account->api()->subscriptions();
+            } catch (AvitoApiException $e) {
+                $this->error('  '.$e->getMessage());
+                $failed = true;
 
-            return self::FAILURE;
+                continue;
+            }
+
+            $this->line('  профиль: '.($self['name'] ?? '—').' (id '.($self['id'] ?? '—').')');
+            foreach ($subscriptions as $s) {
+                // Секрет в адресе не печатаем — вывод может уйти в логи деплоя.
+                $shown = $secret !== '' ? str_replace($secret, '***', (string) $s['url']) : (string) $s['url'];
+                $this->line('  подписка: '.$shown.' ('.($s['version'] ?? '?').')');
+            }
+            if ($subscriptions === []) {
+                $this->line('  подписок нет');
+            }
         }
 
-        $this->line('Аккаунт: '.($self['name'] ?? '—').' (id '.($self['id'] ?? '—').')');
-        $this->line('Подписки:');
-        foreach ($subscriptions as $s) {
-            // Секрет в адресе не печатаем — вывод может уйти в логи деплоя.
-            $shown = $secret !== '' ? str_replace($secret, '***', (string) $s['url']) : (string) $s['url'];
-            $this->line('  '.$shown.' ('.($s['version'] ?? '?').')');
-        }
-        if ($subscriptions === []) {
-            $this->line('  —');
-        }
-
-        return self::SUCCESS;
+        return $failed ? self::FAILURE : self::SUCCESS;
     }
 }

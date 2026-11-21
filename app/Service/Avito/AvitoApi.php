@@ -2,30 +2,64 @@
 
 namespace App\Service\Avito;
 
+use App\Models\AvitoAccount;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 /**
- * Тонкий клиент API Авито (мессенджер), без SDK — как TelegramApi.
- * Авторизация — client_credentials (client_id/client_secret из кабинета
- * «Авито для профессионалов» → API): токен живёт сутки, держим в кэше и
- * на 401 берём новый.
+ * Тонкий клиент API Авито (мессенджер), без SDK — как TelegramApi. Один
+ * клиент — один аккаунт (AvitoAccount, ключи из админки «Telegram-бот →
+ * Авито»). Авторизация — client_credentials: токен живёт сутки, держим в
+ * кэше (ключ — по аккаунту и его ключам: сменили ключи — новый токен) и на
+ * 401 берём новый.
  */
 class AvitoApi
 {
     private const BASE = 'https://api.avito.ru';
 
-    private const TOKEN_CACHE_KEY = 'avito.access_token';
-
-    public function isConfigured(): bool
+    public function __construct(private readonly AvitoAccount $account)
     {
-        return filled(config('services.avito.client_id')) && filled(config('services.avito.client_secret'));
+    }
+
+    /**
+     * Клиент аккаунта, на который пришло сообщение ($userId — user_id из
+     * webhook-а).
+     *
+     * @throws AvitoApiException
+     */
+    public static function forUser(int $userId): self
+    {
+        $account = AvitoAccount::forUser($userId);
+        if (! $account) {
+            throw new AvitoApiException("Аккаунт Авито {$userId} не подключён (админка → Telegram-бот → Авито)");
+        }
+
+        return $account->api();
+    }
+
+    private function tokenCacheKey(): string
+    {
+        return 'avito.access_token.'.$this->account->id.'.'.md5($this->account->client_id.'|'.$this->account->client_secret);
     }
 
     /** Чат: context.value — объявление (title, url, price_string), users — участники с именами. */
     public function chat(int $userId, string $chatId): array
     {
         return $this->request('get', "/messenger/v2/accounts/{$userId}/chats/{$chatId}");
+    }
+
+    /** Текстовое сообщение в чат от имени аккаунта $userId. */
+    public function sendMessage(int $userId, string $chatId, string $text): array
+    {
+        return $this->request('post', "/messenger/v1/accounts/{$userId}/chats/{$chatId}/messages", [
+            'message' => ['text' => $text],
+            'type' => 'text',
+        ]);
+    }
+
+    public function markRead(int $userId, string $chatId): array
+    {
+        return $this->request('post', "/messenger/v1/accounts/{$userId}/chats/{$chatId}/read");
     }
 
     public function self(): array
@@ -66,7 +100,7 @@ class AvitoApi
         }
 
         if ($response->status() === 401 && ! $retried) {
-            Cache::forget(self::TOKEN_CACHE_KEY);
+            Cache::forget($this->tokenCacheKey());
 
             return $this->request($method, $path, $params, true);
         }
@@ -79,20 +113,16 @@ class AvitoApi
 
     private function token(): string
     {
-        $cached = Cache::get(self::TOKEN_CACHE_KEY);
+        $cached = Cache::get($this->tokenCacheKey());
         if (is_string($cached) && $cached !== '') {
             return $cached;
-        }
-
-        if (! $this->isConfigured()) {
-            throw new AvitoApiException('AVITO_CLIENT_ID / AVITO_CLIENT_SECRET не заданы в .env');
         }
 
         try {
             $response = Http::timeout(15)->connectTimeout(5)->asForm()->post(self::BASE.'/token', [
                 'grant_type' => 'client_credentials',
-                'client_id' => config('services.avito.client_id'),
-                'client_secret' => config('services.avito.client_secret'),
+                'client_id' => $this->account->client_id,
+                'client_secret' => $this->account->client_secret,
             ]);
         } catch (\Throwable $e) {
             throw new AvitoApiException('token: '.$e->getMessage());
@@ -105,7 +135,7 @@ class AvitoApi
 
         // Запас в 5 минут, чтобы не отправить запрос с токеном на излёте.
         $ttl = max(60, (int) ($response->json('expires_in') ?? 86400) - 300);
-        Cache::put(self::TOKEN_CACHE_KEY, $token, $ttl);
+        Cache::put($this->tokenCacheKey(), $token, $ttl);
 
         return $token;
     }

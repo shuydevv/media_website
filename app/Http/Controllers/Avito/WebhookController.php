@@ -15,10 +15,13 @@ use Illuminate\Support\Carbon;
  *
  * Авито ждёт быстрый 200 и иначе повторяет — поэтому здесь только запись в
  * avito_messages (уникальный message_id отсекает повторы) и задача в очередь.
- * Свои исходящие сообщения (author_id = наш аккаунт) пропускаем.
+ * Свои исходящие (author_id = наш аккаунт) тоже пишем: ответ, данный в самом
+ * Авито, виден в теме чата; ушедший из Telegram — нет (from_bot).
  */
 class WebhookController extends Controller
 {
+    private const OUT_DELAY_SECONDS = 30;
+
     public function __invoke(Request $request, string $secret)
     {
         $expected = (string) config('services.avito.webhook_secret');
@@ -34,9 +37,7 @@ class WebhookController extends Controller
 
         $userId = (int) ($value['user_id'] ?? 0);
         $authorId = (int) ($value['author_id'] ?? 0);
-        if ($authorId !== 0 && $authorId === $userId) {
-            return response()->json(['ok' => true]);
-        }
+        $out = $authorId !== 0 && $authorId === $userId;
 
         $message = AvitoMessage::firstOrCreate(
             ['message_id' => (string) $value['id']],
@@ -46,13 +47,19 @@ class WebhookController extends Controller
                 'author_id' => $authorId,
                 'item_id' => isset($value['item_id']) ? (int) $value['item_id'] : null,
                 'type' => mb_substr((string) ($value['type'] ?? 'text'), 0, 20),
+                'direction' => $out ? AvitoMessage::OUT : AvitoMessage::IN,
                 'text' => self::text($value),
                 'sent_at_avito' => isset($value['created']) ? Carbon::createFromTimestamp((int) $value['created']) : null,
             ],
         );
 
         if ($message->wasRecentlyCreated) {
-            SendAvitoMessage::dispatch($message->id)->onQueue(config('telegram_funnel.queue'));
+            $job = SendAvitoMessage::dispatch($message->id)->onQueue(config('telegram_funnel.queue'));
+            // Наш ответ: эхо webhook-а может обогнать ReplyToAvito, который
+            // помечает ушедшее из Telegram (from_bot), — даём ему время.
+            if ($out) {
+                $job->delay(now()->addSeconds(self::OUT_DELAY_SECONDS));
+            }
         }
 
         return response()->json(['ok' => true]);

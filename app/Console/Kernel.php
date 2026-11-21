@@ -38,5 +38,6 @@ class Kernel extends ConsoleKernel
         // Без withoutOverlapping: его мьютекс в файловом кэше, а команда как
         // раз страхует от сбоев кэша; от двойной досылки — свой claim в БД.
         $schedule->command('telegram:resend-unforwarded')->everyMinute();
+        $schedule->command('avito:check')->dailyAt('10:00');
     }
 }

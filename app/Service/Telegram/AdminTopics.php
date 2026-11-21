@@ -273,6 +273,14 @@ class AdminTopics
         }
     }
 
+    /** id уже заведённой служебной темы, без создания. */
+    public static function serviceTopicId(string $key): ?int
+    {
+        $id = DB::table('telegram_service_topics')->where('key', $key)->value('topic_id');
+
+        return $id ? (int) $id : null;
+    }
+
     private function serviceTopic(string $key, ?string $topicName = null): int
     {
         $names = [
