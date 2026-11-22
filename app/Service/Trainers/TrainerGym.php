@@ -31,7 +31,8 @@ class TrainerGym
      *   locked, locked_note, pending, opened, total, speech, lead, stations}];
      *   station — {title, emoji, tagline, about, image, x, y, mx, my, scale, size, msize, state
      *   (open|soon|locked), url, pending, situation, badge, note, cta, say};
-     *   quests — открытые ученику тренажёры всех залов, срочные первыми.
+     *   quests — открытые ученику тренажёры всех залов, срочные первыми;
+     *   plan — «План на сегодня» из хаба (null — норма не выбрана).
      */
     public function build(array $hub, ?string $requested = null): array
     {
@@ -127,6 +128,7 @@ class TrainerGym
             'halls' => $halls,
             'active' => $this->activeHall($halls, $requested),
             'quests' => $quests,
+            'plan' => $hub['plan'] ?? null,
         ];
     }
 

@@ -71,6 +71,32 @@
   .gym-quest.is-done .gym-quest-title { color: var(--gym-muted); }
   .gym-empty { padding: 4px 16px 16px; font-size: 14px; color: var(--gym-muted); }
 
+  /* План на сегодня (partials/quests): норма, полоска, окно смены нормы */
+  .gym-plan-min { font-weight: 400; color: #657B8B; }
+  .gym-plan-light { margin: 0 16px 8px; padding: 6px 10px; border-radius: 10px; background: #EAF3FB; font-size: 13px; color: #1D4ED8; }
+  .gym-plan-progress { display: flex; align-items: center; gap: 10px; padding: 0 16px 6px; font-size: 13px; color: var(--gym-muted); }
+  .gym-plan-bar { flex: 1; height: 6px; border-radius: 3px; background: #E6EEF3; overflow: hidden; }
+  .gym-plan-bar i { display: block; height: 100%; border-radius: 3px; background: #15803D; transition: width .4s; }
+  .gym-quest-check { width: 18px; height: 18px; margin: 0 -4px; border-radius: 50%; background: #15803D; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .gym-quest.is-done .gym-quest-note { color: #15803D; }
+  .gym-plan-done { margin: 2px 16px 4px; font-size: 14px; font-weight: 600; color: #15803D; }
+  .gym-plan-norm { display: block; margin: 0 8px 10px; padding: 6px 8px; border: 0; background: none; font: inherit; font-size: 13px; color: #657B8B; cursor: pointer; border-radius: 8px; }
+  .gym-plan-norm:hover { color: #1D4ED8; background: #F1F6F9; }
+  .gym-norm-ask { padding: 0 16px 16px; }
+  .gym-norm-q { font-size: 15px; font-weight: 600; }
+  .gym-norm-sub { margin-top: 2px; font-size: 13px; color: var(--gym-muted); }
+  .gym-norm-options { display: flex; gap: 8px; margin-top: 12px; }
+  .gym-norm-option { flex: 1; min-height: 44px; padding: 8px 6px; border: 0; border-radius: 12px; background: #EAF3FB; color: #1D2E3A; font: inherit; font-size: 14px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
+  .gym-norm-option b { font-size: 18px; font-weight: 600; }
+  .gym-norm-option small { font-size: 11px; color: #657B8B; }
+  .gym-norm-option:hover { background: #D6E8F7; }
+  .gym-norm-dialog { border: 0; padding: 0; border-radius: 20px; width: min(380px, calc(100vw - 32px)); color: #1D2E3A; box-shadow: 0 12px 36px rgba(15,30,41,.2); }
+  .gym-norm-dialog::backdrop { background: rgba(15,30,41,.35); backdrop-filter: blur(2px); }
+  .gym-norm-box { position: relative; padding: 20px 18px 18px; }
+  .gym-norm-close { position: absolute; top: 8px; right: 8px; width: 36px; height: 36px; border: 0; background: none; color: #94A9B8; cursor: pointer; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .gym-norm-close:hover { background: #F1F6F9; color: #485C6A; }
+  .gym-norm-dialog .gym-norm-q { padding-right: 32px; }
+
   /* Карточка тренера */
   .gym-coach-card { background: #fff; border-radius: 20px; padding: 12px 14px 12px 8px; box-shadow: 0 4px 18px rgba(37,99,235,.10); display: flex; gap: 6px; align-items: center; }
   .gym-coach-pic { width: 64px; height: 64px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
@@ -269,6 +295,8 @@
   </div>
 
 </div>
+
+@include('student.trainers.partials.norm-dialog')
 
 <script>
 (function () {

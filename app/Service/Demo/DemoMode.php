@@ -32,7 +32,7 @@ class DemoMode
         'hist_reports', 'hist_sessions', 'user_hist_events',
         'person_reports', 'person_sessions', 'user_persons',
         'submissions', 'homework_unlocks', 'lesson_views', 'user_activity_days',
-        'student_feedback', 'announcement_dismissals',
+        'student_feedback', 'announcement_dismissals', 'daily_plans',
     ];
 
     /**
@@ -54,6 +54,7 @@ class DemoMode
         'user_tasks' => ['due_on', 'last_answered_at'],
         'task_rounds' => ['day', 'finished_at', 'created_at'],
         'task_reviews' => ['sent_at', 'created_at'],
+        'daily_plans' => ['day'],
     ];
 
     /** Вошедший пользователь — демо-ученик. */
@@ -109,6 +110,8 @@ class DemoMode
             User::whereKey($user->id)->update([
                 'fish_total_fed' => (int) $fish['total_fed'],
                 'fish_corm_balance' => (int) $fish['corm'],
+                // Норма тренажёров — заново: на показе видно, как её выбирают.
+                'trainer_daily_minutes' => null,
                 // Сегодняшний бонус за визит уже «получен» — иначе первый
                 // заход на дашборд добавил бы корма сверх пресета.
                 'fish_last_active_date' => now()->toDateString(),

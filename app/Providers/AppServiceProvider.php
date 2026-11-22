@@ -31,6 +31,10 @@ class AppServiceProvider extends ServiceProvider
 
         // Банк вопросов и модель балла — из конфига (DiagnosticRunner::make()).
         $this->app->bind(DiagnosticRunner::class, fn () => DiagnosticRunner::make());
+
+        // План тренажёров на день читается один раз за запрос: его
+        // спрашивают и TrainerHub, и каждый тренажёр при старте сессии.
+        $this->app->scoped(\App\Service\Trainers\DailyPlanService::class);
     }
 
     protected $policies = [

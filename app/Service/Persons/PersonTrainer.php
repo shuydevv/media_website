@@ -87,7 +87,7 @@ class PersonTrainer
             ->latest('id')
             ->first();
 
-        $limit = (int) config('persons.daily_review_limit');
+        $limit = $this->planCap($user, 'review', (int) config('persons.daily_review_limit'));
 
         if ($reviewToday && !$reviewToday->finished_at) {
             $review = ['status' => 'in_progress', 'count' => $this->remainingCount($reviewToday)];
@@ -139,7 +139,7 @@ class PersonTrainer
         return $base->where('level', $level)
             ->orderBy('sort_order')
             ->orderBy('id')
-            ->limit((int) config('persons.batch_size'))
+            ->limit($this->planCap($user, 'learn', (int) config('persons.batch_size')))
             ->get();
     }
 
@@ -304,7 +304,7 @@ class PersonTrainer
             ->orderBy('user_persons.due_on')
             ->orderBy('user_persons.step')
             ->orderBy('user_persons.id')
-            ->limit((int) config('persons.daily_review_limit'))
+            ->limit($this->planCap($user, 'review', (int) config('persons.daily_review_limit')))
             ->get(['user_persons.person_id', 'user_persons.next_method', 'user_persons.step']);
 
         $queue = $rows->map(fn ($row) => ['t' => (int) $row->person_id, 's' => $this->methodFor($row)])->all();
@@ -782,5 +782,16 @@ class PersonTrainer
             'description' => $person->description,
             'related' => array_values(array_filter(array_map(fn ($slug) => $slugToId[$slug] ?? null, $person->related_slugs ?? []))),
         ];
+    }
+
+    /**
+     * Потолок сессии этого вида: пока тренажёр в «Плане на сегодня» и пункт
+     * не сделан — квота плана (App\Service\Trainers\DailyPlanService).
+     */
+    private function planCap(User $user, string $kind, int $limit): int
+    {
+        $quota = app(\App\Service\Trainers\DailyPlanService::class)->quota($user, \App\Service\Trainers\PersonsTrainerCard::class, $kind);
+
+        return $quota === null ? $limit : min($limit, $quota);
     }
 }

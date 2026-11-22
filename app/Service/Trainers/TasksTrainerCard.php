@@ -20,6 +20,8 @@ use App\Service\Terms\TermAccess;
  */
 class TasksTrainerCard implements Trainer
 {
+    use PlanSessionRows;
+
     public function __construct(private TermAccess $access, private TaskTrainer $trainer)
     {
     }
@@ -46,6 +48,8 @@ class TasksTrainerCard implements Trainer
             'new_what' => ['новое задание', 'новых задания', 'новых заданий'],
             'items' => 'задания',
             'new_items' => 'новые задания',
+            // Глагол пункта «Плана на сегодня»: «Решить 12 …».
+            'do' => 'Решить',
         ];
     }
 
@@ -59,11 +63,11 @@ class TasksTrainerCard implements Trainer
         if ($unfinished) {
             $left = max(1, (int) $unfinished->total - (int) $unfinished->position);
 
-            return ['pending' => $left, 'situation' => self::UNFINISHED, 'count' => $left, 'next' => null, 'note' => $note];
+            return ['pending' => $left, 'situation' => self::UNFINISHED, 'count' => $left, 'next' => null, 'note' => $note, 'kind' => 'session'];
         }
 
         if ($o['due'] > 0) {
-            return ['pending' => $o['due'], 'situation' => self::REVIEW, 'count' => $o['due'], 'next' => null, 'note' => $note];
+            return ['pending' => $o['due'], 'situation' => self::REVIEW, 'count' => $o['due'], 'next' => null, 'note' => $note, 'kind' => 'session'];
         }
 
         $today = now()->toDateString();
@@ -74,9 +78,14 @@ class TasksTrainerCard implements Trainer
         if (! $didToday && $total > 0) {
             $count = (int) config('task_trainer.round_size');
 
-            return ['pending' => $count, 'situation' => self::NEW, 'count' => $count, 'next' => null, 'note' => $note];
+            return ['pending' => $count, 'situation' => self::NEW, 'count' => $count, 'next' => null, 'note' => $note, 'kind' => 'session'];
         }
 
-        return ['pending' => 0, 'situation' => self::DONE, 'count' => 0, 'next' => null, 'note' => $note];
+        return ['pending' => 0, 'situation' => self::DONE, 'count' => 0, 'next' => null, 'note' => $note, 'kind' => null];
+    }
+
+    public function planSessions(User $user, int $limit): array
+    {
+        return $this->regularPlanSessions(\App\Models\TaskRound::class, $user, $limit);
     }
 }

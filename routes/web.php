@@ -685,6 +685,9 @@ Route::middleware(['auth', 'tasks.access'])
 Route::middleware(['auth'])
     ->get('/student/trainers', [\App\Http\Controllers\Student\TrainersController::class, 'index'])
     ->name('student.trainers.index');
+Route::middleware(['auth'])
+    ->post('/student/trainers/norm', [\App\Http\Controllers\Student\TrainersController::class, 'norm'])
+    ->name('student.trainers.norm');
 
 // Управление демо-режимом (показ курса покупателям) — только из
 // демо-аккаунта, остальным 404 (App\Http\Controllers\DemoController).

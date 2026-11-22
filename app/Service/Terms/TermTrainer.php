@@ -91,7 +91,7 @@ class TermTrainer
             ->latest('id')
             ->first();
 
-        $limit = (int) config('terms.daily_review_limit');
+        $limit = $this->planCap($user, 'review', (int) config('terms.daily_review_limit'));
 
         if ($reviewToday && !$reviewToday->finished_at) {
             $review = ['status' => 'in_progress', 'count' => $this->remainingCount($reviewToday)];
@@ -160,7 +160,7 @@ class TermTrainer
             ->groupBy('section')
             ->sortKeys();
 
-        $size = (int) config('terms.batch_size');
+        $size = $this->planCap($user, 'learn', (int) config('terms.batch_size'));
         $batch = collect();
 
         while ($batch->count() < $size && $bySection->isNotEmpty()) {
@@ -371,7 +371,7 @@ class TermTrainer
             ->orderBy('user_terms.due_on')
             ->orderBy('user_terms.step')
             ->orderBy('user_terms.id')
-            ->limit((int) config('terms.daily_review_limit'))
+            ->limit($this->planCap($user, 'review', (int) config('terms.daily_review_limit')))
             ->get(['user_terms.term_id', 'user_terms.next_method']);
 
         return [$this->queueState($rows), $rows->count()];
@@ -954,5 +954,16 @@ class TermTrainer
         shuffle($options);
 
         return $options;
+    }
+
+    /**
+     * Потолок сессии этого вида: пока тренажёр в «Плане на сегодня» и пункт
+     * не сделан — квота плана (App\Service\Trainers\DailyPlanService).
+     */
+    private function planCap(User $user, string $kind, int $limit): int
+    {
+        $quota = app(\App\Service\Trainers\DailyPlanService::class)->quota($user, \App\Service\Trainers\TermsTrainerCard::class, $kind);
+
+        return $quota === null ? $limit : min($limit, $quota);
     }
 }

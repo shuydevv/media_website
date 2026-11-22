@@ -616,7 +616,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'fish_corm_balance', 'fish_total_fed', 'fish_last_active_date', 'fish_milestones',
         'fish_name', 'fish_background', 'fish_unlocked_backgrounds',
         'fish_accessory', 'fish_unlocked_accessories',
-        'fish_food', 'fish_unlocked_foods',
+        'fish_food', 'fish_unlocked_foods', 'trainer_daily_minutes',
         'fish_satiety', 'fish_satiety_at', 'fish_joy', 'fish_joy_at',
     ];
 

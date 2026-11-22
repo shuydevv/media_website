@@ -124,7 +124,7 @@ class StatementTrainer
         return DB::transaction(function () use ($user, $blocks) {
             User::whereKey($user->id)->lockForUpdate()->first();
             $today = $this->today();
-            $size = (int) config('statements.session_size');
+            $size = $this->planCap($user, 'session', (int) config('statements.session_size'));
 
             $candidate = fn ($q) => $q->get(['statements.id', 'statements.is_true', 'statements.source_task_id'])
                 ->map(fn ($s) => ['id' => (int) $s->id, 'is_true' => (bool) $s->is_true, 'task' => $s->source_task_id])
@@ -562,5 +562,16 @@ class StatementTrainer
             'growth' => $growth,
             'mistakes' => $mistakes,
         ];
+    }
+
+    /**
+     * Потолок сессии этого вида: пока тренажёр в «Плане на сегодня» и пункт
+     * не сделан — квота плана (App\Service\Trainers\DailyPlanService).
+     */
+    private function planCap(User $user, string $kind, int $limit): int
+    {
+        $quota = app(\App\Service\Trainers\DailyPlanService::class)->quota($user, \App\Service\Trainers\StatementsTrainerCard::class, $kind);
+
+        return $quota === null ? $limit : min($limit, $quota);
     }
 }

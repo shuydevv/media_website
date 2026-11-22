@@ -144,6 +144,13 @@ row-lock промокодов на SQLite пропускается. Старые
   `App\Service\Trainers\Trainer`: сообщает ситуацию и свои слова). Что говорит рыба —
   `FishSpeech` + `config/fish_speech.php` (фразы согласованы с автором, не переписывать).
   Закрытые крестиком реплики помнит браузер; вернуть — `/student/dashboard?fish=reset`.
+- «План на сегодня» в «Качалке» — 2–3 тренажёра (по числу активных курсов) под норму в
+  минутах, которую выбирает ученик (`users.trainer_daily_minutes`). Правила —
+  `docs/trainers/План дня — механика.md`. Сборка — `DailyPlanner` (чистая), снимок дня
+  `daily_plans` и отметки «сделано» — `DailyPlanService` (scoped), вызывается из
+  `TrainerHub`. Пока пункт не сделан, тренажёр режет сессию квотой плана (`planCap()`);
+  счётчики и рыба считают только план. Новый тренажёр — `kind` в статусе,
+  `planSessions()`, строка в `config/daily_plan.php`.
 
 - Демо-ученик для показа курса покупателям — `users.is_demo`, `App\Service\Demo\DemoMode`,
   настройки и лёгкий набор контента — `config/demo.php`. Заводится `php artisan demo:create

@@ -19,6 +19,8 @@ use App\Service\Terms\TermAccess;
  */
 class StatementsTrainerCard implements Trainer
 {
+    use PlanSessionRows;
+
     public function __construct(private TermAccess $access, private StatementTrainer $trainer)
     {
     }
@@ -45,6 +47,8 @@ class StatementsTrainerCard implements Trainer
             'new_what' => ['новое суждение', 'новых суждения', 'новых суждений'],
             'items' => 'суждения',
             'new_items' => 'новые суждения',
+            // Глагол пункта «Плана на сегодня»: «Разобрать 12 …».
+            'do' => 'Разобрать',
         ];
     }
 
@@ -56,7 +60,7 @@ class StatementsTrainerCard implements Trainer
         if ($unfinished) {
             $left = max(1, (int) $unfinished->total - (int) $unfinished->position);
 
-            return ['pending' => $left, 'situation' => self::UNFINISHED, 'count' => $left, 'next' => null];
+            return ['pending' => $left, 'situation' => self::UNFINISHED, 'count' => $left, 'next' => null, 'kind' => 'session'];
         }
 
         if ($o['due'] > 0) {
@@ -65,13 +69,14 @@ class StatementsTrainerCard implements Trainer
                 'situation' => $o['overdue'] > 0 ? self::OVERDUE : self::REVIEW,
                 'count' => $o['due'],
                 'next' => null,
+                'kind' => 'session',
             ];
         }
 
         if ($o['finished_today'] === 0 && $o['unseen'] > 0) {
             $count = min((int) config('statements.session_size'), $o['unseen']);
 
-            return ['pending' => $count, 'situation' => self::NEW, 'count' => $count, 'next' => null];
+            return ['pending' => $count, 'situation' => self::NEW, 'count' => $count, 'next' => null, 'kind' => 'session'];
         }
 
         // Норма сделана, но корм ещё можно заработать — скажем об этом в
@@ -87,5 +92,10 @@ class StatementsTrainerCard implements Trainer
                 ? strtr(config('statements.phrases.hall_done_left'), [':rounds' => StatementTrainer::rounds($left)])
                 : null,
         ];
+    }
+
+    public function planSessions(User $user, int $limit): array
+    {
+        return $this->regularPlanSessions(\App\Models\StatementSession::class, $user, $limit);
     }
 }

@@ -130,7 +130,7 @@ class TaskTrainer
         return DB::transaction(function () use ($user, $numbers, $blocks) {
             User::whereKey($user->id)->lockForUpdate()->first();
             $today = $this->today();
-            $size = (int) config('task_trainer.round_size');
+            $size = $this->planCap($user, 'session', (int) config('task_trainer.round_size'));
 
             $base = fn () => Task::forTrainer()
                 ->whereIn('tasks.number', array_map('strval', $numbers))
@@ -627,5 +627,16 @@ class TaskTrainer
             'numbers' => array_values($numbers),
             'mistakes' => $mistakes,
         ];
+    }
+
+    /**
+     * Потолок сессии этого вида: пока тренажёр в «Плане на сегодня» и пункт
+     * не сделан — квота плана (App\Service\Trainers\DailyPlanService).
+     */
+    private function planCap(User $user, string $kind, int $limit): int
+    {
+        $quota = app(\App\Service\Trainers\DailyPlanService::class)->quota($user, \App\Service\Trainers\TasksTrainerCard::class, $kind);
+
+        return $quota === null ? $limit : min($limit, $quota);
     }
 }
