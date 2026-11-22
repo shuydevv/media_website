@@ -145,7 +145,7 @@ class DailyPlanTest extends TestCase
         $this->hub($user);
 
         $this->app->forgetScopedInstances();
-        app(DailyPlanService::class)->setNorm($user->fresh(), 25);
+        app(DailyPlanService::class)->setNorm($user->fresh(), 30);
         $hub = $this->hub($user->fresh());
 
         $items = $hub['plan']['items'];
@@ -181,8 +181,8 @@ class DailyPlanTest extends TestCase
     {
         $user = $this->student(null);
 
-        $this->actingAs($user)->post(route('student.trainers.norm'), ['minutes' => 15])->assertRedirect();
-        $this->assertSame(15, $user->fresh()->trainer_daily_minutes);
+        $this->actingAs($user)->post(route('student.trainers.norm'), ['minutes' => 20])->assertRedirect();
+        $this->assertSame(20, $user->fresh()->trainer_daily_minutes);
 
         $this->actingAs($user)->post(route('student.trainers.norm'), ['minutes' => 7])->assertSessionHasErrors('minutes');
     }
