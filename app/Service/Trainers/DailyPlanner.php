@@ -29,10 +29,13 @@ class DailyPlanner
      * @param  int  $budget  секунды на день
      * @param  int  $slots  сколько тренажёров в плане
      * @param  float  $backlogFactor  новое — только если повторения не больше стольких бюджетов
+     * @param  int  $extraFrom  добор: если после $slots тренажёров от бюджета осталось
+     *   столько секунд и больше, в план идёт следующий тренажёр
+     * @param  int  $maxExtra  сколько тренажёров можно добрать сверх $slots
      * @return array<int, array{key: string, kind: string, situation: string, quota: int, sec: int}>
      *                                                                                               sec — сколько секунд займёт пункт по темпу ученика.
      */
-    public function plan(array $candidates, int $budget, int $slots, float $backlogFactor): array
+    public function plan(array $candidates, int $budget, int $slots, float $backlogFactor, int $extraFrom = PHP_INT_MAX, int $maxExtra = 0): array
     {
         $candidates = array_values(array_filter(
             $candidates,
@@ -50,9 +53,44 @@ class DailyPlanner
             $candidates = array_values(array_filter($candidates, fn ($c) => ! $this->isNew($c['situation'])));
         }
 
-        $picked = $this->pick($candidates, max(0, $slots));
+        [$picked, $rest] = $this->pick($candidates, max(0, $slots));
+        $items = $this->allot($picked, $budget);
 
-        return $this->allot($picked, $budget);
+        return $this->topUp($items, $rest, $budget, $extraFrom, $maxExtra);
+    }
+
+    /**
+     * Добор: у каждого тренажёра свой потолок на день, и при большой норме
+     * базовые 2–3 тренажёра часто укладываются в 8–10 минут — тогда норма
+     * ничего бы не меняла. Если времени осталось много, берём следующих.
+     */
+    private function topUp(array $items, array $rest, int $budget, int $extraFrom, int $maxExtra): array
+    {
+        $left = $budget - array_sum(array_column($items, 'sec'));
+        $added = 0;
+
+        foreach ($rest as $c) {
+            if ($added >= $maxExtra || $left < $extraFrom) {
+                break;
+            }
+            if (min($c['count'], $c['min']) * $c['sec'] > $left) {
+                continue;
+            }
+
+            $quota = min($c['count'], max($c['min'], (int) floor($left / $c['sec'])));
+            $sec = (int) round($quota * $c['sec']);
+            $items[] = [
+                'key' => $c['key'],
+                'kind' => $c['kind'],
+                'situation' => $c['situation'],
+                'quota' => $quota,
+                'sec' => $sec,
+            ];
+            $left -= $sec;
+            $added++;
+        }
+
+        return $items;
     }
 
     /**
@@ -60,6 +98,7 @@ class DailyPlanner
      * (тренажёры чередуются по дням). Сначала по одному из каждого зала,
      * чтобы при двух курсах в план попадали оба.
      */
+    /** @return array{0: array, 1: array} выбранные и остальные — по тому же порядку */
     private function pick(array $candidates, int $slots): array
     {
         $order = array_keys($candidates);
@@ -86,13 +125,16 @@ class DailyPlanner
         }
 
         $out = [];
+        $rest = [];
         foreach ($order as $i) {
             if (isset($chosen[$i])) {
                 $out[] = $candidates[$i];
+            } else {
+                $rest[] = $candidates[$i];
             }
         }
 
-        return $out;
+        return [$out, $rest];
     }
 
     /**

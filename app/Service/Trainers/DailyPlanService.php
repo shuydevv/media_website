@@ -160,8 +160,9 @@ class DailyPlanService
         $budget = $plan->minutes * 60 - $spent;
         $slots = $this->slots($user) - count($done);
 
-        $new = $budget > 0 && $slots > 0
-            ? $this->stamp($this->compose($user, $byKey, $budget, $slots, array_column($done, 'key')))
+        // Места кончились, а время осталось — compose() доберёт тренажёры.
+        $new = $budget > 0
+            ? $this->stamp($this->compose($user, $byKey, $budget, max(0, $slots), array_column($done, 'key')))
             : [];
 
         $plan->items = array_merge($done, $new);
@@ -202,7 +203,14 @@ class DailyPlanService
             ];
         }
 
-        return $this->planner->plan($candidates, $budget, $slots, (float) config('daily_plan.backlog_factor'));
+        return $this->planner->plan(
+            $candidates,
+            $budget,
+            $slots,
+            (float) config('daily_plan.backlog_factor'),
+            60 * (int) config('daily_plan.extra.from_minutes'),
+            (int) config('daily_plan.extra.max'),
+        );
     }
 
     /** Время добавления пункта: «сделано» — только сессия, законченная после него. */

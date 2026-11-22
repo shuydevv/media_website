@@ -31,7 +31,7 @@
               @if($s['emoji'])<span class="gym-tag-emoji" aria-hidden="true">{{ $s['emoji'] }}</span>@endif{{ $s['title'] }}
               @if($s['badge'])
                 <span class="gym-count" style="background: {{ $badgeColor($s['situation']) }}">{{ $s['badge'] }}</span>
-              @elseif($s['state'] === 'open')
+              @elseif($s['state'] === 'open' && empty($s['off_plan']))
                 <span class="gym-done" title="На сегодня всё">{!! $icons['check'] !!}</span>
               @endif
             </span>

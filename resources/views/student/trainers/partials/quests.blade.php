@@ -54,6 +54,12 @@
       <div class="gym-empty">На сегодня всё — отличная тренировка!</div>
     @endif
 
-    <button type="button" class="gym-plan-norm" data-norm-open>Норма: {{ $plan['norm'] }} мин в день · изменить</button>
+    <div class="gym-plan-foot">
+      <div class="gym-plan-norm">
+        <span>Норма в день</span>
+        <b>{{ $plan['norm'] }} мин</b>
+      </div>
+      <button type="button" class="gym-plan-edit" data-norm-open>Изменить</button>
+    </div>
   @endif
 </details>

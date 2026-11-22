@@ -100,6 +100,8 @@ class DailyPlanTest extends TestCase
         // Тренажёр вне плана для счётчиков — «на сегодня всё».
         $this->assertSame(Trainer::DONE, $hub['trainers'][1]['status']['situation']);
         $this->assertSame(0, $hub['trainers'][1]['status']['pending']);
+        $this->assertTrue($hub['trainers'][1]['status']['off_plan']);
+        $this->assertFalse($hub['trainers'][0]['status']['off_plan'] ?? false);
     }
 
     /** @test */
@@ -166,7 +168,7 @@ class DailyPlanTest extends TestCase
             ->assertSee('План на сегодня')
             ->assertSee('Повторить 15 штук')
             ->assertSee('0 из 2')
-            ->assertSee('Норма: 10 мин в день')
+            ->assertSee('Норма в день')
             ->getContent();
 
         if (getenv('DAILY_PLAN_DUMP')) {

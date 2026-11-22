@@ -179,6 +179,8 @@ class TrainerGym
             'quest' => $quest,
             'cta' => $cta,
             'say' => $say,
+            // Сегодня не в «Плане на сегодня» — снаряд без галочки «всё сделано».
+            'off_plan' => !empty($status['off_plan']),
         ];
     }
 

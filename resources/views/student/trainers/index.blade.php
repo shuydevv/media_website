@@ -80,16 +80,22 @@
   .gym-quest-check { width: 18px; height: 18px; margin: 0 -4px; border-radius: 50%; background: #15803D; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
   .gym-quest.is-done .gym-quest-note { color: #15803D; }
   .gym-plan-done { margin: 2px 16px 4px; font-size: 14px; font-weight: 600; color: #15803D; }
-  .gym-plan-norm { display: block; margin: 0 8px 10px; padding: 6px 8px; border: 0; background: none; font: inherit; font-size: 13px; color: #657B8B; cursor: pointer; border-radius: 8px; }
-  .gym-plan-norm:hover { color: #1D4ED8; background: #F1F6F9; }
+  .gym-plan-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 8px 8px; padding: 10px 8px 10px 12px; border-radius: 14px; background: #F4F8FB; }
+  .gym-plan-norm { display: flex; flex-direction: column; gap: 1px; line-height: 1.2; }
+  .gym-plan-norm span { font-size: 12px; color: #657B8B; }
+  .gym-plan-norm b { font-size: 15px; font-weight: 600; }
+  .gym-plan-edit { min-height: 36px; padding: 0 14px; border: 0; border-radius: 10px; background: #fff; color: #1D4ED8; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 1px 4px rgba(37,99,235,.12); }
+  .gym-plan-edit:hover { background: #EAF3FB; }
   .gym-norm-ask { padding: 0 16px 16px; }
   .gym-norm-q { font-size: 15px; font-weight: 600; }
   .gym-norm-sub { margin-top: 2px; font-size: 13px; color: var(--gym-muted); }
   .gym-norm-options { display: flex; gap: 8px; margin-top: 12px; }
   .gym-norm-option { flex: 1; min-height: 44px; padding: 8px 6px; border: 0; border-radius: 12px; background: #EAF3FB; color: #1D2E3A; font: inherit; font-size: 14px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
   .gym-norm-option b { font-size: 18px; font-weight: 600; }
-  .gym-norm-option small { font-size: 11px; color: #657B8B; }
+  .gym-norm-option { position: relative; }
   .gym-norm-option:hover { background: #D6E8F7; }
+  .gym-norm-option.is-current { background: #D6E8F7; cursor: default; }
+  .gym-norm-mark { position: absolute; top: 6px; right: 6px; width: 18px; height: 18px; border-radius: 50%; background: #2563EB; display: flex; align-items: center; justify-content: center; }
   .gym-norm-dialog { border: 0; padding: 0; border-radius: 20px; width: min(380px, calc(100vw - 32px)); color: #1D2E3A; box-shadow: 0 12px 36px rgba(15,30,41,.2); }
   .gym-norm-dialog::backdrop { background: rgba(15,30,41,.35); backdrop-filter: blur(2px); }
   .gym-norm-box { position: relative; padding: 20px 18px 18px; }

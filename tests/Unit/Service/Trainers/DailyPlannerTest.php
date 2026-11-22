@@ -131,4 +131,25 @@ class DailyPlannerTest extends TestCase
 
         $this->assertSame(120, $items[0]['sec']);
     }
+
+    /** @test */
+    public function big_norm_adds_trainers_when_base_ones_hit_their_ceilings()
+    {
+        $candidates = [
+            $this->c('terms', Trainer::NEW, 5, 60),
+            $this->c('statements', Trainer::NEW, 15, 12),
+            $this->c('tasks', Trainer::NEW, 10, 60),
+            $this->c('dates', Trainer::NEW, 5, 45),
+        ];
+        $planner = new DailyPlanner();
+
+        // 10 мин: база (5 мин + 3 мин) — осталось 2 мин, добора нет.
+        $small = $planner->plan($candidates, 600, 2, 2, 300, 2);
+        $this->assertSame(['terms', 'statements'], array_column($small, 'key'));
+
+        // 25 мин: осталось 17 мин — добираем задания (10 мин), потом даты.
+        $big = $planner->plan($candidates, 1500, 2, 2, 300, 2);
+        $this->assertSame(['terms', 'statements', 'tasks', 'dates'], array_column($big, 'key'));
+        $this->assertSame([5, 15, 10, 5], array_column($big, 'quota'));
+    }
 }
