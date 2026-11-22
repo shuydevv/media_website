@@ -9,7 +9,7 @@
             "id": "abalkin-leonid",
             "name": "Абалкин Леонид",
             "description": "Экономист, академик, «прораб Перестройки».",
-            "association": "Экономические реформы конца 1980-х",
+            "association": "Заместитель Рыжкова в правительстве (1989–1991)",
             "related": null,
             "level": 3,
             "image": {
@@ -103,7 +103,7 @@
                     "aksakov-ivan"
                 ]
             },
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/aksakov-konstantin.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:KonstantinAksakov.jpg",
@@ -232,7 +232,7 @@
             "description": "Митрополит, глава Русской церкви в XIV веке.",
             "association": "Правил Москвой за малолетнего Дмитрия Донского",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/mitropolit-aleksiy.webp",
                 "source": "предоставлено автором тренажёра",
@@ -249,7 +249,7 @@
             "id": "angelina-praskovya",
             "name": "Ангелина Прасковья",
             "description": "Бригадир женской тракторной бригады: «Сто тысяч подруг — на трактор!».",
-            "association": "Коллективизация и первые пятилетки (1930-е)",
+            "association": "Колхозные рекорды и движение женщин-механизаторов (1930-е)",
             "related": null,
             "level": 3,
             "image": {
@@ -310,7 +310,7 @@
             "description": "Офицер Ставки ВГК в период ВОВ. Участвовал в разработке практически всех значимых операций с декабря 1942 года.",
             "association": "Планирование операций Великой Отечественной войны (Генштаб)",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/antonov-aleksey.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Aleksei_Antonov_3.jpg",
@@ -442,24 +442,6 @@
             "answer": null
         },
         {
-            "id": "batyrsha",
-            "name": "Батырша",
-            "description": "Мулла, духовный вождь башкир.",
-            "association": "Восстание башкир при Елизавете Петровне (1755)",
-            "related": null,
-            "level": 3,
-            "image": {
-                "file": "images/batyrsha.webp",
-                "source": "https://commons.wikimedia.org/wiki/File:%D0%91%D0%B0%D1%82%D1%8B%D1%80%D1%88%D0%B0_%D0%A3%D1%8F%D0%BD%D0%BE%D0%B2.jpg",
-                "license": "CC BY-SA 4.0",
-                "author": "Къарт аття",
-                "commons": true
-            },
-            "era": 4,
-            "role": "O",
-            "answer": "Батырша"
-        },
-        {
             "id": "bakhrushin-aleksey",
             "name": "Бахрушин Алексей",
             "description": "Богатый московский купец Серебряного века.",
@@ -542,7 +524,7 @@
             "description": "Дипломат, канцлер Российской империи.",
             "association": "Внешняя политика Елизаветы Петровны (канцлер)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/bestuzhev-ryumin-aleksey.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:A.P._Bestuzhev-Rumin_by_L.Tocque.jpg",
@@ -576,9 +558,9 @@
             "id": "blyukher-vasiliy",
             "name": "Блюхер Василий",
             "description": "Маршал, первый кавалер ордена Красного Знамени; погиб в репрессиях (1938).",
-            "association": "Гражданская война: красный командир против Колчака",
+            "association": "Командующий войсками на Дальнем Востоке, бои у озера Хасан (1938)",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/blyukher-vasiliy.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Vasily_Konstantinovich_Blyukher.jpg",
@@ -716,9 +698,9 @@
             "id": "bulganin-nikolay",
             "name": "Булганин Николай",
             "description": "Крупный политический деятель. Проиграл Хрущёву в 1958 году.",
-            "association": "Борьба за власть при Хрущёве (1957)",
+            "association": "Председатель Совета министров СССР (1955–1958)",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/bulganin-nikolay.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Nikolai_Bulganin_(cropped).jpg",
@@ -752,7 +734,7 @@
             "id": "bukharin-nikolay",
             "name": "Бухарин Николай",
             "description": "Главный редактор газеты \"Правда\" в революционные годы, соратник Ленина и Сталина. Обвинен в \"правом уклоне\", расстрелян.",
-            "association": "Новая экономическая политика (НЭП); расстрелян Сталиным",
+            "association": "Теоретик нэпа: «Обогащайтесь!» (1925)",
             "related": {
                 "text": "Соратник Алексея Рыкова.",
                 "ids": [
@@ -902,7 +884,7 @@
             "description": "Генерал армии, командующий фронтами, погиб в 1944 году.",
             "association": "Сталинградская и Курская битвы, освобождение Киева",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/vatutin-nikolay.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Nikolai_Vatutin_3.jpg",
@@ -920,7 +902,7 @@
             "description": "Великий князь Литовский. Современник Василия I.",
             "association": "Грюнвальдская битва (1410)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/vitovt.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Vita%C5%ADt_Vialiki._%D0%92%D1%96%D1%82%D0%B0%D1%9E%D1%82_%D0%92%D1%8F%D0%BB%D1%96%D0%BA%D1%96_(XVIII).jpg",
@@ -974,7 +956,7 @@
             "description": "Экономист, глава Госплана, организатор промышленности в войну.",
             "association": "Расстрелян по «Ленинградскому делу» (1950)",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/voznesenskiy-nikolay.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Voznesenskiy_NA.jpg",
@@ -1010,9 +992,10 @@
             "description": "Герой Гражданской войны и военный деятель СССР. Занимал командные должности в период ВОВ.",
             "association": "Гражданская война: оборона Царицына",
             "related": {
-                "text": "Соратник Семёна Будённого.",
+                "text": "Соратник Семёна Будённого и Иосифа Сталина.",
                 "ids": [
-                    "budennyy-semen"
+                    "budennyy-semen",
+                    "stalin-iosif"
                 ]
             },
             "level": 2,
@@ -1044,24 +1027,6 @@
             "era": 6,
             "role": "M",
             "answer": "Врангель"
-        },
-        {
-            "id": "mikhail-vsevolodovich-chernigovskiy",
-            "name": "Михаил Всеволодович Черниговский",
-            "description": "Князь черниговский и киевский, причислен к лику святых.",
-            "association": "Убит в Орде за отказ поклониться языческим обрядам (1246)",
-            "related": null,
-            "level": 3,
-            "image": {
-                "file": "images/mikhail-vsevolodovich-chernigovskiy.webp",
-                "source": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B2%D1%8F%D1%82%D0%BE%D0%B9_%D0%BA%D0%BD%D1%8F%D0%B7%D1%8C_%D0%9C%D0%B8%D1%85%D0%B0%D0%B8%D0%BB_%D0%A7%D0%B5%D1%80%D0%BD%D0%B8%D0%B3%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9;_%D0%AD%D1%81%D0%BA%D0%B8%D0%B7_%D1%80%D0%BE%D1%81%D0%BF%D0%B8%D1%81%D0%B8_%D0%92%D0%BB%D0%B0%D0%B4%D0%B8%D0%BC%D0%B8%D1%80%D1%81%D0%BA%D0%BE%D0%B3%D0%BE_%D1%81%D0%BE%D0%B1%D0%BE%D1%80%D0%B0_%D0%B2_%D0%9A%D0%B8%D0%B5%D0%B2%D0%B5.jpg",
-                "license": "CC BY-SA 4.0",
-                "author": "В. М. Васнецов",
-                "commons": true
-            },
-            "era": 1,
-            "role": "R",
-            "answer": null
         },
         {
             "id": "yuriy-vsevolodovich",
@@ -1115,9 +1080,9 @@
             "description": "Экономист, исполняющий обязанности премьер-министра (1992).",
             "association": "Рыночные реформы 1992 года («шоковая терапия»)",
             "related": {
-                "text": "Соратник Анатолия Чубайса.",
+                "text": "Соратник Бориса Ельцина.",
                 "ids": [
-                    "chubays-anatoliy"
+                    "eltsin-boris"
                 ]
             },
             "level": 1,
@@ -1138,7 +1103,7 @@
             "description": "Князь Галицко-Волынский. Современник Александра Невского. Выбрал союз с Западом и борьбу с татарами.",
             "association": "Галицко-Волынская Русь в эпоху монгольского нашествия",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/daniil-galitskiy.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:%D0%94%D0%B0%D0%BD%D0%B8%D0%B8%D0%BB_%D0%93%D0%B0%D0%BB%D0%B8%D1%86%D0%BA%D0%B8%D0%B9_%D0%BD%D0%B0_%D0%BF%D0%B0%D0%BC%D1%8F%D1%82%D0%BD%D0%B8%D0%BA%D0%B5_1000-%D0%BB%D0%B5%D1%82%D0%B8%D1%8F_%D0%A0%D0%BE%D1%81%D1%81%D0%B8%D0%B8.jpg",
@@ -1167,24 +1132,6 @@
             "era": 6,
             "role": "O",
             "answer": "Гапон"
-        },
-        {
-            "id": "gasprinskiy-ismail",
-            "name": "Гаспринский Исмаил",
-            "description": "Крымско-татарский просветитель и издатель.",
-            "association": "Просвещение мусульман России, газета «Терджиман»",
-            "related": null,
-            "level": 3,
-            "image": {
-                "file": "images/gasprinskiy-ismail.webp",
-                "source": "https://commons.wikimedia.org/wiki/File:Ismail_Gasprinskiy.jpg",
-                "license": "Public domain",
-                "author": "НеизвестенUnknown author",
-                "commons": true
-            },
-            "era": 5,
-            "role": "K",
-            "answer": "Гаспринский"
         },
         {
             "id": "gedimin",
@@ -1287,7 +1234,7 @@
             "description": "Полководец ВОВ, командующий артиллерией. Участвовал Московской битве, деблокаде Ленинграда.",
             "association": "Прорыв блокады Ленинграда (1943)",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/govorov-leonid.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Leonid_Govorov_1.jpg",
@@ -1326,9 +1273,9 @@
             "id": "golikov-lenya",
             "name": "Голиков Лёня",
             "description": "Пионер-герой.",
-            "association": "Пионер-партизан в Великую Отечественную войну",
+            "association": "Захватил портфель с документами немецкого генерала (1942)",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/golikov-lenya.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Rus_Stamp_GSS-Golikov-Kotik.jpg",
@@ -1364,7 +1311,7 @@
             "description": "Сподвижник Петра, один из создателей русского флота.",
             "association": "Нерчинский договор с Китаем (1689), создание флота",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/golovin-fedor.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Fedor_Golovin.PNG",
@@ -1395,24 +1342,6 @@
             "answer": null
         },
         {
-            "id": "grachev-pavel",
-            "name": "Грачев Павел",
-            "description": "Министр обороны РФ в первой половине девяностых годов. Начал первую войну в Чечне.",
-            "association": "Первая чеченская война (1994–1996)",
-            "related": null,
-            "level": 2,
-            "image": {
-                "file": "images/grachev-pavel.webp",
-                "source": "https://commons.wikimedia.org/wiki/File:Evstafiev-pavel-grachev-1994w.jpg",
-                "license": "CC BY-SA 3.0",
-                "author": "Фото: Михаил Евстафьев / Photo by Mikhail Evstafiev",
-                "commons": true
-            },
-            "era": 8,
-            "role": "S",
-            "answer": "Грачев"
-        },
-        {
             "id": "gromyko-andrey",
             "name": "Громыко Андрей",
             "description": "Дипломат, при Горбачёве — формальный глава государства.",
@@ -1436,7 +1365,7 @@
             "description": "Полководец Русско-турецкой войны 1877-78 годов.",
             "association": "Переход через Балканы в войне с Турцией (1877–1878)",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/gurko-iosif.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:0270_%D0%93%D0%B5%D0%BD%D0%B5%D1%80%D0%B0%D0%BB_%D0%98._%D0%92._%D0%93%D1%83%D1%80%D0%BA%D0%BE,_%D0%93%D0%BE%D1%80%D0%BD%D0%B0_%D0%A1%D1%82%D1%83%D0%B4%D0%B5%D0%BD%D0%B0,_%D1%81%D0%B5%D0%BD%D1%82%D1%8F%D0%B1%D1%80%D1%8C_1877.jpg",
@@ -1477,7 +1406,7 @@
                 "file": "images/davydov-denis.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Denis-Davydov.jpg",
                 "license": "Public domain",
-                "author": "Джордж Доу",
+                "author": "",
                 "commons": true
             },
             "era": 5,
@@ -1537,7 +1466,7 @@
             "description": "Оружейный конструктор, прославившийся в довоенную эпоху и годы ВОВ. Пистолет-пулемёт Дегтярева (ППД).",
             "association": "Пулемёты и автоматы для Великой Отечественной войны (ППД)",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/degtyarev-vasiliy.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:%D0%92%D0%B0%D1%81%D0%B8%D0%BB%D0%B8%D0%B9_%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B5%D0%B2%D0%B8%D1%87_%D0%94%D0%B5%D0%B3%D1%82%D1%8F%D1%80%D1%91%D0%B2_2.jpg",
@@ -1573,7 +1502,7 @@
             "description": "Тульский оружейник, основатель династии промышленников.",
             "association": "Заводы на Урале при Петре I",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/demidov-nikita.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Nikita_Demidov.jpg",
@@ -1640,29 +1569,6 @@
             "answer": "Дзержинский"
         },
         {
-            "id": "yuriy-dmitrievich-zvenigorodskiy",
-            "name": "Юрий Дмитриевич Звенигородский",
-            "description": "Дядя Василия II, его противник во время гражданской войны XV века.",
-            "association": "Война за московский престол против племянника Василия II",
-            "related": {
-                "text": "Отец Василия Косого и Дмитрия Шемяки.",
-                "ids": [
-                    "vasiliy-kosoy-i-dmitriy-shemyaka"
-                ]
-            },
-            "level": 2,
-            "image": {
-                "file": "images/yuriy-dmitrievich-zvenigorodskiy.webp",
-                "source": "https://commons.wikimedia.org/wiki/File:%D0%AE%D1%80%D0%B8%D0%B9_IV_%D0%97%D0%B2%D0%B5%D0%BD%D0%B8%D0%B3%D0%BE%D1%80%D0%BE%D0%B4%D1%81%D0%BA%D0%B8%D0%B9,_%D1%81%D1%82%D0%B5%D0%BD%D0%BE%D0%BF%D0%B8%D1%81%D1%8C_%D0%90%D1%80%D1%85%D0%B0%D0%BD%D0%B3%D0%B5%D0%BB%D1%8C%D1%81%D0%BA%D0%BE%D0%B3%D0%BE_%D1%81%D0%BE%D0%B1%D0%BE%D1%80%D0%B0.jpg",
-                "license": "CC BY-SA 4.0",
-                "author": "Архангельский собор",
-                "commons": true
-            },
-            "era": 2,
-            "role": "R",
-            "answer": null
-        },
-        {
             "id": "pozharskiy-dmitriy",
             "name": "Пожарский Дмитрий",
             "description": "Один из лидеров Второго ополчения.",
@@ -1691,7 +1597,7 @@
             "description": "Кавалерийский генерал, Герой Советского Союза.",
             "association": "Битва за Москву: кавалерийские рейды по тылам врага (1941)",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/dovator-lev.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:%D0%9B%D0%B5%D0%B2_%D0%9C%D0%B8%D1%85%D0%B0%D0%B9%D0%BB%D0%BE%D0%B2%D0%B8%D1%87_%D0%94%D0%BE%D0%B2%D0%B0%D1%82%D0%BE%D1%80.jpg",
@@ -1745,24 +1651,6 @@
             "answer": "Дубинин"
         },
         {
-            "id": "edigey",
-            "name": "Едигей",
-            "description": "Татарский полководец. Современник Василия I. Победитель Витовта при Ворскле.",
-            "association": "Набег Орды на Москву (1408)",
-            "related": null,
-            "level": 3,
-            "image": {
-                "file": "images/edigey.webp",
-                "source": "https://tt.wikipedia.org/wiki/%D0%A4%D0%B0%D0%B9%D0%BB:Idegay.jpg",
-                "license": "Намуслы куллану",
-                "author": null,
-                "commons": false
-            },
-            "era": 2,
-            "role": "M",
-            "answer": "Едигей"
-        },
-        {
             "id": "ezhov-nikolay",
             "name": "Ежов Николай",
             "description": "Глава НКВД на пике сталинских репрессий в 1933–1940 годах.",
@@ -1786,7 +1674,7 @@
             "description": "Подруга Екатерины II, участница переворота 1762 года.",
             "association": "Глава Академии наук при Екатерине II",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/dashkova-ekaterina.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:E._Vorontsova-Dashkova_by_Dm._Levitsky_(1784,_Hillwood).jpg",
@@ -1848,7 +1736,7 @@
             "id": "eltsin-boris",
             "name": "Ельцин Борис",
             "description": "1991–1999. Первый президент России.",
-            "association": "Распад СССР и реформы 1990-х",
+            "association": "Распад СССР: Беловежские соглашения (1991)",
             "related": null,
             "level": 1,
             "image": {
@@ -1891,7 +1779,7 @@
             "description": "Покоритель Кавказа. Генерал, успешно воевавший с горцами при Александре I.",
             "association": "Кавказская война",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/ermolov-aleksey.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Zakharov-Yermolov.jpg",
@@ -1925,9 +1813,9 @@
             "id": "zhirinovskiy-vladimir",
             "name": "Жириновский Владимир",
             "description": "Современный российский политик-популист. Глава ЛДПР.",
-            "association": "Многопартийность 1990-х",
+            "association": "Первая разрешённая партия кроме КПСС (1991)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/zhirinovskiy-vladimir.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Vladimir_Zhirinovsky_04_-_Ldpr.ru.png",
@@ -1961,14 +1849,14 @@
             "id": "zarutskiy-ivan",
             "name": "Заруцкий Иван",
             "description": "Деятель Смутного времени. Казацкий глава, участник Первого ополчения.",
-            "association": "Смутное время: казачий атаман, муж Марины Мнишек",
+            "association": "Казачий мятеж с Мариной Мнишек после Смуты (1611–1614)",
             "related": {
                 "text": "Соратник Прокопия Ляпунова по Первому ополчению.",
                 "ids": [
                     "lyapunov-prokopiy"
                 ]
             },
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/zarutskiy-ivan.webp",
                 "source": "предоставлено автором тренажёра",
@@ -2062,9 +1950,9 @@
             "id": "zyuganov-gennadiy",
             "name": "Зюганов Геннадий",
             "description": "Политик, лидер коммунистов в современной России.",
-            "association": "Президентские выборы 1996 года",
+            "association": "Президентские выборы 1996 года: второе место после Ельцина",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/zyuganov-gennadiy.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Gennady_Zyuganov_2022-09-20_(cropped).jpg",
@@ -2183,7 +2071,7 @@
             "description": "Советский разведчик, действовал под видом немецкого офицера.",
             "association": "Разведчик в тылу врага на Украине",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/kuznetsov-nikolay-ivanovich.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:%D0%9D%D0%B8%D0%BA%D0%BE%D0%BB%D0%B0%D0%B9_%D0%9A%D1%83%D0%B7%D0%BD%D0%B5%D1%86%D0%BE%D0%B2,_1940.jpg",
@@ -2223,7 +2111,7 @@
             "id": "izotov-nikita",
             "name": "Изотов Никита",
             "description": "Шахтёр, обучал молодых рабочих своему опыту (изотовское движение).",
-            "association": "Первые пятилетки (1930-е)",
+            "association": "Рекорды в угольном забое, первая пятилетка (1932)",
             "related": null,
             "level": 3,
             "image": {
@@ -2242,7 +2130,12 @@
             "name": "Ильюшин Сергей",
             "description": "Авиаконструктор, прославившийся в довоенную эпоху и годы ВОВ. Самолёты \"Ил\".",
             "association": "Штурмовик Ил-2 в Великую Отечественную войну",
-            "related": null,
+            "related": {
+                "text": "Его самолёты выпускал наркомат Алексея Шахурина.",
+                "ids": [
+                    "shakhurin-aleksey"
+                ]
+            },
             "level": 2,
             "image": {
                 "file": "images/ilyushin-sergey.webp",
@@ -2266,7 +2159,7 @@
                     "anna-leopoldovna"
                 ]
             },
-            "level": 1,
+            "level": 2,
             "image": {
                 "file": "images/ioann-vi-antonovich.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Ivan_VI_of_Russia_(Romanov_Gallery)_cropped.jpg",
@@ -2307,7 +2200,7 @@
             "description": "Митрополит московский, добившийся автокефалии РПЦ в 1444 году.",
             "association": "Русская церковь стала независимой от Константинополя (1448)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/mitropolit-iona.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:%D0%9C%D0%B8%D1%82%D1%80%D0%BE%D0%BF%D0%BE%D0%BB%D0%B8%D1%82_%D0%9A%D0%B8%D0%B5%D0%B2%D1%81%D0%BA%D0%B8%D0%B9_%D0%B8_%D0%92%D1%81%D0%B5%D1%8F_%D0%A0%D1%83%D1%81%D0%B8_%D0%98%D0%BE%D0%BD%D0%B0.jpg",
@@ -2361,7 +2254,7 @@
             "description": "Чеченский лидер, перешел на сторону Путина и стал президентом республики во время боевых действий 1999–2003 годов.",
             "association": "Вторая чеченская война: перешёл на сторону России",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/kadyrov-akhmad.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Akhmad_Kadyrov_(2002,_cropped).jpg",
@@ -2377,9 +2270,9 @@
             "id": "kazey-marat",
             "name": "Казей Марат",
             "description": "Пионер-герой, разведчик партизанского отряда.",
-            "association": "Партизанское движение в Белоруссии",
+            "association": "Подорвал себя гранатой, чтобы не попасть в плен (1944)",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/kazey-marat.webp",
                 "source": "https://ru.wikipedia.org/wiki/%D0%A4%D0%B0%D0%B9%D0%BB:%D0%9C%D0%B0%D1%80%D0%B0%D1%82_%D0%B8_%D0%90%D1%80%D0%B8%D0%B0%D0%B4%D0%BD%D0%B0_%D0%9A%D0%B0%D0%B7%D0%B5%D0%B9.jpg",
@@ -2397,7 +2290,7 @@
             "description": "Конструктор стрелкового оружия.",
             "association": "Автомат Калашникова (1947)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/kalashnikov-mikhail.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Kalashnikov_Mikhail_(1).jpg",
@@ -2415,7 +2308,7 @@
             "description": "Председатель Президиума Верховного Совета СССР.",
             "association": "Формальный глава СССР при Сталине («всесоюзный староста»)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/kalinin-mikhail.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:%D0%9C%D0%B8%D1%85%D0%B0%D0%B8%D0%BB_%D0%9A%D0%B0%D0%BB%D0%B8%D0%BD%D0%B8%D0%BD.jpg",
@@ -2605,7 +2498,7 @@
             "description": "Генерал, министр государственных имуществ.",
             "association": "Реформа государственных крестьян при Николае I",
             "related": null,
-            "level": 2,
+            "level": 1,
             "image": {
                 "file": "images/kiselev-pavel.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Kiseleff.jpg",
@@ -2623,7 +2516,7 @@
             "description": "Политрук панфиловской дивизии, погиб под Москвой.",
             "association": "Подвиг 28 панфиловцев: «Отступать некуда — позади Москва»",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/klochkov-vasiliy.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:The_Soviet_Union_1967_CPA_3509_stamp_with_label_(World_War_II_Hero_Political_Commissar_Vasily_Klochkov_and_Feat_of_the_Panfilov%27s_Twenty-Eight_Guardsmen_with_label).jpg",
@@ -2736,7 +2629,7 @@
                     "nakhimov-pavel"
                 ]
             },
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/kornilov-vladimir.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Karl_Brullov_24.jpg",
@@ -2834,9 +2727,9 @@
             "id": "kotik-valya",
             "name": "Котик Валя",
             "description": "Самый юный Герой Советского Союза.",
-            "association": "Партизанское движение на Украине",
+            "association": "Пионер-партизан из Шепетовки, погиб в 14 лет (1944)",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/kotik-valya.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:ValaKotyk.jpg",
@@ -2895,7 +2788,7 @@
             "description": "Белый генерал, лидер казаков. Воевал вместе с Деникиным.",
             "association": "Гражданская война: атаман белых донских казаков",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/krasnov-petr.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Pyotr_Nikolayevich_Krasnov.jpg",
@@ -2913,7 +2806,7 @@
             "description": "Друг Ленина, автор плана ГОЭРЛО, деятель образования и науки.",
             "association": "План электрификации страны (ГОЭЛРО, 1920)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/krzhizhanovskiy-gleb.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Gleb_Maksimilianovich_Krzhizhanovskiy.jpg",
@@ -3063,8 +2956,13 @@
             "name": "Лавочкин Семён",
             "description": "Авиаконструктор времен ВОВ. Самолёты \"Ла\".",
             "association": "Истребители Ла в Великую Отечественную войну",
-            "related": null,
-            "level": 3,
+            "related": {
+                "text": "Его самолёты выпускал наркомат Алексея Шахурина.",
+                "ids": [
+                    "shakhurin-aleksey"
+                ]
+            },
+            "level": 2,
             "image": {
                 "file": "images/lavochkin-semen.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B5%D0%BC%D1%91%D0%BD_%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B5%D0%B2%D0%B8%D1%87_%D0%9B%D0%B0%D0%B2%D0%BE%D1%87%D0%BA%D0%B8%D0%BD,_1943_%D0%B3%D0%BE%D0%B4.jpg",
@@ -3075,24 +2973,6 @@
             "era": 7,
             "role": "K",
             "answer": "Лавочкин"
-        },
-        {
-            "id": "lavrinenko-dmitriy",
-            "name": "Лавриненко Дмитрий",
-            "description": "Танковый ас, уничтожил 52 немецких танка. Погиб под Москвой в 1941 году.",
-            "association": "Лучший танкист-ас, битва за Москву (1941)",
-            "related": null,
-            "level": 3,
-            "image": {
-                "file": "images/lavrinenko-dmitriy.webp",
-                "source": "https://commons.wikimedia.org/wiki/File:Dmitry_Lavrinenko.jpg",
-                "license": "Public domain",
-                "author": "НеизвестенUnknown author",
-                "commons": true
-            },
-            "era": 7,
-            "role": "H",
-            "answer": "Лавриненко"
         },
         {
             "id": "lavrov-petr",
@@ -3122,9 +3002,9 @@
             "id": "lebedev-kumach-vasiliy",
             "name": "Лебедев-Кумач Василий",
             "description": "Советский поэт периода ВОВ, автор слов многих популярных песен: «Широка страна моя родная», «Священная война», «Весёлый ветер».",
-            "association": "Песня «Священная война» (1941)",
+            "association": "Песни, поднимавшие дух бойцов (1941)",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/lebedev-kumach-vasiliy.webp",
                 "source": "https://ru.wikipedia.org/wiki/%D0%A4%D0%B0%D0%B9%D0%BB:Kumach.jpg",
@@ -3142,7 +3022,7 @@
             "description": "Генерал-десантник, популярный политик 1990-х.",
             "association": "Мир в Чечне — Хасавюртовские соглашения (1996)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/lebed-aleksandr.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:LebedAI.jpg",
@@ -3196,7 +3076,7 @@
             "description": "1740–1741. Регент при Иоанне Антоновиче.",
             "association": "Эпоха дворцовых переворотов: правительница при сыне-младенце",
             "related": null,
-            "level": 1,
+            "level": 2,
             "image": {
                 "file": "images/anna-leopoldovna.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Anna_Leopoldovna_by_L.Caravaque_(after_1733,_Tropinin_museum).jpg",
@@ -3254,7 +3134,7 @@
             "id": "lzhedmitriy-ii",
             "name": "Лжедмитрий II",
             "description": "Второй самозванец, «Тушинский вор».",
-            "association": "Смутное время (1607–1610)",
+            "association": "Осада Москвы и свой «царский двор» (1608–1610)",
             "related": {
                 "text": "Муж Марины Мнишек, противник Василия Шуйского.",
                 "ids": [
@@ -3334,7 +3214,7 @@
             "description": "Нарком просвещения.",
             "association": "Школа и культура первых лет советской власти",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/lunacharskiy-anatoliy.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Anatoliy_Lunacharskiy_1925.jpg",
@@ -3350,7 +3230,7 @@
             "id": "lyapunov-prokopiy",
             "name": "Ляпунов Прокопий",
             "description": "Боярин, деятель Смутного времени. Глава Первого ополчения (1611).",
-            "association": "Смутное время: первая попытка освободить Москву (1611)",
+            "association": "Попытка освободить Москву от поляков (1611)",
             "related": {
                 "text": "Соратник атамана Ивана Заруцкого.",
                 "ids": [
@@ -3410,24 +3290,6 @@
             "era": 7,
             "role": "S",
             "answer": "Майский"
-        },
-        {
-            "id": "mitropolit-makariy-bulgakov",
-            "name": "Митрополит Макарий (Булгаков)",
-            "description": "Митрополит Московский, церковный историк.",
-            "association": "Эпоха Великих реформ Александра II",
-            "related": null,
-            "level": 3,
-            "image": {
-                "file": "images/mitropolit-makariy-bulgakov.webp",
-                "source": "https://commons.wikimedia.org/wiki/File:Mitropolitan_Macarius_(Bulgakov).jpg",
-                "license": "Public domain",
-                "author": "Анонимный авторUnknown author",
-                "commons": true
-            },
-            "era": 5,
-            "role": "C",
-            "answer": "Макарий"
         },
         {
             "id": "mitropolit-makariy",
@@ -3555,7 +3417,7 @@
             "description": "Предприниматель и меценат времен Николая II.",
             "association": "Меценат: усадьба Абрамцево, частная опера",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/mamontov-savva.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B0%D0%B2%D0%B2%D0%B0_%D0%9C%D0%B0%D0%BC%D0%BE%D0%BD%D1%82%D0%BE%D0%B2.jpg",
@@ -3591,7 +3453,7 @@
             "description": "Дипломат, глава Посольского приказа.",
             "association": "Ближний боярин Алексея Михайловича",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/matveev-artamon.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Matveyev_Artamon_portrait.jpg",
@@ -3607,7 +3469,7 @@
             "id": "makhno-nestor",
             "name": "Махно Нестор",
             "description": "Анархист, вождь крестьянской армии на Украине.",
-            "association": "Гражданская война (1918–1921)",
+            "association": "Вольная армия в Гуляйполе против белых и красных (1918–1921)",
             "related": {
                 "text": "Разбит Михаилом Фрунзе.",
                 "ids": [
@@ -3686,7 +3548,7 @@
             "description": "Партийный деятель, руководил торговлей.",
             "association": "Соратник всех вождей от Ленина до Брежнева",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/mikoyan-anastas.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:A.I._Mikoyan_TASS_Portrait_Trim_Edit.jpg",
@@ -3704,7 +3566,7 @@
             "description": "Историк, лидер партии кадетов.",
             "association": "Февральская революция и Временное правительство (1917)",
             "related": null,
-            "level": 2,
+            "level": 1,
             "image": {
                 "file": "images/milyukov-pavel.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Pavel_Milyukov_2.jpg",
@@ -3762,24 +3624,6 @@
             "era": 5,
             "role": "S",
             "answer": "Милютин"
-        },
-        {
-            "id": "mindovg",
-            "name": "Миндовг",
-            "description": "Первый великий князь Литвы.",
-            "association": "Возникновение Великого княжества Литовского (XIII век)",
-            "related": null,
-            "level": 3,
-            "image": {
-                "file": "images/mindovg.webp",
-                "source": "https://commons.wikimedia.org/wiki/File:Mindaugas_(99259281).jpg",
-                "license": "Public domain",
-                "author": "Aleksander Gwagnin",
-                "commons": true
-            },
-            "era": 1,
-            "role": "R",
-            "answer": null
         },
         {
             "id": "minin-kuzma",
@@ -3934,7 +3778,7 @@
                     "aleksey-mikhaylovich"
                 ]
             },
-            "level": 2,
+            "level": 1,
             "image": {
                 "file": "images/morozov-boris.webp",
                 "source": "предоставлено автором тренажёра",
@@ -3953,7 +3797,7 @@
             "description": "Крупные промышленники и меценаты 19-20 веков.",
             "association": "Купцы-фабриканты и меценаты (Савва Морозов)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/dinastiya-morozovykh.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Savva_Morozov.jpg",
@@ -4008,30 +3852,12 @@
             "answer": "Муравьев"
         },
         {
-            "id": "muromtsev-sergey",
-            "name": "Муромцев Сергей",
-            "description": "Юрист, профессор, кадет.",
-            "association": "Председатель первой Государственной думы (1906)",
-            "related": null,
-            "level": 3,
-            "image": {
-                "file": "images/muromtsev-sergey.webp",
-                "source": "https://commons.wikimedia.org/wiki/File:Portrait_of_Sergey_Muromtsev.jpg",
-                "license": "Public domain",
-                "author": "НеизвестенUnknown author",
-                "commons": true
-            },
-            "era": 6,
-            "role": "O",
-            "answer": "Муромцев"
-        },
-        {
             "id": "przhevalskiy-n-m-semenov-tyan-shanskiy-p-p-kozlov-p-k",
             "name": "Пржевальский Н. М., Семёнов-Тян-Шанский П. П., Козлов П. К.",
             "description": "Исследователи Средней Азии во второй половине XIX века.",
             "association": "Экспедиции в Центральную Азию",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/przhevalskiy-n-m-semenov-tyan-shanskiy-p-p-kozlov-p-k.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:%D0%9F%D1%80%D0%B6%D0%B5%D0%B2%D0%B0%D0%BB%D1%8C%D1%81%D0%BA%D0%B8%D0%B988.jpg",
@@ -4183,7 +4009,7 @@
             "description": "Автор проекта конституции «Уставная грамота» (1820).",
             "association": "Друг молодого Александра I (Негласный комитет)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/novosiltsev-nikolay.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Nikolay_Nikolayevich_Novosiltsev.jpg",
@@ -4219,7 +4045,7 @@
             "description": "Соратник Ленина и Сталина. Нарком тяжелой промышленности в тридцатые годы.",
             "association": "Строительство заводов в 1930-е (индустриализация)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/ordzhonikidze-sergo.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Sergo_Ordzhonikidze_in_Uniform.jpg",
@@ -4254,12 +4080,7 @@
             "name": "Орлов Алексей",
             "description": "Сподвижник Екатерины II, младший брат её фаворита Григория Григорьевича Орлова. Победитель в Чесменском бою (1770)",
             "association": "Разгром турецкого флота при Чесме (1770)",
-            "related": {
-                "text": "Командовал флотом вместе с Григорием Спиридовым.",
-                "ids": [
-                    "spiridov-grigoriy"
-                ]
-            },
+            "related": null,
             "level": 2,
             "image": {
                 "file": "images/orlov-aleksey.webp",
@@ -4365,7 +4186,7 @@
                 "file": "images/palitsyn-avraamiy.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Alleged_portrait_of_Avraamy_Palitsyn.jpg",
                 "license": "Public domain",
-                "author": "НеизвестенUnknown author",
+                "author": "",
                 "commons": true
             },
             "era": 3,
@@ -4378,7 +4199,7 @@
             "description": "Дипломат, воспитатель наследника Павла.",
             "association": "Внешняя политика Екатерины II («Северный аккорд»)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/panin-nikita.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Alexandre_Roslin,_Portrait_du_comte_N.I._Panine_(1777).jpg",
@@ -4487,14 +4308,16 @@
             "association": "Убийство Александра II (1881)",
             "related": {
                 "text": "Соратница Андрея Желябова.",
-                "ids": []
+                "ids": [
+                    "zhelyabov-andrey"
+                ]
             },
             "level": 2,
             "image": {
                 "file": "images/perovskaya-sofya.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:S_Perovskaya.jpg",
                 "license": "Public domain",
-                "author": "НеизвестенUnknown author",
+                "author": "",
                 "commons": true
             },
             "era": 5,
@@ -4530,7 +4353,7 @@
             "description": "Первый митрополит, живший в Москве.",
             "association": "Возвышение Москвы при Иване Калите",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/mitropolit-petr.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:St.PetrRatenskii.jpg",
@@ -4659,7 +4482,7 @@
             "description": "Атаман донских казаков.",
             "association": "Казаки в войне 1812 года",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/platov-matvey.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Platov.jpg",
@@ -4700,7 +4523,7 @@
                     "lenin-vladimir"
                 ]
             },
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/plekhanov-georgiy.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Georgi_Valentinovich_Plekhanov,_ca._1917.jpg",
@@ -4734,7 +4557,7 @@
             "id": "pokryshkin-aleksandr",
             "name": "Покрышкин Александр",
             "description": "Лётчик-истребитель, сбил 59 самолётов.",
-            "association": "Великая Отечественная война: трижды Герой Советского Союза",
+            "association": "Воздушные бои на Кубани (1943)",
             "related": null,
             "level": 2,
             "image": {
@@ -4754,7 +4577,7 @@
             "description": "Монах, поэт, просветитель.",
             "association": "Придворный поэт и учитель детей Алексея Михайловича",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/simeon-polotskiy.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B8%D0%BC%D0%B5%D0%BE%D0%BD_%D0%9F%D0%BE%D0%BB%D0%BE%D1%86%D0%BA%D0%B8%D0%B9_1818.jpg",
@@ -4770,9 +4593,9 @@
             "id": "ponomarenko-panteleymon",
             "name": "Пономаренко Пантелеймон",
             "description": "Глава Центрального штаба партизанского движения.",
-            "association": "Партизанская война в тылу врага (1942–1944)",
+            "association": "Руководил всеми отрядами в тылу врага из Москвы (1942–1944)",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/ponomarenko-panteleymon.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Anefo_910-7476_Ponomanrenko,_(cropped).jpg",
@@ -4845,7 +4668,7 @@
             "description": "Премьер-министр РФ сразу после Дефолта 17 августа. Дал начало восстановлению экономики.",
             "association": "Выход из кризиса после дефолта 1998 года",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/primakov-evgeniy.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Direct_Line_with_Vladimir_Putin_(2011-12-15)_05_(cropped).jpg",
@@ -4881,7 +4704,7 @@
             "description": "Монархист, один из лидеров черносотенцев.",
             "association": "Убийство Распутина (1916)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/purishkevich-vladimir.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Puriskevich--fallofromanoffsh00londrich.jpg",
@@ -4897,7 +4720,7 @@
             "id": "putin-vladimir",
             "name": "Путин Владимир",
             "description": "2000–2008, 2012… Президент России.",
-            "association": "Современная Россия",
+            "association": "Воссоединение с Крымом (2014)",
             "related": null,
             "level": 1,
             "image": {
@@ -4935,7 +4758,7 @@
             "description": "Генерал Отечественной войны 1812 года.",
             "association": "Бородинская битва: батарея Раевского (1812)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/raevskiy-nikolay.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Rajevskij_N_N.jpg",
@@ -4976,7 +4799,7 @@
                     "purishkevich-vladimir"
                 ]
             },
-            "level": 1,
+            "level": 2,
             "image": {
                 "file": "images/rasputin-grigoriy.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Grigori_Rasputin_1916.jpg",
@@ -4993,8 +4816,13 @@
             "name": "Родзянко Михаил",
             "description": "Октябрист, председатель IV Государственной думы.",
             "association": "Февральская революция (1917)",
-            "related": null,
-            "level": 2,
+            "related": {
+                "text": "Соратник Александра Гучкова по партии октябристов.",
+                "ids": [
+                    "guchkov-aleksandr"
+                ]
+            },
+            "level": 3,
             "image": {
                 "file": "images/rodzyanko-mikhail.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Photo_of_Mikhail_Rodzianko.jpg",
@@ -5025,24 +4853,6 @@
             "answer": "Рокоссовский"
         },
         {
-            "id": "rossel-eduard",
-            "name": "Россель Эдуард",
-            "description": "Первый губернатор Свердловской области, автор проекта \"Уральской республики\" во времена Ельцина.",
-            "association": "Попытка создать Уральскую республику (1993)",
-            "related": null,
-            "level": 3,
-            "image": {
-                "file": "images/rossel-eduard.webp",
-                "source": "https://commons.wikimedia.org/wiki/File:Eduard_Rossel_2018.jpg",
-                "license": "CC BY 4.0",
-                "author": "council.gov.ru",
-                "commons": true
-            },
-            "era": 8,
-            "role": "S",
-            "answer": "Россель"
-        },
-        {
             "id": "rostovtsev-yakov",
             "name": "Ростовцев Яков",
             "description": "Председатель Редакционных комиссий, готовивших крестьянскую реформу 1861 года.",
@@ -5071,7 +4881,7 @@
             "description": "Генерал-фельдмаршал.",
             "association": "Победы над турками при Ларге и Кагуле (1770)",
             "related": null,
-            "level": 2,
+            "level": 1,
             "image": {
                 "file": "images/rumyantsev-zadunayskiy-petr.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:%D0%9F%D0%BE%D1%80%D1%82%D1%80%D0%B5%D1%82_%D0%B3%D0%B5%D0%BD.-%D1%84%D0%B5%D0%BB%D1%8C%D0%B4%D0%BC.%D0%B3%D1%80%D0%B0%D1%84%D0%B0_%D0%9F%D0%B5%D1%82%D1%80%D0%B0_%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B0%D0%BD%D0%B4%D1%80%D0%BE%D0%B2%D0%B8%D1%87_%D0%A0%D1%83%D0%BC%D1%8F%D0%BD%D1%86%D0%B5%D0%B2%D0%B0-%D0%97%D0%B0%D0%B4%D1%83%D0%BD%D0%B0%D0%B9%D1%81%D0%BA%D0%BE%D0%B3%D0%BE._%D0%93%D0%98%D0%9C_e1.jpg",
@@ -5125,7 +4935,7 @@
             "description": "Вице-президент при раннем Ельцине. Сторонник Верховного Совета в 1993 году.",
             "association": "Противник Ельцина в кризисе 1993 года",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/rutskoy-aleksandr.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Alexander_Rutskoy_MoscowRia_08-2016_(cropped).jpg",
@@ -5166,7 +4976,7 @@
                     "bukharin-nikolay"
                 ]
             },
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/rykov-aleksey.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Alexei_Rykov.jpg",
@@ -5189,7 +4999,7 @@
                     "muravev-nikita"
                 ]
             },
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/ryleev-kondratiy.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:%D0%A0%D1%8B%D0%BB%D0%B5%D0%B5%D0%B2.jpg",
@@ -5220,24 +5030,6 @@
             "answer": "Рябушинские"
         },
         {
-            "id": "savinkov-boris",
-            "name": "Савинков Борис",
-            "description": "Террорист из партии эсеров.",
-            "association": "Террорист-эсер, организатор покушений на министров",
-            "related": null,
-            "level": 3,
-            "image": {
-                "file": "images/savinkov-boris.webp",
-                "source": "https://commons.wikimedia.org/wiki/File:Boris_Savinkov_(cleaned).jpg",
-                "license": "Public domain",
-                "author": "НеизвестенUnknown author",
-                "commons": true
-            },
-            "era": 6,
-            "role": "O",
-            "answer": "Савинков"
-        },
-        {
             "id": "saltykov-petr",
             "name": "Салтыков Пётр",
             "description": "Командующий войсками в Семилетней войне (1756–1761).",
@@ -5254,25 +5046,6 @@
             "era": 4,
             "role": "M",
             "answer": "Салтыков"
-        },
-        {
-            "id": "saltychikha",
-            "name": "Салтычиха",
-            "description": "Помещица Дарья Салтыкова, замучила десятки крепостных.",
-            "association": "Эпоха Екатерины II: суд над помещицей",
-            "related": null,
-            "level": 3,
-            "image": {
-                "file": "images/saltychikha.webp",
-                "source": "https://commons.wikimedia.org/wiki/File:Darya_Nikolayevna_Saltykova_-_GRpergament.jpg",
-                "license": "Public domain",
-                "author": null,
-                "commons": true,
-                "note": "Фрагмент иллюстрации П. Курдюмова"
-            },
-            "era": 4,
-            "role": "S",
-            "answer": "Салтычиха"
         },
         {
             "id": "sakharov-andrey",
@@ -5298,7 +5071,7 @@
             "description": "Соратник Ленина, председатель ЦИК. Умер в 1919 году.",
             "association": "Соратник Ленина, глава советского государства (1917–1919)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/sverdlov-yakov.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B2%D0%B5%D1%80%D0%B4%D0%BB%D0%BE%D0%B2_%D0%AF%D0%BA%D0%BE%D0%B2_%D0%9C%D0%B8%D1%85%D0%B0%D0%B9%D0%BB%D0%BE%D0%B2%D0%B8%D1%87.jpg",
@@ -5345,24 +5118,6 @@
             "era": 7,
             "role": "C",
             "answer": "Сергий"
-        },
-        {
-            "id": "silaev-ivan",
-            "name": "Силаев Иван",
-            "description": "Инженер, глава правительства РСФСР, затем СССР.",
-            "association": "Распад СССР (1991)",
-            "related": null,
-            "level": 3,
-            "image": {
-                "file": "images/silaev-ivan.webp",
-                "source": "https://commons.wikimedia.org/wiki/File:SilaevIS.jpg",
-                "license": "CC BY-SA 4.0",
-                "author": "Leo Medvedev/Лев Леонидович Медведев",
-                "commons": true
-            },
-            "era": 7,
-            "role": "S",
-            "answer": "Силаев"
         },
         {
             "id": "protopop-silvestr",
@@ -5604,29 +5359,6 @@
             "answer": "Сперанский"
         },
         {
-            "id": "spiridov-grigoriy",
-            "name": "Спиридов Григорий",
-            "description": "Адмирал, победитель турок в Чесменском бою (1770).",
-            "association": "Разгром турецкого флота при Чесме (1770)",
-            "related": {
-                "text": "Командовал флотом вместе с Алексеем Орловым.",
-                "ids": [
-                    "orlov-aleksey"
-                ]
-            },
-            "level": 2,
-            "image": {
-                "file": "images/spiridov-grigoriy.webp",
-                "source": "https://commons.wikimedia.org/wiki/File:%D0%90%D0%B4%D0%BC%D0%B8%D1%80%D0%B0%D0%BB_%D0%93%D1%80%D0%B8%D0%B3%D0%BE%D1%80%D0%B8%D0%B9_%D0%90%D0%BD%D0%B4%D1%80%D0%B5%D0%B5%D0%B2%D0%B8%D1%87_%D0%A1%D0%BF%D0%B8%D1%80%D0%B8%D0%B4%D0%BE%D0%B2.jpg",
-                "license": "Public domain",
-                "author": "Неизвестный художник",
-                "commons": true
-            },
-            "era": 4,
-            "role": "M",
-            "answer": "Спиридов"
-        },
-        {
             "id": "stalin-iosif",
             "name": "Сталин Иосиф",
             "description": "1924–1953. Руководитель СССР.",
@@ -5691,7 +5423,7 @@
                 "file": "images/stroganov-pavel.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Portrait_of_Count_Pavel_Stroganoff_(1772-1817).jpg",
                 "license": "Public domain",
-                "author": "Жан-Лоран Монье",
+                "author": "",
                 "commons": true
             },
             "era": 5,
@@ -5738,7 +5470,7 @@
             "id": "suslov-mikhail",
             "name": "Суслов Михаил",
             "description": "Секретарь ЦК КПСС по идеологии.",
-            "association": "Эпоха застоя",
+            "association": "Борьба с инакомыслием и цензура при Брежневе",
             "related": null,
             "level": 2,
             "image": {
@@ -5758,7 +5490,7 @@
             "description": "Лётчик-истребитель, Герой Советского Союза.",
             "association": "Первый ночной таран в небе над Москвой (1941)",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/talalikhin-viktor.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Victor_Talalihkin.jpg",
@@ -5781,7 +5513,7 @@
                     "tokhtamysh"
                 ]
             },
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/tamerlan.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Timur_reconstruction03.jpg",
@@ -5817,7 +5549,7 @@
             "description": "Советский космонавт.",
             "association": "Первая женщина в космосе (1963)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/tereshkova-valentina.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Valentina_Tereshkova_(2017-03-06).jpg",
@@ -5853,7 +5585,7 @@
             "description": "Патриарх Московский, причислен к лику святых.",
             "association": "Первый патриарх после 200-летнего перерыва (1917), гонения большевиков",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/patriarkh-tikhon.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Tikhon_of_Moscow.jpg",
@@ -6027,7 +5759,7 @@
             "description": "Хан Золотой Орды, покровитель Ивана Калиты. Принял ислам, сжег Тверь в 1327 году.",
             "association": "Расправа с Тверью после восстания (1327); ислам в Орде",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/uzbek.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Portrait_of_Khan_Uzbek.jpg",
@@ -6100,7 +5832,7 @@
             "description": "Художник эпохи Алексея Михайловича. Последний великий русский иконописец. Парсуны.",
             "association": "Иконописец XVII века, «Спас Нерукотворный»",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/ushakov-simon.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Ushakov_Nerukotvorniy.jpg",
@@ -6137,7 +5869,7 @@
             "description": "Руководитель Союза писателей СССР, автор романа «Разгром».",
             "association": "Роман «Молодая гвардия»",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/fadeev-aleksandr.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B0%D0%BD%D0%B4%D1%80_%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B0%D0%BD%D0%B4%D1%80%D0%BE%D0%B2%D0%B8%D1%87_%D0%A4%D0%B0%D0%B4%D0%B5%D0%B5%D0%B2_(%D0%BF%D0%BE%D1%80%D1%82%D1%80%D0%B5%D1%82).jpg",
@@ -6155,7 +5887,7 @@
             "description": "Партийный работник, дважды Герой Советского Союза.",
             "association": "Командир партизанского соединения на Украине",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/fedorov-aleksey.webp",
                 "source": "https://ru.wikipedia.org/wiki/%D0%A4%D0%B0%D0%B9%D0%BB:FedorovAleksFedor.jpg",
@@ -6269,7 +6001,7 @@
             "description": "Пулемётчик, убивший более 920 фашистов.",
             "association": "Пулемётчик, Сталинградская битва",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/nuradilov-khanpasha.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Khanpasha_Nuradilov_140-190_for_collage.jpg",
@@ -6310,7 +6042,7 @@
             "description": "Председатель Верховного Совета России.",
             "association": "Конституционный кризис 1993 года: противник Ельцина",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/khasbulatov-ruslan.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Ruslan_Khasbulatov_August_2011_Moscow.jpg",
@@ -6333,7 +6065,7 @@
                     "kireevskiy-ivan"
                 ]
             },
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/khomyakov-aleksey.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:KhomyakovA_AvtoportretABR.jpg",
@@ -6405,24 +6137,6 @@
             "answer": "Чапаев"
         },
         {
-            "id": "chekalin-sasha",
-            "name": "Чекалин Саша",
-            "description": "Пионер-герой.",
-            "association": "Юный партизан, казнён немцами под Тулой (1941)",
-            "related": null,
-            "level": 3,
-            "image": {
-                "file": "images/chekalin-sasha.webp",
-                "source": "https://commons.wikimedia.org/wiki/File:Chekalin_Sasha.png",
-                "license": "CC BY-SA 4.0",
-                "author": "Y110692",
-                "commons": true
-            },
-            "era": 7,
-            "role": "H",
-            "answer": "Чекалин"
-        },
-        {
             "id": "chernenko-konstantin",
             "name": "Черненко Константин",
             "description": "1984–1985. Генеральный секретарь.",
@@ -6464,7 +6178,7 @@
             "description": "Премьер-министр РФ при Ельцине, в 1994–1998 годы.",
             "association": "Глава правительства при Ельцине (1992–1998)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/chernomyrdin-viktor.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:%D0%A7%D0%95%D0%A0%D0%9D%D0%9E%D0%9C%D0%AB%D0%A0%D0%94%D0%98%D0%9D_%D0%92%D0%B8%D0%BA%D1%82%D0%BE%D1%80_%D0%A1%D1%82%D0%B5%D0%BF%D0%B0%D0%BD%D0%BE%D0%B2%D0%B8%D1%87.jpg",
@@ -6531,29 +6245,6 @@
             "answer": "Чичерин"
         },
         {
-            "id": "chubays-anatoliy",
-            "name": "Чубайс Анатолий",
-            "description": "Вице-премьер в правительстве Ельцина.",
-            "association": "Приватизация по ваучерам (1992–1994)",
-            "related": {
-                "text": "Соратник Егора Гайдара.",
-                "ids": [
-                    "gaydar-egor"
-                ]
-            },
-            "level": 1,
-            "image": {
-                "file": "images/chubays-anatoliy.webp",
-                "source": "https://commons.wikimedia.org/wiki/File:%D0%90%D0%BD%D0%B0%D1%82%D0%BE%D0%BB%D0%B8%D0%B9_%D0%A7%D1%83%D0%B1%D0%B0%D0%B9%D1%81_(06-06-2019)_(cropped).jpg",
-                "license": "CC BY 4.0",
-                "author": "Александр Гальперин / РИА Новости",
-                "commons": true
-            },
-            "era": 8,
-            "role": "S",
-            "answer": "Чубайс"
-        },
-        {
             "id": "chuykov-vasiliy",
             "name": "Чуйков Василий",
             "description": "Командующий 62-й армией, маршал.",
@@ -6577,7 +6268,7 @@
             "description": "Военный теоретик и штабной генерал в период ВОВ.",
             "association": "Начальник Генштаба в начале войны",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/shaposhnikov-boris.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Boris_Shaposhnikov_02.jpg",
@@ -6606,24 +6297,6 @@
             "era": 4,
             "role": "S",
             "answer": "Шафиров"
-        },
-        {
-            "id": "shakhray-sergey",
-            "name": "Шахрай Сергей",
-            "description": "Реформатор, вице-премьер, соратник Ельцина в начале девяностых годов.",
-            "association": "Один из авторов Конституции РФ (1993)",
-            "related": null,
-            "level": 3,
-            "image": {
-                "file": "images/shakhray-sergey.webp",
-                "source": "https://commons.wikimedia.org/wiki/File:Sergei_Shakhrai_2014.jpg",
-                "license": "CC BY 4.0",
-                "author": "Press Service",
-                "commons": true
-            },
-            "era": 8,
-            "role": "S",
-            "answer": "Шахрай"
         },
         {
             "id": "shakhurin-aleksey",
@@ -6667,7 +6340,7 @@
             "description": "Министр иностранных дел СССР, затем президент Грузии.",
             "association": "Новое политическое мышление, конец холодной войны",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/shevardnadze-eduard.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Eduard_shevardnadze.jpg",
@@ -6704,7 +6377,7 @@
             "description": "Военачальник Петра I.",
             "association": "Полководец Петра I, Полтавская битва (1709)",
             "related": null,
-            "level": 2,
+            "level": 1,
             "image": {
                 "file": "images/sheremetev-boris.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Boris_Sheremetyev_by_I.Argunov_(1768,_Kuskovo).jpg",
@@ -6740,7 +6413,7 @@
             "description": "Конструктор стрелкового оружия.",
             "association": "Пистолет-пулемёт ППШ",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/shpagin-georgiy.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:%D0%93%D0%B5%D0%BE%D1%80%D0%B3%D0%B8%D0%B9_%D0%A1%D0%B5%D0%BC%D1%91%D0%BD%D0%BE%D0%B2%D0%B8%D1%87_%D0%A8%D0%BF%D0%B0%D0%B3%D0%B8%D0%BD.jpg",
@@ -6786,7 +6459,7 @@
                     "shuvalov-ivan"
                 ]
             },
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/shuvalov-petr.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:RusPortraits_v3-003_Le_Comte_Pierre_Ivanowitch_Chouvaloff.jpg",
@@ -6822,7 +6495,7 @@
             "description": "Монархист, депутат, участник Февральской революции.",
             "association": "Принял отречение Николая II (1917)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/shulgin-vasiliy.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Shulgin_VV_1913.jpg",
@@ -6840,7 +6513,7 @@
             "description": "Командующий 60-й армией при обороне Сталинграда.",
             "association": "Оборона Сталинграда, пленение Паулюса (1943)",
             "related": null,
-            "level": 3,
+            "level": 2,
             "image": {
                 "file": "images/shumilov-mikhail.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Mikhail_Stepanovich_Shumilov.jpg",
@@ -6912,7 +6585,7 @@
             "description": "Экономист, лидер партии «Яблоко».",
             "association": "Программа «500 дней» (1990)",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/yavlinskiy-grigoriy.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Yavlinsky_2023.jpg",
@@ -6953,8 +6626,13 @@
             "name": "Яковлев Александр (авиаконструктор)",
             "description": "Авиаконструктор времен ВОВ и далее. Самолёты \"Як\".",
             "association": "Истребители Як в Великую Отечественную войну",
-            "related": null,
-            "level": 3,
+            "related": {
+                "text": "Заместитель Алексея Шахурина в наркомате.",
+                "ids": [
+                    "shakhurin-aleksey"
+                ]
+            },
+            "level": 2,
             "image": {
                 "file": "images/yakovlev-aleksandr-aviakonstruktor.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:Aircraft_designer_Yakovlev_by_Avvakumov.jpg",
@@ -6972,7 +6650,7 @@
             "description": "Секретарь ЦК, советник Горбачёва.",
             "association": "«Архитектор» Перестройки и гласности",
             "related": null,
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/yakovlev-aleksandr-politik.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B0%D0%BD%D0%B4%D1%80_%D0%AF%D0%BA%D0%BE%D0%B2%D0%BB%D0%B5%D0%B2_(cropped).jpg",
@@ -6995,7 +6673,7 @@
                     "uzbek"
                 ]
             },
-            "level": 2,
+            "level": 3,
             "image": {
                 "file": "images/mikhail-yaroslavich-tverskoy.webp",
                 "source": "https://commons.wikimedia.org/wiki/File:%D0%9C%D0%B8%D1%85%D0%B0%D0%B8%D0%BB_%D0%AF%D1%80%D0%BE%D1%81%D0%BB%D0%B0%D0%B2%D0%B8%D1%87_%D0%A2%D0%B2%D0%B5%D1%80%D1%81%D0%BA%D0%BE%D0%B9.jpg",
@@ -7006,6 +6684,1320 @@
             "era": 2,
             "role": "R",
             "answer": null
+        },
+        {
+            "id": "mitropolit-ilarion",
+            "name": "Митрополит Иларион",
+            "description": "Первый киевский митрополит из русских (1051).",
+            "association": "Сочинение «Слово о законе и благодати»",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/mitropolit-ilarion.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Illarion_ikona.jpg",
+                "license": "Public domain",
+                "author": "НеизвестенUnknown author",
+                "commons": true
+            },
+            "era": 1,
+            "role": "C",
+            "answer": "Иларион"
+        },
+        {
+            "id": "letopisets-nestor",
+            "name": "Нестор Летописец",
+            "description": "Монах Киево-Печерского монастыря.",
+            "association": "«Повесть временных лет» (начало XII века)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/letopisets-nestor.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Nestor_03.jpg",
+                "license": "CC BY-SA 3.0",
+                "author": "Sergey Nikitin",
+                "commons": true
+            },
+            "era": 1,
+            "role": "K",
+            "answer": "Нестор"
+        },
+        {
+            "id": "boris-i-gleb",
+            "name": "Борис и Глеб",
+            "description": "Сыновья князя Владимира, первые русские святые.",
+            "association": "Убиты в усобице за киевский престол (1015)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/boris-i-gleb.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:BorisGleb.jpg",
+                "license": "Public domain",
+                "author": "аноним",
+                "commons": true
+            },
+            "era": 1,
+            "role": "C",
+            "answer": null
+        },
+        {
+            "id": "svyatopolk-okayannyy",
+            "name": "Святополк Окаянный",
+            "description": "Киевский князь.",
+            "association": "Убийство братьев Бориса и Глеба (1015)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/svyatopolk-okayannyy.webp",
+                "placeholder": true
+            },
+            "era": 1,
+            "role": "R",
+            "answer": null
+        },
+        {
+            "id": "kolovrat-evpatiy",
+            "name": "Коловрат Евпатий",
+            "description": "Рязанский боярин, богатырь.",
+            "association": "Отряд мстителей против войска Батыя (1237)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/kolovrat-evpatiy.webp",
+                "placeholder": true
+            },
+            "era": 1,
+            "role": "H",
+            "answer": "Коловрат"
+        },
+        {
+            "id": "bobrok-volynskiy-dmitriy",
+            "name": "Боброк-Волынский Дмитрий",
+            "description": "Воевода, боярин Дмитрия Донского.",
+            "association": "Засадный полк в Куликовской битве (1380)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/bobrok-volynskiy-dmitriy.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Facial_Chronicle_-_b.09,_p.498_-_Bobrok_Volynets.jpg",
+                "license": "Public domain",
+                "author": "Неизвестные русские миниатюристы, 1560-1570-е годы (Царский скрипторий в Александровской слободе) Лицевой Летописный свод (в 10 томах: pdf, pdf с переводом)Public domain image",
+                "commons": true
+            },
+            "era": 2,
+            "role": "M",
+            "answer": "Боброк-Волынский"
+        },
+        {
+            "id": "vladimir-serpukhovskoy",
+            "name": "Владимир Серпуховской",
+            "description": "Удельный князь, двоюродный брат Дмитрия Донского.",
+            "association": "Куликовская битва: удар засадного полка (1380)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/vladimir-serpukhovskoy.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:%D0%92%D0%BB%D0%B0%D0%B4%D0%B8%D0%BC%D0%B8%D1%80_%D0%A5%D1%80%D0%B0%D0%B1%D1%80%D1%8B%D0%B9_%D0%B2%D1%8B%D0%B5%D0%B7%D0%B6%D0%B0%D0%B5%D1%82_%D0%B8%D0%B7_%D0%B4%D1%83%D0%B1%D1%80%D0%B0%D0%B2%D1%8B.jpg",
+                "license": "CC BY-SA 4.0",
+                "author": "Сказание о Мамаевом побоище",
+                "commons": true
+            },
+            "era": 2,
+            "role": "M",
+            "answer": "Серпуховской"
+        },
+        {
+            "id": "inok-peresvet",
+            "name": "Инок Пересвет",
+            "description": "Монах-воин Троице-Сергиева монастыря.",
+            "association": "Поединок с Челубеем перед Куликовской битвой (1380)",
+            "related": {
+                "text": "Послан на битву Сергием Радонежским.",
+                "ids": [
+                    "sergiy-radonezhskiy"
+                ]
+            },
+            "level": 2,
+            "image": {
+                "file": "images/inok-peresvet.webp",
+                "placeholder": true
+            },
+            "era": 2,
+            "role": "H",
+            "answer": "Пересвет"
+        },
+        {
+            "id": "khan-akhmat",
+            "name": "Хан Ахмат",
+            "description": "Хан Большой Орды.",
+            "association": "Стояние на реке Угре (1480): ушёл без боя",
+            "related": {
+                "text": "Противник Ивана III.",
+                "ids": [
+                    "ivan-iii"
+                ]
+            },
+            "level": 1,
+            "image": {
+                "file": "images/khan-akhmat.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:%D0%A6%D0%B0%D1%80%D1%8C_%D0%90%D1%85%D0%BC%D0%B0%D1%82_%D0%B8%D0%B4%D1%91%D1%82_%D0%BD%D0%B0_%D0%A0%D1%83%D1%81%D1%8C.png",
+                "license": "Public domain",
+                "author": "Неизвестные русские миниатюристы, 1560-1570-е годы (Царский скрипторий в Александровской слободе) Лицевой Летописный свод (в 10 томах: pdf, pdf с переводом)Public domain image",
+                "commons": true
+            },
+            "era": 2,
+            "role": "R",
+            "answer": "Ахмат"
+        },
+        {
+            "id": "vorotynskiy-mikhail",
+            "name": "Воротынский Михаил",
+            "description": "Князь, воевода Ивана Грозного.",
+            "association": "Разгром крымского хана при Молодях (1572)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/vorotynskiy-mikhail.webp",
+                "placeholder": true
+            },
+            "era": 2,
+            "role": "M",
+            "answer": "Воротынский"
+        },
+        {
+            "id": "zakharina-yureva-anastasiya",
+            "name": "Захарьина-Юрьева Анастасия",
+            "description": "Первая жена Ивана Грозного, царица.",
+            "association": "Её род — предки династии Романовых",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/zakharina-yureva-anastasiya.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Facial_Chronicle_-_b.22,_p._43_-_Birth_of_Ivan_Ivanovich.gif",
+                "license": "Public domain",
+                "author": "Неизвестные русские миниатюристы, 1560-1570-е годы (Царский скрипторий в Александровской слободе) Лицевой Летописный свод (в 10 томах: pdf, pdf с переводом)Public domain image",
+                "commons": true
+            },
+            "era": 2,
+            "role": "S",
+            "answer": "Захарьина-Юрьева"
+        },
+        {
+            "id": "stefan-batoriy",
+            "name": "Стефан Баторий",
+            "description": "Король Речи Посполитой.",
+            "association": "Ливонская война: осада Пскова (1581)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/stefan-batoriy.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Anonymous_Stephen_B%C3%A1thory_(detail)_01.jpg",
+                "license": "Public domain",
+                "author": "Автор оригинала — Мартин Кобер",
+                "commons": true
+            },
+            "era": 2,
+            "role": "R",
+            "answer": "Баторий"
+        },
+        {
+            "id": "tsarevich-dmitriy",
+            "name": "Царевич Дмитрий",
+            "description": "Младший сын Ивана Грозного.",
+            "association": "Гибель в Угличе (1591): прервалась династия Рюриковичей",
+            "related": {
+                "text": "Его именем назывались Лжедмитрий I и Лжедмитрий II.",
+                "ids": [
+                    "lzhedmitriy-i",
+                    "lzhedmitriy-ii"
+                ]
+            },
+            "level": 2,
+            "image": {
+                "file": "images/tsarevich-dmitriy.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Dmitry_Uglitsky_kryshka_raki_1.jpg",
+                "license": "Public domain",
+                "author": "kremlin armoury",
+                "commons": true
+            },
+            "era": 2,
+            "role": "S",
+            "answer": null
+        },
+        {
+            "id": "boyarynya-morozova",
+            "name": "Боярыня Морозова",
+            "description": "Знатная вдова, сторонница протопопа Аввакума.",
+            "association": "Церковный раскол: умерла в заточении за старую веру",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/boyarynya-morozova.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Boyaryna_Morozova_by_V.Surikov_(1884-1887,_Tretyakov_gallery)_detail_01.jpg",
+                "license": "Public domain",
+                "author": "Василий Иванович Суриков",
+                "commons": true
+            },
+            "era": 3,
+            "role": "O",
+            "answer": "Морозова"
+        },
+        {
+            "id": "rtishchev-fedor",
+            "name": "Ртищев Фёдор",
+            "description": "Окольничий, ближний советник Алексея Михайловича.",
+            "association": "Андреевское училище в Москве (1648), приюты для бедных",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/rtishchev-fedor.webp",
+                "placeholder": true
+            },
+            "era": 3,
+            "role": "S",
+            "answer": "Ртищев"
+        },
+        {
+            "id": "khmelnitskiy-bogdan",
+            "name": "Хмельницкий Богдан",
+            "description": "Гетман Войска Запорожского.",
+            "association": "Переяславская рада: Левобережная Украина вошла в состав России (1654)",
+            "related": null,
+            "level": 1,
+            "image": {
+                "file": "images/khmelnitskiy-bogdan.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Bohdan_Khmelnytsky.jpg",
+                "license": "Public domain",
+                "author": "НеизвестенUnknown author",
+                "commons": true
+            },
+            "era": 3,
+            "role": "R",
+            "answer": "Хмельницкий"
+        },
+        {
+            "id": "atlasov-vladimir",
+            "name": "Атласов Владимир",
+            "description": "Сибирский казак-землепроходец.",
+            "association": "Поход на Камчатку (1697–1699)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/atlasov-vladimir.webp",
+                "placeholder": true
+            },
+            "era": 4,
+            "role": "K",
+            "answer": "Атласов"
+        },
+        {
+            "id": "moskvitin-ivan",
+            "name": "Москвитин Иван",
+            "description": "Томский казак-землепроходец.",
+            "association": "Первым из русских вышел к Охотскому морю (1639)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/moskvitin-ivan.webp",
+                "placeholder": true
+            },
+            "era": 3,
+            "role": "K",
+            "answer": "Москвитин"
+        },
+        {
+            "id": "khovanskiy-ivan",
+            "name": "Хованский Иван",
+            "description": "Князь, боярин, старообрядец.",
+            "association": "Стрелецкий бунт в Москве (1682)",
+            "related": {
+                "text": "Казнён по приказу царевны Софьи.",
+                "ids": [
+                    "tsarevna-sofya-alekseevna"
+                ]
+            },
+            "level": 2,
+            "image": {
+                "file": "images/khovanskiy-ivan.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Prince_Ivan_Andreevich_Khovansky.jpg",
+                "license": "CC BY-SA 4.0",
+                "author": "НеизвестенUnknown author",
+                "commons": true
+            },
+            "era": 3,
+            "role": "O",
+            "answer": "Хованский"
+        },
+        {
+            "id": "golitsyn-mikhail",
+            "name": "Голицын Михаил",
+            "description": "Князь, генерал-фельдмаршал Петра I.",
+            "association": "Морская победа над шведами при Гренгаме (1720)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/golitsyn-mikhail.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Golitsyn_M_M_1675-1730.jpg",
+                "license": "Public domain",
+                "author": "Неизвестный художник",
+                "commons": true
+            },
+            "era": 4,
+            "role": "M",
+            "answer": "Голицын"
+        },
+        {
+            "id": "lassi-petr",
+            "name": "Ласси Пётр",
+            "description": "Генерал-фельдмаршал, ирландец на русской службе.",
+            "association": "Война с Турцией: взятие Азова (1736)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/lassi-petr.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Peter_von_Lacy.PNG",
+                "license": "Public domain",
+                "author": "Хайд Иоганн Якоб (нем. Johann Jacob Haid)(1704 – 1767)",
+                "commons": true
+            },
+            "era": 4,
+            "role": "M",
+            "answer": "Ласси"
+        },
+        {
+            "id": "razumovskiy-aleksey",
+            "name": "Разумовский Алексей",
+            "description": "Граф, фаворит императрицы, бывший певчий из украинских казаков.",
+            "association": "Тайный брак с Елизаветой Петровной",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/razumovskiy-aleksey.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Razumovskij-aleksej-grigorevich-9500.jpg",
+                "license": "CC BY-SA 4.0",
+                "author": "Alexej2004",
+                "commons": true
+            },
+            "era": 4,
+            "role": "S",
+            "answer": "Разумовский"
+        },
+        {
+            "id": "apraksin-stepan",
+            "name": "Апраксин Степан",
+            "description": "Генерал-фельдмаршал.",
+            "association": "Семилетняя война: победа при Гросс-Егерсдорфе (1757)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/apraksin-stepan.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Stepaapraxin.jpg",
+                "license": "Public domain",
+                "author": "Анонимный авторUnknown author",
+                "commons": true
+            },
+            "era": 4,
+            "role": "M",
+            "answer": "Апраксин"
+        },
+        {
+            "id": "orlov-grigoriy",
+            "name": "Орлов Григорий",
+            "description": "Граф, фаворит Екатерины II.",
+            "association": "Переворот 1762 года, подавление Чумного бунта в Москве (1771)",
+            "related": {
+                "text": "Брат Алексея Орлова.",
+                "ids": [
+                    "orlov-aleksey"
+                ]
+            },
+            "level": 2,
+            "image": {
+                "file": "images/orlov-grigoriy.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Orlov_greg.jpeg",
+                "license": "Public domain",
+                "author": "Фёдор Степанович Рокотов / Автор оригинала — Стефано Торелли",
+                "commons": true
+            },
+            "era": 4,
+            "role": "S",
+            "answer": "Орлов"
+        },
+        {
+            "id": "radishchev-aleksandr",
+            "name": "Радищев Александр",
+            "description": "Писатель, первый русский революционный публицист.",
+            "association": "Книга «Путешествие из Петербурга в Москву» (1790), ссылка в Сибирь",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/radishchev-aleksandr.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Radishchev_color.jpg",
+                "license": "Public domain",
+                "author": "Неизвестный художник",
+                "commons": true
+            },
+            "era": 4,
+            "role": "O",
+            "answer": "Радищев"
+        },
+        {
+            "id": "miloradovich-mikhail",
+            "name": "Милорадович Михаил",
+            "description": "Генерал, герой войны 1812 года, губернатор Петербурга.",
+            "association": "Смертельно ранен на Сенатской площади (1825)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/miloradovich-mikhail.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:%D0%9C%D0%B8%D1%85%D0%B0%D0%B8%D0%BB_%D0%90%D0%BD%D0%B4%D1%80%D0%B5%D0%B5%D0%B2%D0%B8%D1%87_%D0%9C%D0%B8%D0%BB%D0%BE%D1%80%D0%B0%D0%B4%D0%BE%D0%B2%D0%B8%D1%87.jpg",
+                "license": "Public domain",
+                "author": "",
+                "commons": true
+            },
+            "era": 5,
+            "role": "M",
+            "answer": "Милорадович"
+        },
+        {
+            "id": "kakhovskiy-petr",
+            "name": "Каховский Пётр",
+            "description": "Отставной поручик, член Северного общества.",
+            "association": "Восстание декабристов: застрелил генерала Милорадовича (1825)",
+            "related": {
+                "text": "Соратник Кондратия Рылеева.",
+                "ids": [
+                    "ryleev-kondratiy"
+                ]
+            },
+            "level": 2,
+            "image": {
+                "file": "images/kakhovskiy-petr.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Kakhovsky.jpg",
+                "license": "Public domain",
+                "author": "",
+                "commons": true
+            },
+            "era": 5,
+            "role": "O",
+            "answer": "Каховский"
+        },
+        {
+            "id": "trubetskoy-sergey",
+            "name": "Трубецкой Сергей",
+            "description": "Князь, полковник, руководитель Северного общества.",
+            "association": "Выбран «диктатором» восстания 14 декабря 1825 года, но не вышел на площадь",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/trubetskoy-sergey.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:SPTrubeckoy.jpg",
+                "license": "Public domain",
+                "author": "Акварель Николая Александровича Бестужева",
+                "commons": true
+            },
+            "era": 5,
+            "role": "O",
+            "answer": "Трубецкой"
+        },
+        {
+            "id": "petrashevskiy-mikhail",
+            "name": "Петрашевский Михаил",
+            "description": "Чиновник, социалист-утопист.",
+            "association": "Кружок с Достоевским; казнь в последний миг заменили каторгой (1849)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/petrashevskiy-mikhail.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Petrashevsky.jpg",
+                "license": "Public domain",
+                "author": "",
+                "commons": true
+            },
+            "era": 5,
+            "role": "O",
+            "answer": "Петрашевский"
+        },
+        {
+            "id": "istomin-vladimir",
+            "name": "Истомин Владимир",
+            "description": "Контр-адмирал Черноморского флота.",
+            "association": "Оборона Севастополя: погиб на Малаховом кургане (1855)",
+            "related": {
+                "text": "Соратник Павла Нахимова и Владимира Корнилова.",
+                "ids": [
+                    "nakhimov-pavel",
+                    "kornilov-vladimir"
+                ]
+            },
+            "level": 2,
+            "image": {
+                "file": "images/istomin-vladimir.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Istominvi.jpeg",
+                "license": "Public domain",
+                "author": "НеизвестенUnknown author",
+                "commons": true
+            },
+            "era": 5,
+            "role": "M",
+            "answer": "Истомин"
+        },
+        {
+            "id": "totleben-eduard",
+            "name": "Тотлебен Эдуард",
+            "description": "Военный инженер, генерал.",
+            "association": "Укрепления Севастополя в Крымскую войну (1854–1855)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/totleben-eduard.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Totlebenei.jpeg",
+                "license": "Public domain",
+                "author": "Смирнов (литограф)",
+                "commons": true
+            },
+            "era": 5,
+            "role": "M",
+            "answer": "Тотлебен"
+        },
+        {
+            "id": "gorchakov-aleksandr",
+            "name": "Горчаков Александр",
+            "description": "Министр иностранных дел (1856–1882).",
+            "association": "Отмена запрета держать флот на Чёрном море (1871)",
+            "related": null,
+            "level": 1,
+            "image": {
+                "file": "images/gorchakov-aleksandr.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:K%C3%B6ler_Gorchakov.jpg",
+                "license": "Public domain",
+                "author": "Йохан (Иван) Петрович Кёлер-Вилианди",
+                "commons": true
+            },
+            "era": 5,
+            "role": "S",
+            "answer": "Горчаков"
+        },
+        {
+            "id": "zhelyabov-andrey",
+            "name": "Желябов Андрей",
+            "description": "Народоволец-террорист, сын крепостного крестьянина.",
+            "association": "Подготовка убийства Александра II (1881)",
+            "related": {
+                "text": "Соратник Софьи Перовской.",
+                "ids": [
+                    "perovskaya-sofya"
+                ]
+            },
+            "level": 2,
+            "image": {
+                "file": "images/zhelyabov-andrey.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Zhelyabov.jpg",
+                "license": "Public domain",
+                "author": "",
+                "commons": true
+            },
+            "era": 5,
+            "role": "O",
+            "answer": "Желябов"
+        },
+        {
+            "id": "grinevitskiy-ignatiy",
+            "name": "Гриневицкий Игнатий",
+            "description": "Студент, член «Народной воли».",
+            "association": "Бросил бомбу, убившую Александра II (1 марта 1881)",
+            "related": {
+                "text": "Соратник Андрея Желябова и Софьи Перовской.",
+                "ids": [
+                    "zhelyabov-andrey",
+                    "perovskaya-sofya"
+                ]
+            },
+            "level": 2,
+            "image": {
+                "file": "images/grinevitskiy-ignatiy.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Ihnat_Hryniavicki._%D0%86%D0%B3%D0%BD%D0%B0%D1%82_%D0%93%D1%80%D1%8B%D0%BD%D1%8F%D0%B2%D1%96%D1%86%D0%BA%D1%96_(XIX).jpg",
+                "license": "Public domain",
+                "author": "НеизвестенUnknown author",
+                "commons": true
+            },
+            "era": 5,
+            "role": "O",
+            "answer": "Гриневицкий"
+        },
+        {
+            "id": "stoletov-nikolay",
+            "name": "Столетов Николай",
+            "description": "Генерал, командующий болгарским ополчением.",
+            "association": "Оборона Шипки в войне с Турцией (1877)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/stoletov-nikolay.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:%D0%A1%D1%82%D0%BE%D0%BB%D0%B5%D1%82%D0%BE%D0%B2_%D0%9D%D0%B8%D0%BA%D0%BE%D0%BB%D0%B0%D0%B9_%D0%93%D1%80%D0%B8%D0%B3%D0%BE%D1%80%D1%8C%D0%B5%D0%B2%D0%B8%D1%87,_1877.jpg",
+                "license": "Public domain",
+                "author": "Рисовал П. Ф. Борель, гравировал И. Матюшин",
+                "commons": true
+            },
+            "era": 5,
+            "role": "M",
+            "answer": "Столетов"
+        },
+        {
+            "id": "delyanov-ivan",
+            "name": "Делянов Иван",
+            "description": "Министр народного просвещения при Александре III.",
+            "association": "Циркуляр «о кухаркиных детях» (1887): гимназии закрыли для бедных",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/delyanov-ivan.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:%D0%94%D0%B5%D0%BB%D1%8F%D0%BD%D0%BE%D0%B2%D0%98%D0%94.jpeg",
+                "license": "Public domain",
+                "author": "Левицкий",
+                "commons": true
+            },
+            "era": 5,
+            "role": "S",
+            "answer": "Делянов"
+        },
+        {
+            "id": "bulygin-aleksandr",
+            "name": "Булыгин Александр",
+            "description": "Министр внутренних дел (1905).",
+            "association": "Проект совещательной Думы, сорванный революцией (1905)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/bulygin-aleksandr.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Alexander_Bulygin.jpg",
+                "license": "Public domain",
+                "author": "Фотография ателье Буллы",
+                "commons": true
+            },
+            "era": 6,
+            "role": "S",
+            "answer": "Булыгин"
+        },
+        {
+            "id": "zubatov-sergey",
+            "name": "Зубатов Сергей",
+            "description": "Начальник Московского охранного отделения.",
+            "association": "Полицейский социализм: рабочие кружки под надзором властей (1901–1903)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/zubatov-sergey.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Sergey_Zubatov.jpg",
+                "license": "Public domain",
+                "author": "Фотография Департамента полиции",
+                "commons": true
+            },
+            "era": 6,
+            "role": "S",
+            "answer": "Зубатов"
+        },
+        {
+            "id": "lvov-georgiy",
+            "name": "Львов Георгий",
+            "description": "Князь, первый глава Временного правительства.",
+            "association": "Власть после свержения царя: март–июль 1917",
+            "related": {
+                "text": "Его сменил Александр Керенский.",
+                "ids": [
+                    "kerenskiy-aleksandr"
+                ]
+            },
+            "level": 2,
+            "image": {
+                "file": "images/lvov-georgiy.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Georgy_Lvov,_1918.jpg",
+                "license": "Public domain",
+                "author": "Wood, Alan",
+                "commons": true
+            },
+            "era": 6,
+            "role": "S",
+            "answer": "Львов"
+        },
+        {
+            "id": "alekseev-mikhail",
+            "name": "Алексеев Михаил",
+            "description": "Генерал, начальник штаба Ставки в Первую мировую.",
+            "association": "Создание белой Добровольческой армии (1917)",
+            "related": {
+                "text": "Соратник Лавра Корнилова и Антона Деникина.",
+                "ids": [
+                    "kornilov-lavr",
+                    "denikin-anton"
+                ]
+            },
+            "level": 2,
+            "image": {
+                "file": "images/alekseev-mikhail.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:General_M._V._Alekseev.jpeg",
+                "license": "Public domain",
+                "author": "НеизвестенUnknown author",
+                "commons": true
+            },
+            "era": 6,
+            "role": "M",
+            "answer": "Алексеев"
+        },
+        {
+            "id": "kaledin-aleksey",
+            "name": "Каледин Алексей",
+            "description": "Атаман Донского казачьего войска.",
+            "association": "Первым поднял казаков против большевиков на Дону; застрелился (1918)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/kaledin-aleksey.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:%D0%92%D0%BE%D0%B9%D1%81%D0%BA%D0%BE%D0%B2%D0%BE%D0%B9_%D0%90%D1%82%D0%B0%D0%BC%D0%B0%D0%BD_%D0%9E%D0%B1%D0%BB%D0%B0%D1%81%D1%82%D0%B8_%D0%92%D0%BE%D0%B9%D1%81%D0%BA%D0%B0_%D0%94%D0%BE%D0%BD%D1%81%D0%BA%D0%BE%D0%B3%D0%BE,_%D0%B3%D0%B5%D0%BD%D0%B5%D1%80%D0%B0%D0%BB_%D0%BE%D1%82_%D0%BA%D0%B0%D0%B2%D0%B0%D0%BB%D0%B5%D1%80%D0%B8%D0%B8_%D0%9A%D0%B0%D0%BB%D0%B5%D0%B4%D0%B8%D0%BD_%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9_%D0%9C%D0%B0%D0%BA%D1%81%D0%B8%D0%BC%D0%BE%D0%B2%D0%B8%D1%87.PNG",
+                "license": "Public domain",
+                "author": "НеизвестенUnknown author",
+                "commons": true
+            },
+            "era": 6,
+            "role": "M",
+            "answer": "Каледин"
+        },
+        {
+            "id": "kolchak-aleksandr",
+            "name": "Колчак Александр",
+            "description": "Адмирал, «Верховный правитель России».",
+            "association": "Гражданская война: белые в Сибири, расстрелян (1920)",
+            "related": null,
+            "level": 1,
+            "image": {
+                "file": "images/kolchak-aleksandr.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Kolchak.jpg",
+                "license": "Public domain",
+                "author": "Неизвестный фотограф",
+                "commons": true
+            },
+            "era": 6,
+            "role": "M",
+            "answer": "Колчак"
+        },
+        {
+            "id": "semenov-grigoriy",
+            "name": "Семёнов Григорий",
+            "description": "Казачий атаман, генерал.",
+            "association": "Белые в Забайкалье при поддержке японцев (1918–1920)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/semenov-grigoriy.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Ataman_semenov.jpg",
+                "license": "Public domain",
+                "author": "НеизвестенUnknown author",
+                "commons": true
+            },
+            "era": 6,
+            "role": "M",
+            "answer": "Семёнов"
+        },
+        {
+            "id": "egorov-aleksandr",
+            "name": "Егоров Александр",
+            "description": "Маршал Советского Союза, расстрелян (1939).",
+            "association": "Гражданская война: разгром Деникина под Орлом (1919)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/egorov-aleksandr.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B0%D0%BD%D0%B4%D1%80_%D0%95%D0%B3%D0%BE%D1%80%D0%BE%D0%B2.jpg",
+                "license": "Public domain",
+                "author": "НеизвестенUnknown author",
+                "commons": true
+            },
+            "era": 6,
+            "role": "M",
+            "answer": "Егоров"
+        },
+        {
+            "id": "kotovskiy-grigoriy",
+            "name": "Котовский Григорий",
+            "description": "Красный командир-кавалерист, бывший налётчик.",
+            "association": "Гражданская война: подавление Тамбовского восстания (1921)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/kotovskiy-grigoriy.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Kotovsky.jpg",
+                "license": "Public domain",
+                "author": "",
+                "commons": true
+            },
+            "era": 6,
+            "role": "M",
+            "answer": "Котовский"
+        },
+        {
+            "id": "yagoda-genrikh",
+            "name": "Ягода Генрих",
+            "description": "Нарком внутренних дел (1934–1936).",
+            "association": "Начало Большого террора; расстрелян (1938)",
+            "related": {
+                "text": "Его сменил Николай Ежов.",
+                "ids": [
+                    "ezhov-nikolay"
+                ]
+            },
+            "level": 2,
+            "image": {
+                "file": "images/yagoda-genrikh.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:1936_genrich_grigorijewitsch_jagoda.jpg",
+                "license": "Public domain",
+                "author": "НеизвестенUnknown author",
+                "commons": true
+            },
+            "era": 7,
+            "role": "S",
+            "answer": "Ягода"
+        },
+        {
+            "id": "stalin-vasiliy",
+            "name": "Сталин Василий",
+            "description": "Сын Иосифа Сталина, генерал авиации.",
+            "association": "Командовал ВВС Московского округа; арестован после смерти отца (1953)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/stalin-vasiliy.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Vasily_Stalin.jpg",
+                "license": "Public domain",
+                "author": "НеизвестенUnknown author",
+                "commons": true
+            },
+            "era": 7,
+            "role": "M",
+            "answer": "Сталин"
+        },
+        {
+            "id": "gastello-nikolay",
+            "name": "Гастелло Николай",
+            "description": "Капитан, лётчик-бомбардировщик.",
+            "association": "Огненный таран: направил горящий самолёт на колонну врага (1941)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/gastello-nikolay.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Gastello_Nikolay_Francievich.jpg",
+                "license": "Public domain",
+                "author": "НеизвестенUnknown author",
+                "commons": true
+            },
+            "era": 7,
+            "role": "H",
+            "answer": "Гастелло"
+        },
+        {
+            "id": "maresev-aleksey",
+            "name": "Маресьев Алексей",
+            "description": "Лётчик-истребитель.",
+            "association": "Вернулся в бой без обеих ног; «Повесть о настоящем человеке»",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/maresev-aleksey.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Alexey_Maresyev_1940s.jpg",
+                "license": "CC BY 4.0",
+                "author": "Soviet Armed Forces photographer",
+                "commons": true
+            },
+            "era": 7,
+            "role": "H",
+            "answer": "Маресьев"
+        },
+        {
+            "id": "toidze-irakliy",
+            "name": "Тоидзе Ираклий",
+            "description": "Советский художник.",
+            "association": "Плакат «Родина-мать зовёт!» (1941)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/toidze-irakliy.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Toidze_I.M.jpg",
+                "license": "Public domain",
+                "author": "НеизвестенUnknown author",
+                "commons": true
+            },
+            "era": 7,
+            "role": "K",
+            "answer": "Тоидзе"
+        },
+        {
+            "id": "pavlov-yakov",
+            "name": "Павлов Яков",
+            "description": "Сержант.",
+            "association": "Сталинградская битва: 58 дней обороны дома (1942)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/pavlov-yakov.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:%D0%AF%D0%BA%D0%BE%D0%B2_%D0%A4%D0%B5%D0%B4%D0%BE%D1%82%D0%BE%D0%B2%D0%B8%D1%87_%D0%9F%D0%B0%D0%B2%D0%BB%D0%BE%D0%B2_001.jpg",
+                "license": "Public domain",
+                "author": "НеизвестенUnknown author",
+                "commons": true
+            },
+            "era": 7,
+            "role": "H",
+            "answer": "Павлов"
+        },
+        {
+            "id": "zaytsev-vasiliy",
+            "name": "Зайцев Василий",
+            "description": "Снайпер.",
+            "association": "Сталинградская битва: уничтожил более 200 врагов (1942)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/zaytsev-vasiliy.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Vasily_Zaytsev.jpg",
+                "license": "CC BY 4.0",
+                "author": "Министерство обороны Российской Федерации",
+                "commons": true
+            },
+            "era": 7,
+            "role": "H",
+            "answer": "Зайцев"
+        },
+        {
+            "id": "putilov-matvey",
+            "name": "Путилов Матвей",
+            "description": "Младший сержант, связист.",
+            "association": "Сталинград: умирая, зажал зубами концы провода и восстановил связь (1942)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/putilov-matvey.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Putilov_Matvei_Mefodievich_1.JPG",
+                "license": "Public domain",
+                "author": "НеизвестенUnknown author",
+                "commons": true
+            },
+            "era": 7,
+            "role": "H",
+            "answer": "Путилов"
+        },
+        {
+            "id": "matrosov-aleksandr",
+            "name": "Матросов Александр",
+            "description": "Рядовой.",
+            "association": "Закрыл телом амбразуру вражеского дзота (1943)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/matrosov-aleksandr.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Alexander_Matveyevich_Matrosov.jpg",
+                "license": "Public domain",
+                "author": "НеизвестенUnknown author",
+                "commons": true
+            },
+            "era": 7,
+            "role": "H",
+            "answer": "Матросов"
+        },
+        {
+            "id": "yanaev-gennadiy",
+            "name": "Янаев Геннадий",
+            "description": "Вице-президент СССР.",
+            "association": "Путч ГКЧП против Горбачёва (август 1991)",
+            "related": {
+                "text": "Соратник Владимира Крючкова.",
+                "ids": [
+                    "kryuchkov-vladimir"
+                ]
+            },
+            "level": 2,
+            "image": {
+                "file": "images/yanaev-gennadiy.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:%D0%93%D0%B5%D0%BD%D0%BD%D0%B0%D0%B4%D0%B8%D0%B9_%D0%AF%D0%BD%D0%B0%D0%B5%D0%B2_%D0%BD%D0%B0_%D0%B2%D1%81%D1%82%D1%80%D0%B5%D1%87%D0%B5_%D1%81_%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B0%D0%BD%D0%B4%D1%80%D0%BE%D0%BC_%D0%9F%D1%80%D0%BE%D1%85%D0%B0%D0%BD%D0%BE%D0%B2%D1%8B%D0%BC_(1993).png",
+                "license": "CC BY 4.0",
+                "author": "Ю. Рыбчинский, В. Запорожченко",
+                "commons": true
+            },
+            "era": 7,
+            "role": "S",
+            "answer": "Янаев"
+        },
+        {
+            "id": "yazov-dmitriy",
+            "name": "Язов Дмитрий",
+            "description": "Маршал, министр обороны СССР.",
+            "association": "Ввёл танки в Москву во время путча (1991)",
+            "related": {
+                "text": "Соратник Владимира Крючкова.",
+                "ids": [
+                    "kryuchkov-vladimir"
+                ]
+            },
+            "level": 2,
+            "image": {
+                "file": "images/yazov-dmitriy.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:%D0%94%D0%BC%D0%B8%D1%82%D1%80%D0%B8%D0%B9_%D0%AF%D0%B7%D0%BE%D0%B2.png",
+                "license": "CC BY 4.0",
+                "author": "Министерство обороны СССР",
+                "commons": true
+            },
+            "era": 7,
+            "role": "S",
+            "answer": "Язов"
+        },
+        {
+            "id": "gadzhimagomedov-nurmagomed",
+            "name": "Гаджимагомедов Нурмагомед",
+            "description": "Старший лейтенант, командир роты десантников.",
+            "association": "Спецоперация: раненый, в окружении подорвал себя гранатой вместе с врагами (2022)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/gadzhimagomedov-nurmagomed.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:RUSMARKA-3164.jpg",
+                "license": "Public domain",
+                "author": "Почта России, ИТЦ «Марка». Дизайнер – Подобед М.",
+                "commons": true
+            },
+            "era": 8,
+            "role": "H",
+            "answer": "Гаджимагомедов"
+        },
+        {
+            "id": "zhoga-vladimir",
+            "name": "Жога Владимир",
+            "description": "Командир батальона «Спарта» (ДНР), полковник.",
+            "association": "Погиб в Волновахе, прикрывая выход мирных жителей (2022)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/zhoga-vladimir.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:%D0%92%D0%BB%D0%B0%D0%B4%D0%B8%D0%BC%D0%B8%D1%80_%D0%96%D0%BE%D0%B3%D0%B0_(cropped).jpg",
+                "license": "CC BY 3.0",
+                "author": "«Правда ДНР»",
+                "commons": true
+            },
+            "era": 8,
+            "role": "H",
+            "answer": "Жога"
+        },
+        {
+            "id": "matveev-timofey",
+            "name": "Матвеев Тимофей",
+            "description": "Сержант, командир танка десантной дивизии.",
+            "association": "Спецоперация: один из самых молодых Героев России (2022)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/matveev-timofey.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Matveyev_Timofey_Aleksandrovich.jpg",
+                "license": "CC BY-SA 4.0",
+                "author": "Автор неизвестен",
+                "commons": true
+            },
+            "era": 8,
+            "role": "H",
+            "answer": "Матвеев"
+        },
+        {
+            "id": "zhikharev-aleksandr",
+            "name": "Жихарев Александр",
+            "description": "Капитан спецназа ВДВ.",
+            "association": "Спецоперация: бой в окружении, погиб при прорыве (2022)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/zhikharev-aleksandr.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:RUSMARKA-3167.jpg",
+                "license": "Public domain",
+                "author": "Почта России, ИТЦ «Марка». Дизайнер – Подобед М.",
+                "commons": true
+            },
+            "era": 8,
+            "role": "H",
+            "answer": "Жихарев"
+        },
+        {
+            "id": "botashev-kanamat",
+            "name": "Боташев Канамат",
+            "description": "Генерал-майор, военный лётчик.",
+            "association": "Спецоперация: сбит над Луганской областью (2022)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/botashev-kanamat.webp",
+                "placeholder": true
+            },
+            "era": 8,
+            "role": "H",
+            "answer": "Боташев"
+        },
+        {
+            "id": "seikaev-aleksandr",
+            "name": "Сеикаев Александр",
+            "description": "Военный врач.",
+            "association": "Герой спецоперации на Украине (с 2022)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/seikaev-aleksandr.webp",
+                "placeholder": true
+            },
+            "era": 8,
+            "role": "H",
+            "answer": "Сеикаев"
+        },
+        {
+            "id": "islamov-damir",
+            "name": "Исламов Дамир",
+            "description": "Старший лейтенант, командир танкового взвода.",
+            "association": "Бой экипажа у села Золотое (2022)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/islamov-damir.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:%E2%84%96_3003_%D0%94.%D0%9D._%D0%98%D1%81%D0%BB%D0%B0%D0%BC%D0%BE%D0%B2.jpg",
+                "license": "Public domain",
+                "author": "Художник-дизайнер Подобед М. (Почта России)",
+                "commons": true
+            },
+            "era": 8,
+            "role": "H",
+            "answer": "Исламов"
+        },
+        {
+            "id": "gilemkhanov-damir",
+            "name": "Гилемханов Дамир",
+            "description": "Ефрейтор, наводчик танка.",
+            "association": "Бой экипажа у села Золотое (2022)",
+            "related": {
+                "text": "Служил в экипаже Дамира Исламова.",
+                "ids": [
+                    "islamov-damir"
+                ]
+            },
+            "level": 2,
+            "image": {
+                "file": "images/gilemkhanov-damir.webp",
+                "placeholder": true
+            },
+            "era": 8,
+            "role": "H",
+            "answer": "Гилемханов"
+        },
+        {
+            "id": "tsevun-ivan",
+            "name": "Цевун Иван",
+            "description": "Механик-водитель танка.",
+            "association": "Бой экипажа у села Золотое (2022)",
+            "related": {
+                "text": "Служил в экипаже Дамира Исламова.",
+                "ids": [
+                    "islamov-damir"
+                ]
+            },
+            "level": 2,
+            "image": {
+                "file": "images/tsevun-ivan.webp",
+                "placeholder": true
+            },
+            "era": 8,
+            "role": "H",
+            "answer": "Цевун"
+        },
+        {
+            "id": "alaudinov-apti",
+            "name": "Алаудинов Апти",
+            "description": "Генерал-лейтенант, командир спецназа «Ахмат».",
+            "association": "Спецоперация: добровольческие отряды из Чечни (с 2022)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/alaudinov-apti.webp",
+                "source": "https://commons.wikimedia.org/wiki/File:Apti_Aludinov_2017.jpg",
+                "license": "CC BY-SA 4.0",
+                "author": "Дагиров Умар",
+                "commons": true
+            },
+            "era": 8,
+            "role": "H",
+            "answer": "Алаудинов"
+        },
+        {
+            "id": "gagarin-yuriy-dobrovolets",
+            "name": "Гагарин Юрий (доброволец)",
+            "description": "Доброволец.",
+            "association": "Герой спецоперации на Украине (с 2022)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/gagarin-yuriy-dobrovolets.webp",
+                "placeholder": true
+            },
+            "era": 8,
+            "role": "H",
+            "answer": "Гагарин"
+        },
+        {
+            "id": "kachura-olga",
+            "name": "Качура Ольга",
+            "description": "Подполковник, командир артиллерийского дивизиона (ДНР).",
+            "association": "Погибла под обстрелом в Горловке (2022)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/kachura-olga.webp",
+                "placeholder": true
+            },
+            "era": 8,
+            "role": "H",
+            "answer": "Качура"
+        },
+        {
+            "id": "pirogova-mariya",
+            "name": "Пирогова Мария",
+            "description": "Волонтёр.",
+            "association": "Герой спецоперации на Украине (с 2022)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/pirogova-mariya.webp",
+                "placeholder": true
+            },
+            "era": 8,
+            "role": "H",
+            "answer": "Пирогова"
+        },
+        {
+            "id": "ivanova-ekaterina",
+            "name": "Иванова Екатерина",
+            "description": "Военный фельдшер.",
+            "association": "Герой спецоперации на Украине (с 2022)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/ivanova-ekaterina.webp",
+                "placeholder": true
+            },
+            "era": 8,
+            "role": "H",
+            "answer": "Иванова"
+        },
+        {
+            "id": "miroshnichenko-mariya",
+            "name": "Мирошниченко Мария",
+            "description": "Военный врач.",
+            "association": "Герой спецоперации на Украине (с 2022)",
+            "related": null,
+            "level": 2,
+            "image": {
+                "file": "images/miroshnichenko-mariya.webp",
+                "placeholder": true
+            },
+            "era": 8,
+            "role": "H",
+            "answer": "Мирошниченко"
         }
     ],
     "eras": {
@@ -7047,346 +8039,399 @@
         "chingiskhan",
         "vasiliy-iii",
         "ivan-v",
-        "ioann-vi-antonovich",
+        "anna-ioannovna",
         "aleksandr-iii",
         "brusilov-aleksey",
         "gorbachev-mikhail",
         "putin-vladimir",
         "glinskaya-elena",
         "lzhedmitriy-i",
-        "anna-ioannovna",
+        "pavel-i",
         "nikolay-i",
         "budennyy-semen",
         "stalin-iosif",
         "gaydar-egor",
         "ivan-kalita",
         "aleksey-mikhaylovich",
-        "anna-leopoldovna",
+        "petr-i",
         "arakcheev-aleksey",
         "vitte-sergey",
         "khrushchev-nikita",
-        "chubays-anatoliy",
         "yuriy-danilovich",
         "tsarevna-sofya-alekseevna",
-        "pavel-i",
+        "petr-ii",
         "bagration-petr",
         "vrangel-petr",
         "chernenko-konstantin",
         "dmitriy-donskoy",
         "mikhail-fedorovich",
-        "petr-i",
+        "petr-iii",
         "barklay-de-tolli-mikhail",
         "denikin-anton",
         "beriya-lavrentiy",
         "ivan-iii",
         "shuyskiy-vasiliy",
-        "petr-ii",
+        "elizaveta-petrovna",
         "gertsen-aleksandr",
         "dzerzhinskiy-feliks",
         "bukharin-nikolay",
         "ivan-iv-groznyy",
-        "protopop-avvakum",
-        "petr-iii",
-        "kutuzov-mikhail",
+        "khmelnitskiy-bogdan",
+        "biron-ernst",
+        "kiselev-pavel",
         "kerenskiy-aleksandr",
         "vasilevskiy-aleksandr",
         "fedor-ivanovich",
-        "bolotnikov-ivan",
-        "elizaveta-petrovna",
-        "loris-melikov-mikhail",
-        "rasputin-grigoriy",
+        "protopop-avvakum",
+        "mazepa-ivan",
+        "kutuzov-mikhail",
+        "milyukov-pavel",
         "zhukov-georgiy",
         "daniil-moskovskiy",
-        "pozharskiy-dmitriy",
-        "biron-ernst",
-        "milyutin-dmitriy",
+        "bolotnikov-ivan",
+        "menshikov-aleksandr",
+        "loris-melikov-mikhail",
         "stolypin-petr",
         "konev-ivan",
         "tokhtamysh",
-        "minin-kuzma",
-        "mazepa-ivan",
-        "nakhimov-pavel",
+        "pozharskiy-dmitriy",
+        "potemkin-grigoriy",
+        "milyutin-dmitriy",
         "trotskiy-lev",
         "korolev-sergey",
-        "adashev-aleksey",
-        "nikon-patriarkh",
-        "menshikov-aleksandr",
-        "pestel-pavel",
-        "kosygin-aleksey",
-        "ermak",
-        "razin-stepan",
-        "potemkin-grigoriy",
-        "pobedonostsev-konstantin",
-        "kurchatov-igor",
-        "kurbskiy-andrey",
-        "susanin-ivan",
+        "khan-akhmat",
+        "minin-kuzma",
         "pugachev-emelyan",
-        "uvarov-sergey",
-        "molotov-vyacheslav",
-        "mamay",
-        "patriarkh-filaret",
+        "nakhimov-pavel",
+        "kolchak-aleksandr",
+        "kosygin-aleksey",
+        "adashev-aleksey",
+        "morozov-boris",
+        "rumyantsev-zadunayskiy-petr",
+        "pestel-pavel",
+        "kurchatov-igor",
+        "ermak",
+        "nikon-patriarkh",
         "suvorov-aleksandr",
-        "speranskiy-mikhail",
-        "rokossovskiy-konstantin",
-        "sergiy-radonezhskiy",
+        "pobedonostsev-konstantin",
+        "molotov-vyacheslav",
+        "kurbskiy-andrey",
+        "razin-stepan",
         "ushakov-fedor",
+        "uvarov-sergey",
+        "rokossovskiy-konstantin",
+        "mamay",
+        "susanin-ivan",
+        "sheremetev-boris",
+        "speranskiy-mikhail",
         "sakharov-andrey",
+        "sergiy-radonezhskiy",
+        "patriarkh-filaret",
+        "gorchakov-aleksandr",
         "stakhanov-aleksey",
         "yuriy-vsevolodovich",
-        "vitovt",
-        "patriarkh-germogen",
-        "apraksin-fedor",
-        "aksakov-konstantin",
-        "antonov-aleksandr",
-        "bagramyan-ivan",
-        "grachev-pavel",
-        "daniil-galitskiy",
-        "yuriy-dmitrievich-zvenigorodskiy",
-        "golitsyn-vasiliy",
-        "bestuzhev-ryumin-aleksey",
-        "bakunin-mikhail",
-        "voroshilov-kliment",
-        "vatutin-nikolay",
-        "zhirinovskiy-vladimir",
         "vasiliy-kosoy-i-dmitriy-shemyaka",
-        "dezhnev-semen",
-        "demidov-nikita",
-        "benkendorf-aleksandr",
-        "gapon-georgiy",
-        "gromyko-andrey",
-        "zyuganov-gennadiy",
+        "patriarkh-germogen",
+        "ioann-vi-antonovich",
+        "bakunin-mikhail",
+        "antonov-aleksandr",
+        "antonov-aleksey",
+        "sobchak-anatoliy",
+        "svyatopolk-okayannyy",
         "khan-kuchum",
-        "lzhedmitriy-ii",
-        "dashkova-ekaterina",
+        "golitsyn-vasiliy",
+        "anna-leopoldovna",
+        "benkendorf-aleksandr",
+        "blyukher-vasiliy",
+        "bagramyan-ivan",
+        "gadzhimagomedov-nurmagomed",
+        "mitropolit-ilarion",
+        "yagaylo",
+        "dezhnev-semen",
+        "apraksin-fedor",
         "bunge-nikolay",
-        "guchkov-aleksandr",
-        "ezhov-nikolay",
-        "kadyrov-akhmad",
-        "tamerlan",
-        "lyapunov-prokopiy",
+        "voroshilov-kliment",
+        "bulganin-nikolay",
+        "zhoga-vladimir",
+        "letopisets-nestor",
+        "stefan-batoriy",
+        "zarutskiy-ivan",
+        "golovin-fedor",
+        "gurko-iosif",
+        "gapon-georgiy",
+        "voznesenskiy-nikolay",
+        "matveev-timofey",
+        "boris-i-gleb",
+        "boretskaya-marfa",
+        "lzhedmitriy-ii",
         "lefort-frants",
         "davydov-denis",
-        "kornilov-lavr",
-        "zhdanov-andrey",
-        "lebed-aleksandr",
-        "uzbek",
-        "matveev-artamon",
+        "guchkov-aleksandr",
+        "govorov-leonid",
+        "zhikharev-aleksandr",
+        "kolovrat-evpatiy",
+        "mitropolit-makariy",
+        "lyapunov-prokopiy",
         "minikh-burkhard",
-        "ermolov-aleksey",
-        "krzhizhanovskiy-gleb",
-        "zinovev-grigoriy",
-        "primakov-evgeniy",
-        "yagaylo",
+        "zasulich-vera",
+        "kornilov-lavr",
+        "golikov-lenya",
+        "botashev-kanamat",
+        "sofya-paleolog",
         "mnishek-marina",
         "orlov-aleksey",
-        "zasulich-vera",
-        "lunacharskiy-anatoliy",
-        "zorge-rikhard",
-        "rutskoy-aleksandr",
-        "mikhail-yaroslavich-tverskoy",
-        "morozov-boris",
-        "osterman-andrey",
         "kankrin-egor",
-        "makarov-stepan",
-        "egorov-m-a-i-kantariya-m-v",
-        "sobchak-anatoliy",
-        "mitropolit-aleksiy",
+        "krasnov-petr",
+        "gromyko-andrey",
+        "seikaev-aleksandr",
+        "protopop-silvestr",
         "ordin-nashchokin-afanasiy",
-        "panin-nikita",
-        "kiselev-pavel",
-        "mamontov-savva",
-        "ilyushin-sergey",
-        "khasbulatov-ruslan",
-        "boretskaya-marfa",
-        "simeon-polotskiy",
-        "rumyantsev-zadunayskiy-petr",
-        "lavrov-petr",
-        "martov-yuliy",
-        "kaganovich-lazar",
-        "chernomyrdin-viktor",
-        "mitropolit-iona",
+        "osterman-andrey",
+        "kornilov-vladimir",
+        "makarov-stepan",
+        "degtyarev-vasiliy",
+        "islamov-damir",
+        "malyuta-skuratov",
         "poyarkov-vasiliy",
         "saltykov-petr",
+        "lavrov-petr",
+        "martov-yuliy",
+        "dovator-lev",
+        "gilemkhanov-damir",
+        "mitropolit-filipp-kolychev",
+        "skopin-shuyskiy-mikhail",
+        "shuvalov-ivan",
         "milyutin-nikolay",
         "makhno-nestor",
-        "kalashnikov-mikhail",
-        "mitropolit-makariy",
-        "skopin-shuyskiy-mikhail",
-        "spiridov-grigoriy",
-        "muravev-nikita",
-        "milyukov-pavel",
-        "kalinin-mikhail",
-        "sofya-paleolog",
-        "ushakov-simon",
-        "sheremetev-boris",
-        "przhevalskiy-n-m-semenov-tyan-shanskiy-p-p-kozlov-p-k",
-        "dinastiya-morozovykh",
-        "kamenev-lev",
-        "mitropolit-petr",
+        "ezhov-nikolay",
+        "tsevun-ivan",
+        "bobrok-volynskiy-dmitriy",
         "khabarov-erofey",
-        "shuvalov-ivan",
-        "novosiltsev-nikolay",
+        "shuvalov-petr",
+        "muravev-nikita",
         "pleve-vyacheslav",
-        "karbyshev-dmitriy",
-        "protopop-silvestr",
+        "zhdanov-andrey",
+        "alaudinov-apti",
+        "vladimir-serpukhovskoy",
         "shein-mikhail",
         "yulaev-salavat",
         "perovskaya-sofya",
-        "purishkevich-vladimir",
-        "kirov-sergey",
-        "malyuta-skuratov",
-        "platov-matvey",
-        "rodzyanko-mikhail",
-        "kovpak-sidor",
-        "mitropolit-filipp-kolychev",
-        "plekhanov-georgiy",
-        "sverdlov-yakov",
-        "kozhedub-ivan",
-        "raevskiy-nikolay",
-        "patriarkh-tikhon",
-        "kosmodemyanskaya-zoya",
-        "ryleev-kondratiy",
-        "tukhachevskiy-mikhail",
-        "koshevoy-oleg",
+        "rasputin-grigoriy",
+        "zinovev-grigoriy",
+        "gagarin-yuriy-dobrovolets",
+        "inok-peresvet",
+        "boyarynya-morozova",
+        "atlasov-vladimir",
         "skobelev-mikhail",
-        "frunze-mikhail",
-        "koshkin-mikhail",
+        "tukhachevskiy-mikhail",
+        "zorge-rikhard",
+        "kachura-olga",
+        "vorotynskiy-mikhail",
+        "rtishchev-fedor",
+        "golitsyn-mikhail",
         "stroganov-pavel",
-        "chapaev-vasiliy",
-        "kryuchkov-vladimir",
+        "frunze-mikhail",
+        "egorov-m-a-i-kantariya-m-v",
+        "pirogova-mariya",
+        "zakharina-yureva-anastasiya",
+        "moskvitin-ivan",
+        "lassi-petr",
         "tkachev-petr",
-        "chernov-viktor",
-        "levitan-yuriy",
+        "chapaev-vasiliy",
+        "kuznetsov-nikolay-ivanovich",
+        "ivanova-ekaterina",
+        "tsarevich-dmitriy",
+        "khovanskiy-ivan",
+        "razumovskiy-aleksey",
         "tolstoy-dmitriy",
-        "shulgin-vasiliy",
-        "litvinov-maksim",
-        "khomyakov-aleksey",
-        "yudenich-nikolay",
-        "malenkov-georgiy",
+        "chernov-viktor",
+        "ilyushin-sergey",
+        "miroshnichenko-mariya",
+        "apraksin-stepan",
         "chaadaev-petr",
+        "yudenich-nikolay",
+        "kaganovich-lazar",
+        "orlov-grigoriy",
+        "miloradovich-mikhail",
+        "bulygin-aleksandr",
+        "kazey-marat",
+        "radishchev-aleksandr",
+        "kakhovskiy-petr",
+        "zubatov-sergey",
+        "kamenev-lev",
+        "trubetskoy-sergey",
+        "lvov-georgiy",
+        "karbyshev-dmitriy",
+        "petrashevskiy-mikhail",
+        "alekseev-mikhail",
+        "kirov-sergey",
+        "istomin-vladimir",
+        "kaledin-aleksey",
+        "klochkov-vasiliy",
+        "totleben-eduard",
+        "semenov-grigoriy",
+        "kovpak-sidor",
+        "zhelyabov-andrey",
+        "egorov-aleksandr",
+        "kozhedub-ivan",
+        "grinevitskiy-ignatiy",
+        "kotovskiy-grigoriy",
+        "kosmodemyanskaya-zoya",
+        "stoletov-nikolay",
+        "kotik-valya",
+        "delyanov-ivan",
+        "koshevoy-oleg",
+        "koshkin-mikhail",
+        "kryuchkov-vladimir",
+        "lavochkin-semen",
+        "lebedev-kumach-vasiliy",
+        "levitan-yuriy",
+        "litvinov-maksim",
+        "malenkov-georgiy",
         "malinovskiy-rodion",
-        "ordzhonikidze-sergo",
+        "mikoyan-anastas",
         "panfilov-ivan",
         "pokryshkin-aleksandr",
+        "ponomarenko-panteleymon",
         "ryzhkov-nikolay",
-        "rykov-aleksey",
         "simonov-konstantin",
         "sokolnikov-grigoriy",
         "suslov-mikhail",
+        "talalikhin-viktor",
         "tvardovskiy-aleksandr",
-        "tereshkova-valentina",
         "timoshenko-semen",
         "tupolev-andrey",
-        "fadeev-aleksandr",
+        "fedorov-aleksey",
+        "nuradilov-khanpasha",
         "chernyakhovskiy-ivan",
         "chicherin-georgiy",
         "chuykov-vasiliy",
-        "shevardnadze-eduard",
+        "shaposhnikov-boris",
         "shostakovich-dmitriy",
-        "yavlinskiy-grigoriy",
-        "yakovlev-aleksandr-politik",
-        "mikhail-vsevolodovich-chernigovskiy",
-        "gedimin",
-        "zarutskiy-ivan",
-        "batyrsha",
+        "shpagin-georgiy",
+        "shumilov-mikhail",
+        "yakovlev-aleksandr-aviakonstruktor",
+        "yagoda-genrikh",
+        "stalin-vasiliy",
+        "gastello-nikolay",
+        "maresev-aleksey",
+        "toidze-irakliy",
+        "pavlov-yakov",
+        "zaytsev-vasiliy",
+        "putilov-matvey",
+        "matrosov-aleksandr",
+        "yanaev-gennadiy",
+        "yazov-dmitriy",
+        "yaroslav-vsevolodovich",
+        "vitovt",
+        "matveev-artamon",
+        "bezborodko-aleksandr",
         "aksakov-ivan",
         "bakhrushin-aleksey",
         "abalkin-leonid",
-        "zorkin-valeriy",
-        "yaroslav-vsevolodovich",
-        "olgerd",
+        "zhirinovskiy-vladimir",
+        "daniil-galitskiy",
+        "gedimin",
         "palitsyn-avraamiy",
-        "bezborodko-aleksandr",
-        "valuev-petr",
-        "blyukher-vasiliy",
-        "angelina-praskovya",
-        "patriarkh-kirill",
-        "mindovg",
-        "sofya-vitovtovna",
-        "slavinetskiy-epifaniy",
-        "bryus-yakov",
-        "gasprinskiy-ismail",
+        "bestuzhev-ryumin-aleksey",
+        "aksakov-konstantin",
         "kamenev-sergey",
-        "antonov-aleksey",
-        "luzhkov-yuriy",
-        "edigey",
-        "us-vasiliy",
-        "volynskiy-artemiy",
-        "gurko-iosif",
-        "krasnov-petr",
-        "bulganin-nikolay",
-        "rossel-eduard",
-        "stefan-permskiy",
-        "golovin-fedor",
-        "katkov-mikhail",
-        "muromtsev-sergey",
+        "angelina-praskovya",
+        "zorkin-valeriy",
+        "olgerd",
+        "simeon-polotskiy",
+        "bryus-yakov",
+        "valuev-petr",
+        "krzhizhanovskiy-gleb",
         "vannikov-boris",
-        "shakhray-sergey",
-        "saltychikha",
-        "kireevskiy-ivan",
-        "dinastiya-ryabushinskikh",
-        "voznesenskiy-nikolay",
-        "shafirov-petr",
-        "kornilov-vladimir",
-        "savinkov-boris",
+        "zyuganov-gennadiy",
+        "tamerlan",
+        "slavinetskiy-epifaniy",
+        "volynskiy-artemiy",
+        "ermolov-aleksey",
+        "lunacharskiy-anatoliy",
+        "vatutin-nikolay",
+        "kadyrov-akhmad",
+        "uzbek",
+        "us-vasiliy",
+        "demidov-nikita",
+        "katkov-mikhail",
+        "mamontov-savva",
         "kuznetsov-nikolay-gerasimovich",
-        "shuvalov-petr",
-        "mitropolit-makariy-bulgakov",
-        "skoropadskiy-pavel",
-        "govorov-leonid",
-        "velikiy-knyaz-konstantin-nikolaevich",
-        "uborevich-ieronim",
-        "golikov-lenya",
-        "paskevich-ivan",
-        "shchukin-sergey",
-        "degtyarev-vasiliy",
-        "rostovtsev-yakov",
+        "patriarkh-kirill",
+        "mikhail-yaroslavich-tverskoy",
+        "ushakov-simon",
+        "dashkova-ekaterina",
+        "kireevskiy-ivan",
+        "dinastiya-morozovykh",
         "dzhalil-musa",
-        "rumyantsev-nikolay",
-        "dovator-lev",
+        "lebed-aleksandr",
+        "mitropolit-aleksiy",
+        "panin-nikita",
+        "przhevalskiy-n-m-semenov-tyan-shanskiy-p-p-kozlov-p-k",
+        "purishkevich-vladimir",
         "dubinin-volodya",
-        "kuznetsov-nikolay-ivanovich",
+        "luzhkov-yuriy",
+        "sofya-vitovtovna",
+        "shafirov-petr",
+        "velikiy-knyaz-konstantin-nikolaevich",
+        "rodzyanko-mikhail",
         "izotov-nikita",
+        "primakov-evgeniy",
+        "mitropolit-iona",
+        "novosiltsev-nikolay",
+        "dinastiya-ryabushinskikh",
         "iskander-fazil",
-        "kazey-marat",
-        "klochkov-vasiliy",
+        "rutskoy-aleksandr",
+        "stefan-permskiy",
+        "paskevich-ivan",
+        "sverdlov-yakov",
+        "kalashnikov-mikhail",
+        "khasbulatov-ruslan",
+        "mitropolit-petr",
+        "platov-matvey",
+        "skoropadskiy-pavel",
+        "kalinin-mikhail",
+        "chernomyrdin-viktor",
+        "plekhanov-georgiy",
+        "patriarkh-tikhon",
         "kovalev-sergey",
+        "raevskiy-nikolay",
+        "uborevich-ieronim",
         "kollontay-aleksandra",
-        "kotik-valya",
+        "rostovtsev-yakov",
+        "shulgin-vasiliy",
         "krivonos-petr",
+        "rumyantsev-nikolay",
+        "shchukin-sergey",
         "krupskaya-nadezhda",
-        "lavochkin-semen",
-        "lavrinenko-dmitriy",
-        "lebedev-kumach-vasiliy",
+        "ryleev-kondratiy",
         "mayskiy-ivan",
+        "khomyakov-aleksey",
         "malyshev-vyacheslav",
         "meretskov-kirill",
-        "mikoyan-anastas",
         "mikhalkov-sergey",
         "mikhoels-solomon",
+        "ordzhonikidze-sergo",
         "pavlov-dmitriy",
         "paton-evgeniy",
         "pervukhin-mikhail",
         "pecherskiy-aleksandr",
-        "ponomarenko-panteleymon",
         "portnova-zina",
         "ruslanova-lidiya",
+        "rykov-aleksey",
         "patriarkh-sergiy",
-        "silaev-ivan",
         "sorokin-pitirim",
-        "talalikhin-viktor",
+        "tereshkova-valentina",
         "tolbukhin-fedor",
         "ustinov-dmitriy",
         "utesov-leonid",
-        "fedorov-aleksey",
-        "nuradilov-khanpasha",
+        "fadeev-aleksandr",
         "khariton-yuliy",
-        "chekalin-sasha",
-        "shaposhnikov-boris",
         "shakhurin-aleksey",
         "shvernik-nikolay",
-        "shpagin-georgiy",
-        "shumilov-mikhail",
-        "yakovlev-aleksandr-aviakonstruktor"
+        "shevardnadze-eduard",
+        "yavlinskiy-grigoriy",
+        "yakovlev-aleksandr-politik"
     ]
 }

@@ -93,6 +93,17 @@ class PersonRanksTest extends TestCase
     }
 
     /** @test */
+    public function people_hidden_by_import_do_not_count()
+    {
+        // Убранные из базы при импорте скрываются (is_active = false), прогресс
+        // по ним остаётся в user_persons, но в «героях в строю» их нет.
+        $user = $this->studentWith(array_fill(0, 15, 1));
+        Person::where('slug', 'like', "p{$user->id}-%")->limit(3)->update(['is_active' => false]);
+
+        $this->assertSame(12, $this->ranks->inLine($user));
+    }
+
+    /** @test */
     public function a_rank_is_never_taken_back()
     {
         $user = $this->studentWith(array_fill(0, 15, 2));

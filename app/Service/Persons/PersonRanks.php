@@ -20,7 +20,11 @@ class PersonRanks
 {
     public function inLine(User $user): int
     {
-        return UserPerson::where('user_id', $user->id)->count();
+        // Только активные: скрытых при импорте (убраны из базы) нет и в цели
+        // последнего звания — Person::active()->count() ниже.
+        return UserPerson::where('user_id', $user->id)
+            ->whereHas('person', fn ($q) => $q->where('is_active', true))
+            ->count();
     }
 
     public function current(User $user): int
