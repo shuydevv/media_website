@@ -3,7 +3,6 @@
 <div class="prs-intro">
   <div class="prs-intro-pic">
     @include('student.persons.partials.portrait', ['person' => $person, 'size' => 148])
-    @include('student.persons.partials.credit', ['person' => $person])
   </div>
   <div class="prs-head-text">
     <span class="prs-era">{{ $eras[$person->era] ?? '' }}</span>

@@ -9,8 +9,6 @@
   /* Ещё не изученная личность на карте — серая и полупрозрачная. */
   .prs-locked { filter: grayscale(1); opacity: .45; box-shadow: none; }
   .prs-ph.is-mystery { font-size: calc(var(--s, 96px) * .5); color: #94A9B8; }
-  .prs-credit { margin-top: 6px; font-size: 11px; line-height: 1.3; color: #A3B4C1; }
-  .prs-credit a { color: inherit; text-decoration: underline; text-decoration-color: rgba(163, 180, 193, .5); }
 
   /* Эпоха — подпись, без плашки: рамок на экране и так хватает. */
   .prs-era { display: block; font-size: 13px; font-weight: 600; color: #657B8B; white-space: nowrap; }
