@@ -15,7 +15,8 @@
   $corm = $overview['corm'];
   $numbers = $overview['numbers'];
   $unfinished = $overview['unfinished'];
-  $size = (int) config('task_trainer.round_size');
+  // С учётом «Плана на сегодня» — столько, сколько реально даст сессия.
+  $size = app(\App\Service\Bank\TaskTrainer::class)->sessionSize(auth()->user());
   $hasBase = array_sum(array_column($numbers, 'total')) > 0;
   $dueNumbers = array_keys(array_filter($numbers, fn ($n) => $n['due'] > 0 && $n['n'] <= 16));
   $draft = $written['draft'];

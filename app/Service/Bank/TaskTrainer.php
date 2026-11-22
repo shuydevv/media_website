@@ -130,7 +130,7 @@ class TaskTrainer
         return DB::transaction(function () use ($user, $numbers, $blocks) {
             User::whereKey($user->id)->lockForUpdate()->first();
             $today = $this->today();
-            $size = $this->planCap($user, 'session', (int) config('task_trainer.round_size'));
+            $size = $this->sessionSize($user);
 
             $base = fn () => Task::forTrainer()
                 ->whereIn('tasks.number', array_map('strval', $numbers))
@@ -627,6 +627,16 @@ class TaskTrainer
             'numbers' => array_values($numbers),
             'mistakes' => $mistakes,
         ];
+    }
+
+    /**
+     * Сколько карточек будет в новой сессии: обычно config, а пока тренажёр в
+     * «Плане на сегодня» — квота плана. Страница тренажёра показывает это же
+     * число, иначе обещала бы больше, чем дадут.
+     */
+    public function sessionSize(User $user): int
+    {
+        return $this->planCap($user, 'session', (int) config('task_trainer.round_size'));
     }
 
     /**

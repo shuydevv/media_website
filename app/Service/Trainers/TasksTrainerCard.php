@@ -76,7 +76,7 @@ class TasksTrainerCard implements Trainer
         $total = array_sum(array_column($o['numbers'], 'total'));
 
         if (! $didToday && $total > 0) {
-            $count = (int) config('task_trainer.round_size');
+            $count = $this->trainer->sessionSize($user);
 
             return ['pending' => $count, 'situation' => self::NEW, 'count' => $count, 'next' => null, 'note' => $note, 'kind' => 'session'];
         }

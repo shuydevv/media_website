@@ -157,6 +157,28 @@ class DailyPlanTest extends TestCase
     }
 
     /** @test */
+    public function statements_page_size_follows_the_plan_quota()
+    {
+        $user = $this->student(10);
+        $trainer = app(\App\Service\Statements\StatementTrainer::class);
+        $this->assertSame((int) config('statements.session_size'), $trainer->sessionSize($user));
+
+        DailyPlan::create([
+            'user_id' => $user->id,
+            'day' => now()->toDateString(),
+            'minutes' => 10,
+            'items' => [[
+                'key' => \App\Service\Trainers\StatementsTrainerCard::class,
+                'kind' => 'session', 'situation' => Trainer::NEW, 'quota' => 7, 'sec' => 84,
+                'at' => now()->toIso8601String(), 'done_at' => null,
+            ]],
+        ]);
+        $this->app->forgetScopedInstances();
+
+        $this->assertSame(7, app(\App\Service\Statements\StatementTrainer::class)->sessionSize($user));
+    }
+
+    /** @test */
     public function the_gym_shows_the_plan()
     {
         $user = $this->student(10);

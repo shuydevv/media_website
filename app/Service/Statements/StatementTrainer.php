@@ -124,7 +124,7 @@ class StatementTrainer
         return DB::transaction(function () use ($user, $blocks) {
             User::whereKey($user->id)->lockForUpdate()->first();
             $today = $this->today();
-            $size = $this->planCap($user, 'session', (int) config('statements.session_size'));
+            $size = $this->sessionSize($user);
 
             $candidate = fn ($q) => $q->get(['statements.id', 'statements.is_true', 'statements.source_task_id'])
                 ->map(fn ($s) => ['id' => (int) $s->id, 'is_true' => (bool) $s->is_true, 'task' => $s->source_task_id])
@@ -562,6 +562,16 @@ class StatementTrainer
             'growth' => $growth,
             'mistakes' => $mistakes,
         ];
+    }
+
+    /**
+     * Сколько карточек будет в новой сессии: обычно config, а пока тренажёр в
+     * «Плане на сегодня» — квота плана. Страница тренажёра показывает это же
+     * число, иначе обещала бы больше, чем дадут.
+     */
+    public function sessionSize(User $user): int
+    {
+        return $this->planCap($user, 'session', (int) config('statements.session_size'));
     }
 
     /**

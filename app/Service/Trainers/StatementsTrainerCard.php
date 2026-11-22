@@ -74,7 +74,7 @@ class StatementsTrainerCard implements Trainer
         }
 
         if ($o['finished_today'] === 0 && $o['unseen'] > 0) {
-            $count = min((int) config('statements.session_size'), $o['unseen']);
+            $count = min($this->trainer->sessionSize($user), $o['unseen']);
 
             return ['pending' => $count, 'situation' => self::NEW, 'count' => $count, 'next' => null, 'kind' => 'session'];
         }

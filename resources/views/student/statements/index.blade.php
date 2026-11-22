@@ -17,7 +17,8 @@
   $phrases = config('statements.phrases');
   $corm = $overview['corm'];
   $foodIcon = auth()->user()->fish_food_icon_url;
-  $size = (int) config('statements.session_size');
+  // С учётом «Плана на сегодня» — столько, сколько реально даст сессия.
+  $size = app(\App\Service\Statements\StatementTrainer::class)->sessionSize(auth()->user());
   $tiers = collect(config('statements.corm'))->sortKeysDesc()
       ->map(fn ($food, $percent) => ['from' => (int) ceil($size * $percent / 100), 'food' => (int) $food])
       ->values();
