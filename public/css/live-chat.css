@@ -330,7 +330,11 @@ button.lc-tr { cursor: pointer; }
 /* Телефон: видео + чат ровно в высоту экрана, без рамок */
 @media (max-width: 767px) {
   .lc-layout { gap: 8px; }
-  .lc-host { height: calc(100vh - (100vw - 24px) * .5625 - 16px); height: calc(100dvh - (100vw - 24px) * .5625 - 16px); min-height: 320px; }
+  /* svh — высота экрана при развёрнутых панелях браузера: запас, чтобы
+     служебные полосы не наезжали на чат */
+  .lc-host { height: calc(100vh - (100vw - 24px) * .5625 - 40px); height: calc(100svh - (100vw - 24px) * .5625 - 40px); min-height: 300px; }
+  /* Клавиатура открыта: видео + чат прикреплены к видимой части экрана */
+  .lc-layout.is-pinned { position: fixed; left: 0; right: 0; z-index: 60; padding: 6px 12px; background: #f8fafc; align-content: start; overflow: hidden; }
   .lc { min-height: 0; border: 1px solid var(--lc-blue-200); border-radius: 12px; }
   .lc-video { border-width: 0 !important; border-radius: 12px !important; overflow: hidden; }
 }
@@ -385,3 +389,39 @@ button.lc-tr { cursor: pointer; }
 .lc-thread-foot { margin: 2px 4px 0 6px; padding: 5px 2px 3px; border-top: 1px solid #e4e4e7; gap: 12px; }
 .lc-thread-foot .lc-link { font-size: 12px; padding: 0; }
 .lc-thlast { color: var(--lc-muted); }
+
+/* ── Свернуть чат в строку (телефон) ── */
+.lc-fold, .lc-ticker { display: none; }
+@media (hover: none) {
+  .lc-fold { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; color: var(--lc-muted) !important; flex-shrink: 0; }
+  .lc-fold svg { transition: transform .2s ease; }
+}
+.lc.is-folded .lc-fold svg { transform: rotate(180deg); }
+.lc.is-folded > :not(.lc-head):not(.lc-toast) { display: none !important; }
+.lc.is-folded .lc-namebox, .lc.is-folded .lc-tabs, .lc.is-folded .lc-title { display: none !important; }
+.lc.is-folded .lc-ticker { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; text-align: left; font-size: 13px; color: #3f3f46; }
+.lc-ticker-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lc-ticker-count { flex-shrink: 0; min-width: 20px; padding: 1px 6px; border-radius: 999px; background: var(--lc-blue); color: #fff; font-size: 11px; font-weight: 600; text-align: center; }
+.lc-ticker-count[hidden] { display: none; }
+.lc-host.is-folded { height: auto !important; min-height: 0 !important; }
+.lc-host.is-folded > .lc { position: static !important; min-height: 0; }
+
+/* ── Время у сообщений внутри группы на телефоне — мелко справа ── */
+@media (hover: none) {
+  .lc-msg.is-cont > .lc-gtime { display: block; left: auto; right: 10px; width: auto; top: 2px; text-align: right; }
+  .lc-msg.is-cont > .lc-main { padding-right: 34px; }
+}
+
+/* ── Телефон повёрнут: видео на весь экран, чат поверх справа ── */
+@media (hover: none) and (orientation: landscape) and (max-height: 520px) {
+  html.lc-landscape, html.lc-landscape body { overflow: hidden; }
+  html.lc-landscape #student-bottom-nav, html.lc-landscape #student-bottom-nav-reveal { display: none !important; }
+  .lc-layout { position: fixed; top: 0; left: 0; right: 0; height: 100vh; height: 100dvh; z-index: 70; display: block; padding: 0 !important; background: #000; }
+  .lc-layout > :first-child { position: absolute; inset: 0; }
+  .lc-layout .lc-video { position: absolute !important; inset: 0; height: 100%; padding-top: 0 !important; border-width: 0 !important; border-radius: 0 !important; }
+  .lc-layout .lc-host { position: absolute; top: 8px; right: 8px; bottom: 8px; width: min(40%, 360px); height: auto !important; min-height: 0 !important; }
+  .lc-layout .lc-host.is-folded { top: auto; }
+  .lc-layout .lc { min-height: 0; background: rgba(255, 255, 255, .86); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); border: 0; border-radius: 12px; }
+  .lc-layout .lc-head, .lc-layout .lc-composer, .lc-layout .lc-pin { background: rgba(248, 250, 252, .7); }
+  .lc-layout .lc-msg.is-team { background: rgba(239, 246, 255, .8); }
+}

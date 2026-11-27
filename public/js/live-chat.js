@@ -83,6 +83,19 @@
     nameBox.hidden = true;
     head.append(nameBox);
 
+    // Телефон: чат сворачивается в одну строку с последним сообщением и
+    // счётчиком новых — для тех, кто хочет просто смотреть.
+    const ticker = btn('lc-ticker', '', () => setFolded(false));
+    const tickerText = el('span', 'lc-ticker-text', 'Чат свёрнут');
+    const tickerCount = el('span', 'lc-ticker-count');
+    tickerCount.hidden = true;
+    ticker.append(tickerText, tickerCount);
+    const fold = btn('lc-fold', '', () => setFolded(!root.classList.contains('is-folded')));
+    fold.setAttribute('aria-label', 'Свернуть чат');
+    fold.title = 'Свернуть чат';
+    fold.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+    if (!isReplay) head.append(ticker, fold);
+
     let replayToggle = null;
     if (isReplay) {
       replayToggle = btn('lc-ghost', 'Весь чат', () => {
@@ -173,6 +186,28 @@
       gate.append(box);
       root.append(gate);
     }
+    let unreadFolded = 0;
+    function setFolded(on) {
+      root.classList.toggle('is-folded', on);
+      const hostEl = root.closest('.lc-host');
+      if (hostEl) hostEl.classList.toggle('is-folded', on);
+      fold.title = on ? 'Развернуть чат' : 'Свернуть чат';
+      try { localStorage.setItem('lc-folded', on ? '1' : ''); } catch (e) { /* приватный режим */ }
+      if (!on) {
+        unreadFolded = 0;
+        tickerCount.hidden = true;
+        scrollBottom(false);
+      }
+    }
+    function tick(m) {
+      tickerText.textContent = m.n + ': ' + m.text;
+      if (root.classList.contains('is-folded') && m.uid !== S.me.id) {
+        unreadFolded++;
+        tickerCount.textContent = unreadFolded > 99 ? '99+' : String(unreadFolded);
+        tickerCount.hidden = false;
+      }
+    }
+
     function fitScreen() {
       const layout = root.closest('.lc-layout');
       if (layout) layout.scrollIntoView({ block: 'start', behavior: 'smooth' });
@@ -955,19 +990,58 @@
       if (e.key === 'Enter' && !e.shiftKey && !touch) { e.preventDefault(); submit(); }
       if (e.key === 'Escape') { clearTarget(); setQuestion(false); }
     });
-    // Телефон: клавиатура не должна закрывать поле и последние сообщения.
+    // Телефон, открыта клавиатура: видео и чат прикрепляются к видимой части
+    // экрана (visualViewport) — видео всегда сверху, чат сжимается до места над
+    // клавиатурой, поле ввода — прямо над ней. Иначе браузер сам прокручивает
+    // страницу к полю, и видео уезжает за верх экрана.
     // Нижнее меню сайта (fixed) на это время прячем — иначе оно закрывает поле.
+    const layout = root.closest('.lc-layout');
+    const host = root.closest('.lc-host');
+    let pinned = false;
+    function layoutPin() {
+      if (!pinned) return;
+      const vv = window.visualViewport;
+      const stick = nearBottom();
+      layout.style.top = vv.offsetTop + 'px';
+      layout.style.height = vv.height + 'px';
+      const video = layout.firstElementChild.getBoundingClientRect().height;
+      host.style.minHeight = '0';
+      host.style.height = Math.max(140, Math.floor(vv.height - video - 20)) + 'px';
+      if (stick && !S.target) scrollBottom(false);
+    }
+    function pinLayout() {
+      if (!touch || !phone || !layout || !host || !window.visualViewport || pinned || landscape.matches) return;
+      pinned = true;
+      layout.classList.add('is-pinned');
+      layoutPin();
+      setTimeout(layoutPin, 350); // клавиатура выезжает не сразу
+    }
+    function unpinLayout() {
+      if (!pinned) return;
+      pinned = false;
+      layout.classList.remove('is-pinned');
+      layout.style.top = layout.style.height = host.style.height = host.style.minHeight = '';
+      layout.scrollIntoView({ block: 'start' });
+    }
     input.addEventListener('focus', () => {
       if (!touch) return;
       document.body.classList.add('lc-typing');
-      setTimeout(() => { composer.scrollIntoView({ block: 'end', behavior: 'smooth' }); if (!S.target) scrollBottom(false); }, 350);
+      pinLayout();
     });
-    input.addEventListener('blur', () => document.body.classList.remove('lc-typing'));
+    input.addEventListener('blur', () => {
+      // Нажатие на скрепку или меню тоже снимает фокус — ждём, вернётся ли он.
+      setTimeout(() => {
+        if (document.activeElement === input) return;
+        document.body.classList.remove('lc-typing');
+        unpinLayout();
+      }, 200);
+    });
     if (window.visualViewport && touch) {
-      window.visualViewport.addEventListener('resize', () => {
-        if (document.activeElement === input) composer.scrollIntoView({ block: 'end' });
-      });
+      window.visualViewport.addEventListener('resize', layoutPin);
+      window.visualViewport.addEventListener('scroll', layoutPin);
     }
+    // Отправка не закрывает клавиатуру — можно писать дальше, как в мессенджерах.
+    send.addEventListener('pointerdown', (e) => { if (document.activeElement === input) e.preventDefault(); });
 
     function renderNameBox() {
       nameBox.innerHTML = '';
@@ -1095,6 +1169,11 @@
       if (old) morph(old, node); else insertSorted(feed, node, m.id);
       if (S.open.has(m.id)) syncThread(m.id);
       regroup(feed);
+      // строка свёрнутого чата — всегда последнее сообщение ленты
+      if (isNew && m.id >= Number(tickerText.dataset.last || 0)) {
+        tickerText.dataset.last = m.id;
+        if (silent) tickerText.textContent = m.n + ': ' + m.text; else tick(m);
+      }
       if (S.pinned && S.pinned.id === m.id) renderPinned(m);
       if (isNew && !silent && m.uid !== S.me.id && (!nearBottom() || S.view !== 'chat')) {
         S.unseen++;
@@ -1150,7 +1229,25 @@
       empty.textContent = feed.childElementCount ? '' : (isReplay ? (S.replayAll ? 'В чате не было сообщений' : 'Сообщения появятся по ходу видео') : 'Сообщений пока нет');
     }
 
+    // Пока идёт эфир, экран телефона не гаснет (как в YouTube): ученик просто
+    // смотрит и не трогает экран — без этого через минуту он погаснет.
+    let wakeLock = null;
+    async function keepAwake() {
+      const live = S.state.s === 'open' || S.state.s === 'break';
+      if (!touch || isReplay || !('wakeLock' in navigator)) return;
+      if (!live || document.hidden) {
+        if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+        return;
+      }
+      if (wakeLock) return;
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => { wakeLock = null; });
+      } catch (e) { /* не разрешили — не страшно */ }
+    }
+
     function applyState() {
+      keepAwake();
       const s = S.state.s;
       pill.className = 'lc-pill is-' + s;
       pill.textContent = isReplay ? 'запись' : ({ waiting: 'скоро', open: 'открыт', break: 'пауза', closed: 'завершён' })[s] || '';
@@ -1255,6 +1352,7 @@
 
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) poll(true);
+      keepAwake();
     });
 
     // ── Запись: сообщения по времени видео ─────────────────────────
@@ -1314,7 +1412,34 @@
       });
     }
 
+    // Телефон повёрнут: видео на весь экран, чат полупрозрачной колонкой
+    // поверх (CSS — .lc-landscape). Страница под ним не прокручивается.
+    const landscape = window.matchMedia('(hover: none) and (orientation: landscape) and (max-height: 520px)');
+    // Высота — по видимой области экрана: «inset: 0» у fixed в мобильных
+    // браузерах считается от другой высоты, и низ чата уезжал за экран.
+    function landFit() {
+      if (!layout || pinned) return;
+      if (landscape.matches) {
+        const vv = window.visualViewport;
+        layout.style.top = (vv ? vv.offsetTop : 0) + 'px';
+        layout.style.height = (vv ? vv.height : window.innerHeight) + 'px';
+      } else {
+        layout.style.top = layout.style.height = '';
+      }
+    }
+    function onOrient() {
+      if (!layout) return;
+      document.documentElement.classList.toggle('lc-landscape', landscape.matches);
+      landFit();
+      if (!landscape.matches) layout.scrollIntoView({ block: 'start' });
+    }
+    if (landscape.addEventListener) landscape.addEventListener('change', onOrient);
+    window.addEventListener('resize', landFit);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', landFit);
+    onOrient();
+
     // ── Старт ──────────────────────────────────────────────────────
+    try { if (localStorage.getItem('lc-folded') && touch && !isReplay) setFolded(true); } catch (e) { /* приватный режим */ }
     applyState();
     renderPinned(null);
     if (isReplay) {
