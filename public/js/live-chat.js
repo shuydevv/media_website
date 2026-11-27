@@ -272,6 +272,7 @@
       if (m.uid === S.me.id) n.classList.add('is-mine');
       if (m.reply && m.reply.uid === S.me.id && m.uid !== S.me.id) n.classList.add('is-to-me');
       if (ctx === 'thread') n.classList.add('is-reply');
+      if (ctx !== 'thread' && S.open.has(m.id)) n.classList.add('is-open-root');
 
       n.append(avatar(m.uid, m.n, m.av));
       const main = el('div', 'lc-main');
@@ -311,7 +312,7 @@
       }
       main.append(el('div', 'lc-text', m.text));
       main.append(renderChips(m, n));
-      if (ctx !== 'thread' && m.tc && m.tc.c) main.append(threadLine(m, n));
+      if (ctx !== 'thread' && m.tc && m.tc.c && !S.open.has(m.id)) main.append(threadLine(m, n));
       n.append(main);
 
       if (!isReplay) attachActions(n, m, ctx);
@@ -321,12 +322,7 @@
     // «💬 5 ответов» с аватарками ответивших — раскрывает ветку под сообщением.
     function threadLine(m, n) {
       const t = m.tc;
-      const isOpen = S.open.has(m.id);
-      const b = btn('lc-thline' + (isOpen ? ' is-open' : ''), '', () => toggleThread(n._m.id));
-      if (isOpen) {
-        b.append(el('span', '', 'Свернуть ответы'));
-        return b;
-      }
+      const b = btn('lc-thline', '', () => toggleThread(n._m.id));
       const faces = el('span', 'lc-thfaces');
       (t.who || []).forEach((w) => faces.append(avatar(w.uid, w.n, w.av, 'lc-av lc-av--xs')));
       b.append(faces, el('span', '', t.c + ' ' + plural(t.c, 'ответ', 'ответа', 'ответов')));
@@ -833,7 +829,7 @@
         const nodes = items.map((m) => (keep.has(m.id) ? morph(keep.get(m.id), renderMsg(m, 'thread')) : renderMsg(m, 'thread')));
         const foot = el('div', 'lc-thread-foot');
         if (canWriteNow()) foot.append(btn('lc-link', 'Ответить', () => { const r = S.msgs.get(id) || S.qOnly.get(id); if (r) { setTarget(r, null); } }));
-        foot.append(btn('lc-link lc-link--muted', 'Свернуть', () => collapse(id)));
+        foot.append(btn('lc-link lc-link--muted', 'Свернуть ответы', () => collapse(id)));
         if (!items.length) nodes.push(el('div', 'lc-thread-empty', S.threads.has(id) ? 'Ответов пока нет' : 'Загружаю…'));
         blk.replaceChildren(...nodes, foot);
       });

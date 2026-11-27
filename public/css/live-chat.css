@@ -139,7 +139,7 @@
 /* Кнопки «вниз» */
 .lc-jumps { position: absolute; left: 0; right: 0; bottom: 10px; display: flex; justify-content: center; gap: 6px; pointer-events: none; z-index: 4; }
 .lc-jumps[hidden] { display: none; }
-.lc-jump { pointer-events: auto; padding: 6px 12px; white-space: nowrap; border-radius: 999px; background: var(--lc-blue) !important; color: #fff !important; font-size: 12px; font-weight: 500; box-shadow: 0 4px 14px rgba(37, 99, 235, .35); }
+.lc-jump { pointer-events: auto; padding: 5px 12px; white-space: nowrap; border-radius: 999px; background: #dbeafe !important; color: #1e40af !important; font-size: 12px; font-weight: 500; box-shadow: 0 2px 8px rgba(30, 64, 175, .12); }
 .lc-jump--reply { background: #f59e0b !important; box-shadow: 0 4px 14px rgba(245, 158, 11, .35); }
 .lc-jump[hidden] { display: none; }
 
@@ -331,6 +331,11 @@ button.lc-tr { cursor: pointer; }
 @media (max-width: 767px) {
   .lc-layout { gap: 8px; }
   .lc-host { height: calc(100vh - (100vw - 24px) * .5625 - 16px); height: calc(100dvh - (100vw - 24px) * .5625 - 16px); min-height: 320px; }
-  .lc { min-height: 0; border: 0; border-radius: 12px; }
+  .lc { min-height: 0; border: 1px solid var(--lc-blue-200); border-radius: 12px; }
   .lc-video { border-width: 0 !important; border-radius: 12px !important; overflow: hidden; }
 }
+
+/* Раскрытая ветка: полоса идёт от аватарки исходного сообщения вниз до конца
+   обсуждения (продолжается левой границей .lc-thread). Аватарка: отступ 7px +
+   ширина 28px → центр на 21px. */
+.lc-msg.is-open-root::before { content: ''; position: absolute; left: 20px; top: 34px; bottom: 0; width: 2px; background: var(--lc-blue-200); }
