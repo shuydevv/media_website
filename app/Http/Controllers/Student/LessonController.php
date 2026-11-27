@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\ChatMessage;
 use App\Models\Lesson;
 use App\Models\Submission;
+use App\Service\LiveChat\ChatState;
+use App\Service\LiveChat\LiveChatService;
 
 class LessonController extends Controller
 {
@@ -50,12 +53,39 @@ class LessonController extends Controller
             }
         }
 
+        [$chatLive, $chatReplay] = $this->liveChat($lesson);
+
         // Здесь можно будет добавить материалы/домашку, сейчас — безопасный минимум
         return view('student.lessons.show', [
             'lesson' => $lesson,
             'course' => $course,
             'mySubmission' => $mySubmission,
             'homeworkUpcoming' => $homeworkUpcoming,
+            'chatEnabled' => (bool) config('live_chat.enabled'),
+            'chatLive' => $chatLive,
+            'chatReplay' => $chatReplay,
         ]);
+    }
+
+    /**
+     * Чат трансляции: пока эфир не завершён — рядом с плеером эфира; после
+     * эфира, когда есть запись, — рядом с записью (сообщения по времени
+     * видео), если в чате что-то писали. [конфиг эфира|null, конфиг записи|null]
+     */
+    private function liveChat(Lesson $lesson): array
+    {
+        if (!config('live_chat.enabled') || blank($lesson->meet_link) || !auth()->check()) {
+            return [null, null];
+        }
+        $svc = app(LiveChatService::class);
+        $state = $svc->state($lesson, $svc->chatFor($lesson))['state'];
+
+        if ($state === ChatState::CLOSED && filled($lesson->recording_link)) {
+            $hasMessages = ChatMessage::where('lesson_id', $lesson->id)->whereNull('deleted_at')->exists();
+
+            return [null, $hasMessages ? $svc->clientConfig($lesson, auth()->user(), 'replay') : null];
+        }
+
+        return [$svc->clientConfig($lesson, auth()->user(), 'live'), null];
     }
 }

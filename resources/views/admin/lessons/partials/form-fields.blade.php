@@ -28,6 +28,15 @@
 
     <x-ui.input name="recording_link" label="Запись" value="{{ old('recording_link', $lesson?->recording_link) }}" :hint="$kinescopeHint" autocomplete="off" />
 
+    @if ($lesson)
+        <x-ui.input type="number" name="chat_shift_seconds" label="Сдвиг чата в записи, ±сек"
+                    value="{{ old('chat_shift_seconds', \App\Models\LessonChat::where('lesson_id', $lesson->id)->value('shift_seconds') ?? 0) }}"
+                    hint="Обычно 0. Если в записи сообщения появляются раньше, чем нужно, — поставьте плюс, позже — минус." min="-3600" max="3600" />
+        @if ($lesson->meet_link)
+            <p class="text-sm"><a href="{{ route('live-chat.console.lesson', $lesson) }}" target="_blank" class="text-blue-600 hover:underline">Пульт чата этого урока ↗</a></p>
+        @endif
+    @endif
+
     <x-ui.input name="short_class" label="Выжимка — короткий урок" value="{{ old('short_class', $lesson?->short_class) }}" :hint="$kinescopeHint" autocomplete="off" />
 
     <x-ui.input type="url" name="notes_link" label="Конспект" value="{{ old('notes_link', $lesson?->notes_link) }}"

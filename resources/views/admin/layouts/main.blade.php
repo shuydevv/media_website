@@ -30,6 +30,8 @@
             ['Курсы', route('admin.courses.index'), 'admin.courses.*'],
             ['Сессии', route('admin.sessions.index'), 'admin.sessions.*'],
             ['Уроки', route('admin.lessons.index'), 'admin.lessons.*'],
+            ['Пульт эфира', route('live-chat.console'), 'live-chat.console*'],
+            ['Реакции чата', route('admin.chat-reactions.index'), 'admin.chat-reactions.*'],
             ['Домашки', route('admin.homeworks.index'), 'admin.homeworks.*'],
             ['Банк заданий', route('admin.tasks.index'), 'admin.tasks.*'],
             ['Термины', route('admin.terms.photos.index'), 'admin.terms.*'],

@@ -164,6 +164,25 @@ row-lock промокодов на SQLite пропускается. Старые
   оплаты. Скрытая страница `/demo` (только из демо-аккаунта): «Наступило завтра», сброс. Новая
   таблица прогресса ученика — добавь её в `DemoMode::PROGRESS_TABLES` (и даты — в `DATED_COLUMNS`).
 
+- Чат трансляций (вместо iframe чата Kinescope) — страница урока, `live-chat/*`. Логика —
+  `app/Service/LiveChat/`: чистые `ChatState` (когда открыт: за 15 мин до урока или пока идёт
+  эфир; закрытие — по сигналу Kinescope +10 мин, страховка — 4 ч после урока), `FloodGuard`
+  (медленный режим), `ReplayClock` (секунда сообщения в записи); `LiveChatService` — всё
+  остальное. Обмен — опрос раз в 2 с «что изменилось после версии N»: `lesson_chats.version`
+  растёт под блокировкой строки В ОДНОЙ транзакции с изменением сообщения (`change()`), иначе
+  опрос пропустит изменение. Лента — `routes/api.php` без сессии (ключ `?k=`, подпись app.key),
+  действия — `web.php` (`LiveChat\ChatController`). Фронт — `public/js/live-chat.js` +
+  `public/css/live-chat.css` без сборки; режимы live / replay (рядом с записью, по времени
+  видео через событие `kinescope-player` из `watch-tracker`) / console (пульт для OBS,
+  `/live-chat/console`). Сигналы эфира — webhook Kinescope (`LiveSignals`, журнал
+  `kinescope_webhook_events`, формат не проверен — имена событий в `config/live_chat.php`) или
+  `php artisan live-chat:signal`. Реакции — `chat_reaction_types` (Noto в
+  `public/img/chat-reactions/noto`, свои — админка «Реакции чата»; не удаляются, выключаются).
+  По умолчанию выключен (`LIVE_CHAT_ENABLED`, на уроках — iframe Kinescope). Песочница
+  `/live-chat/sandbox` (`SandboxController` + `public/js/live-chat-sandbox.js`): тот же
+  live-chat.js, сервер подменён в браузере (fetch на `/__sandbox/…`), боты по сценарию — в базу
+  ничего не пишется; при изменении JSON ленты правь и её. Настройка сервера — `deploy/README.md`, раздел 11.
+
 - Отчёт по ученику — `/admin/users/{id}` (`Admin\User\ShowController` → `Service\StudentReport`,
   только читает). Данные для него собираются в других местах: просмотр уроков —
   `lesson_views` (скрипт плеера Kinescope `student/lessons/partials/watch-tracker.blade.php` →

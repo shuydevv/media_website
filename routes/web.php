@@ -125,6 +125,15 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
             Route::delete('{session}', 'DestroyController')->name('admin.sessions.destroy');
         });
 
+        // Реакции чата трансляций: стандартные (Noto) и свои. Не удаляются —
+        // выключаются, иначе пропали бы с уже отреагированных сообщений.
+        Route::group(['namespace' => 'ChatReaction', 'prefix' => 'chat-reactions'], function () {
+            Route::get('/', 'IndexController')->name('admin.chat-reactions.index');
+            Route::post('/', 'StoreController')->name('admin.chat-reactions.store');
+            Route::post('/sort', 'SortController')->name('admin.chat-reactions.sort');
+            Route::patch('/{reaction}', 'UpdateController')->name('admin.chat-reactions.update');
+        });
+
         Route::group(['namespace' => 'Lesson', 'prefix' => 'lessons'], function () {
             Route::get('/', 'IndexController')->name('admin.lessons.index');
             Route::get('/create', 'CreateController')->name('admin.lessons.create');
@@ -498,6 +507,34 @@ Route::middleware(['auth', 'billing.current'])
             ->name('lessons.watch');
         Route::get('/lessons/{lesson}/notes', [\App\Http\Controllers\Student\LessonWatchController::class, 'notes'])
             ->name('lessons.notes');
+    });
+
+// Чат трансляции (App\Http\Controllers\LiveChat). Лента — в routes/api.php
+// (опрос раз в 2 с без сессии), здесь — действия и пульт для OBS.
+// Пульт и подпись — до /{lesson}/…, чтобы «console» не принять за урок.
+Route::middleware(['auth'])->prefix('live-chat')->name('live-chat.')->group(function () {
+    Route::get('/console', [\App\Http\Controllers\LiveChat\ConsoleController::class, 'current'])->name('console');
+    Route::get('/sandbox', \App\Http\Controllers\LiveChat\SandboxController::class)->name('sandbox');
+    Route::post('/signature', [\App\Http\Controllers\LiveChat\ConsoleController::class, 'signature'])->name('signature');
+    Route::get('/{lesson}/console', [\App\Http\Controllers\LiveChat\ConsoleController::class, 'show'])
+        ->whereNumber('lesson')->name('console.lesson');
+});
+
+Route::middleware(['auth', 'billing.current', 'throttle:120,1'])
+    ->prefix('live-chat/{lesson}')
+    ->whereNumber('lesson')
+    ->name('live-chat.')
+    ->controller(\App\Http\Controllers\LiveChat\ChatController::class)
+    ->group(function () {
+        Route::post('/messages', 'send')->name('send');
+        Route::post('/name', 'rename')->name('name');
+        Route::delete('/pin', 'unpin')->name('unpin');
+        Route::post('/messages/{message}/reactions', 'react')->name('react');
+        Route::post('/messages/{message}/answer', 'answer')->name('answer');
+        Route::delete('/messages/{message}', 'destroy')->name('delete');
+        Route::post('/messages/{message}/pin', 'pin')->name('pin');
+        Route::post('/mutes/{user}', 'mute')->name('mute');
+        Route::delete('/mutes/{user}', 'unmute')->name('unmute');
     });
 
 // Сдача домашки студентом — пошагово, по одному вопросу на странице.

@@ -37,6 +37,25 @@ Route::post('/avito/webhook/{secret}', \App\Http\Controllers\Avito\WebhookContro
     ->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class.':api')
     ->name('avito.webhook');
 
+// Чат трансляций (App\Http\Controllers\LiveChat\FeedController): опрос раз в
+// 2 секунды с каждой открытой страницы урока — здесь, без сессии (иначе строка
+// sessions на каждый опрос); кто спрашивает — по подписанному ключу ?k=.
+// Общий лимит api (60/мин с IP) снят: ученики из одной сети делят IP.
+Route::prefix('live-chat/{lesson}')->whereNumber('lesson')
+    ->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class.':api')
+    ->controller(\App\Http\Controllers\LiveChat\FeedController::class)
+    ->name('live-chat.')
+    ->group(function () {
+        Route::get('/feed', 'feed')->name('feed');
+        Route::get('/older', 'older')->name('older');
+        Route::get('/replay', 'replay')->name('replay');
+    });
+
+// Уведомления Kinescope об эфире → чат трансляции открывается/закрывается сам.
+Route::post('/kinescope/webhook/{secret}', \App\Http\Controllers\LiveChat\KinescopeWebhookController::class)
+    ->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class.':api')
+    ->name('kinescope.webhook');
+
 // Заявки с других моих сайтов (App\Http\Controllers\InboundLeadController):
 // шлют из браузера с чужого домена — поэтому здесь, без CSRF; CORS для api/*
 // открыт в config/cors.php. Сайт узнаётся по ключу из config/inbound_leads.php.

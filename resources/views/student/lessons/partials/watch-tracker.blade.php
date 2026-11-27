@@ -127,7 +127,12 @@
           size: { width: '100%', height: '100%' },
           settings: { externalId: EXTERNAL_ID },
         })
-        .then((player) => track(player, frame.dataset.kind))
+        .then((player) => {
+          track(player, frame.dataset.kind);
+          // Чат трансляции в записи следит за позицией видео и перематывает
+          // его по клику на время сообщения (public/js/live-chat.js).
+          window.dispatchEvent(new CustomEvent('kinescope-player', { detail: { kind: frame.dataset.kind, player } }));
+        })
         .catch(() => {
           const el = document.getElementById(frame.id);
           if (el && !el.getAttribute('src')) el.src = embedUrl(frame);

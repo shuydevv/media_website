@@ -618,6 +618,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'fish_accessory', 'fish_unlocked_accessories',
         'fish_food', 'fish_unlocked_foods', 'trainer_daily_minutes',
         'fish_satiety', 'fish_satiety_at', 'fish_joy', 'fish_joy_at',
+        'chat_name', 'chat_badge',
     ];
 
     /**

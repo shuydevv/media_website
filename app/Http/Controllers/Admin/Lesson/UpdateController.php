@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Lesson;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Lesson\UpdateRequest;
 use App\Models\Lesson;
+use App\Models\LessonChat;
 use App\Notifications\LessonRecordingAvailableNotification;
 use App\Service\BillingService;
 use App\Service\ImageCompressor;
@@ -42,6 +43,12 @@ class UpdateController extends Controller
             'image'             => $validated['image'] ?? $lesson->image,
             // 'homework_id'       => $validated['homework_id'] ?? null,
         ]);
+
+        // Сдвиг чата в записи — на случай, если запись разойдётся с чатом
+        // (см. LiveChatService::replay()). Обычно 0.
+        if (array_key_exists('chat_shift_seconds', $validated)) {
+            LessonChat::updateOrCreate(['lesson_id' => $lesson->id], ['shift_seconds' => (int) ($validated['chat_shift_seconds'] ?? 0)]);
+        }
 
         // Уведомляем учеников только на переходе "ссылки не было -> появилась",
         // а не на каждое сохранение формы.

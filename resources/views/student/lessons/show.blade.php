@@ -13,7 +13,17 @@
 
   @if ($lesson->recording_link)
   <div class="inline-block py-2 px-4 md:py-4 md:px-5 rounded-2xl text-base md:text-xl mb-4 bg-blue-50 border border-blue-200 text-blue-900"><x-icon name="video-recorder" class="inline-block relative bottom-0.5 mr-2 w-5 h-5" />Запись трансляции</div>
+  @if ($chatReplay)
+    {{-- Чат эфира в записи: сообщения появляются по времени видео. --}}
+    <div class="grid grid-cols-1 md:grid-cols-7 gap-4">
+      <div class="md:col-span-5">
+        <div class="border-4 border-blue-100 rounded-xl" style="position: relative; padding-top: 56.25%; width: 100%">@include('student.lessons.partials.kinescope-player', ['videoId' => $lesson->recording_link, 'kind' => 'recording'])</div>
+      </div>
+      <div class="md:col-span-2">@include('live-chat.panel', ['config' => $chatReplay])</div>
+    </div>
+  @else
   <div class="border-4 border-blue-100 rounded-xl" style="position: relative; padding-top: 56.25%; width: 100%">@include('student.lessons.partials.kinescope-player', ['videoId' => $lesson->recording_link, 'kind' => 'recording'])</div>
+  @endif
   @endif
 
   @if ($lesson->short_class)
@@ -27,14 +37,18 @@
   @if ($lesson->meet_link)
   <div class="grid grid-cols-1 md:grid-cols-7 gap-4 md:px-12 px-4 mb-6">
    
-    <div class="md:col-span-5">
+    {{-- Чат уже в записи выше — здесь только плеер эфира на всю ширину. --}}
+    <div class="md:col-span-5" @if ($chatEnabled && !$chatLive) style="grid-column: 1 / -1" @endif>
       <div class="">
         <div class="border-4 rounded-2xl border-blue-200" style="position: relative; padding-top: 56.25%; width: 100%">@include('student.lessons.partials.kinescope-player', ['videoId' => $lesson->meet_link, 'kind' => 'live'])</div>
 
       </div>
     </div>
 
-   
+    @if ($chatLive)
+    <div class="md:col-span-2">@include('live-chat.panel', ['config' => $chatLive])</div>
+    @elseif (!$chatEnabled)
+    {{-- Откат на чат Kinescope: LIVE_CHAT_ENABLED=false --}}
     <div class="md:col-span-2">
       <iframe src="https://kinescope.io/chat/{{$lesson->meet_link}}"
               allow="fullscreen"
@@ -42,6 +56,7 @@
               allowfullscreen
               class="w-full h-full min-h-[400px] md:min-h-full"></iframe>
     </div>
+    @endif
   </div>
   @endif
 

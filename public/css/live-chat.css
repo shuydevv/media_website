@@ -1,0 +1,215 @@
+/* Чат трансляции — public/js/live-chat.js. Свой файл, а не Tailwind: новые
+   классы Tailwind требуют пересборки. Жирность шрифта — не больше 600. */
+
+.lc {
+  --lc-blue: #2563eb;
+  --lc-blue-50: #eff6ff;
+  --lc-blue-100: #dbeafe;
+  --lc-blue-200: #bfdbfe;
+  --lc-ink: #18181b;
+  --lc-muted: #71717a;
+  --lc-line: #e4e4e7;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 420px;
+  background: #fff;
+  border: 4px solid var(--lc-blue-200);
+  border-radius: 1rem;
+  overflow: hidden;
+  font-size: 14px;
+  color: var(--lc-ink);
+}
+.lc b, .lc strong { font-weight: 600; }
+.lc button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+.lc button:disabled { cursor: default; opacity: .5; }
+
+/* Шапка */
+.lc-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--lc-blue-50); }
+.lc-title { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; margin-right: auto; }
+.lc-pill { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 999px; background: #e4e4e7; color: #3f3f46; }
+.lc-pill.is-open { background: #dcfce7; color: #166534; }
+.lc-pill.is-break { background: #fef3c7; color: #92400e; }
+.lc-tabs { display: flex; gap: 2px; background: #fff; padding: 2px; border-radius: 10px; }
+.lc-tab { padding: 4px 10px; border-radius: 8px; font-size: 13px; color: var(--lc-muted); }
+.lc-tab.is-active { background: var(--lc-blue-100); color: #1e3a8a; font-weight: 500; }
+.lc-count { font-weight: 600; color: var(--lc-blue); }
+.lc-ghost { white-space: nowrap; font-size: 12px; color: var(--lc-blue); padding: 4px 8px; border-radius: 8px; }
+.lc-ghost:hover { background: var(--lc-blue-100); }
+
+.lc-pin { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: #f8fafc; font-size: 13px; }
+.lc-pin[hidden] { display: none; }
+.lc-pin-text { flex: 1; min-width: 0; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lc-pin-text b { margin-right: 6px; color: #1e3a8a; }
+.lc-banner { padding: 8px 12px; font-size: 13px; text-align: center; background: #f4f4f5; color: #3f3f46; }
+.lc-banner.is-break { background: #fffbeb; color: #92400e; }
+.lc-banner[hidden] { display: none; }
+
+/* Лента */
+.lc-body { position: relative; flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 6px 0 10px; }
+.lc-feed[hidden] { display: none; }
+.lc-empty { padding: 28px 16px; text-align: center; color: var(--lc-muted); font-size: 13px; }
+.lc-empty:empty { display: none; }
+
+.lc-msg { position: relative; display: flex; gap: 8px; padding: 5px 12px; transition: background .2s, transform .15s; }
+.lc-msg:hover { background: #fafafa; }
+.lc-msg.is-team { background: var(--lc-blue-50); }
+.lc-msg.is-team:hover { background: var(--lc-blue-100); }
+.lc-msg.is-to-me { box-shadow: inset 3px 0 0 #f59e0b; background: #fffbeb; }
+.lc-msg.is-flash { animation: lc-flash 1.4s ease; }
+@keyframes lc-flash { 0%, 40% { background: #fde68a; } 100% { background: transparent; } }
+
+.lc-av { flex: 0 0 30px; width: 30px; height: 30px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; font-size: 13px; font-weight: 600; margin-top: 2px; }
+.lc-av img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.lc-main { flex: 1; min-width: 0; }
+.lc-top { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; line-height: 1.3; }
+.lc-name { font-weight: 600; font-size: 13px; color: #1e3a8a; position: relative; }
+.lc-msg:not(.is-team) .lc-name { color: #3f3f46; }
+.lc-name.has-real { cursor: help; }
+.lc-name.has-real:hover::after, .lc-name.has-real.show-real::after {
+  content: attr(data-real); position: absolute; left: 0; bottom: calc(100% + 4px); z-index: 5;
+  white-space: nowrap; padding: 4px 8px; border-radius: 6px; background: #18181b; color: #fff; font-weight: 500; font-size: 12px;
+}
+.lc-badge { font-size: 11px; font-weight: 500; padding: 1px 7px; border-radius: 6px; background: var(--lc-blue); color: #fff; }
+.lc-time { font-size: 11px; color: #a1a1aa; }
+.lc-time.is-link, .lc-anstag.is-link { cursor: pointer; text-decoration: underline dotted; }
+.lc-text { white-space: pre-wrap; word-wrap: break-word; overflow-wrap: anywhere; line-height: 1.4; margin-top: 1px; }
+.lc-quote { margin: 3px 0 2px; padding: 3px 8px; border-left: 3px solid var(--lc-blue); background: rgba(37, 99, 235, .06); border-radius: 0 6px 6px 0; font-size: 12px; cursor: pointer; display: flex; flex-direction: column; }
+.lc-quote b { color: var(--lc-blue); }
+.lc-quote span { color: #52525b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lc-tags { display: flex; gap: 6px; margin: 2px 0; flex-wrap: wrap; }
+.lc-qtag, .lc-anstag { font-size: 11px; font-weight: 500; padding: 1px 7px; border-radius: 6px; background: #ede9fe; color: #5b21b6; }
+.lc-anstag { background: #dcfce7; color: #166534; }
+
+/* Реакции */
+.lc-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+.lc-chips:empty { display: none; }
+.lc-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px 2px 5px; border-radius: 999px; background: #f4f4f5; font-size: 12px; font-weight: 500; transition: background .15s, transform .1s; }
+.lc-chip:hover:not(:disabled) { background: #e4e4e7; }
+.lc-chip:active:not(:disabled) { transform: scale(.94); }
+.lc .lc-chip:disabled { opacity: 1; cursor: default; }
+.lc-chip.is-mine { background: var(--lc-blue-100); color: #1e40af; }
+.lc-chip .lc-rimg, .lc-chip .lc-lottie { width: 18px; height: 18px; }
+.lc-chip-n { display: inline-block; }
+.lc-chip-n.is-bump { animation: lc-bump .35s ease; }
+@keyframes lc-bump { 0% { transform: translateY(-60%); opacity: 0; } 100% { transform: none; opacity: 1; } }
+.lc-rimg { display: block; width: 28px; height: 28px; object-fit: contain; user-select: none; }
+.lc-lottie { display: inline-block; width: 28px; height: 28px; }
+
+.lc-actions { position: absolute; right: 8px; top: -6px; display: none; gap: 2px; padding: 2px; border-radius: 10px; background: rgba(255, 255, 255, .92); backdrop-filter: blur(2px); box-shadow: 0 2px 10px rgba(0, 0, 0, .12); z-index: 3; }
+.lc-msg:hover .lc-actions { display: flex; }
+.lc-act { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-size: 15px; color: #52525b; }
+.lc-act:hover { background: #f4f4f5; }
+.lc-act--ok.is-on { color: #166534; background: #dcfce7; }
+.lc-heart .lc-rimg { width: 20px; height: 20px; }
+.lc-picker { display: flex; flex-direction: column; gap: 2px; padding: 4px; border-radius: 16px; background: #fff; box-shadow: 0 6px 24px rgba(0, 0, 0, .16); animation: lc-pop .18s ease; }
+.lc-picker.is-float { position: fixed; z-index: 1001; width: max-content; }
+.lc-picker button { font: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
+.lc-picker-row { display: flex; gap: 2px; flex-wrap: wrap; max-width: 320px; }
+.lc-picker-extra { display: none; }
+.lc-picker.is-all .lc-picker-extra { display: flex; }
+.lc-pick { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; transition: transform .12s, background .12s; }
+.lc-pick:hover { background: #f4f4f5; transform: scale(1.18); }
+.lc-pick .lc-rimg, .lc-pick .lc-lottie { width: 28px; height: 28px; }
+.lc-more { font-size: 20px; color: #71717a; }
+.lc-picker.is-all .lc-more { transform: rotate(90deg); }
+@keyframes lc-pop { from { opacity: 0; transform: translateY(6px) scale(.92); } to { opacity: 1; transform: none; } }
+.lc-rimg.is-png { animation: none; }
+
+/* Анимация реакции: эмодзи «выпрыгивает» с частицами */
+.lc-burst { position: fixed; z-index: 1000; width: 0; height: 0; pointer-events: none; }
+.lc-burst > .lc-rimg, .lc-burst > .lc-lottie { position: absolute; width: 64px; height: 64px; left: -32px; top: -32px; animation: lc-jump 1.1s cubic-bezier(.2, .9, .3, 1.2) forwards; }
+.lc-spark { position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; border-radius: 50%; animation: lc-spark .7s ease-out .08s forwards; opacity: 0; }
+@keyframes lc-jump {
+  0% { transform: translateY(10px) scale(.3); opacity: 0; }
+  25% { transform: translateY(-34px) scale(1.25); opacity: 1; }
+  70% { transform: translateY(-30px) scale(1); opacity: 1; }
+  100% { transform: translateY(-4px) scale(.3); opacity: 0; }
+}
+@keyframes lc-spark {
+  0% { opacity: 1; transform: translate(0, -30px) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx), calc(var(--dy) - 30px)) scale(.3); }
+}
+
+/* Кнопки «вниз» */
+.lc-jumps { position: sticky; bottom: 4px; display: flex; justify-content: center; gap: 6px; pointer-events: none; height: 0; overflow: visible; }
+.lc-jumps[hidden] { display: none; }
+.lc-jump { pointer-events: auto; transform: translateY(-34px); padding: 6px 12px; border-radius: 999px; background: var(--lc-blue) !important; color: #fff !important; font-size: 12px; font-weight: 500; box-shadow: 0 4px 14px rgba(37, 99, 235, .35); }
+.lc-jump--reply { background: #f59e0b !important; box-shadow: 0 4px 14px rgba(245, 158, 11, .35); }
+.lc-jump[hidden] { display: none; }
+
+/* Поле ввода */
+.lc-composer { padding: 8px 10px 10px; background: #fafafa; }
+.lc-composer[hidden] { display: none; }
+.lc-replybar { display: flex; align-items: center; gap: 8px; padding: 4px 8px; margin-bottom: 6px; border-left: 3px solid var(--lc-blue); background: #fff; border-radius: 0 8px 8px 0; font-size: 12px; }
+.lc-replybar[hidden] { display: none; }
+.lc-replybar-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.lc-replybar-text b { color: var(--lc-blue); }
+.lc-replybar-text span { color: #52525b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lc-x { color: #a1a1aa; padding: 2px 6px; border-radius: 6px; }
+.lc-x:hover { background: #f4f4f5; color: #52525b; }
+.lc-notice { font-size: 12px; color: #92400e; background: #fffbeb; padding: 6px 10px; border-radius: 8px; margin-bottom: 6px; }
+.lc-notice.is-block { color: #3f3f46; background: #f4f4f5; text-align: center; margin: 0; }
+.lc-notice[hidden] { display: none; }
+.lc-row { display: flex; align-items: flex-end; gap: 6px; }
+.lc-row[hidden] { display: none; }
+.lc-qbtn { flex: 0 0 36px; height: 36px; border-radius: 10px; background: #fff !important; color: var(--lc-muted) !important; font-weight: 600; font-size: 16px; }
+.lc-qbtn.is-on { background: #ede9fe !important; color: #5b21b6 !important; }
+.lc-input { flex: 1; resize: none; overflow-y: hidden; min-height: 36px; max-height: 120px; padding: 8px 10px; border: 1px solid var(--lc-line); border-radius: 10px; background: #fff; font: inherit; line-height: 1.35; outline: none; }
+.lc-input:focus { border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(147, 197, 253, .35); }
+.lc-send { flex: 0 0 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--lc-blue) !important; color: #fff !important; }
+.lc-nameline { display: flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 12px; color: var(--lc-muted); min-height: 18px; }
+.lc-nameline b { color: #3f3f46; }
+.lc-edit { padding: 0 4px; border-radius: 6px; color: var(--lc-blue) !important; }
+.lc-name-edit { display: flex; gap: 6px; width: 100%; }
+.lc-name-edit .lc-gate-input { padding: 4px 8px; font-size: 13px; }
+
+/* Вход в чат */
+.lc-gate { position: absolute; inset: 0; z-index: 8; display: grid; place-items: center; background: rgba(239, 246, 255, .7); backdrop-filter: blur(2px); padding: 16px; }
+.lc-gate-box { width: 100%; max-width: 300px; background: #fff; border-radius: 16px; padding: 18px; box-shadow: 0 8px 30px rgba(30, 58, 138, .12); display: flex; flex-direction: column; gap: 10px; }
+.lc-gate-label { font-size: 13px; color: var(--lc-muted); }
+.lc-gate-input { width: 100%; padding: 9px 12px; border: 1px solid var(--lc-line); border-radius: 10px; font: inherit; outline: none; }
+.lc-gate-input:focus { border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(147, 197, 253, .35); }
+.lc-btn { padding: 9px 14px; border-radius: 10px; background: var(--lc-blue) !important; color: #fff !important; font-weight: 500; }
+.lc-btn--sm { padding: 4px 10px; font-size: 12px; white-space: nowrap; }
+
+/* Меню и тосты */
+.lc-menu { position: fixed; z-index: 1001; min-width: 210px; padding: 4px; background: #fff; border-radius: 12px; box-shadow: 0 8px 30px rgba(0, 0, 0, .16); display: flex; flex-direction: column; font-size: 14px; }
+.lc-menu-item { text-align: left; padding: 8px 12px; border-radius: 8px; background: none; border: 0; font: inherit; color: #18181b; cursor: pointer; }
+.lc-menu-item:hover { background: #f4f4f5; }
+.lc-menu-item.is-danger { color: #b91c1c; }
+.lc-toast { position: absolute; left: 50%; bottom: 80px; transform: translate(-50%, 10px); opacity: 0; pointer-events: none; padding: 7px 14px; border-radius: 10px; background: rgba(24, 24, 27, .9); color: #fff; font-size: 13px; transition: .2s; z-index: 9; max-width: 90%; text-align: center; }
+.lc-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+
+/* Телефон: долгое нажатие */
+.lc-sheet { position: fixed; inset: 0; z-index: 1002; display: flex; align-items: center; justify-content: center; padding: 16px; font-size: 14px; }
+.lc-sheet-back { position: absolute; inset: 0; background: rgba(24, 24, 27, .35); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); opacity: 0; transition: opacity .18s; }
+.lc-sheet.is-on .lc-sheet-back { opacity: 1; }
+.lc-sheet-wrap { position: relative; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 8px; transform: scale(.96); opacity: 0; transition: .18s; }
+.lc-sheet.is-on .lc-sheet-wrap { transform: none; opacity: 1; }
+.lc-picker.is-sheet { position: static; display: flex; align-self: flex-start; max-width: 100%; }
+.lc-picker.is-sheet .lc-picker-row { max-width: 100%; }
+.lc-msg.is-lifted { background: #fff; border-radius: 14px; box-shadow: 0 8px 30px rgba(0, 0, 0, .2); padding: 10px 12px; }
+.lc-sheet-menu { background: #fff; border-radius: 14px; padding: 4px; display: flex; flex-direction: column; box-shadow: 0 8px 30px rgba(0, 0, 0, .16); }
+.lc-sheet .lc-name, .lc-sheet .lc-text { color: #18181b; }
+
+/* Страница урока: чат рядом с видео / под ним */
+body.lc-typing #student-bottom-nav, body.lc-typing #student-bottom-nav-reveal { display: none !important; }
+.lc-host { min-height: 420px; height: 100%; }
+@media (max-width: 767px) {
+  .lc-host { height: min(70vh, 640px); height: min(70dvh, 640px); }
+  .lc { min-height: 0; }
+}
+@media (min-width: 768px) {
+  .lc-host { position: relative; }
+  .lc-host > .lc { position: absolute; inset: 0; }
+}
+
+/* Пульт эфира для OBS: на весь экран, крупнее */
+.lc--console { border: 0; border-radius: 0; height: 100vh; height: 100dvh; font-size: 16px; }
+.lc--console .lc-name { font-size: 15px; }
+.lc--console .lc-av { flex-basis: 36px; width: 36px; height: 36px; }
+@media (prefers-reduced-motion: reduce) {
+  .lc-burst, .lc-msg.is-flash { animation: none !important; }
+}
