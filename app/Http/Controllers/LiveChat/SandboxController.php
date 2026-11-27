@@ -47,7 +47,7 @@ class SandboxController extends Controller
             'max' => config('live_chat.message_max'),
             'nameMax' => config('live_chat.name_max'),
             'url' => [
-                'feed' => $u('feed?k=s'), 'older' => $u('older?k=s'), 'replay' => $u('replay?k=s'),
+                'feed' => $u('feed?k=s'), 'older' => $u('older?k=s'), 'thread' => $u('thread?k=s'), 'replay' => $u('replay?k=s'),
                 'send' => $u('send'), 'name' => $u('name'), 'unpin' => $u('pin'),
                 'react' => $u('messages/0/reactions'), 'answer' => $u('messages/0/answer'),
                 'delete' => $u('messages/0'), 'pin' => $u('messages/0/pin'),

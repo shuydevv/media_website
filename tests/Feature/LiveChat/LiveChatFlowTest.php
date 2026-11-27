@@ -85,8 +85,18 @@ class LiveChatFlowTest extends TestCase
     {
         $q = $this->send($this->student, 'Почему 4?', ['question' => true])->json('msg');
         $this->assertTrue($q['q']);
-        $reply = $this->send($this->admin, 'Потому что', ['reply_to' => $q['id']])->json('msg');
-        $this->assertSame($this->student->id, $reply['reply']['uid']);
+        // Ответ уходит в ветку вопроса, в общей ленте его нет.
+        $reply = $this->send($this->admin, 'Потому что', ['thread' => $q['id']])->json('msg');
+        $this->assertSame($q['id'], $reply['th']);
+        $this->assertNull($reply['reply']);
+        $quote = $this->send($this->student, 'А почему?', ['thread' => $q['id'], 'reply_to' => $reply['id']])->json('msg');
+        $this->assertSame($this->admin->id, $quote['reply']['uid']);
+        $this->assertSame([$q['id']], array_column($this->feed($this->student)['msgs'], 'id'));
+        $k = app(LiveChatService::class)->feedToken($this->student, $this->lesson);
+        $thread = $this->getJson(route('live-chat.thread', $this->lesson).'?k='.$k.'&root='.$q['id'])->json();
+        $this->assertCount(2, $thread['msgs']);
+        $this->assertSame(2, $thread['root']['tc']['c']);
+        $this->assertTrue($thread['root']['tc']['teach']);
 
         $this->actingAs($this->student)->postJson(route('live-chat.answer', [$this->lesson, $q['id']]))->assertForbidden();
         $this->actingAs($this->admin)->postJson(route('live-chat.answer', [$this->lesson, $q['id']]))->assertOk();
@@ -99,6 +109,12 @@ class LiveChatFlowTest extends TestCase
 
         $this->actingAs($this->student)->postJson(route('live-chat.react', [$this->lesson, $q['id']]), ['reaction' => $heart])->assertOk();
         $this->assertSame([], collect($this->feed($this->student)['msgs'])->firstWhere('id', $q['id'])['rx']);
+
+        // Реакция преподавателя — отдельно, в общий счётчик не входит.
+        $this->actingAs($this->admin)->postJson(route('live-chat.react', [$this->lesson, $q['id']]), ['reaction' => $heart])->assertOk();
+        $msg = collect($this->feed($this->student)['msgs'])->firstWhere('id', $q['id']);
+        $this->assertSame([], $msg['rx']);
+        $this->assertSame([$heart, $this->admin->id, 'Александр Полтавский'], array_slice($msg['tr'][0], 0, 3));
     }
 
     public function test_flood_mute_and_demo_are_refused(): void

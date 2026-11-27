@@ -24,7 +24,10 @@
         || request()->routeIs('student.terms.session')
         || request()->routeIs('student.dates.session')
         || request()->routeIs('student.ege.round')
-        || request()->routeIs('student.ege.written');
+        || request()->routeIs('student.ege.written')
+        // Страница урока: чат трансляции под видео, меню мешает ленте и полю ввода.
+        || request()->routeIs('student.lessons.show')
+        || request()->routeIs('live-chat.sandbox');
 @endphp
 <style>
     /* Одна и та же "стеклянная таблетка" на мобилке и на ПК — раньше

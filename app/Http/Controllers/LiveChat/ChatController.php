@@ -27,11 +27,12 @@ class ChatController extends Controller
         $data = $request->validate([
             'text' => ['required', 'string', 'max:2000'],
             'reply_to' => ['nullable', 'integer'],
+            'thread' => ['nullable', 'integer'],
             'question' => ['nullable', 'boolean'],
         ]);
 
         try {
-            $res = $this->chat->post($lesson, $request->user(), $data['text'], $data['reply_to'] ?? null, (bool) ($data['question'] ?? false));
+            $res = $this->chat->post($lesson, $request->user(), $data['text'], $data['reply_to'] ?? null, (bool) ($data['question'] ?? false), $data['thread'] ?? null);
         } catch (ChatRefused $e) {
             return $e->toResponse();
         }

@@ -1,9 +1,10 @@
 /*
  * Песочница чата трансляций (/live-chat/sandbox). Подменяет сервер чата прямо
  * в браузере: live-chat.js ходит на /__sandbox/…, здесь эти запросы отвечают
- * тем же JSON, что и App\Service\LiveChat\LiveChatService. В базу ничего не
- * пишется. «Ученики»-боты пишут по сценарию урока и отвечают на действия
- * преподавателя (реакции, «спасибо» на цитату, поток ответов на «пишем ответ»).
+ * тем же JSON, что и App\Service\LiveChat\LiveChatService (ветки th/tc,
+ * реакции команды tr отдельно от rx). В базу ничего не пишется. «Ученики»-боты
+ * пишут по сценарию урока, обсуждают в ветках и отвечают на действия
+ * преподавателя (реакции, «спасибо» в ветке, поток ответов на «пишем ответ»).
  */
 (function () {
   'use strict';
@@ -54,7 +55,10 @@
     opts = opts || {};
     if (mutedNow(uid)) return null;
     const u = users.get(uid);
-    const m = { id: nextId++, uid, n: opts.name || u.n, b: u.b || null, text, q: !!opts.q, ans: false, ansTs: null, ts: now(), reply: opts.reply || null, del: false };
+    let th = opts.thread || null;
+    if (th && (!msgs.get(th) || msgs.get(th).del)) return null;
+    const m = { id: nextId++, uid, n: u.n, b: u.b || null, text, q: !!opts.q && !th, ans: false, ansTs: null, ts: now(), reply: opts.reply || null, th, del: false };
+    if (th) touch(msgs.get(th)); // у исходного меняется счётчик ответов
     touch(m);
     msgs.set(m.id, m);
     setTimeout(() => react(m), 0);
@@ -65,14 +69,38 @@
     if (m.del) return { id: m.id, v: m.v, del: true };
     const u = users.get(m.uid) || {};
     const list = [];
+    const tr = [];
     const r = rx.get(m.id);
-    if (r) Array.from(r.entries()).sort((a, b) => a[0] - b[0]).forEach(([tid, set]) => { if (set.size) list.push([tid, set.size, set.has(V.id)]); });
+    if (r) {
+      Array.from(r.entries()).sort((a, b) => a[0] - b[0]).forEach(([tid, set]) => {
+        let c = 0;
+        let mine = false;
+        set.forEach((uid) => {
+          const ru = users.get(uid) || {};
+          if (ru.team) tr.push([tid, uid, ru.n, ru.av || null]);
+          else { c++; if (uid === V.id) mine = true; }
+        });
+        if (c) list.push([tid, c, mine]);
+      });
+    }
     let reply = null;
     if (m.reply) {
       const o = msgs.get(m.reply);
       if (o) reply = { id: o.id, uid: o.uid, n: o.n, text: o.del ? 'Сообщение удалено' : o.text.slice(0, 90) };
     }
-    const out = { id: m.id, v: m.v, uid: m.uid, n: m.n, b: m.b, team: !!u.team, av: u.av || null, text: m.text, q: m.q, ans: m.ans, ansTs: m.ansTs, ts: m.ts, reply, rx: list };
+    let tc = null;
+    if (!m.th) {
+      const answers = Array.from(msgs.values()).filter((x) => x.th === m.id && !x.del).sort((a, b) => b.id - a.id);
+      if (answers.length) {
+        const who = [];
+        answers.forEach((x) => {
+          if (who.length < 3 && !who.some((w) => w.uid === x.uid)) who.push({ uid: x.uid, n: x.n, av: (users.get(x.uid) || {}).av || null });
+        });
+        tc = { c: answers.length, who, teach: answers.some((x) => (users.get(x.uid) || {}).team) };
+      }
+    }
+    const out = { id: m.id, v: m.v, uid: m.uid, n: m.n, b: m.b, team: !!u.team, av: u.av || null, text: m.text, q: m.q,
+      ans: m.ans, ansTs: m.ansTs, ts: m.ts, reply, rx: list, tr, th: m.th, tc };
     if (V.admin && !u.team && u.real) out.real = u.real;
     return out;
   }
@@ -82,25 +110,23 @@
     return { id: V.id, name: users.get(V.id).n, badge: V.b, team: V.team, admin: V.admin, demo: false,
       muted: mu ? { until: mu.until, lesson: mu.lesson } : null, write: !mu };
   }
+  const pinnedOut = () => (pinned && msgs.get(pinned) && !msgs.get(pinned).del ? present(msgs.get(pinned)) : null);
 
   function feed(v) {
     const base = { v: ver, state: STATE };
     if (v === ver) return base;
-    const live = Array.from(msgs.values()).filter((m) => !m.del).sort((a, b) => a.id - b.id);
+    const roots = Array.from(msgs.values()).filter((m) => !m.del && !m.th).sort((a, b) => a.id - b.id);
     if (v <= 0 || v > ver) {
-      const last = live.slice(-100);
+      const last = roots.slice(-100);
       const ids = new Set(last.map((m) => m.id));
       return Object.assign(base, {
-        reset: true, more: live.length > 100, msgs: last.map(present),
-        questions: V.team ? live.filter((m) => m.q && !m.ans && !ids.has(m.id)).map(present) : [],
-        pinned: pinned && msgs.get(pinned) && !msgs.get(pinned).del ? present(msgs.get(pinned)) : null, me: me(),
+        reset: true, more: roots.length > 100, msgs: last.map(present),
+        questions: V.team ? roots.filter((m) => m.q && !m.ans && !ids.has(m.id)).map(present) : [],
+        pinned: pinnedOut(), me: me(),
       });
     }
     const changed = Array.from(msgs.values()).filter((m) => m.v > v).sort((a, b) => a.v - b.v);
-    return Object.assign(base, {
-      msgs: changed.map(present),
-      pinned: pinned && msgs.get(pinned) && !msgs.get(pinned).del ? present(msgs.get(pinned)) : null, me: me(),
-    });
+    return Object.assign(base, { msgs: changed.map(present), pinned: pinnedOut(), me: me() });
   }
 
   function json(body, status) {
@@ -112,8 +138,14 @@
     if (path === 'feed') return json(feed(Number(q.get('v') || 0)));
     if (path === 'older') {
       const before = Number(q.get('before'));
-      const list = Array.from(msgs.values()).filter((x) => !x.del && x.id < before).sort((a, b) => a.id - b.id);
+      const list = Array.from(msgs.values()).filter((x) => !x.del && !x.th && x.id < before).sort((a, b) => a.id - b.id);
       return json({ more: list.length > 50, msgs: list.slice(-50).map(present) });
+    }
+    if (path === 'thread') {
+      const r = msgs.get(Number(q.get('root')));
+      if (!r || r.th) return json({ root: null, msgs: [] });
+      const list = Array.from(msgs.values()).filter((x) => x.th === r.id && !x.del).sort((a, b) => a.id - b.id);
+      return json({ root: present(r), msgs: list.map(present) });
     }
     if (path === 'send') {
       const mu = mutedNow(V.id);
@@ -131,7 +163,10 @@
         hist.push(entry);
         sent.set(V.id, hist);
       }
-      m = add(V.id, text, { reply: data.reply_to || null, q: !V.team && !!data.question });
+      const thread = data.thread || null;
+      if (thread && (!msgs.get(thread) || msgs.get(thread).del)) return json({ error: 'thread', message: 'Сообщение, на которое вы отвечаете, удалено' }, 422);
+      const quote = data.reply_to && msgs.get(data.reply_to) && msgs.get(data.reply_to).th === thread ? data.reply_to : null;
+      m = add(V.id, text, { thread, reply: thread ? quote : null, q: !V.team && !!data.question });
       return json({ msg: present(m), slow });
     }
     if (path === 'name') {
@@ -150,7 +185,13 @@
       if (act === 'reactions') { toggleReaction(m, V.id, Number(data.reaction)); return json({ ok: true }); }
       if (act === 'answer') { setAnswered(m, data.answered !== false); return json({ ok: true }); }
       if (act === 'pin') { pinned = m.id; ver++; return json({ ok: true }); }
-      if (method === 'DELETE') { m.del = true; if (pinned === m.id) pinned = null; touch(m); return json({ ok: true }); }
+      if (method === 'DELETE') {
+        m.del = true;
+        if (pinned === m.id) pinned = null;
+        touch(m);
+        if (m.th && msgs.get(m.th)) touch(msgs.get(m.th));
+        return json({ ok: true });
+      }
     }
     mm = path.match(/^mutes\/(\d+)$/);
     if (mm) {
@@ -177,15 +218,14 @@
     m.ansTs = yes ? now() : null;
     touch(m);
     if (yes && m.uid !== V.id && Math.random() < 0.6) {
-      later(rnd(3, 8), () => add(m.uid, pick(['спасибо!', 'поняла, спасибо 🙏', 'аа, всё ясно', 'спасибо, теперь понятно']), {}));
+      later(rnd(3, 8), () => add(m.uid, pick(['спасибо!', 'поняла, спасибо 🙏', 'аа, всё ясно', 'спасибо, теперь понятно']), { thread: m.id }));
     }
   }
 
   const realFetch = window.fetch.bind(window);
   window.fetch = function (input, init) {
     const url = String(typeof input === 'string' ? input : input.url);
-    const i = url.indexOf('/__sandbox/');
-    if (i === -1) return realFetch(input, init);
+    if (url.indexOf('/__sandbox/') === -1) return realFetch(input, init);
     const u = new URL(url, location.href);
     const path = u.pathname.slice(u.pathname.indexOf('/__sandbox/') + 11);
     const method = (init && init.method) || 'GET';
@@ -201,31 +241,36 @@
   const free = () => studentIds.filter((id) => !mutedNow(id));
   const ANSWERS = ['134', '134', '13', '134', '143', '1 3 4', '+', '134!', '234', 'не знаю(', '14', '134 вроде'];
   const THANKS = ['спасибо!', 'понял', 'поняла 👍', 'ага, ясно', 'спасибо, понятно', 'ооо понятно'];
+  const CHIME = ['+1, тоже не понял', 'у меня тот же вопрос', 'там же вроде ответ в учебнике есть', 'я думаю, это про промышленный переворот', 'плюсую'];
 
   function react(m) {
     const author = users.get(m.uid) || {};
     if (author.team) {
-      // Сообщение преподавателя: реакции, а на «пишем ответ» — поток ответов.
-      const n = Math.floor(rnd(1, 5));
-      for (let i = 0; i < n; i++) {
-        const who = pick(free());
-        if (who) later(rnd(1.5, 7), () => { if (!m.del && MAIN.length) toggleReaction(m, who, i === 0 && HEART ? HEART : pick(MAIN)); });
-      }
-      if (/ответ|пишите|напишите|пишем|вариант|кто готов|плюс/i.test(m.text)) {
-        const crowd = free().sort(() => Math.random() - 0.5).slice(0, Math.floor(rnd(6, 11)));
-        crowd.forEach((who) => later(rnd(2, 14), () => add(who, pick(ANSWERS))));
-      }
-      if (m.reply) {
-        const orig = msgs.get(m.reply);
-        if (orig && !users.get(orig.uid).team && orig.uid !== V.id && Math.random() < 0.7) {
-          later(rnd(4, 9), () => add(orig.uid, pick(THANKS), { reply: m.id }));
+      // Сообщение преподавателя: реакции, на «пишем ответ» — поток ответов.
+      if (!m.th) {
+        const n = Math.floor(rnd(1, 5));
+        for (let i = 0; i < n; i++) {
+          const who = pick(free());
+          if (who) later(rnd(1.5, 7), () => { if (!m.del && MAIN.length) toggleReaction(m, who, i === 0 && HEART ? HEART : pick(MAIN)); });
+        }
+        if (/ответ|пишите|напишите|пишем|вариант|кто готов|плюс/i.test(m.text)) {
+          const crowd = free().sort(() => Math.random() - 0.5).slice(0, Math.floor(rnd(6, 11)));
+          crowd.forEach((who) => later(rnd(2, 14), () => add(who, pick(ANSWERS))));
+        }
+      } else {
+        // Ответ преподавателя в ветке ученика — автор благодарит, иногда реакцией.
+        const root = msgs.get(m.th);
+        if (root && !users.get(root.uid).team && root.uid !== V.id) {
+          if (Math.random() < 0.7) later(rnd(4, 9), () => add(root.uid, pick(THANKS), { thread: root.id }));
+          if (HEART && Math.random() < 0.5) later(rnd(2, 5), () => toggleReaction(m, root.uid, HEART));
         }
       }
       return;
     }
     if (m.uid === V.id && !V.team) {
-      // Ученик (вы) спросил — «преподаватель» отвечает через 15 с.
-      if (m.q) later(15, () => { setAnswered(m, true); add(TEACHER_BOT, 'Хороший вопрос, ответил голосом 🙂', { reply: m.id }); });
+      // Ученик (вы): вопрос — «преподаватель» отвечает в ветке через 15 с.
+      if (m.q) later(15, () => { setAnswered(m, true); add(TEACHER_BOT, 'Хороший вопрос, ответил голосом 🙂', { thread: m.id }); });
+      else if (!m.th && Math.random() < 0.35) later(rnd(5, 12), () => { const w = pick(free()); if (w) add(w, pick(CHIME), { thread: m.id }); });
       if (Math.random() < 0.4) later(rnd(2, 6), () => { const w = pick(free()); if (w && MAIN.length) toggleReaction(m, w, pick(MAIN)); });
       return;
     }
@@ -233,27 +278,36 @@
       const w = pick(free());
       if (w && w !== m.uid) later(rnd(2, 8), () => { if (!m.del) toggleReaction(m, w, pick(MAIN)); });
     }
+    // Вопросы иногда обсуждают в ветке.
+    if (m.q && !m.th && Math.random() < 0.5) {
+      const w = pick(free().filter((x) => x !== m.uid));
+      if (w) later(rnd(6, 15), () => add(w, pick(CHIME), { thread: m.id }));
+    }
   }
 
-  // ── Сценарий урока: [секунда, кто, текст, вопрос?] ─────────────
+  // ── Сценарий урока: [секунда, кто, текст, {q, key, in}] ────────
+  // key — метка сообщения, in — ответить в ветке сообщения с этой меткой.
   const T = TEACHER_BOT;
   const script = [
-    [0, 101, 'Здравствуйте! 👋'], [3, 102, 'всем привет'], [6, 103, 'добрый вечер'], [9, 104, 'а запись будет?'],
-    [12, 105, 'Здрасьте)'], [16, 106, '+'], [18, T, 'Всем привет! Начинаем через минуту, подключайтесь'],
-    [26, 101, 'А домашку на когда сдавать?', true], [34, 107, 'Всем привет, я опоздала немного'],
-    [42, 104, 'Слышно хорошо'], [50, 109, 'а презентацию скинете?'],
+    [0, 101, 'Здравствуйте! 👋'], [3, 102, 'всем привет'], [6, 103, 'добрый вечер'], [9, 104, 'а запись будет?', { key: 'rec' }],
+    [12, 105, 'Здрасьте)'], [14, 109, 'будет, в прошлый раз была', { in: 'rec' }], [16, 106, '+'],
+    [18, T, 'Всем привет! Начинаем через минуту, подключайтесь'],
+    [26, 101, 'А домашку на когда сдавать?', { q: true }], [34, 107, 'Всем привет, я опоздала немного'],
+    [42, 104, 'Слышно хорошо'], [50, 109, 'а презентацию скинете?', { key: 'pres' }], [56, 111, 'тоже хочу презентацию', { in: 'pres' }],
     [60, T, 'Ребята, пишем ответ на задание 6 цифрами без пробелов 👇'],
-    [75, 102, 'а будет разбор 25 задания сегодня?', true], [90, 105, 'можно помедленнее пожалуйста 🙏'],
+    [75, 102, 'а будет разбор 25 задания сегодня?', { q: true }], [90, 105, 'можно помедленнее пожалуйста 🙏'],
     [104, 108, 'ахахах'], [105, 108, 'ахахах'], [106, 108, 'АХАХАХ'], [107, 108, 'лол'], [108, 108, 'ахахах'], [109, 108, 'ахах'],
-    [125, 103, 'А чем традиционное общество отличается от индустриального? Там же тоже было производство', true],
-    [140, 106, 'в чате кто-нибудь из Казани есть?'], [150, 110, 'я из Казани)'],
-    [160, 108, 'скучно, го лучше в доту'], [175, 107, 'А в задании 6 обязательно писать цифры по возрастанию?', true],
+    [125, 103, 'А чем традиционное общество отличается от индустриального? Там же тоже было производство', { q: true, key: 'trad' }],
+    [133, 106, 'там ручной труд был, а не машины', { in: 'trad' }], [140, 103, 'а, точно', { in: 'trad' }],
+    [146, 106, 'в чате кто-нибудь из Казани есть?', { key: 'kzn' }], [152, 110, 'я из Казани)', { in: 'kzn' }], [158, 112, 'и я!', { in: 'kzn' }],
+    [160, 108, 'скучно, го лучше в доту'], [175, 107, 'А в задании 6 обязательно писать цифры по возрастанию?', { q: true }],
     [190, T, 'Верно — 134. Разбираем, почему не 4'], [200, 101, 'понятно 👍'], [215, 104, 'можно ещё раз пример?'],
-    [230, 102, 'я не понял почему 4 неверно', true], [250, 111, 'а у меня 13 получилось, это сколько баллов?', true],
-    [265, 105, 'спасибо, очень понятно объясняете ❤️'], [285, 103, 'А на пробнике такое будет?', true],
-    [300, 112, 'всем привет, что я пропустил?'], [310, 106, '+'],
-    [320, T, 'Перерыв 5 минут, потом задание 8'], [330, 107, 'я тоже не понимаю про постиндустриальное', true],
-    [345, 109, 'а можно вопрос не по теме? как готовиться к сочинению?', true], [360, 108, 'а когда закончим?'],
+    [230, 102, 'я не понял почему 4 неверно', { q: true, key: 'four' }], [240, 101, '4 про индустриальное же', { in: 'four' }],
+    [250, 111, 'а у меня 13 получилось, это сколько баллов?', { q: true }],
+    [265, 105, 'спасибо, очень понятно объясняете ❤️'], [285, 103, 'А на пробнике такое будет?', { q: true }],
+    [300, 112, 'всем привет, что я пропустил?', { key: 'miss' }], [306, 109, 'разбирали задание 6, ответ 134', { in: 'miss' }], [310, 106, '+'],
+    [320, T, 'Перерыв 5 минут, потом задание 8'], [330, 107, 'я тоже не понимаю про постиндустриальное', { q: true }],
+    [345, 109, 'а можно вопрос не по теме? как готовиться к сочинению?', { q: true }], [360, 108, 'а когда закончим?'],
     [380, 110, 'сделайте громче пожалуйста'], [395, 111, 'всё слышно нормально'],
   ];
   const ambient = [
@@ -263,6 +317,7 @@
   ];
   const ambientQ = ['а это точно будет на ЕГЭ?', 'а как отличить смешанную экономику от рыночной?', 'а критерии тут какие?'];
 
+  const keys = {};
   let elapsed = 0;
   let lastTick = Date.now();
   let step = 0;
@@ -272,9 +327,11 @@
     elapsed += ((t - lastTick) / 1000) * speed();
     lastTick = t;
     while (step < script.length && script[step][0] <= elapsed) {
-      const [, who, text, q] = script[step++];
+      const [, who, text, o] = script[step++];
+      const opts = o || {};
       if (who === T && viewerIsTeacher) continue; // преподаватель здесь — вы
-      add(who, text, { q: !!q });
+      const m = add(who, text, { q: !!opts.q, thread: opts.in ? keys[opts.in] : null });
+      if (m && opts.key) keys[opts.key] = m.id;
     }
     if (step >= script.length && elapsed >= nextAmbient) {
       const q = Math.random() < 0.2;

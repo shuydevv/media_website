@@ -171,7 +171,9 @@ row-lock промокодов на SQLite пропускается. Старые
   остальное. Обмен — опрос раз в 2 с «что изменилось после версии N»: `lesson_chats.version`
   растёт под блокировкой строки В ОДНОЙ транзакции с изменением сообщения (`change()`), иначе
   опрос пропустит изменение. Лента — `routes/api.php` без сессии (ключ `?k=`, подпись app.key),
-  действия — `web.php` (`LiveChat\ChatController`). Фронт — `public/js/live-chat.js` +
+  действия — `web.php` (`LiveChat\ChatController`). Ответы — в ветках (`chat_messages.thread_id`, в ленту не
+  попадают; у исходного сводка `tc`), реакции команды — отдельно (`tr`, не в счётчике `rx`).
+  Показанное сообщение обновляется на месте (`morph` в live-chat.js), иначе теряются клики. Фронт — `public/js/live-chat.js` +
   `public/css/live-chat.css` без сборки; режимы live / replay (рядом с записью, по времени
   видео через событие `kinescope-player` из `watch-tracker`) / console (пульт для OBS,
   `/live-chat/console`). Сигналы эфира — webhook Kinescope (`LiveSignals`, журнал

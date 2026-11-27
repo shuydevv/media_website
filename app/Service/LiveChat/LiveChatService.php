@@ -60,6 +60,10 @@ class LiveChatService
         $session = $lesson->courseSession;
         $start = $session?->date ? $session->startDateTime() : null;
         $end = $session?->date && $session->end_time ? $session->endDateTime() : $start?->copy()->addHours(2);
+        // Урок через полночь: время конца без даты — раньше начала.
+        if ($start && $end && $end->lt($start)) {
+            $end = $end->copy()->addDay();
+        }
 
         $res = ChatState::resolve(now(), $start, $end, $segments, $chat->closed_at, $this->cfg);
 
@@ -144,7 +148,7 @@ class LiveChatService
     /**
      * @throws ChatRefused
      */
-    public function post(Lesson $lesson, User $u, string $text, ?int $replyTo, bool $question): array
+    public function post(Lesson $lesson, User $u, string $text, ?int $replyTo, bool $question, ?int $threadId = null): array
     {
         $text = trim(preg_replace("/\r\n?/", "\n", $text));
         $text = preg_replace("/\n{3,}/", "\n\n", $text);
@@ -173,20 +177,37 @@ class LiveChatService
             $slow = ['slow' => $check['slow'], 'wait' => $check['wait']];
         }
 
-        $reply = $replyTo
-            ? ChatMessage::where('lesson_id', $lesson->id)->whereNull('deleted_at')->find($replyTo)
-            : null;
+        // Ответы живут в ветке исходного сообщения (thread_id), а не в общей
+        // ленте. Цитата (reply_to_id) — только на сообщение внутри той же ветки.
+        $live = fn () => ChatMessage::where('lesson_id', $lesson->id)->whereNull('deleted_at');
+        $root = $threadId ? $live()->whereNull('thread_id')->find($threadId) : null;
+        if ($threadId && ! $root) {
+            throw new ChatRefused('thread', 'Сообщение, на которое вы отвечаете, удалено');
+        }
+        $reply = $replyTo ? $live()->find($replyTo) : null;
+        if ($reply && ! $root) {
+            $root = $reply->thread_id ? $live()->find($reply->thread_id) : $reply;
+        }
+        if ($reply && $root && ($reply->id === $root->id || (int) $reply->thread_id !== $root->id)) {
+            $reply = null;
+        }
 
-        $msg = $this->change($chat, fn ($v) => ChatMessage::create([
-            'lesson_id' => $lesson->id,
-            'user_id' => $u->id,
-            'author_name' => $team ? $this->teamName($u) : $this->studentName($u),
-            'author_badge' => $team ? $this->teamBadge($u) : null,
-            'body' => $text,
-            'reply_to_id' => $reply?->id,
-            'is_question' => $question && ! $team,
-            'version' => $v,
-        ]));
+        $msg = $this->change($chat, function ($v) use ($lesson, $u, $team, $text, $reply, $root, $question) {
+            // У исходного сообщения меняется счётчик ответов — оно тоже «изменилось».
+            $root?->forceFill(['version' => $v])->save();
+
+            return ChatMessage::create([
+                'lesson_id' => $lesson->id,
+                'user_id' => $u->id,
+                'author_name' => $team ? $this->teamName($u) : $this->studentName($u),
+                'author_badge' => $team ? $this->teamBadge($u) : null,
+                'body' => $text,
+                'reply_to_id' => $reply?->id,
+                'thread_id' => $root?->id,
+                'is_question' => $question && ! $team && ! $root,
+                'version' => $v,
+            ]);
+        });
 
         return ['message' => $msg, 'slow' => $slow];
     }
@@ -315,12 +336,12 @@ class LiveChatService
         $base = ChatMessage::where('lesson_id', $lesson->id);
         if ($since <= 0 || $since > $chat->version) {
             $limit = $this->cfg['initial_messages'];
-            $msgs = (clone $base)->whereNull('deleted_at')->orderByDesc('id')->limit($limit + 1)->get();
+            $msgs = (clone $base)->whereNull('deleted_at')->whereNull('thread_id')->orderByDesc('id')->limit($limit + 1)->get();
             $out['more'] = $msgs->count() > $limit;
             $msgs = $msgs->take($limit)->reverse()->values();
             if (self::isTeam($viewer)) {
                 // Только во вкладку «Вопросы», не в ленту: в ленте был бы разрыв.
-                $q = (clone $base)->whereNull('deleted_at')->where('is_question', true)->whereNull('answered_at')
+                $q = (clone $base)->whereNull('deleted_at')->whereNull('thread_id')->where('is_question', true)->whereNull('answered_at')
                     ->whereNotIn('id', $msgs->pluck('id'))->orderBy('id')->get();
                 $out['questions'] = $this->present($q, $viewer);
             }
@@ -341,12 +362,28 @@ class LiveChatService
     public function older(Lesson $lesson, User $viewer, int $beforeId): array
     {
         $limit = 50;
-        $msgs = ChatMessage::where('lesson_id', $lesson->id)->whereNull('deleted_at')
+        $msgs = ChatMessage::where('lesson_id', $lesson->id)->whereNull('deleted_at')->whereNull('thread_id')
             ->where('id', '<', $beforeId)->orderByDesc('id')->limit($limit + 1)->get();
 
         return [
             'more' => $msgs->count() > $limit,
             'msgs' => $this->present($msgs->take($limit)->reverse()->values(), $viewer),
+        ];
+    }
+
+    /** Ветка: исходное сообщение и все ответы на него. */
+    public function thread(Lesson $lesson, User $viewer, int $rootId): array
+    {
+        $root = ChatMessage::where('lesson_id', $lesson->id)->whereNull('thread_id')->find($rootId);
+        if (! $root) {
+            return ['root' => null, 'msgs' => []];
+        }
+        $msgs = ChatMessage::where('lesson_id', $lesson->id)->where('thread_id', $root->id)
+            ->whereNull('deleted_at')->orderBy('id')->get();
+
+        return [
+            'root' => $this->present(collect([$root]), $viewer)[0],
+            'msgs' => $this->present($msgs, $viewer),
         ];
     }
 
@@ -404,26 +441,71 @@ class LiveChatService
         $live = $msgs->whereNull('deleted_at');
         $ids = $live->pluck('id')->all();
 
-        $users = User::whereIn('id', $live->pluck('user_id')->unique())
+        // Сводка ветки у исходных сообщений: сколько ответов, кто ответил
+        // последним (до 3 аватарок), был ли среди них кто-то из команды.
+        $rootIds = $live->whereNull('thread_id')->pluck('id')->all();
+        $threadRows = $rootIds
+            ? ChatMessage::whereIn('thread_id', $rootIds)->whereNull('deleted_at')->orderByDesc('id')
+                ->get(['id', 'thread_id', 'user_id', 'author_name'])
+            : collect();
+
+        $users = User::whereIn('id', $live->pluck('user_id')->merge($threadRows->pluck('user_id'))->unique())
             ->get(['id', 'name', 'first_name', 'last_name', 'avatar', 'role'])->keyBy('id');
+
+        $tc = [];
+        foreach ($threadRows as $r) {
+            $t = &$tc[$r->thread_id];
+            $t ??= ['c' => 0, 'who' => [], 'teach' => false];
+            $t['c']++;
+            $ru = $users->get($r->user_id);
+            if ($ru && self::isTeam($ru)) {
+                $t['teach'] = true;
+            }
+            if (count($t['who']) < 3 && ! in_array($r->user_id, array_column($t['who'], 'uid'), true)) {
+                $t['who'][] = ['uid' => $r->user_id, 'n' => $r->author_name, 'av' => $ru?->avatar_url];
+            }
+            unset($t);
+        }
 
         $replyIds = $live->pluck('reply_to_id')->filter()->unique();
         $replies = $replyIds->isEmpty() ? collect()
             : ChatMessage::whereIn('id', $replyIds)->get(['id', 'user_id', 'author_name', 'body', 'deleted_at'])->keyBy('id');
 
+        // Реакции команды показываются отдельно — аватаркой с эмодзи, как
+        // «сердечко от автора» на YouTube, — и в общий счётчик не входят.
         $rx = [];
+        $tr = [];
         if ($ids) {
-            $rows = ChatMessageReaction::whereIn('message_id', $ids)
-                ->selectRaw('message_id, reaction_type_id, count(*) as c, sum(case when user_id = ? then 1 else 0 end) as mine', [$viewer->id])
-                ->groupBy('message_id', 'reaction_type_id')->orderBy('reaction_type_id')->get();
+            $rows = ChatMessageReaction::whereIn('message_id', $ids)->orderBy('id')
+                ->get(['message_id', 'reaction_type_id', 'user_id']);
+            $teamReactors = User::whereIn('id', $rows->pluck('user_id')->unique())
+                ->whereIn('role', [User::ROLE_ADMIN, User::ROLE_MENTOR])
+                ->get(['id', 'name', 'first_name', 'last_name', 'avatar', 'role', 'chat_name'])->keyBy('id');
+            $counts = [];
             foreach ($rows as $r) {
-                $rx[$r->message_id][] = [(int) $r->reaction_type_id, (int) $r->c, (int) $r->mine > 0];
+                $tu = $teamReactors->get($r->user_id);
+                if ($tu) {
+                    $tr[$r->message_id][] = [(int) $r->reaction_type_id, (int) $tu->id, $this->teamName($tu), $tu->avatar_url];
+
+                    continue;
+                }
+                $c = &$counts[$r->message_id][(int) $r->reaction_type_id];
+                $c ??= [0, false];
+                $c[0]++;
+                $c[1] = $c[1] || (int) $r->user_id === (int) $viewer->id;
+                unset($c);
+            }
+            foreach ($counts as $mid => $byType) {
+                ksort($byType);
+                foreach ($byType as $tid => [$n, $mine]) {
+                    $rx[$mid][] = [$tid, $n, $mine];
+                }
             }
         }
 
         $isAdmin = $viewer->isAdmin();
 
-        return $msgs->map(function (ChatMessage $m) use ($users, $replies, $rx, $isAdmin) {
+        return $msgs->map(function (ChatMessage $m) use ($users, $replies, $rx, $tr, $tc, $isAdmin) {
             if ($m->deleted_at) {
                 return ['id' => $m->id, 'v' => (int) $m->version, 'del' => true];
             }
@@ -451,6 +533,9 @@ class LiveChatService
                     'text' => $reply->deleted_at ? 'Сообщение удалено' : Str::limit($reply->body, 90),
                 ] : null,
                 'rx' => $rx[$m->id] ?? [],
+                'tr' => $tr[$m->id] ?? [],
+                'th' => $m->thread_id,
+                'tc' => $m->thread_id ? null : ($tc[$m->id] ?? null),
             ];
             if ($isAdmin && $u && ! $team) {
                 $out['real'] = trim($u->full_name) ?: $u->name;
@@ -488,6 +573,7 @@ class LiveChatService
             'url' => [
                 'feed' => route('live-chat.feed', $id).'?k='.$k,
                 'older' => route('live-chat.older', $id).'?k='.$k,
+                'thread' => route('live-chat.thread', $id).'?k='.$k,
                 'replay' => route('live-chat.replay', $id).'?k='.$k,
                 'send' => route('live-chat.send', $id),
                 'name' => route('live-chat.name', $id),

@@ -34,6 +34,14 @@ class FeedController extends Controller
         return response()->json($this->chat->older($lesson, $user, (int) $request->query('before', PHP_INT_MAX)));
     }
 
+    public function thread(Request $request, Lesson $lesson)
+    {
+        $user = $this->chat->userFromToken($request->query('k'), $lesson);
+        abort_unless($user, 401);
+
+        return response()->json($this->chat->thread($lesson, $user, (int) $request->query('root')));
+    }
+
     public function replay(Request $request, Lesson $lesson)
     {
         $user = $this->chat->userFromToken($request->query('k'), $lesson);

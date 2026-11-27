@@ -1,10 +1,16 @@
 /*
- * Чат трансляции (ТЗ «чат трансляций — этап 1»). Без сборки, vanilla JS.
+ * Чат трансляции. Без сборки, vanilla JS.
  * Сервер — App\Http\Controllers\LiveChat\*, логика — App\Service\LiveChat.
+ * Песочница (/live-chat/sandbox) подменяет сервер в браузере —
+ * public/js/live-chat-sandbox.js: при изменении JSON ленты правь и её.
  *
  * Обмен — опрос: «что изменилось после версии N» раз в 2 с (вкладка
  * свёрнута — раз в 15 с). Каждое изменённое сообщение приходит целиком
  * (с реакциями и отметками) — здесь его просто перерисовываем.
+ *
+ * Ответы живут в ветках: сообщение с th (id исходного) в общую ленту не
+ * попадает, у исходного — сводка tc (сколько ответов, кто). Реакции команды
+ * (tr) — отдельно от общего счётчика (rx), аватаркой с эмодзи.
  *
  * Режимы (cfg.mode): live — чат эфира на странице урока; replay — чат в записи
  * (сообщения появляются по времени видео); console — пульт эфира для OBS.
@@ -13,8 +19,7 @@
 (function () {
   'use strict';
 
-  const roots = document.querySelectorAll('[data-live-chat]');
-  roots.forEach((root) => {
+  document.querySelectorAll('[data-live-chat]').forEach((root) => {
     try {
       init(root, JSON.parse(root.getAttribute('data-live-chat')));
     } catch (e) {
@@ -31,15 +36,18 @@
       v: 0,
       me: cfg.me,
       state: cfg.state,
-      msgs: new Map(),        // id → msg
+      msgs: new Map(),        // исходные сообщения в ленте: id → msg
       qOnly: new Map(),       // старые неотвеченные вопросы (только во вкладке)
       pinned: null,
-      tab: 'chat',
-      replyTo: null,
+      view: 'chat',           // chat | questions | thread
+      prevView: 'chat',
+      thread: null,           // открытая ветка: исходное сообщение
+      threadMsgs: new Map(),  // ответы открытой ветки
+      replyTo: null,          // цитата внутри ветки
       question: false,
       slowUntil: 0,
       unseen: 0,
-      unseenReplies: [],
+      unseenReplies: [],      // id веток, где ответили мне
       more: false,
       entered: !cfg.askName || isReplay || isConsole,
       replayAll: false,
@@ -59,8 +67,8 @@
     head.append(title);
 
     const tabs = el('div', 'lc-tabs');
-    const tabChat = btn('lc-tab is-active', 'Чат', () => setTab('chat'));
-    const tabQ = btn('lc-tab', 'Вопросы', () => setTab('questions'));
+    const tabChat = btn('lc-tab is-active', 'Чат', () => setView('chat'));
+    const tabQ = btn('lc-tab', 'Вопросы', () => setView('questions'));
     const qCount = el('span', 'lc-count');
     tabQ.append(qCount);
     tabs.append(tabChat, tabQ);
@@ -76,41 +84,55 @@
       head.append(replayToggle);
     }
 
+    // «Ваше имя: Аня · изменить» — у ученика вверху чата.
+    const nameBar = el('div', 'lc-namebar');
+    nameBar.hidden = true;
+
+    const threadBar = el('div', 'lc-threadbar');
+    threadBar.hidden = true;
+    const threadBack = btn('lc-back', '← Назад', () => closeThread());
+    const threadTitle = el('span', 'lc-threadbar-title');
+    threadBar.append(threadBack, threadTitle);
+
     const pinBar = el('div', 'lc-pin');
     const banner = el('div', 'lc-banner');
 
+    const bodyWrap = el('div', 'lc-bodywrap');
     const body = el('div', 'lc-body');
     const feed = el('div', 'lc-feed');
     const qList = el('div', 'lc-feed lc-qlist');
     qList.hidden = true;
+    const thList = el('div', 'lc-feed lc-thlist');
+    thList.hidden = true;
     const empty = el('div', 'lc-empty');
-    body.append(feed, qList, empty);
+    body.append(feed, qList, thList, empty);
 
     const jumpNew = btn('lc-jump', '', () => scrollBottom(true));
     jumpNew.hidden = true;
     const jumpReply = btn('lc-jump lc-jump--reply', '', () => {
       const id = S.unseenReplies.shift();
       updateJumpReply();
-      if (id) flash(id);
+      const r = id && (S.msgs.get(id) || S.qOnly.get(id));
+      if (r) openThread(r, false);
     });
     jumpReply.hidden = true;
     const jumps = el('div', 'lc-jumps');
     jumps.append(jumpReply, jumpNew);
-    body.append(jumps);
+    bodyWrap.append(body, jumps);
 
     const composer = el('div', 'lc-composer');
     const replyBar = el('div', 'lc-replybar');
     replyBar.hidden = true;
+    const qTag = el('div', 'lc-qmode');
+    qTag.hidden = true;
+    qTag.append(el('span', '', '❓ Вопрос преподавателю'), btn('lc-x', '✕', () => setQuestion(false)));
     const notice = el('div', 'lc-notice');
     notice.hidden = true;
     const row = el('div', 'lc-row');
-    const qBtn = btn('lc-qbtn', '?', () => {
-      S.question = !S.question;
-      qBtn.classList.toggle('is-on', S.question);
-      input.placeholder = S.question ? 'Ваш вопрос преподавателю…' : 'Сообщение';
-      input.focus();
-    });
-    qBtn.title = 'Вопрос преподавателю';
+    const clip = btn('lc-clip', '', (e) => clipMenu(e.currentTarget));
+    clip.setAttribute('aria-label', 'Прикрепить');
+    clip.title = 'Вопрос, эмоция, стикер';
+    clip.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5 12.5 20a5.5 5.5 0 0 1-7.8-7.8l8.9-8.9a3.7 3.7 0 0 1 5.2 5.2l-8.9 8.9a1.8 1.8 0 0 1-2.6-2.6l8.2-8.2"/></svg>';
     const input = document.createElement('textarea');
     input.className = 'lc-input';
     input.rows = 1;
@@ -119,12 +141,11 @@
     const send = btn('lc-send', '', () => submit());
     send.setAttribute('aria-label', 'Отправить');
     send.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10.2 15 12 3.4 13.8z" fill="currentColor"/></svg>';
-    if (!S.me.team) row.append(qBtn);
+    if (!S.me.team) row.append(clip);
     row.append(input, send);
-    const nameLine = el('div', 'lc-nameline');
-    composer.append(replyBar, notice, row, nameLine);
+    composer.append(replyBar, qTag, notice, row);
 
-    root.append(head, pinBar, banner, body);
+    root.append(head, nameBar, threadBar, pinBar, banner, bodyWrap);
     if (!isReplay) root.append(composer);
 
     // Вход в чат: имя показывается при каждом входе, уже подставленное.
@@ -184,6 +205,11 @@
       if (res.status === 419) toast('Страница устарела — обновите её');
       return { ok: res.ok, status: res.status, json };
     }
+    async function getJson(u) {
+      const res = await fetch(u, { credentials: 'omit', headers: { Accept: 'application/json' } });
+      if (!res.ok) throw new Error(res.status);
+      return res.json();
+    }
     function hhmm(ts) {
       const d = new Date(ts * 1000);
       return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
@@ -192,6 +218,12 @@
       sec = Math.max(0, Math.floor(sec));
       const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
       return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(s).padStart(2, '0');
+    }
+    function plural(n, one, few, many) {
+      const m10 = n % 10, m100 = n % 100;
+      if (m10 === 1 && m100 !== 11) return one;
+      if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+      return many;
     }
     let toastTimer;
     function toast(text) {
@@ -203,32 +235,42 @@
       toastTimer = setTimeout(() => t.classList.remove('is-on'), 3000);
     }
     const HUES = [210, 340, 25, 145, 265, 190, 5, 300, 95, 45];
-    function avatar(m) {
-      const a = el('div', 'lc-av');
-      if (m.av) {
+    function avatar(uid, name, av, cls) {
+      const a = el('div', cls || 'lc-av');
+      if (av) {
         const img = el('img');
-        img.src = m.av;
+        img.src = av;
         img.alt = '';
         img.loading = 'lazy';
         a.append(img);
       } else {
-        a.textContent = (m.n || '?').trim().charAt(0).toUpperCase();
-        a.style.background = 'hsl(' + HUES[m.uid % HUES.length] + ' 70% 88%)';
-        a.style.color = 'hsl(' + HUES[m.uid % HUES.length] + ' 55% 32%)';
+        a.textContent = (name || '?').trim().charAt(0).toUpperCase();
+        a.style.background = 'hsl(' + HUES[uid % HUES.length] + ' 70% 88%)';
+        a.style.color = 'hsl(' + HUES[uid % HUES.length] + ' 55% 32%)';
       }
       return a;
     }
+    function containerFor(ctx) {
+      return ctx === 'questions' ? qList : (ctx === 'thread' || ctx === 'root') ? thList : feed;
+    }
+    function nodesOf(id) {
+      return root.querySelectorAll('.lc-msg[data-id="' + id + '"]');
+    }
 
     // ── Отрисовка сообщения ────────────────────────────────────────
-    function renderMsg(m, inQuestions) {
+    // ctx: feed — общая лента; questions — вкладка «Вопросы»;
+    //      root — исходное сообщение сверху ветки; thread — ответ в ветке.
+    function renderMsg(m, ctx) {
       const n = el('div', 'lc-msg');
+      n._m = m; // обработчики читают актуальное сообщение отсюда (см. morph)
       n.dataset.id = m.id;
+      n.dataset.ctx = ctx;
       if (m.team) n.classList.add('is-team');
       if (m.uid === S.me.id) n.classList.add('is-mine');
       if (m.reply && m.reply.uid === S.me.id && m.uid !== S.me.id) n.classList.add('is-to-me');
-      if (m.q) n.classList.add('is-question');
+      if (ctx === 'root') n.classList.add('is-root');
 
-      n.append(avatar(m));
+      n.append(avatar(m.uid, m.n, m.av));
       const main = el('div', 'lc-main');
       const top = el('div', 'lc-top');
       const name = el('span', 'lc-name', m.n);
@@ -239,6 +281,16 @@
       }
       top.append(name);
       if (m.b) top.append(el('span', 'lc-badge', m.b));
+      if (m.q) top.append(el('span', 'lc-qtag', '❓ Вопрос'));
+      if (m.q && m.ans) {
+        const a = el('span', 'lc-anstag', '✓ Ответ на эфире');
+        if (isReplay && m.ansT !== undefined) {
+          a.classList.add('is-link');
+          a.title = 'Перемотать к ответу';
+          a.addEventListener('click', () => seekVideo(m.ansT + S.replayShift));
+        }
+        top.append(a);
+      }
       const time = el('span', 'lc-time', isReplay && m.t !== undefined ? clock(m.t + S.replayShift) : hhmm(m.ts));
       if (isReplay) {
         time.classList.add('is-link');
@@ -254,34 +306,43 @@
         q.addEventListener('click', () => flash(m.reply.id));
         main.append(q);
       }
-      if (m.q) {
-        const tags = el('div', 'lc-tags');
-        tags.append(el('span', 'lc-qtag', '❓ Вопрос'));
-        if (m.ans) {
-          const a = el('span', 'lc-anstag', '✓ Ответ на эфире');
-          if (isReplay && m.ansT !== undefined) {
-            a.classList.add('is-link');
-            a.title = 'Перемотать к ответу';
-            a.addEventListener('click', () => seekVideo(m.ansT + S.replayShift));
-          }
-          tags.append(a);
-        }
-        main.append(tags);
-      }
       main.append(el('div', 'lc-text', m.text));
-      main.append(renderChips(m));
+      main.append(renderChips(m, n));
+      if ((ctx === 'feed' || ctx === 'questions') && m.tc && m.tc.c) main.append(threadLine(m, n));
       n.append(main);
 
-      if (!isReplay) attachActions(n, m, inQuestions);
+      if (!isReplay) attachActions(n, m, ctx);
       return n;
     }
 
-    function renderChips(m) {
+    // «💬 5 ответов» с аватарками ответивших — открывает ветку.
+    function threadLine(m, n) {
+      const t = m.tc;
+      const b = btn('lc-thline', '', () => openThread(n._m, false));
+      const faces = el('span', 'lc-thfaces');
+      (t.who || []).forEach((w) => faces.append(avatar(w.uid, w.n, w.av, 'lc-av lc-av--xs')));
+      b.append(faces, el('span', '', t.c + ' ' + plural(t.c, 'ответ', 'ответа', 'ответов')));
+      if (t.teach) b.append(el('span', 'lc-thteach', '· есть ответ преподавателя'));
+      return b;
+    }
+
+    function renderChips(m, n) {
       const box = el('div', 'lc-chips');
+      // Реакции команды — аватаркой с эмодзи, как «сердечко от автора».
+      (m.tr || []).forEach(([rid, uid, name, av]) => {
+        const r = reactions.get(rid);
+        if (!r) return;
+        const mine = uid === S.me.id;
+        const t = el(mine ? 'button' : 'span', 'lc-tr' + (mine ? ' is-mine' : ''));
+        if (mine) { t.type = 'button'; t.addEventListener('click', () => react(n._m, rid, t)); }
+        t.title = name + ' — реакция';
+        t.append(avatar(uid, name, av, 'lc-av lc-av--tr'), reactionImg(r, false));
+        box.append(t);
+      });
       (m.rx || []).forEach(([rid, count, mine]) => {
         const r = reactions.get(rid);
         if (!r || count < 1) return;
-        const c = btn('lc-chip' + (mine ? ' is-mine' : ''), '', () => react(m, rid, c));
+        const c = btn('lc-chip' + (mine ? ' is-mine' : ''), '', () => react(n._m, rid, c));
         c.append(reactionImg(r, false), el('span', 'lc-chip-n', String(count)));
         c.disabled = !canReact();
         box.append(c);
@@ -326,47 +387,76 @@
     }
 
     // ── Действия над сообщением ────────────────────────────────────
-    function attachActions(n, m, inQuestions) {
+    function replyAction(n, ctx) {
+      if (ctx === 'thread') return () => startQuote(n._m);
+      if (ctx === 'root') return () => input.focus();
+      return () => openThread(n._m, true);
+    }
+
+    function attachActions(n, m, ctx) {
       if (!touch) {
         const bar = el('div', 'lc-actions');
         if (canReact() && firstMain()) {
-          const heart = btn('lc-act lc-heart', '', () => react(m, firstMain().id, heart));
+          const heart = btn('lc-act lc-heart', '', () => react(n._m, firstMain().id, heart));
           heart.append(reactionImg(firstMain(), false));
-          hoverPicker(heart, m);
+          hoverPicker(heart, n);
           bar.append(heart);
         }
-        if (canWriteNow()) bar.append(btn('lc-act', '↩', () => startReply(m)));
-        if (S.me.team && m.q) bar.append(btn('lc-act lc-act--ok' + (m.ans ? ' is-on' : ''), '✓', () => answer(m)));
-        if (S.me.admin) bar.append(btn('lc-act', '⋯', (e) => adminMenu(m, e.currentTarget)));
+        if (canWriteNow() || ctx === 'feed' || ctx === 'questions') {
+          const r = btn('lc-act', '↩', replyAction(n, ctx));
+          r.title = ctx === 'thread' ? 'Ответить с цитатой' : 'Ответить в ветке';
+          if (ctx !== 'root') bar.append(r);
+        }
+        if (S.me.team && m.q) bar.append(btn('lc-act lc-act--ok' + (m.ans ? ' is-on' : ''), '✓', () => answer(n._m)));
+        if (S.me.admin) bar.append(btn('lc-act', '⋯', (e) => adminMenu(n._m, e.currentTarget)));
         if (bar.childElementCount) n.append(bar);
       } else {
-        longPress(n, () => sheet(m));
-        swipeReply(n, m);
+        longPress(n, () => sheet(n._m, ctx));
+        if (ctx !== 'root') swipeReply(n, replyAction(n, ctx));
       }
-      if (inQuestions) {
-        n.addEventListener('dblclick', () => { setTab('chat'); flash(m.id); });
-      }
+    }
+
+    // Обновление показанного сообщения на месте: меняются только изменившиеся
+    // части. Если пересоздавать сообщение целиком (а реакции приходят часто),
+    // клик, начатый на старом элементе и отпущенный на новом, теряется.
+    function morph(old, fresh) {
+      old._m = fresh._m;
+      old.className = fresh.className;
+      const a = Array.from(old.children), b = Array.from(fresh.children);
+      if (a.length !== b.length || a.some((x, i) => x.className !== b[i].className)) { old.replaceWith(fresh); return fresh; }
+      b.forEach((y, i) => {
+        const x = a[i];
+        if (x.outerHTML === y.outerHTML) return;
+        const xa = Array.from(x.children), ya = Array.from(y.children);
+        if (x.classList.contains('lc-main') && xa.length === ya.length) {
+          ya.forEach((yy, j) => { if (xa[j].outerHTML !== yy.outerHTML) xa[j].replaceWith(yy); });
+        } else {
+          x.replaceWith(y);
+        }
+      });
+      return old;
     }
 
     function firstMain() {
       return cfg.reactions.find((r) => r.main && r.active) || cfg.reactions.find((r) => r.active);
     }
 
-    // ПК: наведение на ❤️ раскрывает основной ряд, «›» — все реакции. Выбор
-    // живёт поверх страницы (position: fixed), иначе его обрезает край ленты.
+    // ПК: наведение на ❤️ раскрывает основной ряд, «›» или свайп влево — все
+    // реакции. Выбор живёт поверх страницы (position: fixed), иначе его
+    // обрезает край ленты.
     let floatPicker = null, floatTimer = null;
     function closeFloat() {
       clearTimeout(floatTimer);
       if (floatPicker) { floatPicker.remove(); floatPicker = null; }
     }
-    function hoverPicker(heart, m) {
+    function hoverPicker(heart, n) {
       const leave = () => { clearTimeout(floatTimer); floatTimer = setTimeout(closeFloat, 250); };
       heart.addEventListener('mouseenter', () => {
         clearTimeout(floatTimer);
-        if (floatPicker && floatPicker.dataset.id === String(m.id)) return;
+        if (floatPicker && floatPicker.dataset.id === String(n._m.id)) return;
         closeFloat();
-        floatPicker = picker(m, closeFloat, false);
-        floatPicker.dataset.id = m.id;
+        floatPicker = picker(n, closeFloat, false);
+        floatPicker.dataset.id = n._m.id;
         floatPicker.classList.add('is-float');
         document.body.append(floatPicker);
         const r = heart.getBoundingClientRect();
@@ -379,13 +469,15 @@
       heart.addEventListener('mouseleave', leave);
     }
 
-    function picker(m, done, forSheet) {
+    // holder — элемент сообщения (берём актуальное n._m) или само сообщение.
+    function picker(holder, done, forSheet) {
+      const cur = () => holder._m || holder;
       const p = el('div', 'lc-picker' + (forSheet ? ' is-sheet' : ''));
       const mainRow = el('div', 'lc-picker-row');
       const extraRow = el('div', 'lc-picker-row lc-picker-extra');
       cfg.reactions.filter((r) => r.active).forEach((r) => {
         const b = btn('lc-pick', '', () => {
-          react(m, r.id, b);
+          react(cur(), r.id, b);
           if (done) done();
         });
         b.title = r.name;
@@ -400,17 +492,24 @@
       });
       p.append(mainRow);
       if (extraRow.childElementCount) {
-        const more = btn('lc-pick lc-more', '›', () => {
-          p.classList.toggle('is-all');
+        const expand = () => {
+          if (p.classList.contains('is-all')) return;
+          p.classList.add('is-all');
           // Раскрылся вверх — сдвигаем, чтобы нижний край остался у сердечка.
           if (p.classList.contains('is-float')) {
             const bottom = parseFloat(p.style.top) + p.dataset.h * 1;
             p.style.top = Math.max(8, bottom - p.offsetHeight) + 'px';
           }
-        });
+        };
+        const more = btn('lc-pick lc-more', '›', expand);
         more.title = 'Все реакции';
         mainRow.append(more);
         p.append(extraRow);
+        // Свайп влево по ряду реакций — тоже «все реакции».
+        let x0 = null;
+        p.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+        p.addEventListener('touchmove', (e) => { if (x0 !== null && e.touches[0].clientX - x0 < -30) { x0 = null; expand(); } }, { passive: true });
+        p.addEventListener('wheel', (e) => { if (e.deltaX > 20) expand(); }, { passive: true });
       }
       requestAnimationFrame(() => { p.dataset.h = p.offsetHeight; });
       return p;
@@ -419,13 +518,23 @@
     async function react(m, rid, fromEl) {
       if (!canReact()) return;
       const r = reactions.get(rid);
-      const mine = (m.rx || []).some(([id, , me]) => id === rid && me);
+      let added;
       // Сразу у себя (оптимистично), сервер подтвердит следующим опросом.
-      const rx = (m.rx || []).map((x) => x.slice());
-      const ex = rx.find((x) => x[0] === rid);
-      if (ex) { ex[1] += mine ? -1 : 1; ex[2] = !mine; } else rx.push([rid, 1, true]);
-      upsert(Object.assign({}, m, { rx: rx.filter((x) => x[1] > 0) }), true);
-      if (!mine && r) burst(r, fromEl, m.id);
+      if (S.me.team) {
+        const tr = (m.tr || []).slice();
+        const i = tr.findIndex((x) => x[0] === rid && x[1] === S.me.id);
+        added = i < 0;
+        if (added) tr.push([rid, S.me.id, S.me.name, null]); else tr.splice(i, 1);
+        refresh(Object.assign({}, m, { tr }));
+      } else {
+        const mine = (m.rx || []).some(([id, , me]) => id === rid && me);
+        added = !mine;
+        const rx = (m.rx || []).map((x) => x.slice());
+        const ex = rx.find((x) => x[0] === rid);
+        if (ex) { ex[1] += mine ? -1 : 1; ex[2] = !mine; } else rx.push([rid, 1, true]);
+        refresh(Object.assign({}, m, { rx: rx.filter((x) => x[1] > 0) }));
+      }
+      if (added && r) burst(r, fromEl, m.id);
       if (navigator.vibrate && touch) navigator.vibrate(10);
       const res = await api('POST', url('react', m.id), { reaction: rid });
       if (!res.ok) toast(res.json.message || 'Не получилось');
@@ -433,9 +542,9 @@
     }
 
     function burst(r, fromEl, id) {
-      const node = feed.querySelector('.lc-msg[data-id="' + id + '"]');
-      const chip = node && Array.from(node.querySelectorAll('.lc-chip')).find((c) => c.querySelector('img,.lc-lottie') && c.classList.contains('is-mine'));
-      const anchor = (chip && chip.isConnected ? chip : fromEl) || node;
+      const node = Array.from(nodesOf(id)).find((x) => x.offsetParent);
+      const chip = node && node.querySelector('.lc-chip.is-mine, .lc-tr.is-mine');
+      const anchor = (chip && chip.isConnected ? chip : (fromEl && fromEl.isConnected ? fromEl : null)) || node;
       if (!anchor || !anchor.getBoundingClientRect) return;
       const rect = anchor.getBoundingClientRect();
       const fx = el('div', 'lc-burst');
@@ -459,10 +568,8 @@
       }
       document.body.append(fx);
       setTimeout(() => fx.remove(), 1200);
-      if (chip) {
-        const n = chip.querySelector('.lc-chip-n');
-        n && n.classList.add('is-bump');
-      }
+      const n = chip && chip.querySelector('.lc-chip-n');
+      if (n) n.classList.add('is-bump');
     }
 
     async function answer(m) {
@@ -471,30 +578,38 @@
       poll(true);
     }
 
-    function adminMenu(m, anchor) {
+    function popMenu(anchor, items, above) {
       closeMenus();
       const menu = el('div', 'lc-menu');
-      const items = adminItems(m);
-      items.forEach(([label, fn, danger]) => menu.append(btn('lc-menu-item' + (danger ? ' is-danger' : ''), label, () => { closeMenus(); fn(); })));
+      items.forEach(([label, fn, opts]) => {
+        opts = opts || {};
+        const b = btn('lc-menu-item' + (opts.danger ? ' is-danger' : ''), label, () => { closeMenus(); fn(); });
+        if (opts.disabled) { b.disabled = true; if (opts.hint) b.append(el('span', 'lc-menu-hint', opts.hint)); }
+        menu.append(b);
+      });
       document.body.append(menu);
       const r = anchor.getBoundingClientRect();
-      menu.style.top = Math.min(r.bottom + 4, window.innerHeight - menu.offsetHeight - 8) + 'px';
-      menu.style.left = Math.max(8, r.right - menu.offsetWidth) + 'px';
+      const top = above ? r.top - menu.offsetHeight - 6 : r.bottom + 4;
+      menu.style.top = Math.max(8, Math.min(top, window.innerHeight - menu.offsetHeight - 8)) + 'px';
+      menu.style.left = Math.max(8, Math.min(above ? r.left : r.right - menu.offsetWidth, window.innerWidth - menu.offsetWidth - 8)) + 'px';
       setTimeout(() => document.addEventListener('click', closeMenus, { once: true }), 0);
     }
     function closeMenus() {
       document.querySelectorAll('.lc-menu').forEach((x) => x.remove());
     }
+    function adminMenu(m, anchor) {
+      popMenu(anchor, adminItems(m));
+    }
     function adminItems(m) {
       const out = [];
-      out.push([S.pinned && S.pinned.id === m.id ? 'Открепить' : 'Закрепить', () => pin(m)]);
+      if (!m.th) out.push([S.pinned && S.pinned.id === m.id ? 'Открепить' : 'Закрепить', () => pin(m)]);
       if (!m.team) {
         out.push(['Замьютить на 10 мин', () => mute(m, '10m')]);
         out.push(['Замьютить до конца эфира', () => mute(m, 'lesson')]);
         out.push(['Замьютить навсегда', () => mute(m, 'forever')]);
         out.push(['Снять мьют', () => unmute(m)]);
       }
-      out.push(['Удалить сообщение', () => del(m), true]);
+      out.push(['Удалить сообщение', () => del(m), { danger: true }]);
       return out;
     }
     async function pin(m) {
@@ -519,11 +634,28 @@
       poll(true);
     }
 
+    // Скрепка: вопрос преподавателю, эмоция, стикеры.
+    function clipMenu(anchor) {
+      const inThread = S.view === 'thread';
+      popMenu(anchor, [
+        ['❓ Вопрос преподавателю', () => setQuestion(true), { disabled: inThread, hint: inThread ? 'не в ветке' : '' }],
+        ['😊 Поделиться эмоцией', () => {}, { disabled: true, hint: 'скоро' }],
+        ['🎨 Стикеры', () => {}, { disabled: true, hint: 'скоро' }],
+      ], true);
+    }
+    function setQuestion(on) {
+      S.question = on && S.view !== 'thread';
+      qTag.hidden = !S.question;
+      clip.classList.toggle('is-on', S.question);
+      input.placeholder = S.question ? 'Ваш вопрос преподавателю…' : (S.view === 'thread' ? 'Ответить в ветке…' : 'Сообщение');
+      if (on) input.focus();
+    }
+
     // Телефон: долгое нажатие → меню с реакциями (как в Telegram).
     function longPress(n, fn) {
       let t = null, x = 0, y = 0;
       n.addEventListener('touchstart', (e) => {
-        if (e.target.closest('.lc-chip,.lc-quote,.lc-name')) return;
+        if (e.target.closest('.lc-chip,.lc-quote,.lc-name,.lc-thline,.lc-tr')) return;
         x = e.touches[0].clientX; y = e.touches[0].clientY;
         t = setTimeout(() => { t = null; if (navigator.vibrate) navigator.vibrate(15); fn(); }, 400);
       }, { passive: true });
@@ -534,7 +666,7 @@
       n.addEventListener('contextmenu', (e) => e.preventDefault());
     }
 
-    function swipeReply(n, m) {
+    function swipeReply(n, fn) {
       let x0 = null, y0 = 0, dx = 0;
       n.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0; }, { passive: true });
       n.addEventListener('touchmove', (e) => {
@@ -546,15 +678,15 @@
       }, { passive: true });
       n.addEventListener('touchend', () => {
         n.style.transform = '';
-        if (dx <= -55 && canWriteNow()) startReply(m);
+        if (dx <= -55) fn();
         x0 = null;
       });
     }
 
     let sheetEl = null;
-    function sheet(m) {
+    function sheet(m, ctx) {
       closeSheet();
-      const node = feed.querySelector('.lc-msg[data-id="' + m.id + '"]') || qList.querySelector('.lc-msg[data-id="' + m.id + '"]');
+      const node = containerFor(ctx).querySelector('.lc-msg[data-id="' + m.id + '"]');
       sheetEl = el('div', 'lc-sheet');
       const back = el('div', 'lc-sheet-back');
       back.addEventListener('click', closeSheet);
@@ -563,15 +695,16 @@
       if (node) {
         const clone = node.cloneNode(true);
         clone.classList.add('is-lifted');
-        clone.querySelectorAll('.lc-actions').forEach((x) => x.remove());
+        clone.querySelectorAll('.lc-actions, .lc-thline').forEach((x) => x.remove());
         wrap.append(clone);
       }
       const menu = el('div', 'lc-sheet-menu');
-      const item = (label, fn, danger) => menu.append(btn('lc-menu-item' + (danger ? ' is-danger' : ''), label, () => { closeSheet(); fn(); }));
-      if (canWriteNow()) item('Ответить', () => startReply(m));
+      const item = (label, fn, opts) => menu.append(btn('lc-menu-item' + (opts && opts.danger ? ' is-danger' : ''), label, () => { closeSheet(); fn(); }));
+      if (ctx === 'thread' && canWriteNow()) item('Ответить с цитатой', () => startQuote(m));
+      if (ctx === 'feed' || ctx === 'questions') item(m.tc && m.tc.c ? 'Открыть ветку' : 'Ответить в ветке', () => openThread(m, canWriteNow()));
       item('Копировать', () => { navigator.clipboard && navigator.clipboard.writeText(m.text); toast('Скопировано'); });
       if (S.me.team && m.q) item(m.ans ? 'Снять ✓' : '✓ Ответ на эфире', () => answer(m));
-      if (S.me.admin) adminItems(m).forEach(([l, f, d]) => item(l, f, d));
+      if (S.me.admin) adminItems(m).forEach(([l, f, o]) => item(l, f, o));
       wrap.append(menu);
       sheetEl.append(back, wrap);
       document.body.append(sheetEl);
@@ -582,8 +715,7 @@
     }
 
     function flash(id) {
-      let node = feed.querySelector('.lc-msg[data-id="' + id + '"]');
-      if (!node && S.tab === 'questions') node = qList.querySelector('.lc-msg[data-id="' + id + '"]');
+      const node = Array.from(nodesOf(id)).find((x) => x.offsetParent);
       if (!node) { toast('Сообщение выше — прокрутите чат'); return; }
       node.scrollIntoView({ block: 'center', behavior: 'smooth' });
       node.classList.remove('is-flash');
@@ -591,18 +723,84 @@
       node.classList.add('is-flash');
     }
 
-    // ── Ответ цитатой ──────────────────────────────────────────────
-    function startReply(m) {
+    // ── Ветки ──────────────────────────────────────────────────────
+    async function openThread(rootMsg, focus) {
+      if (S.view !== 'thread') S.prevView = S.view;
+      S.thread = rootMsg;
+      S.threadMsgs = new Map();
+      S.unseenReplies = S.unseenReplies.filter((x) => x !== rootMsg.id);
+      updateJumpReply();
+      cancelQuote();
+      setQuestion(false);
+      setView('thread');
+      renderThread();
+      if (focus && canWriteNow()) input.focus();
+      if (isReplay) {
+        replayMsgs.filter((m) => m.th === rootMsg.id).forEach((m) => S.threadMsgs.set(m.id, m));
+        renderThread();
+        return;
+      }
+      try {
+        const data = await getJson(cfg.url.thread + '&root=' + rootMsg.id);
+        if (!S.thread || S.thread.id !== rootMsg.id) return;
+        if (!data.root) { toast('Сообщение удалено'); closeThread(); return; }
+        S.thread = data.root;
+        data.msgs.forEach((m) => S.threadMsgs.set(m.id, m));
+        renderThread();
+        scrollBottom(false);
+      } catch (e) {
+        toast('Не удалось открыть ветку');
+      }
+    }
+    function closeThread() {
+      S.thread = null;
+      S.threadMsgs = new Map();
+      cancelQuote();
+      setView(S.prevView === 'thread' ? 'chat' : S.prevView);
+    }
+    function renderThread() {
+      if (!S.thread) return;
+      const c = S.threadMsgs.size;
+      threadTitle.textContent = 'Ветка' + (c ? ' · ' + c + ' ' + plural(c, 'ответ', 'ответа', 'ответов') : '');
+      thList.innerHTML = '';
+      thList.append(renderMsg(S.thread, 'root'));
+      const list = Array.from(S.threadMsgs.values()).sort((a, b) => a.id - b.id)
+        .filter((m) => !isReplay || S.replayAll || m.t + S.replayShift <= S.videoTime);
+      if (!list.length) thList.append(el('div', 'lc-empty lc-empty--thread', 'Ответов пока нет'));
+      list.forEach((m) => thList.append(renderMsg(m, 'thread')));
+    }
+    function putThread(m) {
+      const isNew = !S.threadMsgs.has(m.id);
+      if (m.del) S.threadMsgs.delete(m.id); else S.threadMsgs.set(m.id, m);
+      const old = thList.querySelector('.lc-msg[data-ctx="thread"][data-id="' + m.id + '"]');
+      if (m.del || (isNew && !old)) {
+        const stick = nearBottom();
+        renderThread();
+        if (stick) scrollBottom(false);
+        return;
+      }
+      if (old) morph(old, renderMsg(m, 'thread'));
+    }
+    function putThreadRoot(m) {
+      S.thread = m;
+      const c = S.threadMsgs.size;
+      threadTitle.textContent = 'Ветка' + (c ? ' · ' + c + ' ' + plural(c, 'ответ', 'ответа', 'ответов') : '');
+      const old = thList.querySelector('.lc-msg[data-ctx="root"]');
+      if (old) morph(old, renderMsg(m, 'root')); else renderThread();
+    }
+
+    // ── Цитата внутри ветки ────────────────────────────────────────
+    function startQuote(m) {
       if (!S.entered) return;
       S.replyTo = m;
       replyBar.innerHTML = '';
       const t = el('div', 'lc-replybar-text');
       t.append(el('b', '', 'Ответ ' + m.n), el('span', '', m.text.slice(0, 90)));
-      replyBar.append(t, btn('lc-x', '✕', cancelReply));
+      replyBar.append(t, btn('lc-x', '✕', cancelQuote));
       replyBar.hidden = false;
       input.focus();
     }
-    function cancelReply() {
+    function cancelQuote() {
       S.replyTo = null;
       replyBar.hidden = true;
     }
@@ -619,15 +817,20 @@
       if (Date.now() < S.slowUntil) return;
       sending = true;
       send.disabled = true;
-      const res = await api('POST', url('send'), { text, reply_to: S.replyTo ? S.replyTo.id : null, question: S.question });
+      const res = await api('POST', url('send'), {
+        text,
+        thread: S.thread ? S.thread.id : null,
+        reply_to: S.replyTo ? S.replyTo.id : null,
+        question: S.question,
+      });
       sending = false;
       send.disabled = false;
       if (res.ok) {
         input.value = '';
         autosize();
-        cancelReply();
-        if (S.question) qBtn.click();
-        upsert(res.json.msg);
+        cancelQuote();
+        if (S.question) setQuestion(false);
+        put(res.json.msg);
         scrollBottom(true);
         if (res.json.slow && res.json.slow.slow) startSlow(res.json.slow.wait);
         poll(true);
@@ -660,19 +863,23 @@
       const res = await api('POST', url('name'), { name });
       if (!res.ok) { toast(res.json.message || 'Не получилось сохранить имя'); return false; }
       S.me.name = res.json.name;
-      renderComposer();
+      renderNameBar();
       return true;
     }
 
+    // Высота поля — по тексту; после отправки — снова одна строка.
     function autosize() {
-      input.style.height = 'auto';
-      input.style.height = Math.min(input.scrollHeight, 120) + 'px';
-      input.style.overflowY = input.scrollHeight > 120 ? 'auto' : 'hidden';
+      input.style.height = '';
+      if (!input.value) { input.style.overflowY = 'hidden'; return; }
+      const frame = input.offsetHeight - input.clientHeight;
+      const h = Math.min(input.scrollHeight + frame, 120);
+      if (h > input.offsetHeight) input.style.height = h + 'px';
+      input.style.overflowY = input.scrollHeight + frame > 120 ? 'auto' : 'hidden';
     }
     input.addEventListener('input', autosize);
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey && !touch) { e.preventDefault(); submit(); }
-      if (e.key === 'Escape') cancelReply();
+      if (e.key === 'Escape') { cancelQuote(); setQuestion(false); }
     });
     // Телефон: клавиатура не должна закрывать поле и последние сообщения.
     // Нижнее меню сайта (fixed) на это время прячем — иначе оно закрывает поле.
@@ -688,15 +895,32 @@
       });
     }
 
+    function renderNameBar() {
+      nameBar.innerHTML = '';
+      nameBar.hidden = S.me.team || isReplay || !S.entered || S.me.demo;
+      if (nameBar.hidden) return;
+      nameBar.append(el('span', '', 'Ваше имя: '), el('b', '', S.me.name), el('span', 'lc-dot', '·'), btn('lc-link', 'изменить', editName));
+    }
+
+    function editName() {
+      const i = document.createElement('input');
+      i.className = 'lc-gate-input lc-name-input';
+      i.maxLength = cfg.nameMax;
+      i.value = S.me.name;
+      const ok = btn('lc-btn lc-btn--sm', 'Сохранить', async () => {
+        const v = i.value.trim();
+        if (v && v !== S.me.name) await saveName(v); else renderNameBar();
+      });
+      i.addEventListener('keydown', (e) => { if (e.key === 'Enter') ok.click(); if (e.key === 'Escape') renderNameBar(); });
+      nameBar.innerHTML = '';
+      nameBar.append(i, ok);
+      i.focus();
+      i.select();
+    }
+
     function renderComposer() {
       if (isReplay) return;
-      nameLine.innerHTML = '';
-      if (S.me.team) {
-        nameLine.append(el('span', '', 'Вы пишете как '), el('b', '', S.me.name), el('span', 'lc-badge', S.me.badge));
-      } else if (S.entered) {
-        nameLine.append(el('span', '', 'Вы: '), el('b', '', S.me.name));
-        if (!S.me.demo) nameLine.append(btn('lc-edit', '✎', editName));
-      }
+      renderNameBar();
       const blocked = S.me.muted
         ? 'Вы не можете писать в этом чате' + (S.me.muted.until ? ' до ' + hhmm(S.me.muted.until) : (S.me.muted.lesson ? ' до конца эфира' : ''))
         : S.me.demo ? 'В демо-режиме писать в чат нельзя' : null;
@@ -709,26 +933,8 @@
         notice.hidden = true;
         notice.classList.remove('is-block');
       }
-      composer.hidden = !blocked && !S.me.write && !S.me.team;
+      composer.hidden = !blocked && !S.me.write;
       send.disabled = !!S.slowUntil;
-    }
-
-    function editName() {
-      const f = el('div', 'lc-name-edit');
-      const i = document.createElement('input');
-      i.className = 'lc-gate-input';
-      i.maxLength = cfg.nameMax;
-      i.value = S.me.name;
-      const ok = btn('lc-btn lc-btn--sm', 'Сохранить', async () => {
-        const v = i.value.trim();
-        if (v && v !== S.me.name) await saveName(v); else renderComposer();
-      });
-      i.addEventListener('keydown', (e) => { if (e.key === 'Enter') ok.click(); if (e.key === 'Escape') renderComposer(); });
-      f.append(i, ok);
-      nameLine.innerHTML = '';
-      nameLine.append(f);
-      i.focus();
-      i.select();
     }
 
     // ── Лента: слияние и прокрутка ─────────────────────────────────
@@ -743,7 +949,7 @@
     body.addEventListener('scroll', () => {
       closeFloat();
       if (nearBottom()) { S.unseen = 0; jumpNew.hidden = true; }
-      if (body.scrollTop < 40 && S.more && !loadingOlder && !isReplay && S.tab === 'chat') loadOlder();
+      if (body.scrollTop < 40 && S.more && !loadingOlder && !isReplay && S.view === 'chat') loadOlder();
     });
 
     function insertSorted(container, node, id) {
@@ -754,8 +960,35 @@
       container.prepend(node);
     }
 
-    // silent — своё действие (реакция), без «новых сообщений»
-    function upsert(m, silent) {
+    // Изменённое сообщение — туда, где оно показано (лента, ветка, вопросы).
+    function refresh(m) {
+      if (m.th) { if (S.thread && m.th === S.thread.id) putThread(m); return; }
+      if (S.msgs.has(m.id) || !S.qOnly.has(m.id)) upsertFeed(m, true);
+      if (S.qOnly.has(m.id)) S.qOnly.set(m.id, m);
+      if (S.thread && S.thread.id === m.id) putThreadRoot(m);
+      renderQuestions();
+    }
+
+    // Новое/изменённое сообщение с сервера. silent — без «новых сообщений».
+    function put(m, silent) {
+      if (m.th) {
+        if (S.thread && m.th === S.thread.id) putThread(m);
+        // Ответили в моей ветке — кнопка «↩ N».
+        const r = S.msgs.get(m.th) || S.qOnly.get(m.th);
+        if (!silent && !m.del && r && r.uid === S.me.id && m.uid !== S.me.id && !(S.thread && S.thread.id === m.th)
+          && !S.unseenReplies.includes(m.th)) {
+          S.unseenReplies.push(m.th);
+          updateJumpReply();
+        }
+        return;
+      }
+      if (S.thread && S.thread.id === m.id) {
+        if (m.del) { toast('Сообщение ветки удалено'); closeThread(); } else putThreadRoot(m);
+      }
+      upsertFeed(m, silent);
+    }
+
+    function upsertFeed(m, silent) {
       if (m.del) {
         S.msgs.delete(m.id);
         S.qOnly.delete(m.id);
@@ -766,25 +999,19 @@
       const isNew = !S.msgs.has(m.id);
       S.msgs.set(m.id, m);
       if (isReplay) return;
-      const node = renderMsg(m, false);
+      const node = renderMsg(m, 'feed');
       const old = feed.querySelector('.lc-msg[data-id="' + m.id + '"]');
-      if (old) old.replaceWith(node); else insertSorted(feed, node, m.id);
+      if (old) morph(old, node); else insertSorted(feed, node, m.id);
       if (S.pinned && S.pinned.id === m.id) renderPinned(m);
-      if (isNew && !silent && m.uid !== S.me.id) {
-        if (!nearBottom()) { S.unseen++; jumpNew.textContent = S.unseen + ' ' + plural(S.unseen, 'новое сообщение', 'новых сообщения', 'новых сообщений') + ' ↓'; jumpNew.hidden = false; }
-        if (m.reply && m.reply.uid === S.me.id && (!nearBottom() || document.hidden)) { S.unseenReplies.push(m.id); updateJumpReply(); }
+      if (isNew && !silent && m.uid !== S.me.id && (!nearBottom() || S.view !== 'chat')) {
+        S.unseen++;
+        jumpNew.textContent = S.unseen + ' ' + plural(S.unseen, 'новое сообщение', 'новых сообщения', 'новых сообщений') + ' ↓';
+        jumpNew.hidden = S.view !== 'chat';
       }
-    }
-    function plural(n, one, few, many) {
-      const m10 = n % 10, m100 = n % 100;
-      if (m10 === 1 && m100 !== 11) return one;
-      if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
-      return many;
     }
     function updateJumpReply() {
       jumpReply.hidden = !S.unseenReplies.length;
-      jumpReply.textContent = '↩ ' + S.unseenReplies.length;
-      jumpReply.title = 'Вам ответили';
+      jumpReply.textContent = '↩ ' + S.unseenReplies.length + ' ' + plural(S.unseenReplies.length, 'ответ вам', 'ответа вам', 'ответов вам');
     }
 
     function renderPinned(m) {
@@ -793,7 +1020,7 @@
       if (!m) return;
       const t = el('div', 'lc-pin-text');
       t.append(el('b', '', '📌 ' + m.n), el('span', '', m.text));
-      t.addEventListener('click', () => { if (isReplay) return; setTab('chat'); flash(m.id); });
+      t.addEventListener('click', () => { if (isReplay) return; setView('chat'); flash(m.id); });
       pinBar.append(t);
       if (S.me.admin && !isReplay) pinBar.append(btn('lc-x', '✕', () => pin(m)));
     }
@@ -805,25 +1032,32 @@
       S.msgs.forEach((m) => { if (m.q && !m.ans && !S.qOnly.has(m.id)) open.push(m); });
       open.sort((a, b) => a.id - b.id);
       qCount.textContent = open.length ? ' ' + open.length : '';
-      qList.innerHTML = '';
-      open.forEach((m) => qList.append(renderMsg(m, true)));
-      if (S.tab === 'questions') empty.textContent = open.length ? '' : 'Вопросов пока нет';
+      const keep = new Map(Array.from(qList.children).map((x) => [Number(x.dataset.id), x]));
+      const nodes = open.map((m) => (keep.has(m.id) ? morph(keep.get(m.id), renderMsg(m, 'questions')) : renderMsg(m, 'questions')));
+      qList.replaceChildren(...nodes);
+      if (S.view === 'questions') empty.textContent = open.length ? '' : 'Вопросов пока нет';
     }
 
-    function setTab(t) {
-      S.tab = t;
-      tabChat.classList.toggle('is-active', t === 'chat');
-      tabQ.classList.toggle('is-active', t === 'questions');
-      feed.hidden = t !== 'chat';
-      qList.hidden = t !== 'questions';
-      jumps.hidden = t !== 'chat';
+    function setView(v) {
+      S.view = v;
+      tabChat.classList.toggle('is-active', v === 'chat');
+      tabQ.classList.toggle('is-active', v === 'questions');
+      feed.hidden = v !== 'chat';
+      qList.hidden = v !== 'questions';
+      thList.hidden = v !== 'thread';
+      threadBar.hidden = v !== 'thread';
+      tabs.classList.toggle('is-dim', v === 'thread');
+      jumpNew.hidden = v !== 'chat' || !S.unseen;
+      if (v !== 'thread') setQuestion(S.question);
+      input.placeholder = v === 'thread' ? 'Ответить в ветке…' : (S.question ? 'Ваш вопрос преподавателю…' : 'Сообщение');
       renderQuestions();
       updateEmpty();
-      if (t === 'chat') scrollBottom(false); else body.scrollTop = 0;
+      if (v === 'questions') body.scrollTop = 0; else scrollBottom(false);
     }
 
     function updateEmpty() {
-      if (S.tab === 'questions') return;
+      if (S.view === 'questions') return;
+      if (S.view === 'thread') { empty.textContent = ''; return; }
       empty.textContent = feed.childElementCount ? '' : (isReplay ? (S.replayAll ? 'В чате не было сообщений' : 'Сообщения появятся по ходу видео') : 'Сообщений пока нет');
     }
 
@@ -881,18 +1115,24 @@
         feed.innerHTML = '';
         S.more = !!data.more;
         (data.questions || []).forEach((m) => S.qOnly.set(m.id, m));
-        (data.msgs || []).forEach((m) => upsert(m, true));
+        (data.msgs || []).forEach((m) => put(m, true));
+        if (S.thread) openThread(S.thread, false);
         scrollBottom(false);
       } else if (data.msgs) {
         const stick = nearBottom();
         data.msgs.forEach((m) => {
-          if (S.qOnly.has(m.id)) { if (m.del) S.qOnly.delete(m.id); else S.qOnly.set(m.id, m); }
-          if (!S.msgs.has(m.id) && S.qOnly.has(m.id)) return;
+          if (!m.th && S.qOnly.has(m.id)) {
+            if (m.del) S.qOnly.delete(m.id); else S.qOnly.set(m.id, m);
+            if (!S.msgs.has(m.id)) { if (S.thread && S.thread.id === m.id) put(m); return; }
+          }
           // Изменение старого сообщения, которого нет в загруженной ленте, — пропускаем.
-          if (!S.msgs.has(m.id) && !m.del && S.msgs.size && m.id < Math.min(...S.msgs.keys())) return;
-          upsert(m);
+          if (!m.th && !S.msgs.has(m.id) && !m.del && S.msgs.size && m.id < Math.min(...S.msgs.keys())) {
+            if (S.thread && S.thread.id === m.id) putThreadRoot(m);
+            return;
+          }
+          put(m);
         });
-        if (stick) scrollBottom(false);
+        if (stick && S.view !== 'questions') scrollBottom(false);
       }
       if ('pinned' in data) { S.pinned = data.pinned; renderPinned(data.pinned); }
       S.v = data.v;
@@ -905,8 +1145,9 @@
     function rerenderAll() {
       S.msgs.forEach((m) => {
         const old = feed.querySelector('.lc-msg[data-id="' + m.id + '"]');
-        if (old) old.replaceWith(renderMsg(m, false));
+        if (old) morph(old, renderMsg(m, 'feed'));
       });
+      renderThread();
       renderComposer();
     }
 
@@ -915,12 +1156,10 @@
       const ids = Array.from(S.msgs.keys());
       if (!ids.length) return;
       loadingOlder = true;
-      const before = Math.min(...ids);
       try {
-        const res = await fetch(cfg.url.older + '&before=' + before, { credentials: 'omit', headers: { Accept: 'application/json' } });
-        const data = await res.json();
+        const data = await getJson(cfg.url.older + '&before=' + Math.min(...ids));
         const h = body.scrollHeight;
-        data.msgs.forEach((m) => upsert(m, true));
+        data.msgs.forEach((m) => put(m, true));
         S.more = data.more;
         body.scrollTop += body.scrollHeight - h;
       } catch (e) { /* следующая прокрутка попробует снова */ }
@@ -928,18 +1167,16 @@
     }
 
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) { poll(true); if (S.unseenReplies.length) updateJumpReply(); }
+      if (!document.hidden) poll(true);
     });
 
     // ── Запись: сообщения по времени видео ─────────────────────────
     let replayMsgs = [];
     async function startReplay() {
       try {
-        const res = await fetch(cfg.url.replay, { credentials: 'omit', headers: { Accept: 'application/json' } });
-        const data = await res.json();
+        const data = await getJson(cfg.url.replay);
         S.replayShift = data.shift || 0;
         replayMsgs = data.msgs;
-        replayMsgs.forEach((m) => S.msgs.set(m.id, m));
         renderReplay(true);
       } catch (e) {
         empty.textContent = 'Не удалось загрузить чат';
@@ -948,16 +1185,23 @@
     let shown = 0;
     function renderReplay(rebuild) {
       const limit = S.replayAll ? Infinity : S.videoTime;
-      const visible = replayMsgs.filter((m) => m.t + S.replayShift <= limit);
+      const visible = replayMsgs.filter((m) => !m.th && m.t + S.replayShift <= limit);
       if (rebuild || visible.length < shown) {
         feed.innerHTML = '';
         shown = 0;
       }
       const stick = rebuild ? !S.replayAll : nearBottom();
-      for (let i = shown; i < visible.length; i++) feed.append(renderMsg(visible[i], false));
+      for (let i = shown; i < visible.length; i++) {
+        // Счётчик ветки — только из уже прозвучавших ответов.
+        const m = visible[i];
+        const answers = replayMsgs.filter((x) => x.th === m.id && (S.replayAll || x.t + S.replayShift <= limit));
+        const shownMsg = m.tc ? Object.assign({}, m, { tc: answers.length ? Object.assign({}, m.tc, { c: answers.length }) : null }) : m;
+        feed.append(renderMsg(shownMsg, 'feed'));
+      }
       shown = visible.length;
+      if (S.thread) renderThread();
       updateEmpty();
-      if (stick) scrollBottom(false);
+      if (stick && S.view === 'chat') scrollBottom(false);
     }
     function seekVideo(t) {
       if (S.player && S.player.seekTo) {

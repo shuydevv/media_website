@@ -26,7 +26,7 @@
 .lc button:disabled { cursor: default; opacity: .5; }
 
 /* Шапка */
-.lc-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--lc-blue-50); }
+.lc-head { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--lc-blue-50); }
 .lc-title { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; margin-right: auto; }
 .lc-pill { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 999px; background: #e4e4e7; color: #3f3f46; }
 .lc-pill.is-open { background: #dcfce7; color: #166534; }
@@ -47,12 +47,13 @@
 .lc-banner[hidden] { display: none; }
 
 /* Лента */
-.lc-body { position: relative; flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 6px 0 10px; }
+.lc-bodywrap { position: relative; flex: 1; min-height: 0; display: flex; }
+.lc-body { position: relative; flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 4px 0 8px; }
 .lc-feed[hidden] { display: none; }
 .lc-empty { padding: 28px 16px; text-align: center; color: var(--lc-muted); font-size: 13px; }
 .lc-empty:empty { display: none; }
 
-.lc-msg { position: relative; display: flex; gap: 8px; padding: 5px 12px; transition: background .2s, transform .15s; }
+.lc-msg { position: relative; display: flex; gap: 7px; padding: 4px 10px 4px 7px; transition: background .2s, transform .15s; }
 .lc-msg:hover { background: #fafafa; }
 .lc-msg.is-team { background: var(--lc-blue-50); }
 .lc-msg.is-team:hover { background: var(--lc-blue-100); }
@@ -60,7 +61,7 @@
 .lc-msg.is-flash { animation: lc-flash 1.4s ease; }
 @keyframes lc-flash { 0%, 40% { background: #fde68a; } 100% { background: transparent; } }
 
-.lc-av { flex: 0 0 30px; width: 30px; height: 30px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; font-size: 13px; font-weight: 600; margin-top: 2px; }
+.lc-av { flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; font-size: 13px; font-weight: 600; margin-top: 2px; }
 .lc-av img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .lc-main { flex: 1; min-width: 0; }
 .lc-top { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; line-height: 1.3; }
@@ -79,7 +80,7 @@
 .lc-quote b { color: var(--lc-blue); }
 .lc-quote span { color: #52525b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lc-tags { display: flex; gap: 6px; margin: 2px 0; flex-wrap: wrap; }
-.lc-qtag, .lc-anstag { font-size: 11px; font-weight: 500; padding: 1px 7px; border-radius: 6px; background: #ede9fe; color: #5b21b6; }
+.lc-qtag, .lc-anstag { font-size: 11px; font-weight: 500; padding: 1px 6px; border-radius: 6px; background: #ede9fe; color: #5b21b6; white-space: nowrap; }
 .lc-anstag { background: #dcfce7; color: #166534; }
 
 /* Реакции */
@@ -133,14 +134,14 @@
 }
 
 /* Кнопки «вниз» */
-.lc-jumps { position: sticky; bottom: 4px; display: flex; justify-content: center; gap: 6px; pointer-events: none; height: 0; overflow: visible; }
+.lc-jumps { position: absolute; left: 0; right: 0; bottom: 10px; display: flex; justify-content: center; gap: 6px; pointer-events: none; z-index: 4; }
 .lc-jumps[hidden] { display: none; }
-.lc-jump { pointer-events: auto; transform: translateY(-34px); padding: 6px 12px; border-radius: 999px; background: var(--lc-blue) !important; color: #fff !important; font-size: 12px; font-weight: 500; box-shadow: 0 4px 14px rgba(37, 99, 235, .35); }
+.lc-jump { pointer-events: auto; padding: 6px 12px; white-space: nowrap; border-radius: 999px; background: var(--lc-blue) !important; color: #fff !important; font-size: 12px; font-weight: 500; box-shadow: 0 4px 14px rgba(37, 99, 235, .35); }
 .lc-jump--reply { background: #f59e0b !important; box-shadow: 0 4px 14px rgba(245, 158, 11, .35); }
 .lc-jump[hidden] { display: none; }
 
 /* Поле ввода */
-.lc-composer { padding: 8px 10px 10px; background: #fafafa; }
+.lc-composer { padding: 6px 8px 8px; background: #fafafa; }
 .lc-composer[hidden] { display: none; }
 .lc-replybar { display: flex; align-items: center; gap: 8px; padding: 4px 8px; margin-bottom: 6px; border-left: 3px solid var(--lc-blue); background: #fff; border-radius: 0 8px 8px 0; font-size: 12px; }
 .lc-replybar[hidden] { display: none; }
@@ -156,9 +157,9 @@
 .lc-row[hidden] { display: none; }
 .lc-qbtn { flex: 0 0 36px; height: 36px; border-radius: 10px; background: #fff !important; color: var(--lc-muted) !important; font-weight: 600; font-size: 16px; }
 .lc-qbtn.is-on { background: #ede9fe !important; color: #5b21b6 !important; }
-.lc-input { flex: 1; resize: none; overflow-y: hidden; min-height: 36px; max-height: 120px; padding: 8px 10px; border: 1px solid var(--lc-line); border-radius: 10px; background: #fff; font: inherit; line-height: 1.35; outline: none; }
+.lc-input { flex: 1; box-sizing: border-box; resize: none; overflow-y: hidden; height: 38px; min-height: 38px; max-height: 120px; padding: 8px 10px; border: 1px solid var(--lc-line); border-radius: 10px; background: #fff; font: inherit; line-height: 20px; outline: none; }
 .lc-input:focus { border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(147, 197, 253, .35); }
-.lc-send { flex: 0 0 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--lc-blue) !important; color: #fff !important; }
+.lc-send { flex: 0 0 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; background: var(--lc-blue) !important; color: #fff !important; }
 .lc-nameline { display: flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 12px; color: var(--lc-muted); min-height: 18px; }
 .lc-nameline b { color: #3f3f46; }
 .lc-edit { padding: 0 4px; border-radius: 6px; color: var(--lc-blue) !important; }
@@ -212,4 +213,53 @@ body.lc-typing #student-bottom-nav, body.lc-typing #student-bottom-nav-reveal { 
 .lc--console .lc-av { flex-basis: 36px; width: 36px; height: 36px; }
 @media (prefers-reduced-motion: reduce) {
   .lc-burst, .lc-msg.is-flash { animation: none !important; }
+}
+
+/* Имя ученика — вверху чата */
+.lc-namebar { display: flex; align-items: center; gap: 4px; padding: 5px 10px; font-size: 12px; color: var(--lc-muted); background: #fafafa; }
+.lc-namebar[hidden] { display: none; }
+.lc-namebar b { color: #3f3f46; }
+.lc-dot { color: #d4d4d8; }
+.lc-link { color: var(--lc-blue) !important; padding: 0 2px; font-size: 12px; }
+.lc-link:hover { text-decoration: underline; }
+.lc-name-input { padding: 3px 8px; font-size: 12px; flex: 1; min-width: 0; }
+
+/* Ветки */
+.lc-threadbar { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #fafafa; font-size: 13px; }
+.lc-threadbar[hidden] { display: none; }
+.lc-back { color: var(--lc-blue) !important; font-weight: 500; padding: 2px 6px; border-radius: 6px; }
+.lc-back:hover { background: var(--lc-blue-100) !important; }
+.lc-threadbar-title { color: #52525b; }
+.lc-tabs.is-dim { opacity: .5; }
+.lc-msg.is-root { background: #f8fafc; margin-bottom: 4px; padding-top: 8px; padding-bottom: 8px; box-shadow: 0 1px 0 #e4e4e7; }
+.lc-empty--thread { padding: 16px; }
+.lc-thline { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; padding: 2px 8px 2px 3px; border-radius: 999px; font-size: 12px; color: var(--lc-blue) !important; background: var(--lc-blue-50) !important; }
+.lc-thline:hover { background: var(--lc-blue-100) !important; }
+.lc-thfaces { display: inline-flex; }
+.lc-thfaces .lc-av + .lc-av { margin-left: -6px; }
+.lc-av--xs { flex: 0 0 18px; width: 18px; height: 18px; font-size: 9px; margin-top: 0; box-shadow: 0 0 0 1.5px #fff; }
+.lc-thteach { color: #166534; }
+
+/* Реакция преподавателя — аватарка с эмодзи */
+.lc-tr { position: relative; display: inline-flex; align-items: center; padding: 0 6px 0 0; }
+.lc-tr .lc-av--tr { flex: 0 0 22px; width: 22px; height: 22px; font-size: 10px; margin: 0; box-shadow: 0 0 0 2px var(--lc-blue-200); }
+.lc-tr .lc-rimg, .lc-tr .lc-lottie { position: absolute; right: -2px; bottom: -3px; width: 14px; height: 14px; }
+button.lc-tr { cursor: pointer; }
+
+/* Скрепка и режим вопроса */
+.lc-clip { flex: 0 0 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; background: #fff !important; color: var(--lc-muted) !important; }
+.lc-clip:hover { color: #3f3f46 !important; }
+.lc-clip.is-on { background: #ede9fe !important; color: #5b21b6 !important; }
+.lc-qmode { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 3px 4px 3px 10px; margin-bottom: 6px; border-radius: 8px; background: #ede9fe; color: #5b21b6; font-size: 12px; font-weight: 500; }
+.lc-qmode[hidden] { display: none; }
+.lc-menu-item:disabled { color: #a1a1aa; cursor: default; background: none; }
+.lc-menu-hint { margin-left: 8px; font-size: 11px; color: #a1a1aa; }
+
+/* Страница урока: видео + чат во всю ширину экрана */
+.lc-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+@media (min-width: 768px) {
+  .lc-layout { grid-template-columns: minmax(0, 1fr) 380px; }
+}
+@media (min-width: 1440px) {
+  .lc-layout { grid-template-columns: minmax(0, 1fr) 420px; }
 }

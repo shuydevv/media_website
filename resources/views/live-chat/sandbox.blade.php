@@ -37,22 +37,22 @@
   </div>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-7 gap-4 md:px-12 px-4 mb-10">
-  <div class="md:col-span-5">
+<div class="lc-layout px-3 md:px-4 mb-10">
+  <div>
     <div class="border-4 rounded-2xl border-blue-200" style="position: relative; padding-top: 56.25%; width: 100%">
       @if ($video)
         <iframe src="https://kinescope.io/embed/{{ $video }}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media;" frameborder="0" allowfullscreen
                 style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;"></iframe>
       @else
         <div class="sb-live">
-          <div class="sb-live-top"><span class="sb-dot">ЭФИР <span id="sb-timer">00:00</span></span><span class="sb-viewers">👁 <span id="sb-viewers">47</span></span></div>
+          <div class="sb-live-top"><span class="sb-dot">ЭФИР <span id="sb-timer">00:00</span></span>@unless ($asStudent)<span class="sb-viewers" title="Видит только команда">👁 <span id="sb-viewers">47</span></span>@endunless</div>
           <div class="sb-title">Типы обществ. Задание 6</div>
           <div class="sb-sub">Здесь будет видео трансляции. Чтобы подставить запись — добавьте к адресу ?video=код из Kinescope</div>
         </div>
       @endif
     </div>
   </div>
-  <div class="md:col-span-2">@include('live-chat.panel', ['config' => $config])</div>
+  <div>@include('live-chat.panel', ['config' => $config])</div>
 </div>
 
 {{-- До live-chat.js: подменяет сервер чата (fetch на /__sandbox/…) и запускает ботов. --}}
