@@ -17,7 +17,7 @@
     {{-- Чат эфира в записи: сообщения появляются по времени видео. --}}
     <div class="lc-layout">
       <div>
-        <div class="border-4 border-blue-100 rounded-xl" style="position: relative; padding-top: 56.25%; width: 100%">@include('student.lessons.partials.kinescope-player', ['videoId' => $lesson->recording_link, 'kind' => 'recording'])</div>
+        <div class="lc-video border-4 border-blue-100 rounded-xl" style="position: relative; padding-top: 56.25%; width: 100%">@include('student.lessons.partials.kinescope-player', ['videoId' => $lesson->recording_link, 'kind' => 'recording'])</div>
       </div>
       <div>@include('live-chat.panel', ['config' => $chatReplay])</div>
     </div>
@@ -41,7 +41,7 @@
     {{-- Чат уже в записи выше — здесь только плеер эфира на всю ширину. --}}
     <div class="{{ $chatLive ? '' : 'md:col-span-5' }}" @if ($chatEnabled && !$chatLive) style="grid-column: 1 / -1" @endif>
       <div class="">
-        <div class="border-4 rounded-2xl border-blue-200" style="position: relative; padding-top: 56.25%; width: 100%">@include('student.lessons.partials.kinescope-player', ['videoId' => $lesson->meet_link, 'kind' => 'live'])</div>
+        <div class="lc-video border-4 rounded-2xl border-blue-200" style="position: relative; padding-top: 56.25%; width: 100%">@include('student.lessons.partials.kinescope-player', ['videoId' => $lesson->meet_link, 'kind' => 'live'])</div>
 
       </div>
     </div>

@@ -39,7 +39,7 @@
 
 <div class="lc-layout px-3 md:px-4 mb-10">
   <div>
-    <div class="border-4 rounded-2xl border-blue-200" style="position: relative; padding-top: 56.25%; width: 100%">
+    <div class="lc-video border-4 rounded-2xl border-blue-200" style="position: relative; padding-top: 56.25%; width: 100%">
       @if ($video)
         <iframe src="https://kinescope.io/embed/{{ $video }}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media;" frameborder="0" allowfullscreen
                 style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;"></iframe>

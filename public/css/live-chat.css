@@ -110,11 +110,14 @@
 .lc-picker-row { display: flex; gap: 2px; flex-wrap: wrap; max-width: 320px; }
 .lc-picker-extra { display: none; }
 .lc-picker.is-all .lc-picker-extra { display: flex; }
+.lc-picker.is-all .lc-picker-extra .lc-pick { animation: lc-pick-in .3s cubic-bezier(.2, .9, .3, 1.25) both; animation-delay: calc(var(--i, 0) * 22ms); }
+@keyframes lc-pick-in { from { opacity: 0; transform: translateX(16px) scale(.5); } to { opacity: 1; transform: none; } }
 .lc-pick { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; transition: transform .12s, background .12s; }
 .lc-pick:hover { background: #f4f4f5; transform: scale(1.18); }
 .lc-pick .lc-rimg, .lc-pick .lc-lottie { width: 28px; height: 28px; }
-.lc-more { font-size: 20px; color: #71717a; }
-.lc-picker.is-all .lc-more { transform: rotate(90deg); }
+.lc-more { color: #71717a; }
+.lc-more svg { transition: transform .25s ease; }
+.lc-picker.is-all .lc-more svg { transform: rotate(180deg); }
 @keyframes lc-pop { from { opacity: 0; transform: translateY(6px) scale(.92); } to { opacity: 1; transform: none; } }
 .lc-rimg.is-png { animation: none; }
 
@@ -198,10 +201,7 @@
 /* Страница урока: чат рядом с видео / под ним */
 body.lc-typing #student-bottom-nav, body.lc-typing #student-bottom-nav-reveal { display: none !important; }
 .lc-host { min-height: 420px; height: 100%; }
-@media (max-width: 767px) {
-  .lc-host { height: min(70vh, 640px); height: min(70dvh, 640px); }
-  .lc { min-height: 0; }
-}
+
 @media (min-width: 768px) {
   .lc-host { position: relative; }
   .lc-host > .lc { position: absolute; inset: 0; }
@@ -262,4 +262,75 @@ button.lc-tr { cursor: pointer; }
 }
 @media (min-width: 1440px) {
   .lc-layout { grid-template-columns: minmax(0, 1fr) 420px; }
+}
+
+/* Имя ученика — справа в строке «Чат», карандаш — изменить */
+.lc-namebox { display: flex; align-items: center; gap: 4px; min-width: 0; font-size: 12px; color: var(--lc-muted); }
+.lc-namebox[hidden] { display: none; }
+.lc-namebox b { color: #3f3f46; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+.lc-namebox-label { white-space: nowrap; }
+.lc-pencil { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 6px; color: var(--lc-blue) !important; }
+.lc-pencil:hover { background: var(--lc-blue-100) !important; }
+.lc-namebox .lc-name-input { width: 130px; padding: 3px 8px; font-size: 12px; }
+
+/* Ветка раскрывается под сообщением; полоса слева — где кончается обсуждение */
+.lc-thread { margin: 0 8px 6px 20px; padding-left: 4px; border-left: 2px solid var(--lc-blue-200); }
+.lc-thread.is-new { animation: lc-thread-in .25s ease both; }
+@keyframes lc-thread-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.lc-msg.is-reply { padding-left: 6px; }
+.lc-msg.is-reply .lc-av { flex-basis: 22px; width: 22px; height: 22px; font-size: 11px; }
+.lc-thread-empty { padding: 6px 8px; font-size: 12px; color: var(--lc-muted); }
+.lc-thread-foot { display: flex; gap: 14px; padding: 2px 8px 4px; }
+.lc-link--muted { color: var(--lc-muted) !important; }
+.lc-thline.is-open { background: none !important; color: var(--lc-muted) !important; padding-left: 0; }
+
+/* Появление реакции: rise / ring / confetti / pop */
+.lc-burst .lc-fx-main { position: absolute; width: var(--s); height: var(--s); left: calc(var(--s) / -2); top: calc(var(--s) / -2); }
+.lc-burst .lc-fx-mini { position: absolute; width: var(--s); height: var(--s); left: calc(var(--s) / -2); top: calc(var(--s) / -2); opacity: 0; }
+.lc-burst--rise .lc-fx-main { animation: lc-rise 1.15s cubic-bezier(.25, .8, .3, 1) forwards; }
+.lc-burst--rise .lc-fx-mini { animation: lc-rise-mini 1s ease-out forwards; }
+@keyframes lc-rise {
+  0% { transform: translateY(6px) scale(.3); opacity: 0; }
+  18% { transform: translateY(-10px) scale(1.08); opacity: 1; }
+  45% { transform: translate(-4px, -34px) scale(1); }
+  75% { transform: translate(4px, -58px) scale(.95); opacity: 1; }
+  100% { transform: translate(0, -78px) scale(.85); opacity: 0; }
+}
+@keyframes lc-rise-mini {
+  0% { transform: translate(0, 0) scale(.4); opacity: 0; }
+  25% { opacity: .9; }
+  100% { transform: translate(var(--dx), -64px) scale(1); opacity: 0; }
+}
+.lc-burst--ring .lc-fx-main { animation: lc-ring-pop .95s cubic-bezier(.2, .9, .3, 1.3) forwards; }
+.lc-fx-ring { position: absolute; left: -22px; top: -22px; width: 44px; height: 44px; border-radius: 50%; border: 2px solid rgba(37, 99, 235, .45); animation: lc-ring 0.8s ease-out forwards; }
+.lc-fx-ring--2 { animation-delay: .14s; border-color: rgba(244, 114, 182, .45); opacity: 0; }
+@keyframes lc-ring-pop {
+  0% { transform: scale(.2); opacity: 0; }
+  30% { transform: scale(1.2); opacity: 1; }
+  55% { transform: scale(.95); }
+  80% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(.9) translateY(-6px); opacity: 0; }
+}
+@keyframes lc-ring { 0% { transform: scale(.3); opacity: 1; } 100% { transform: scale(2.4); opacity: 0; } }
+.lc-burst--confetti .lc-fx-main { animation: lc-ring-pop .8s ease forwards; }
+.lc-burst--confetti .lc-fx-mini { animation: lc-confetti .95s cubic-bezier(.15, .7, .4, 1) forwards; }
+@keyframes lc-confetti {
+  0% { transform: translate(0, 0) scale(.3) rotate(0); opacity: 0; }
+  20% { opacity: 1; }
+  70% { transform: translate(var(--dx), var(--dy)) scale(1) rotate(var(--rot)); opacity: 1; }
+  100% { transform: translate(var(--dx), calc(var(--dy) + 22px)) scale(.8) rotate(var(--rot)); opacity: 0; }
+}
+.lc-burst--pop .lc-fx-main { animation: lc-jump 1.1s cubic-bezier(.2, .9, .3, 1.2) forwards; }
+
+/* Телефон: прокрутка чата, дойдя до края, передаётся странице */
+@media (hover: none) {
+  .lc-body { overscroll-behavior-y: auto; }
+}
+
+/* Телефон: видео + чат ровно в высоту экрана, без рамок */
+@media (max-width: 767px) {
+  .lc-layout { gap: 8px; }
+  .lc-host { height: calc(100vh - (100vw - 24px) * .5625 - 16px); height: calc(100dvh - (100vw - 24px) * .5625 - 16px); min-height: 320px; }
+  .lc { min-height: 0; border: 0; border-radius: 12px; }
+  .lc-video { border-width: 0 !important; border-radius: 12px !important; overflow: hidden; }
 }

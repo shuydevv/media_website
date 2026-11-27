@@ -56,7 +56,7 @@ class LiveChatFlowTest extends TestCase
 
     public function test_message_flow_versions_and_names(): void
     {
-        $this->send($this->student, 'Здравствуйте!')->assertOk()->assertJsonPath('msg.n', 'Аня');
+        $this->send($this->student, 'Здравствуйте!')->assertOk()->assertJsonPath('msg.n', 'Аня К.');
         $this->send($this->admin, 'Привет всем')->assertOk()
             ->assertJsonPath('msg.n', 'Александр Полтавский')->assertJsonPath('msg.b', 'Преподаватель');
 
@@ -78,7 +78,7 @@ class LiveChatFlowTest extends TestCase
         $delta = $this->feed($this->student, $first['v']);
         $this->assertCount(1, $delta['msgs']);
         $this->assertSame('Анюта', $delta['msgs'][0]['n']);
-        $this->assertSame('Аня', ChatMessage::orderBy('id')->first()->author_name);
+        $this->assertSame('Аня К.', ChatMessage::orderBy('id')->first()->author_name);
     }
 
     public function test_reply_question_answer_and_reaction_toggle(): void
@@ -98,7 +98,10 @@ class LiveChatFlowTest extends TestCase
         $this->assertSame(2, $thread['root']['tc']['c']);
         $this->assertTrue($thread['root']['tc']['teach']);
 
+        // Преподаватель ответил в ветке вопроса — «есть ответ» поставился сам.
+        $this->assertTrue(collect($this->feed($this->student)['msgs'])->firstWhere('id', $q['id'])['ans']);
         $this->actingAs($this->student)->postJson(route('live-chat.answer', [$this->lesson, $q['id']]))->assertForbidden();
+        $this->actingAs($this->admin)->postJson(route('live-chat.answer', [$this->lesson, $q['id']]), ['answered' => false])->assertOk();
         $this->actingAs($this->admin)->postJson(route('live-chat.answer', [$this->lesson, $q['id']]))->assertOk();
 
         $heart = ChatReactionType::where('noto_code', '2764_fe0f')->value('id');
@@ -109,6 +112,17 @@ class LiveChatFlowTest extends TestCase
 
         $this->actingAs($this->student)->postJson(route('live-chat.react', [$this->lesson, $q['id']]), ['reaction' => $heart])->assertOk();
         $this->assertSame([], collect($this->feed($this->student)['msgs'])->firstWhere('id', $q['id'])['rx']);
+
+        // Ученик — не больше 3 реакций на сообщение: четвёртая вытесняет первую.
+        $types = ChatReactionType::orderBy('sort')->limit(4)->pluck('id')->all();
+        foreach ($types as $t) {
+            $this->actingAs($this->student)->postJson(route('live-chat.react', [$this->lesson, $q['id']]), ['reaction' => $t])->assertOk();
+        }
+        $rx = collect($this->feed($this->student)['msgs'])->firstWhere('id', $q['id'])['rx'];
+        $this->assertSame(array_slice($types, 1), array_column($rx, 0));
+        foreach (array_slice($types, 1) as $t) {
+            $this->actingAs($this->student)->postJson(route('live-chat.react', [$this->lesson, $q['id']]), ['reaction' => $t])->assertOk();
+        }
 
         // Реакция преподавателя — отдельно, в общий счётчик не входит.
         $this->actingAs($this->admin)->postJson(route('live-chat.react', [$this->lesson, $q['id']]), ['reaction' => $heart])->assertOk();

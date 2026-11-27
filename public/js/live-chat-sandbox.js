@@ -58,7 +58,12 @@
     let th = opts.thread || null;
     if (th && (!msgs.get(th) || msgs.get(th).del)) return null;
     const m = { id: nextId++, uid, n: u.n, b: u.b || null, text, q: !!opts.q && !th, ans: false, ansTs: null, ts: now(), reply: opts.reply || null, th, del: false };
-    if (th) touch(msgs.get(th)); // у исходного меняется счётчик ответов
+    if (th) {
+      // у исходного меняется счётчик ответов; ответ команды в ветке вопроса — «есть ответ»
+      const r = msgs.get(th);
+      if (u.team && r.q && !r.ans) { r.ans = true; r.ansTs = now(); }
+      touch(r);
+    }
     touch(m);
     msgs.set(m.id, m);
     setTimeout(() => react(m), 0);
@@ -205,12 +210,26 @@
     return json({ error: 'unknown' }, 404);
   }
 
+  // Ученик — не больше 3 реакций на сообщение: новая вытесняет самую раннюю.
+  const order = new Map(); // id сообщения + ':' + uid → [id реакций по порядку]
   function toggleReaction(m, uid, tid) {
     if (!rx.has(m.id)) rx.set(m.id, new Map());
     const r = rx.get(m.id);
     if (!r.has(tid)) r.set(tid, new Set());
     const set = r.get(tid);
-    if (set.has(uid)) set.delete(uid); else set.add(uid);
+    const key = m.id + ':' + uid;
+    const mine = order.get(key) || [];
+    if (set.has(uid)) {
+      set.delete(uid);
+      order.set(key, mine.filter((x) => x !== tid));
+    } else {
+      if (!(users.get(uid) || {}).team) {
+        while (mine.length >= 3) { const old = mine.shift(); r.get(old) && r.get(old).delete(uid); }
+      }
+      set.add(uid);
+      mine.push(tid);
+      order.set(key, mine);
+    }
     touch(m);
   }
   function setAnswered(m, yes) {

@@ -26,6 +26,9 @@ use Illuminate\Support\Str;
  */
 class LiveChatService
 {
+    /** Сколько разных реакций ученик может поставить на одно сообщение. */
+    public const MAX_REACTIONS = 3;
+
     private array $cfg;
 
     public function __construct()
@@ -82,10 +85,17 @@ class LiveChatService
         return $u->isAdmin() || $u->isMentor();
     }
 
-    /** Имя ученика по умолчанию: последнее использованное, иначе имя из профиля. */
+    /**
+     * Имя ученика по умолчанию: последнее использованное, иначе из профиля —
+     * имя и первая буква фамилии с точкой («Аня К.»).
+     */
     public function studentName(User $u): string
     {
-        $name = $u->chat_name ?: ($u->first_name ?: $u->name);
+        $profile = trim((string) $u->first_name);
+        if ($profile !== '' && trim((string) $u->last_name) !== '') {
+            $profile .= ' '.mb_strtoupper(mb_substr(trim($u->last_name), 0, 1)).'.';
+        }
+        $name = $u->chat_name ?: ($profile ?: $u->name);
 
         return Str::limit(trim((string) $name) ?: 'Ученик', $this->cfg['name_max'], '');
     }
@@ -194,7 +204,14 @@ class LiveChatService
 
         $msg = $this->change($chat, function ($v) use ($lesson, $u, $team, $text, $reply, $root, $question) {
             // У исходного сообщения меняется счётчик ответов — оно тоже «изменилось».
-            $root?->forceFill(['version' => $v])->save();
+            // Команда ответила в ветке вопроса — у вопроса сама ставится «есть ответ».
+            if ($root) {
+                $fill = ['version' => $v];
+                if ($team && $root->is_question && ! $root->answered_at) {
+                    $fill += ['answered_at' => now(), 'answered_by' => $u->id];
+                }
+                $root->forceFill($fill)->save();
+            }
 
             return ChatMessage::create([
                 'lesson_id' => $lesson->id,
@@ -260,6 +277,12 @@ class LiveChatService
             if ($existing) {
                 $existing->delete();
             } else {
+                // Ученик — не больше 3 реакций на сообщение: четвёртая вытесняет
+                // самую раннюю из его реакций.
+                if (! self::isTeam($u)) {
+                    $mine = ChatMessageReaction::where(['message_id' => $msg->id, 'user_id' => $u->id])->orderBy('id')->get();
+                    $mine->take(max(0, $mine->count() - (self::MAX_REACTIONS - 1)))->each->delete();
+                }
                 ChatMessageReaction::firstOrCreate(['message_id' => $msg->id, 'user_id' => $u->id, 'reaction_type_id' => $typeId]);
             }
             $msg->forceFill(['version' => $v])->save();
