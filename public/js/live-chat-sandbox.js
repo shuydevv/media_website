@@ -101,7 +101,7 @@
         answers.forEach((x) => {
           if (who.length < 3 && !who.some((w) => w.uid === x.uid)) who.push({ uid: x.uid, n: x.n, av: (users.get(x.uid) || {}).av || null });
         });
-        tc = { c: answers.length, who, teach: answers.some((x) => (users.get(x.uid) || {}).team) };
+        tc = { c: answers.length, who, teach: answers.some((x) => (users.get(x.uid) || {}).team), last: answers[0].ts };
       }
     }
     const out = { id: m.id, v: m.v, uid: m.uid, n: m.n, b: m.b, team: !!u.team, av: u.av || null, text: m.text, q: m.q,

@@ -339,3 +339,49 @@ button.lc-tr { cursor: pointer; }
    обсуждения (продолжается левой границей .lc-thread). Аватарка: отступ 7px +
    ширина 28px → центр на 21px. */
 .lc-msg.is-open-root::before { content: ''; position: absolute; left: 20px; top: 34px; bottom: 0; width: 2px; background: var(--lc-blue-200); }
+
+/* ── Визуальная иерархия ── */
+
+/* Время — справа в строке имени, не переезжает при длинном имени */
+.lc-top { flex-wrap: nowrap; min-width: 0; }
+.lc-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.lc-time { margin-left: auto; padding-left: 6px; flex-shrink: 0; }
+
+/* Плашка «Преподаватель» — спокойнее: сообщение и так выделено фоном */
+.lc-badge { background: #dbeafe; color: #1e40af; flex-shrink: 0; }
+
+/* Вопрос — одна метка: фиолетовая до ответа, зелёная после */
+.lc-qtag { flex-shrink: 0; }
+.lc-qtag.is-done { background: #dcfce7; color: #166534; }
+
+/* Реакции — ближе к тексту и ниже */
+.lc-chips { margin-top: 2px; gap: 3px; }
+.lc-chip { padding: 1px 7px 1px 4px; min-height: 22px; }
+.lc-chip .lc-rimg, .lc-chip .lc-lottie { width: 16px; height: 16px; }
+
+/* Сообщение преподавателя — карточкой с отступами, а не полосой */
+.lc-msg.is-team { margin: 2px 4px; padding-left: 3px; padding-right: 6px; border-radius: 10px; }
+
+/* Группа сообщений одного человека: аватарка и имя только у первого */
+.lc-msg.is-cont { padding-top: 0; }
+.lc-msg.is-cont > .lc-av { visibility: hidden; height: 0; margin-top: 0; }
+.lc-msg.is-cont .lc-top { display: none; }
+.lc-gtime { display: none; }
+.lc-msg.is-cont > .lc-gtime { position: absolute; left: 4px; top: 3px; width: 30px; text-align: center; font-size: 10px; color: #a1a1aa; }
+.lc-msg.is-cont:hover > .lc-gtime { display: block; }
+.lc-msg.is-cont + .lc-msg:not(.is-cont) { margin-top: 2px; }
+
+/* Ветка: полоса начинается с отступом под аватаркой */
+.lc-msg.is-open-root::before { top: 39px; }
+.lc-msg.is-team.is-open-root::before { left: 16px; }
+
+/* Ответы в ветке легче основных сообщений */
+.lc-msg.is-reply .lc-text { font-size: 13px; }
+.lc-msg.is-reply .lc-name { font-size: 12px; }
+.lc-msg.is-reply > .lc-av { flex-basis: 20px; width: 20px; height: 20px; font-size: 10px; }
+.lc-msg.is-reply.is-team { margin: 1px 0; padding-left: 6px; }
+
+/* Низ ветки: тонкая серая линия, кнопки помельче */
+.lc-thread-foot { margin: 2px 4px 0 6px; padding: 5px 2px 3px; border-top: 1px solid #e4e4e7; gap: 12px; }
+.lc-thread-foot .lc-link { font-size: 12px; padding: 0; }
+.lc-thlast { color: var(--lc-muted); }

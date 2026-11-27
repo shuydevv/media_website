@@ -268,6 +268,9 @@
       const n = el('div', 'lc-msg');
       n._m = m; // обработчики читают актуальное сообщение отсюда (см. morph)
       n.dataset.id = m.id;
+      n.dataset.uid = m.uid;
+      n.dataset.ts = isReplay && m.t !== undefined ? m.t : m.ts;
+      if (m.q || m.reply) n.dataset.solo = '1'; // вопрос и цитата начинают новую группу
       if (m.team) n.classList.add('is-team');
       if (m.uid === S.me.id) n.classList.add('is-mine');
       if (m.reply && m.reply.uid === S.me.id && m.uid !== S.me.id) n.classList.add('is-to-me');
@@ -275,6 +278,7 @@
       if (ctx !== 'thread' && S.open.has(m.id)) n.classList.add('is-open-root');
 
       n.append(avatar(m.uid, m.n, m.av));
+      n.append(el('span', 'lc-gtime', isReplay && m.t !== undefined ? clock(m.t + S.replayShift) : hhmm(m.ts)));
       const main = el('div', 'lc-main');
       const top = el('div', 'lc-top');
       const name = el('span', 'lc-name', m.n);
@@ -285,10 +289,10 @@
       }
       top.append(name);
       if (m.b) top.append(el('span', 'lc-badge', m.b));
-      if (m.q) top.append(el('span', 'lc-qtag', '❓ Вопрос'));
-      if (m.q && m.ans) {
-        const a = el('span', 'lc-anstag', '✓ Есть ответ');
-        if (isReplay && m.ansT !== undefined) {
+      // Одна метка у вопроса: до ответа — «❓ Вопрос», после — «✓ Вопрос · есть ответ».
+      if (m.q) {
+        const a = el('span', 'lc-qtag' + (m.ans ? ' is-done' : ''), m.ans ? '✓ Вопрос · есть ответ' : '❓ Вопрос');
+        if (m.ans && isReplay && m.ansT !== undefined) {
           a.classList.add('is-link');
           a.title = 'Перемотать к ответу';
           a.addEventListener('click', () => seekVideo(m.ansT + S.replayShift));
@@ -327,6 +331,7 @@
       (t.who || []).forEach((w) => faces.append(avatar(w.uid, w.n, w.av, 'lc-av lc-av--xs')));
       b.append(faces, el('span', '', t.c + ' ' + plural(t.c, 'ответ', 'ответа', 'ответов')));
       if (t.teach) b.append(el('span', 'lc-thteach', '· есть ответ преподавателя'));
+      else if (t.last && !isReplay) b.append(el('span', 'lc-thlast', '· последний ' + hhmm(t.last)));
       return b;
     }
 
@@ -338,6 +343,7 @@
         if (!r) return;
         const mine = uid === S.me.id;
         const t = el(mine ? 'button' : 'span', 'lc-tr' + (mine ? ' is-mine' : ''));
+        t.dataset.rid = rid;
         if (mine) { t.type = 'button'; t.addEventListener('click', () => react(n._m, rid, t)); }
         t.title = name + ' — реакция';
         t.append(avatar(uid, name, av, 'lc-av lc-av--tr'), reactionImg(r, false));
@@ -347,6 +353,7 @@
         const r = reactions.get(rid);
         if (!r || count < 1) return;
         const c = btn('lc-chip' + (mine ? ' is-mine' : ''), '', () => react(n._m, rid, c));
+        c.dataset.rid = rid;
         c.append(reactionImg(r, false), el('span', 'lc-chip-n', String(count)));
         c.disabled = !canReact();
         box.append(c);
@@ -443,6 +450,21 @@
         }
       });
       return old;
+    }
+
+    // Подряд идущие сообщения одного человека (меньше 2 минут) — группой, как в
+    // Telegram: аватарка и имя только у первого. Ветка, вопрос, цитата —
+    // начинают новую группу.
+    function regroup(list) {
+      let prev = null;
+      Array.from(list.children).forEach((x) => {
+        if (!x.classList.contains('lc-msg')) { prev = null; return; }
+        const cont = prev && !x.dataset.solo && prev.dataset.uid === x.dataset.uid
+          && Math.abs(Number(x.dataset.ts) - Number(prev.dataset.ts)) < 120
+          && !prev.classList.contains('is-open-root');
+        x.classList.toggle('is-cont', !!cont);
+        prev = x;
+      });
     }
 
     function firstMain() {
@@ -550,7 +572,7 @@
         if (ex) { ex[1] += mine ? -1 : 1; ex[2] = !mine; } else rx.push([rid, 1, true]);
         refresh(Object.assign({}, m, { rx: rx.filter((x) => x[1] > 0) }));
       }
-      if (added && r) burst(r, fromEl, m.id);
+      if (added && r) burst(r, fromEl, m.id, rid);
       if (navigator.vibrate && touch) navigator.vibrate(10);
       const res = await api('POST', url('react', m.id), { reaction: rid });
       if (!res.ok) toast(res.json.message || 'Не получилось');
@@ -560,10 +582,11 @@
     // Появление реакции — один из четырёх вариантов, чтобы не приедалось.
     const BURSTS = ['rise', 'ring', 'confetti', 'pop'];
     let lastBurst = '';
-    function burst(r, fromEl, id) {
+    function burst(r, fromEl, id, rid) {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       const node = Array.from(nodesOf(id)).find((x) => x.offsetParent);
-      const chip = node && node.querySelector('.lc-chip.is-mine, .lc-tr.is-mine');
+      // Анимация — от той реакции, которую нажали, а не от первой своей.
+      const chip = node && node.querySelector('.lc-chip.is-mine[data-rid="' + rid + '"], .lc-tr.is-mine[data-rid="' + rid + '"]');
       const anchor = (chip && chip.isConnected ? chip : (fromEl && fromEl.isConnected ? fromEl : null)) || node;
       if (!anchor || !anchor.getBoundingClientRect) return;
       const rect = anchor.getBoundingClientRect();
@@ -804,6 +827,7 @@
       if (S.target && S.target.root.id === id) clearTarget();
       refreshRoot(id);
       syncThread(id);
+      regroup(feed);
     }
     // Исходное перерисовать (строка «N ответов» ↔ «Свернуть ответы»).
     function refreshRoot(id) {
@@ -832,6 +856,7 @@
         foot.append(btn('lc-link lc-link--muted', 'Свернуть ответы', () => collapse(id)));
         if (!items.length) nodes.push(el('div', 'lc-thread-empty', S.threads.has(id) ? 'Ответов пока нет' : 'Загружаю…'));
         blk.replaceChildren(...nodes, foot);
+        regroup(blk);
       });
     }
 
@@ -1069,6 +1094,7 @@
       const old = feed.querySelector('.lc-msg[data-id="' + m.id + '"]');
       if (old) morph(old, node); else insertSorted(feed, node, m.id);
       if (S.open.has(m.id)) syncThread(m.id);
+      regroup(feed);
       if (S.pinned && S.pinned.id === m.id) renderPinned(m);
       if (isNew && !silent && m.uid !== S.me.id && (!nearBottom() || S.view !== 'chat')) {
         S.unseen++;
@@ -1102,6 +1128,7 @@
       const keep = new Map(Array.from(qList.querySelectorAll(':scope > .lc-msg')).map((x) => [Number(x.dataset.id), x]));
       const nodes = open.map((m) => (keep.has(m.id) ? morph(keep.get(m.id), renderMsg(m, 'questions')) : renderMsg(m, 'questions')));
       qList.replaceChildren(...nodes);
+      regroup(qList);
       open.forEach((m) => { if (S.open.has(m.id)) syncThread(m.id); });
       if (S.view === 'questions') empty.textContent = open.length ? '' : 'Вопросов пока нет';
     }
@@ -1263,6 +1290,7 @@
       }
       shown = visible.length;
       S.open.forEach((id) => syncThread(id));
+      regroup(feed);
       updateEmpty();
       if (stick && S.view === 'chat') scrollBottom(false);
     }

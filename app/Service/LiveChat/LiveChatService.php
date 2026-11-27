@@ -469,7 +469,7 @@ class LiveChatService
         $rootIds = $live->whereNull('thread_id')->pluck('id')->all();
         $threadRows = $rootIds
             ? ChatMessage::whereIn('thread_id', $rootIds)->whereNull('deleted_at')->orderByDesc('id')
-                ->get(['id', 'thread_id', 'user_id', 'author_name'])
+                ->get(['id', 'thread_id', 'user_id', 'author_name', 'created_at'])
             : collect();
 
         $users = User::whereIn('id', $live->pluck('user_id')->merge($threadRows->pluck('user_id'))->unique())
@@ -478,7 +478,7 @@ class LiveChatService
         $tc = [];
         foreach ($threadRows as $r) {
             $t = &$tc[$r->thread_id];
-            $t ??= ['c' => 0, 'who' => [], 'teach' => false];
+            $t ??= ['c' => 0, 'who' => [], 'teach' => false, 'last' => $r->created_at->timestamp];
             $t['c']++;
             $ru = $users->get($r->user_id);
             if ($ru && self::isTeam($ru)) {
