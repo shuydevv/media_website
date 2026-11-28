@@ -599,3 +599,71 @@ div.lc-menu > .lc-pop-names:only-child { padding: 8px 10px; max-width: 260px; }
 @media (prefers-reduced-motion: reduce) {
   .lc-pill.is-open::after, .lc-poll-emoji, .lc-emo, .lc-emo-icon { animation: none !important; }
 }
+
+/* ── Эмоции: запас под подъём при наведении (горизонтальная прокрутка режет
+   всё, что выходит за край), плавное появление, карточка по нажатию ── */
+.lc-emos { padding: 3px 2px 4px; margin: -3px -2px -4px; }
+.lc-emo.is-new { animation: lc-emo-appear .5s cubic-bezier(.22, 1, .36, 1) both; }
+.lc-emo.is-new .lc-emo-icon { animation: lc-emo-icon-in .7s .1s cubic-bezier(.22, 1, .36, 1) both; }
+@keyframes lc-emo-appear { from { opacity: 0; transform: translateY(-4px) scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes lc-emo-icon-in { 0% { opacity: 0; transform: scale(.5) rotate(-10deg); } 60% { opacity: 1; transform: scale(1.06) rotate(2deg); } 100% { opacity: 1; transform: none; } }
+.lc-emo.is-out { transition: opacity .2s ease, transform .2s ease; opacity: 0; transform: scale(.9); pointer-events: none; }
+
+.lc-emo-card { width: 250px; padding: 12px; gap: 10px; }
+.lc-pop-emo { gap: 10px; }
+.lc-pop-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; background: var(--emo, #f4f4f5); flex-shrink: 0; }
+.lc-pop-icon .lc-pop-img { width: 30px; height: 30px; font-size: 26px; line-height: 30px; animation: lc-emo-icon-in .6s cubic-bezier(.22, 1, .36, 1) both; }
+.lc-emo-card[data-code="lol"], .lc-emo-card[data-code="imba"], .lc-emo-card[data-code="vibe_up"] { --emo: linear-gradient(135deg, #fff7ed, #ffedd5); }
+.lc-emo-card[data-code="based"], .lc-emo-card[data-code="cringe"], .lc-emo-card[data-code="vibe_down"] { --emo: linear-gradient(135deg, #f5f3ff, #ede9fe); }
+.lc-emo-card[data-code="brain"], .lc-emo-card[data-code="lost"], .lc-emo-card[data-code="slow"], .lc-emo-card[data-code="break"] { --emo: linear-gradient(135deg, #fffbeb, #fef3c7); }
+.lc-pop-emo-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.lc-pop-emo-text b { font-size: 15px; font-weight: 600; color: #18181b; }
+.lc-pop-emo-text span { font-size: 12px; font-weight: 400; color: var(--lc-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lc-pop-who { border-top: 1px solid #f1f1f3; padding-top: 8px; }
+.lc-pop-who-title { font-size: 11px; color: var(--lc-muted); margin-bottom: 4px; }
+.lc-pop-who-list { display: flex; flex-direction: column; gap: 4px; max-height: 132px; overflow-y: auto; }
+.lc-pop-who-row { display: flex; align-items: center; gap: 7px; font-size: 13px; color: #27272a; }
+.lc-pop-who-row .lc-av--xs { box-shadow: none; }
+.lc-pop-who-more { font-size: 12px; color: var(--lc-muted); padding-left: 25px; }
+.lc-pop-hint { font-size: 12px; color: var(--lc-muted); line-height: 1.35; }
+.lc-menu .lc-btn.lc-emo-plus { display: flex; justify-content: center; align-items: baseline; gap: 6px; padding: 9px 12px; font-size: 14px; transition: transform .1s, filter .15s; }
+.lc-menu .lc-btn.lc-emo-plus:hover { filter: brightness(1.08); }
+.lc-menu .lc-btn.lc-emo-plus:active { transform: scale(.97); }
+.lc-menu .lc-btn.lc-btn--ghost { background: #f4f4f5; color: #3f3f46; padding: 9px 12px; font-size: 13px; }
+.lc-menu .lc-btn.lc-btn--ghost:hover { background: #e4e4e7; }
+
+/* ── «Пон / Не пон»: плашки ── */
+.lc-strip.is-poll { padding: 10px 10px 12px; background: linear-gradient(180deg, #f8faff, #fff); }
+.lc-poll-head { align-items: center; margin-bottom: 8px; }
+.lc-poll-head > b { font-size: 14px; font-weight: 600; color: #18181b; }
+.lc-poll-opts { gap: 8px; }
+.lc-poll-opt {
+  --opt-bg: #fff; --opt-line: #e4e4e7; --opt-ink: #27272a; --opt-fill: #e4e4e7; --opt-strong: #a1a1aa;
+  height: 46px; padding: 0 12px 0 6px; border-radius: 14px; background: var(--opt-bg) !important; color: var(--opt-ink) !important;
+  box-shadow: inset 0 0 0 1px var(--opt-line), 0 1px 2px rgba(0, 0, 0, .04); font-size: 14px; font-weight: 600;
+  transition: transform .15s ease, box-shadow .15s ease, opacity .3s ease;
+}
+.lc-poll-opt.is-yes { --opt-bg: #f0fdf4; --opt-line: #bbf7d0; --opt-ink: #166534; --opt-fill: #dcfce7; --opt-strong: #22c55e; }
+.lc-poll-opt.is-no { --opt-bg: #fff7ed; --opt-line: #fed7aa; --opt-ink: #9a3412; --opt-fill: #ffedd5; --opt-strong: #f97316; }
+.lc-poll-opt:not(:disabled):hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1.5px var(--opt-strong), 0 4px 12px rgba(0, 0, 0, .07); }
+.lc-poll-opt:not(:disabled):active { transform: scale(.97); }
+.lc-poll-fill { background: var(--opt-fill) !important; border-radius: 0 10px 10px 0; }
+.lc-poll-opt.is-lead .lc-poll-fill { background: var(--opt-fill) !important; filter: saturate(1.6) brightness(.97); }
+.lc-poll-opt.is-mine { box-shadow: inset 0 0 0 2px var(--opt-strong), 0 1px 2px rgba(0, 0, 0, .04); }
+.lc-poll-opt.is-mine .lc-poll-fill { background: var(--opt-fill) !important; }
+.lc-poll-opt.is-res:not(.is-mine):not(.is-lead) { opacity: .8; }
+.lc-poll-label { gap: 8px; }
+.lc-poll-emoji { display: grid; place-items: center; width: 34px; height: 34px; margin: 0; border-radius: 10px; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .08); }
+.lc-poll-emoji img { width: 22px; height: 22px; display: block; }
+.lc-poll-check { display: none; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: var(--opt-strong); color: #fff; font-size: 10px; line-height: 1; }
+.lc-poll-opt.is-mine .lc-poll-check { display: inline-grid; animation: lc-emo-icon-in .4s cubic-bezier(.22, 1, .36, 1) both; }
+.lc-poll-pct { font-size: 14px; font-weight: 600; color: var(--opt-ink); font-variant-numeric: tabular-nums; }
+.lc-poll-opt.is-voted { animation: lc-voted2 .55s cubic-bezier(.22, 1, .36, 1); }
+@keyframes lc-voted2 { 0% { transform: scale(1); } 35% { transform: scale(1.04); } 100% { transform: scale(1); } }
+.lc-poll.is-done .lc-poll-opt { box-shadow: inset 0 0 0 1px var(--opt-line); }
+@media (max-width: 640px) {
+  .lc-poll-opt { height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lc-pop-img, .lc-poll-check, .lc-poll-opt { animation: none !important; }
+}

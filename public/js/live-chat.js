@@ -1620,7 +1620,6 @@
           b.dataset.id = x.id;
           b.dataset.code = x.code; // свой цвет у каждой эмоции (CSS)
           b.addEventListener('animationend', (e) => { if (e.target === b) b.classList.remove('is-new', 'is-bump'); });
-          longPress(b, () => { b._lp = Date.now(); emotionPop(b); });
           const bar = el('i', 'lc-emo-bar');
           bar.style.animationDuration = left(x.ends) + 's';
           const icon = el('span', 'lc-emo-icon');
@@ -1638,7 +1637,7 @@
         b._c = x.c;
         b._e = x;
         b.classList.toggle('is-mine', !!x.mine);
-        b.title = x.n + ' чувствует: ' + info.label + (x.c ? ' · поддержали: ' + x.names.join(', ') : '') + (x.mine || x.uid === S.me.id ? '' : ' · нажмите, чтобы поддержать');
+        b.title = x.n + ' чувствует: ' + info.label + (x.c ? ' · поддержали: ' + x.names.join(', ') : '');
         b.querySelector('.lc-emo-n').textContent = x.c ? String(x.c) : '';
         return b;
       });
@@ -1648,16 +1647,19 @@
       if (!box.isConnected) strip.replaceChildren(box);
     }
 
-    // Нажатие на чужую эмоцию — сразу поддержка (как реакция); на свою или уже
-    // поддержанную — подробности. Подробности ещё — долгим нажатием.
-    async function tapEmotion(b) {
-      if (b._lp && Date.now() - b._lp < 900) return; // это было долгое нажатие
+    // Нажатие на эмоцию — карточка: чья, кто поддержал и одна кнопка —
+    // «+1», «Убрать поддержку» или «Убрать эмоцию». Сразу не поддерживаем:
+    // ученик мог нажать, только чтобы посмотреть, кто её поставил.
+    function tapEmotion(b) {
+      emotionPop(b);
+    }
+
+    async function supportEmotion(b) {
       const x = b._e;
-      if (x.mine || x.uid === S.me.id || !cfg.url.support || !canReact()) { emotionPop(b); return; }
       x.mine = true;
       x.c += 1;
+      x.names = [S.me.name].concat(x.names || []);
       b._c = x.c;
-      b._e = x;
       b.classList.add('is-mine');
       b.querySelector('.lc-emo-n').textContent = String(x.c);
       b.classList.remove('is-bump');
@@ -1668,6 +1670,28 @@
       if (navigator.vibrate && touch) navigator.vibrate(12);
       const res = await api('POST', url('support', x.id));
       if (!res.ok) toast(res.json.message || 'Не получилось');
+      poll(true);
+    }
+
+    async function unsupportEmotion(b) {
+      const x = b._e;
+      x.mine = false;
+      x.c = Math.max(0, x.c - 1);
+      x.names = (x.names || []).filter((n) => n !== S.me.name);
+      b._c = x.c;
+      b.classList.remove('is-mine');
+      b.querySelector('.lc-emo-n').textContent = x.c ? String(x.c) : '';
+      const res = await api('DELETE', url('support', x.id));
+      if (!res.ok) toast(res.json.message || 'Не получилось');
+      poll(true);
+    }
+
+    async function withdrawEmotion(b) {
+      const x = b._e;
+      b.classList.add('is-out'); // тает, а из ленты уйдёт со следующим опросом
+      setTimeout(() => { S.emo = (S.emo || []).filter((e) => e.id !== x.id); renderStrip(); }, 220);
+      const res = await api('DELETE', url('support', x.id).replace(/\/support$/, ''));
+      if (!res.ok) { b.classList.remove('is-out'); toast(res.json.message || 'Не получилось'); }
       poll(true);
     }
 
@@ -1685,22 +1709,60 @@
     function emotionPop(chip) {
       const x = chip._e;
       const info = emotionOf(x.code);
-      const pop = el('div', 'lc-pop');
-      const head = el('div', 'lc-pop-head');
-      head.append(el('b', '', x.n), el('span', '', ' чувствует:'));
+      const own = x.uid === S.me.id;
+      const pop = el('div', 'lc-pop lc-emo-card');
+      pop.dataset.code = x.code;
       const big = el('div', 'lc-pop-emo');
-      big.append(emojiImg(info, 'lc-pop-img'), el('span', '', info.label));
-      const sup = btn('lc-btn lc-btn--sm', x.uid === S.me.id ? 'Это ваша эмоция' : (x.mine ? 'Вы поддержали' : 'Поддержать'), async () => {
-        closeMenus();
-        const res = await api('POST', url('support', x.id));
-        if (!res.ok) toast(res.json.message || 'Не получилось');
-        else if (navigator.vibrate && touch) navigator.vibrate(10);
-        poll(true);
-      });
-      sup.disabled = !!x.mine || !cfg.url.support || !canReact();
-      pop.append(head, big, sup);
-      if (x.c) pop.append(el('div', 'lc-pop-names', 'Поддержали (' + x.c + '): ' + x.names.join(', ') + (x.c > x.names.length ? '…' : '')));
+      const icon = el('span', 'lc-pop-icon');
+      icon.append(emojiImg(info, 'lc-pop-img'));
+      const txt = el('div', 'lc-pop-emo-text');
+      txt.append(el('b', '', info.label), el('span', '', own ? 'Ваша эмоция' : x.n));
+      big.append(icon, txt);
+      pop.append(big);
+
+      // кто поддержал — аватарками с именами
+      if (x.c) {
+        const who = el('div', 'lc-pop-who');
+        who.append(el('div', 'lc-pop-who-title', 'Поддержали · ' + x.c));
+        const list = el('div', 'lc-pop-who-list');
+        (x.names || []).forEach((n) => {
+          const row = el('div', 'lc-pop-who-row');
+          row.append(avatarFor(n), el('span', '', n));
+          list.append(row);
+        });
+        if (x.c > (x.names || []).length) list.append(el('div', 'lc-pop-who-more', 'и ещё ' + (x.c - x.names.length)));
+        who.append(list);
+        pop.append(who);
+      } else if (!own) {
+        pop.append(el('div', 'lc-pop-hint', 'Пока никто не поддержал — будьте первым'));
+      }
+
+      const can = !!cfg.url.support && canReact() && !S.me.team;
+      let action = null;
+      if (own) {
+        if (x.c) pop.append(el('div', 'lc-pop-hint', 'Эмоцию уже поддержали — она исчезнет сама'));
+        else action = btn('lc-btn lc-btn--sm lc-btn--ghost', 'Убрать эмоцию', () => { closeMenus(); withdrawEmotion(chip); });
+      } else if (x.mine) {
+        action = btn('lc-btn lc-btn--sm lc-btn--ghost', 'Убрать поддержку', () => { closeMenus(); unsupportEmotion(chip); });
+      } else {
+        action = btn('lc-btn lc-btn--sm lc-emo-plus', '', () => { closeMenus(); supportEmotion(chip); });
+        action.append(el('b', '', '+1'), el('span', '', ' Я тоже'));
+      }
+      if (action && can) pop.append(action);
       showPop(chip, pop);
+    }
+
+    // Папка картинок Noto — та же, где лежат картинки эмоций.
+    function notoBase() {
+      const any = (cfg.emotions || []).find((e) => e.img);
+      return any ? any.img.replace(/[^/]+$/, '') : '/img/chat-reactions/noto/';
+    }
+
+    // Аватар по имени (в сводке эмоции только имена): цвет — от имени.
+    function avatarFor(name) {
+      let h = 0;
+      for (const ch of name || '') h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+      return avatar(h, name, null, 'lc-av lc-av--xs');
     }
 
     function showPop(anchor, pop) {
@@ -1768,14 +1830,22 @@
       right.append(card._count, ringBox);
       head.append(title, right);
       const opts = el('div', 'lc-poll-opts');
-      card._opts = [[true, '👍', 'Пон'], [false, '🤔', 'Не пон']].map(([choice, emoji, label]) => {
-        const o = btn('lc-poll-opt', '', () => vote(choice, o));
+      card._opts = [[true, '1f44d', 'Пон'], [false, '1f914', 'Не пон']].map(([choice, noto, label]) => {
+        const o = btn('lc-poll-opt ' + (choice ? 'is-yes' : 'is-no'), '', () => vote(choice, o));
         o._choice = choice;
         o._fill = el('i', 'lc-poll-fill');
         o._pct = el('span', 'lc-poll-pct');
         const lab = el('span', 'lc-poll-label');
-        lab.append(el('span', 'lc-poll-emoji', emoji), el('span', '', label));
+        const em = el('span', 'lc-poll-emoji');
+        const img = document.createElement('img');
+        img.src = notoBase() + noto + '.svg';
+        img.alt = '';
+        img.draggable = false;
+        em.append(img);
+        lab.append(em, el('span', 'lc-poll-name', label));
+        o._check = el('span', 'lc-poll-check', '✓');
         o.append(o._fill, lab, o._pct);
+        lab.append(o._check);
         longPress(o, () => {
           if (o._names && o._names.length) showPop(o, el('div', 'lc-pop-names', (choice ? 'Пон: ' : 'Не пон: ') + o._names.join(', ')));
         });

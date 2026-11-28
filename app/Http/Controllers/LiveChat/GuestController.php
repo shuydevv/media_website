@@ -137,6 +137,14 @@ class GuestController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    public function unsupport(Request $request, string $token, ChatEmotion $emotion, LiveChatRoom $room)
+    {
+        [$lesson, $user] = $this->actor($request, $token);
+        $room->unsupportEmotion($lesson, $user, $emotion->id);
+
+        return response()->json(['ok' => true]);
+    }
+
     private function lesson(string $token): Lesson
     {
         $chat = LessonChat::where('guest_token', $token)->first();

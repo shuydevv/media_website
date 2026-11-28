@@ -84,6 +84,29 @@ class LiveChatRoomTest extends TestCase
         $this->as($a, 'POST', 'live-chat.emotion', ['code' => 'lol'])->assertOk();
     }
 
+    public function test_withdraw_emotion_and_unsupport(): void
+    {
+        $a = $this->student('Аня', 120);
+        $b = $this->student('Боря', 120);
+        $this->as($a, 'POST', 'live-chat.emotion', ['code' => 'brain'])->assertOk();
+        $id = $this->feed($a)['emo'][0]['id'];
+
+        // поддержал и передумал
+        $this->as($b, 'POST', 'live-chat.support', [], ['emotion' => $id])->assertOk();
+        $this->assertSame(1, $this->feed($a)['emo'][0]['c']);
+        // пока поддержка есть — автор не убирает, и чужую эмоцию не убрать
+        $this->as($a, 'DELETE', 'live-chat.withdraw', [], ['emotion' => $id])->assertStatus(422)->assertJsonPath('error', 'supported');
+        $this->as($b, 'DELETE', 'live-chat.withdraw', [], ['emotion' => $id])->assertStatus(422)->assertJsonPath('error', 'forbidden');
+        $this->as($b, 'DELETE', 'live-chat.unsupport', [], ['emotion' => $id])->assertOk();
+        $this->assertSame(0, $this->feed($a)['emo'][0]['c']);
+
+        // теперь автор убирает: эмоции нет, в итогах нет, а пауза осталась
+        $this->as($a, 'DELETE', 'live-chat.withdraw', [], ['emotion' => $id])->assertOk();
+        $this->assertSame([], $this->feed($b)['emo']);
+        $this->assertSame([], app(\App\Service\LiveChat\LiveChatRoom::class)->stats($this->lesson)['emotions']->all());
+        $this->as($a, 'POST', 'live-chat.emotion', ['code' => 'lol'])->assertStatus(422)->assertJsonPath('error', 'cooldown');
+    }
+
     public function test_poll_understand_votes_names_and_hides_emotions(): void
     {
         $a = $this->student('Аня', 120);

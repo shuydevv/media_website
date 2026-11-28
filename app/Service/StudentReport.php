@@ -441,7 +441,7 @@ class StudentReport
             ->where('v.user_id', $user->id)->whereIn('p.lesson_id', $lessonIds);
         $add((clone $votes)->groupBy('p.lesson_id')->selectRaw('p.lesson_id, count(*) as n')->pluck('n', 'lesson_id'), 'polls');
         $add((clone $votes)->where('v.choice', false)->groupBy('p.lesson_id')->selectRaw('p.lesson_id, count(*) as n')->pluck('n', 'lesson_id'), 'notGot');
-        $add(\App\Models\ChatEmotion::where('user_id', $user->id)->whereIn('lesson_id', $lessonIds)
+        $add(\App\Models\ChatEmotion::where('user_id', $user->id)->whereIn('lesson_id', $lessonIds)->whereNull('withdrawn_at')
             ->groupBy('lesson_id')->selectRaw('lesson_id, count(*) as n')->pluck('n', 'lesson_id'), 'emotions');
 
         return $out;

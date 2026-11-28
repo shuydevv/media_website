@@ -547,6 +547,8 @@ Route::middleware(['auth', 'billing.current', 'throttle:120,1'])
     ->group(function () {
         Route::post('/emotions', 'emotion')->name('emotion');
         Route::post('/emotions/{emotion}/support', 'support')->name('support');
+        Route::delete('/emotions/{emotion}/support', 'unsupport')->name('unsupport');
+        Route::delete('/emotions/{emotion}', 'withdraw')->name('withdraw');
         Route::post('/poll/vote', 'vote')->name('vote');
         Route::post('/poll', 'startPoll')->name('poll.start');
         Route::delete('/poll', 'closePoll')->name('poll.close');
@@ -566,6 +568,7 @@ Route::prefix('live/{token}')->where(['token' => '[A-Za-z0-9]{16,40}'])
         Route::post('/messages/{message}/reactions', 'react')->name('react');
         Route::post('/poll/vote', 'vote')->name('vote');
         Route::post('/emotions/{emotion}/support', 'support')->name('support');
+        Route::delete('/emotions/{emotion}/support', 'unsupport')->name('unsupport');
     });
 
 // Сдача домашки студентом — пошагово, по одному вопросу на странице.

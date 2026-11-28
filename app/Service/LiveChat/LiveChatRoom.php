@@ -177,6 +177,40 @@ class LiveChatRoom
         ));
     }
 
+    /**
+     * Убрать свою эмоцию. Пока её никто не поддержал — она исчезает; если
+     * поддержали — уже не только её, остаётся до конца своей минуты. Пауза до
+     * следующей эмоции не сбрасывается (строка остаётся, см. миграцию).
+     *
+     * @throws ChatRefused
+     */
+    public function withdrawEmotion(Lesson $lesson, User $u, int $id): void
+    {
+        $this->assertCanAct($lesson, $u);
+        $e = ChatEmotion::where('lesson_id', $lesson->id)->where('ends_at', '>', now())->find($id);
+        if (! $e) {
+            return; // уже исчезла сама
+        }
+        if ((int) $e->user_id !== (int) $u->id) {
+            throw new ChatRefused('forbidden', 'Это не ваша эмоция');
+        }
+        if ($e->supports()->exists()) {
+            throw new ChatRefused('supported', 'Эмоцию уже поддержали — она исчезнет сама');
+        }
+        $this->chat->mutate($this->chat->chatFor($lesson), fn () => $e->update(['ends_at' => now(), 'withdrawn_at' => now()]));
+    }
+
+    /** Убрать свою поддержку чужой эмоции. */
+    public function unsupportEmotion(Lesson $lesson, User $u, int $id): void
+    {
+        $this->assertCanAct($lesson, $u);
+        $support = ChatEmotionSupport::where('emotion_id', $id)->where('user_id', $u->id)->first();
+        if (! $support) {
+            return;
+        }
+        $this->chat->mutate($this->chat->chatFor($lesson), fn () => $support->delete());
+    }
+
     // ── «Пон / Не пон» ────────────────────────────────────────────────
 
     public function startPoll(Lesson $lesson, User $by): void
@@ -259,7 +293,7 @@ class LiveChatRoom
             ->take(5)->map(fn ($r) => ['name' => $r->name, 'c' => (int) $r->c])->values();
 
         $catalog = collect($this->emotionCatalog())->keyBy('code');
-        $emotions = ChatEmotion::where('lesson_id', $lesson->id)->withCount('supports')->orderByDesc('id')->limit(30)->get()
+        $emotions = ChatEmotion::where('lesson_id', $lesson->id)->whereNull('withdrawn_at')->withCount('supports')->orderByDesc('id')->limit(30)->get()
             ->map(fn (ChatEmotion $e) => [
                 'e' => $catalog[$e->code]['e'] ?? '❔',
                 'label' => $catalog[$e->code]['label'] ?? $e->code,

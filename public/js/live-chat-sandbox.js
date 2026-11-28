@@ -258,7 +258,20 @@
       const err = proposeEmotion(V.id, String(data.code || ''));
       return err ? json(err, 422) : json({ ok: true });
     }
+    mm = path.match(/^emotions\/(\d+)$/);
+    if (mm && method === 'DELETE') {
+      const e = emotions.find((x) => x.id === Number(mm[1]) && x.ends > now());
+      if (e && e.uid !== V.id) return json({ error: 'forbidden', message: 'Это не ваша эмоция' }, 422);
+      if (e && e.supports.size) return json({ error: 'supported', message: 'Эмоцию уже поддержали — она исчезнет сама' }, 422);
+      if (e) { e.ends = now(); e.withdrawn = true; ver++; }
+      return json({ ok: true });
+    }
     mm = path.match(/^emotions\/(\d+)\/support$/);
+    if (mm && method === 'DELETE') {
+      const e = emotions.find((x) => x.id === Number(mm[1]));
+      if (e && e.supports.delete(V.id)) ver++;
+      return json({ ok: true });
+    }
     if (mm) {
       const err = supportEmotion(V.id, Number(mm[1]));
       return err ? json(err, 422) : json({ ok: true });
@@ -346,7 +359,7 @@
       online, messages: live.length, people: new Set(live.map((m) => m.uid)).size,
       questions: roots.filter((m) => m.q).length, unanswered: roots.filter((m) => m.q && !m.ans).length, top,
       polls: polls.slice().reverse().map(pollOut),
-      emotions: emotions.slice().reverse().map((e) => {
+      emotions: emotions.filter((e) => !e.withdrawn).reverse().map((e) => {
         const c = catalog.find((x) => x.code === e.code) || {};
         return { e: c.e, label: c.label, n: e.n, c: e.supports.size, at: e.ends - SC.emotionSeconds };
       }),

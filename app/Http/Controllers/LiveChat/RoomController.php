@@ -35,6 +35,20 @@ class RoomController extends Controller
         return $this->run(fn () => $this->room->supportEmotion($lesson, $request->user(), $emotion->id));
     }
 
+    public function unsupport(Request $request, Lesson $lesson, ChatEmotion $emotion)
+    {
+        $this->authorizeLesson($lesson);
+
+        return $this->run(fn () => $this->room->unsupportEmotion($lesson, $request->user(), $emotion->id));
+    }
+
+    public function withdraw(Request $request, Lesson $lesson, ChatEmotion $emotion)
+    {
+        $this->authorizeLesson($lesson);
+
+        return $this->run(fn () => $this->room->withdrawEmotion($lesson, $request->user(), $emotion->id));
+    }
+
     public function vote(Request $request, Lesson $lesson)
     {
         $this->authorizeLesson($lesson);
