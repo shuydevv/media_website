@@ -50,6 +50,10 @@
   const polls = [];             // {id, at, ends, closed, votes: Map(uid → {choice, name})}
   let pollId = 1;
   let online = 46;
+  let peak = 46;
+  const statuses = new Map();   // uid → {t, c, f} — статус ученика
+  const rewards = new Map();    // id сообщения → {c, by, uid, av} — корм за верный ответ
+  const startedAt = now();
   const botLevel = new Map(bots.map(([id], i) => [id, [1, 2, 3, 3, 4, 5, 2, 3, 4, 1, 3, 2][i % 12]]));
   const levelOf = (uid) => (uid === V.id ? (V.team ? 0 : (C.level || 4)) : (botLevel.get(uid) || 0));
   const catalog = (() => { try { return JSON.parse(document.querySelector('[data-live-chat]').getAttribute('data-live-chat')).emotions || []; } catch (e) { return []; } })();
@@ -123,7 +127,82 @@
     const out = { id: m.id, v: m.v, uid: m.uid, n: m.n, b: m.b, team: !!u.team, av: u.av || null, text: m.text, q: m.q,
       ans: m.ans, ansTs: m.ansTs, ts: m.ts, reply, rx: list, tr, th: m.th, tc };
     if (V.admin && !u.team && u.real) out.real = u.real;
+    if (rewards.has(m.id)) out.fd = rewards.get(m.id);
+    if (!u.team && statuses.has(m.uid)) out.st = statuses.get(m.uid);
+    if (m.card) {
+      out.card = Object.assign({}, m.card);
+      if (m.card.me && !V.team) out.card.mine = personal();
+      delete out.card.me;
+    }
     return out;
+  }
+
+  // ── Корм за верный ответ (как LiveChatRewards) ──────────────────
+  function giveReward(m, giverId) {
+    if (!m || m.del || rewards.has(m.id)) return { error: 'rewarded', message: 'За этот ответ корм уже дали' };
+    const author = users.get(m.uid) || {};
+    if (author.team) return { error: 'team', message: 'Корм — только ученикам' };
+    const g = users.get(giverId) || {};
+    rewards.set(m.id, { c: 1, by: g.n, uid: giverId, av: g.av || null });
+    touch(m);
+    return null;
+  }
+  function takeReward(m) {
+    if (m && rewards.delete(m.id)) touch(m);
+  }
+
+  // ── Итоги урока (как LiveChatSummary) ───────────────────────────
+  function personal() {
+    const mine = Array.from(msgs.values()).filter((m) => m.uid === V.id && !m.del && !m.card);
+    const got = mine.filter((m) => rewards.has(m.id));
+    let yes = 0;
+    let votes = 0;
+    polls.forEach((p) => { const x = p.votes.get(V.id); if (x) { votes++; if (x.choice) yes++; } });
+    return { msgs: mine.length, answers: got.length, corm: got.length, yes, votes };
+  }
+  function buildSummary() {
+    const live = Array.from(msgs.values()).filter((m) => !m.del && !m.card);
+    const stud = live.filter((m) => !(users.get(m.uid) || {}).team);
+    const roots = live.filter((m) => !m.th);
+    const general = { min: Math.max(1, Math.round((now() - startedAt) * speed() / 60)), peak, msgs: live.length,
+      qs: roots.filter((m) => m.q).length, ans: roots.filter((m) => m.q && m.ans).length };
+    const rated = polls.map((pl) => { const vs = Array.from(pl.votes.values()); return { at: pl.at, n: vs.length, yes: vs.filter((x) => x.choice).length }; }).filter((x) => x.n);
+    const worst = rated.filter((x) => x.n >= 3 && x.yes < x.n).sort((a, b) => (b.n - b.yes) / b.n - (a.n - a.yes) / a.n)[0];
+    const pollsB = rated.length ? { n: rated.length, yes: Math.round(rated.reduce((a, x) => a + x.yes / x.n * 100, 0) / rated.length),
+      worst: worst ? { at: worst.at, no: Math.round((worst.n - worst.yes) / worst.n * 100) } : null } : null;
+    const byCode = new Map();
+    emotions.filter((e) => !e.withdrawn).forEach((e) => byCode.set(e.code, (byCode.get(e.code) || 0) + 1 + e.supports.size));
+    const topEmo = Array.from(byCode.entries()).sort((a, b) => b[1] - a[1])[0];
+    const emoInfo = topEmo ? (catalog.find((c) => c.code === topEmo[0]) || {}) : null;
+    const minutes = new Map();
+    stud.forEach((m) => { const k = Math.floor(m.ts / 60); minutes.set(k, (minutes.get(k) || 0) + 1); });
+    const hotM = Array.from(minutes.entries()).sort((a, b) => b[1] - a[1])[0];
+    const rw = Array.from(rewards.entries()).sort((a, b) => a[0] - b[0]);
+    const name = (uid) => (users.get(uid) || {}).n;
+    const byUser = new Map();
+    rw.forEach(([id, r]) => { const m = msgs.get(id); if (m) byUser.set(m.uid, (byUser.get(m.uid) || 0) + r.c); });
+    const curious = new Map();
+    stud.filter((m) => m.q && !m.th).forEach((m) => curious.set(m.uid, (curious.get(m.uid) || 0) + 1));
+    const cur = Array.from(curious.entries()).sort((a, b) => b[1] - a[1])[0];
+    const soulMap = new Map();
+    stud.forEach((m) => { const r = rx.get(m.id); if (r) r.forEach((set) => set.forEach((uid) => { if (uid !== m.uid) soulMap.set(m.uid, (soulMap.get(m.uid) || 0) + 1); })); });
+    const soul = Array.from(soulMap.entries()).sort((a, b) => b[1] - a[1])[0];
+    const firstMsg = rw.length ? msgs.get(rw[0][0]) : null;
+    return {
+      general,
+      polls: pollsB,
+      emotion: topEmo ? { code: topEmo[0], e: emoInfo.e, label: emoInfo.label, img: emoInfo.img, c: topEmo[1] } : null,
+      hot: hotM && hotM[1] >= 3 ? { at: hotM[0] * 60, c: hotM[1] } : null,
+      corm: rw.length ? { c: rw.reduce((a, [, r]) => a + r.c, 0), n: rw.length } : null,
+      heroes: {
+        top: Array.from(byUser.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([uid, c]) => ({ n: name(uid), c })),
+        first: firstMsg ? { n: name(firstMsg.uid) } : null,
+        curious: cur ? { n: name(cur[0]), c: cur[1] } : null,
+        soul: soul && soul[1] >= 2 ? { n: name(soul[0]), c: soul[1] } : null,
+      },
+      next: { hw: { title: 'Типы обществ. Задание 6', due: now() + 2 * 86400, url: '#' }, lesson: { ts: now() + 3 * 86400 },
+        open: roots.filter((m) => m.q && !m.ans).length },
+    };
   }
 
   function me() {
@@ -229,7 +308,36 @@
     }
     if (path === 'pin' && method === 'DELETE') { pinned = null; ver++; return json({ ok: true }); }
 
-    let mm = path.match(/^messages\/(\d+)(?:\/(reactions|answer|pin))?$/);
+    let mm = path.match(/^messages\/(\d+)\/reward$/);
+    if (mm) {
+      if (!V.team) return json({ error: 'forbidden' }, 403);
+      const rm = msgs.get(Number(mm[1]));
+      if (method === 'DELETE') { takeReward(rm); return json({ ok: true }); }
+      const err = giveReward(rm, V.id);
+      return err ? json(err, 422) : json({ ok: true });
+    }
+    mm = path.match(/^statuses\/(\d+)$/);
+    if (mm) {
+      if (!V.admin) return json({ error: 'forbidden' }, 403);
+      const uid = Number(mm[1]);
+      if ((users.get(uid) || {}).team) return json({ error: 'status', message: 'Статус — только ученикам' }, 422);
+      if (method === 'DELETE') statuses.delete(uid);
+      else statuses.set(uid, { t: String(data.text || '').trim().slice(0, 24), c: data.color || 'blue', f: !!data.forever });
+      msgs.forEach((x) => { if (x.uid === uid) touch(x); });
+      return json({ ok: true });
+    }
+    if (path === 'summary') {
+      if (!V.admin) return json({ error: 'forbidden' }, 403);
+      if (method === 'GET') return json({ blocks: buildSummary() });
+      const all = buildSummary();
+      const blocks = {};
+      (data.blocks || []).forEach((k) => { if (k !== 'me' && all[k]) blocks[k] = all[k]; });
+      const sm = add(V.id, data.note || 'Итоги урока', {});
+      sm.card = { type: 'summary', blocks, note: data.note || null, me: (data.blocks || []).includes('me') };
+      touch(sm);
+      return json({ ok: true });
+    }
+    mm = path.match(/^messages\/(\d+)(?:\/(reactions|answer|pin))?$/);
     if (mm) {
       m = msgs.get(Number(mm[1]));
       if (!m) return json({ error: 'missing' }, 404);
@@ -365,7 +473,7 @@
       }),
     };
   }
-  setInterval(() => { online = Math.max(38, Math.min(58, online + Math.round(rnd(-2, 2)))); }, 10000);
+  setInterval(() => { online = Math.max(38, Math.min(58, online + Math.round(rnd(-2, 2)))); peak = Math.max(peak, online); }, 10000);
 
   // Ученик — не больше 3 реакций на сообщение: новая вытесняет самую раннюю.
   const order = new Map(); // id сообщения + ':' + uid → [id реакций по порядку]
@@ -421,6 +529,9 @@
 
   function react(m) {
     const author = users.get(m.uid) || {};
+    if (!V.team && !author.team && !m.del && /134/.test(m.text || '')) {
+      later(m.uid === V.id ? 3 : rnd(3, 9), () => { if (!m.del) giveReward(m, TEACHER_BOT); });
+    }
     if (author.team) {
       // Сообщение преподавателя: реакции, на «пишем ответ» — поток ответов.
       if (!m.th) {

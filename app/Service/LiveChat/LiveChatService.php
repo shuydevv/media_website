@@ -441,6 +441,10 @@ class LiveChatService
         $room = app(LiveChatRoom::class);
         if (self::isTeam($viewer)) {
             $out['online'] = $room->online($lesson);
+            // Пик зрителей — для итогов урока (онлайн считается только у команды).
+            if ($out['online'] > (int) $chat->peak_online) {
+                LessonChat::whereKey($chat->id)->where('peak_online', '<', $out['online'])->update(['peak_online' => $out['online']]);
+            }
         }
 
         if ($since === (int) $chat->version) {
@@ -618,9 +622,21 @@ class LiveChatService
             }
         }
 
+        // Корм за верный ответ — плашка под сообщением для всех.
+        $fd = $ids ? \App\Models\ChatReward::whereIn('message_id', $ids)->get()->keyBy('message_id') : collect();
+        $givers = $fd->isEmpty() ? collect() : User::whereIn('id', $fd->pluck('given_by')->unique())->get(['id', 'avatar'])->keyBy('id');
+        // Итоги урока: личная строка — своя у каждого ученика.
+        $personal = null;
+        if (! self::isTeam($viewer) && ! self::isGuest($viewer) && $live->whereNotNull('card')->isNotEmpty()) {
+            $personal = app(LiveChatSummary::class)->personal((int) $live->first()->lesson_id, $viewer);
+        }
+
+        // Статусы учеников (плашка у имени) — действующие на этом уроке.
+        $st = $live->isEmpty() ? [] : app(LiveChatStatuses::class)->forUsers((int) $live->first()->lesson_id, $live->pluck('user_id')->unique()->values()->all());
+
         $isAdmin = $viewer->isAdmin();
 
-        return $msgs->map(function (ChatMessage $m) use ($users, $replies, $rx, $tr, $tc, $isAdmin) {
+        return $msgs->map(function (ChatMessage $m) use ($users, $replies, $rx, $tr, $tc, $isAdmin, $fd, $givers, $personal, $st) {
             if ($m->deleted_at) {
                 return ['id' => $m->id, 'v' => (int) $m->version, 'del' => true];
             }
@@ -652,6 +668,19 @@ class LiveChatService
                 'th' => $m->thread_id,
                 'tc' => $m->thread_id ? null : ($tc[$m->id] ?? null),
             ];
+            if (! $team && isset($st[$m->user_id])) {
+                $out['st'] = $st[$m->user_id];
+            }
+            if ($r = $fd->get($m->id)) {
+                $out['fd'] = ['c' => (int) $r->corm, 'by' => $r->giver_name, 'uid' => (int) $r->given_by, 'av' => $givers->get($r->given_by)?->avatar_url];
+            }
+            if ($m->card) {
+                $out['card'] = $m->card;
+                if (! empty($m->card['me']) && $personal) {
+                    $out['card']['mine'] = $personal;
+                }
+                unset($out['card']['me']);
+            }
             if ($isAdmin && $u && ! $team) {
                 $out['real'] = trim($u->full_name) ?: $u->name;
             } elseif ($isAdmin && $m->user_id >= self::GUEST_BASE) {
@@ -714,6 +743,14 @@ class LiveChatService
                 'pollClose' => route('live-chat.poll.close', $id),
                 'break' => route('live-chat.break', $id),
                 'quiet' => route('live-chat.quiet', $id),
+                'reward' => self::isTeam($u) ? route('live-chat.reward', [$id, 0]) : null,
+                'summary' => $u->isAdmin() ? route('live-chat.summary', $id) : null,
+                'status' => $u->isAdmin() ? route('live-chat.status', [$id, 0]) : null,
+            ],
+            // Корм: у ученика в уведомлении — его еда, под сообщением — обычная.
+            'corm' => [
+                'mine' => self::isGuest($u) ? null : $u->fish_food_icon_url,
+                'chip' => app(\App\Service\FishFoodService::class)->foodImageUrl(null),
             ],
         ];
     }

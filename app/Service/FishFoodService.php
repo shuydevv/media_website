@@ -153,6 +153,33 @@ class FishFoodService
     }
 
     /**
+     * Корм за верный ответ в чате трансляции (LiveChatRewards). One-shot
+     * гарантирует уникальный chat_rewards.message_id; забрали награду —
+     * revokeChatAnswer(), баланс не уходит в минус (как revokeSubmissionCorm()).
+     */
+    public function awardChatAnswer(User $user, int $corm): void
+    {
+        if ($corm <= 0) {
+            return;
+        }
+        $this->withLockedUser($user, function (User $locked) use ($corm) {
+            $locked->fish_corm_balance = (int) $locked->fish_corm_balance + $corm;
+            $locked->save();
+        });
+    }
+
+    public function revokeChatAnswer(User $user, int $corm): void
+    {
+        if ($corm <= 0) {
+            return;
+        }
+        $this->withLockedUser($user, function (User $locked) use ($corm) {
+            $locked->fish_corm_balance = max(0, (int) $locked->fish_corm_balance - $corm);
+            $locked->save();
+        });
+    }
+
+    /**
      * Начисляет бонус за визит не чаще раза в календарный день.
      */
     public function awardDailyVisit(User $user): bool

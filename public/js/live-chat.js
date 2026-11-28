@@ -129,6 +129,14 @@
     }
     const statsBtn = btn('lc-cbtn', '📊 Итоги', () => setView(S.view === 'stats' ? 'chat' : 'stats'));
     if (S.me.team && !isReplay) consoleBar.append(statsBtn);
+    // Режим награждения: пока включён, нажатие на сообщение ученика — +1 корм
+    // (повторно — забрать). На эфире так быстрее, чем меню на каждом ответе.
+    let rewardBtn = null;
+    if (S.me.team && !isReplay && cfg.url.reward) {
+      rewardBtn = btn('lc-cbtn', '🐟 Награждать', () => setRewardMode(!S.rewardMode));
+      rewardBtn.title = 'Нажимайте на верные ответы учеников — каждому +' + 1 + ' корм';
+      consoleBar.append(rewardBtn);
+    }
 
     const pinBar = el('div', 'lc-pin');
     // Над лентой: опрос «Пон / Не пон» или эмоции учеников (опрос важнее).
@@ -184,6 +192,10 @@
     composer.append(replyBar, qTag, notice, row);
 
     root.append(head, consoleBar, pinBar, strip, banner, bodyWrap);
+    // Нет связи с сервером — видно сразу, а не по «замершему» чату.
+    const netBar = el('div', 'lc-banner is-net', 'Нет связи — переподключаюсь…');
+    netBar.hidden = true;
+    banner.after(netBar);
     if (!isReplay) root.append(composer);
 
     // Вход в чат: имя показывается при каждом входе, уже подставленное.
@@ -257,7 +269,7 @@
     }
     function url(name, m) {
       const u = cfg.url[name];
-      return m === undefined ? u : u.replace(/\/(messages|mutes|emotions)\/0(?=\/|$)/, '/$1/' + m);
+      return m === undefined ? u : u.replace(/\/(messages|mutes|emotions|statuses)\/0(?=\/|$)/, '/$1/' + m);
     }
     async function api(method, u, data) {
       const res = await fetch(u, {
@@ -353,6 +365,7 @@
       }
       top.append(name);
       if (m.b) top.append(el('span', 'lc-badge', m.b));
+      if (m.st) top.append(el('span', 'lc-badge lc-status is-' + m.st.c, m.st.t));
       // Одна метка у вопроса: до ответа — «❓ Вопрос», после — «✓ Вопрос · есть ответ».
       if (m.q) {
         const a = el('span', 'lc-qtag' + (m.ans ? ' is-done' : ''), m.ans ? '✓ Вопрос · есть ответ' : '❓ Вопрос');
@@ -378,7 +391,8 @@
         q.addEventListener('click', () => flash(m.reply.id));
         main.append(q);
       }
-      main.append(el('div', 'lc-text', m.text));
+      if (m.card && m.card.type === 'summary') main.append(summaryCard(m.card));
+      else main.append(el('div', 'lc-text', m.text));
       main.append(renderChips(m, n));
       if (ctx !== 'thread' && m.tc && m.tc.c && !S.open.has(m.id)) main.append(threadLine(m, n));
       n.append(main);
@@ -394,13 +408,55 @@
       const faces = el('span', 'lc-thfaces');
       (t.who || []).forEach((w) => faces.append(avatar(w.uid, w.n, w.av, 'lc-av lc-av--xs')));
       b.append(faces, el('span', '', t.c + ' ' + plural(t.c, 'ответ', 'ответа', 'ответов')));
-      if (t.teach) b.append(el('span', 'lc-thteach', '· есть ответ преподавателя'));
+      if (t.teach) b.append(el('span', 'lc-thteach', '· ответ преподавателя'));
       else if (t.last && !isReplay) b.append(el('span', 'lc-thlast', '· ' + hhmm(t.last)));
       return b;
     }
 
+    // Эмодзи в плашке реакции проигрывает анимацию (~2 с), когда реакция
+    // появилась или её стало больше — в том числе от своего нажатия. Сообщение
+    // перерисовывается целиком, поэтому «играет до» помним по сообщению:
+    // новая плашка подхватывает анимацию, а не обрывает её.
+    const chipSeen = new Map(); // id сообщения → {ключ реакции → число}
+    const chipAnim = new Map(); // 'id|ключ' → до какого времени играет
+    const ANIM_MS = 2200;
+    const calm = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function chipImg(r, mid, key, grew) {
+      const img = reactionImg(r, false);
+      if (img.tagName !== 'IMG' || !r.anim || !r.still || r.anim === r.still) return img;
+      const k = mid + '|' + key;
+      if (grew && !calm()) chipAnim.set(k, Date.now() + ANIM_MS);
+      const left = (chipAnim.get(k) || 0) - Date.now();
+      if (left > 0) {
+        img.src = r.anim;
+        setTimeout(() => { img.src = r.still; }, left);
+      } else {
+        chipAnim.delete(k);
+      }
+      return img;
+    }
+
     function renderChips(m, n) {
       const box = el('div', 'lc-chips');
+      const seen = chipSeen.get(m.id);
+      const now = {};
+      const grew = (key, c) => { now[key] = c; return !!seen && (seen[key] || 0) < c; };
+      // Корм за верный ответ — первой плашкой: иконка корма, «+1» и кто дал.
+      if (m.fd) {
+        const f = S.me.team && cfg.url.reward
+          ? btn('lc-chip lc-chip--fd', '', () => toggleReward(n._m))
+          : el('span', 'lc-chip lc-chip--fd');
+        f.title = 'Корм за верный ответ · ' + m.fd.by + (S.me.team ? ' · нажмите, чтобы забрать' : '');
+        const ic = el('img', 'lc-fd-img');
+        ic.src = cfg.corm && cfg.corm.chip ? cfg.corm.chip : '';
+        ic.alt = '';
+        f.append(ic, el('span', 'lc-chip-n', '+' + m.fd.c), avatar(m.fd.uid, m.fd.by, m.fd.av, 'lc-av lc-av--chip'));
+        if (grew('fd', 1) && !calm()) {
+          f.classList.add('is-new');
+          setTimeout(() => { if (f.isConnected) cormBurst(f); }, 60);
+        }
+        box.append(f);
+      }
       // Реакции команды — как в Telegram: такая же плашка, но справа вместо
       // числа — аватарка преподавателя. В общий счётчик не входят.
       (m.tr || []).forEach(([rid, uid, name, av]) => {
@@ -410,7 +466,7 @@
         const t = mine ? btn('lc-chip lc-chip--tr is-mine', '', () => react(n._m, rid, t)) : el('span', 'lc-chip lc-chip--tr');
         t.dataset.rid = rid;
         t.title = name + ' — реакция';
-        t.append(reactionImg(r, false), avatar(uid, name, av, 'lc-av lc-av--chip'));
+        t.append(chipImg(r, m.id, 't' + rid + ':' + uid, grew('t' + rid + ':' + uid, 1)), avatar(uid, name, av, 'lc-av lc-av--chip'));
         box.append(t);
       });
       (m.rx || []).forEach(([rid, count, mine]) => {
@@ -418,10 +474,11 @@
         if (!r || count < 1) return;
         const c = btn('lc-chip' + (mine ? ' is-mine' : ''), '', () => react(n._m, rid, c));
         c.dataset.rid = rid;
-        c.append(reactionImg(r, false), el('span', 'lc-chip-n', String(count)));
+        c.append(chipImg(r, m.id, 'r' + rid, grew('r' + rid, count)), el('span', 'lc-chip-n', String(count)));
         c.disabled = !canReact();
         box.append(c);
       });
+      chipSeen.set(m.id, now);
       return box;
     }
 
@@ -487,6 +544,11 @@
           bar.append(r);
         }
         if (S.me.team && m.q) bar.append(btn('lc-act lc-act--ok' + (m.ans ? ' is-on' : ''), '✓', () => answer(n._m)));
+        if (canReward(m)) {
+          const fd = btn('lc-act lc-act--fd' + (m.fd ? ' is-on' : ''), '🐟', () => toggleReward(n._m));
+          fd.title = m.fd ? 'Забрать корм' : 'Корм за верный ответ (+1)';
+          bar.append(fd);
+        }
         if (S.me.admin) bar.append(btn('lc-act', '⋯', (e) => adminMenu(n._m, e.currentTarget)));
         if (bar.childElementCount) n.append(bar);
       } else {
@@ -545,7 +607,7 @@
       clearTimeout(floatTimer);
       floatTimer = null;
       document.removeEventListener('mousemove', floatCorridor);
-      if (floatPicker) { floatPicker.remove(); floatPicker = null; }
+      if (floatPicker) { floatPicker.remove(); floatPicker = null; setTimeout(release, 0); }
     }
     function floatCorridor(e) {
       if (!floatPicker || !floatPicker._heart) return;
@@ -792,6 +854,7 @@
       menuOff = null;
       menuAnchor = null;
       clearInterval(hintTimer);
+      setTimeout(release, 0);
     }
     function adminMenu(m, anchor) {
       popMenu(anchor, adminItems(m));
@@ -799,6 +862,7 @@
     function adminItems(m) {
       const out = [];
       if (!m.th) out.push([S.pinned && S.pinned.id === m.id ? 'Открепить' : 'Закрепить', () => pin(m)]);
+      if (!m.team && cfg.url.status && m.uid < 1000000000) out.push([m.st ? '🏷 Статус: ' + m.st.t : '🏷 Дать статус', () => statusMenu(m)]);
       if (!m.team) {
         out.push(['Замьютить на 10 мин', () => mute(m, '10m')]);
         out.push(['Замьютить до конца эфира', () => mute(m, 'lesson')]);
@@ -808,6 +872,65 @@
       out.push(['Удалить сообщение', () => del(m), { danger: true }]);
       return out;
     }
+    // Статус ученика: текст (до 24), цвет, на урок или навсегда; поменять, убрать.
+    const ST_PRESETS = ['Отличник', 'Староста', 'Легенда чата', '100-балльник', 'Новичок', 'Знаток'];
+    const ST_COLORS = ['blue', 'green', 'amber', 'pink', 'violet'];
+    function statusMenu(m) {
+      closeMenus();
+      closeSheet();
+      const cur = m.st || {};
+      let color = cur.c || 'blue';
+      let forever = !!cur.f;
+      const back = el('div', 'lc-modal');
+      const box = el('div', 'lc-modal-box lc-st-box');
+      const head = el('div', 'lc-modal-head');
+      head.append(el('b', '', 'Статус · ' + m.n), btn('lc-x', '✕', () => back.remove()));
+      const input = document.createElement('input');
+      input.className = 'lc-st-input';
+      input.maxLength = 24;
+      input.placeholder = 'Например: Отличник';
+      input.value = cur.t || '';
+      const prev = el('span', 'lc-badge lc-status');
+      const draw = () => {
+        prev.className = 'lc-badge lc-status is-' + color;
+        prev.textContent = input.value.trim() || 'Статус';
+        colors.querySelectorAll('button').forEach((b) => b.classList.toggle('is-on', b.dataset.c === color));
+        scope.querySelectorAll('button').forEach((b) => b.classList.toggle('is-on', (b.dataset.f === '1') === forever));
+      };
+      const presets = el('div', 'lc-st-presets');
+      ST_PRESETS.forEach((t) => presets.append(btn('lc-st-preset', t, () => { input.value = t; draw(); })));
+      const colors = el('div', 'lc-st-colors');
+      ST_COLORS.forEach((c) => { const b = btn('lc-st-color is-' + c, '', () => { color = c; draw(); }); b.dataset.c = c; colors.append(b); });
+      const scope = el('div', 'lc-st-scope');
+      [['0', 'На этот урок'], ['1', 'Навсегда']].forEach(([f, l]) => { const b = btn('lc-st-opt', l, () => { forever = f === '1'; draw(); }); b.dataset.f = f; scope.append(b); });
+      input.addEventListener('input', draw);
+      const save = btn('lc-btn', 'Сохранить', async () => {
+        if (!input.value.trim()) { input.focus(); return; }
+        const res = await api('POST', url('status', m.uid), { text: input.value.trim(), color, forever }).catch(() => ({ ok: false, json: {} }));
+        if (!res.ok) { toast(res.json.message || 'Не получилось'); return; }
+        back.remove();
+        poll(true);
+      });
+      const foot = el('div', 'lc-modal-foot');
+      if (m.st) {
+        foot.append(btn('lc-ghost lc-st-del', 'Убрать статус', async () => {
+          const res = await api('DELETE', url('status', m.uid)).catch(() => ({ ok: false, json: {} }));
+          if (!res.ok) { toast('Не получилось'); return; }
+          back.remove();
+          poll(true);
+        }));
+      }
+      foot.append(btn('lc-ghost', 'Отмена', () => back.remove()), save);
+      const preview = el('div', 'lc-st-preview');
+      preview.append(el('b', '', m.n), prev);
+      box.append(head, preview, input, presets, colors, scope, foot);
+      back.append(box);
+      back.addEventListener('click', (e) => { if (e.target === back) back.remove(); });
+      document.body.append(back);
+      draw();
+      input.focus();
+    }
+
     async function pin(m) {
       const res = S.pinned && S.pinned.id === m.id ? await api('DELETE', url('unpin')) : await api('POST', url('pin', m.id));
       if (!res.ok) toast('Не получилось');
@@ -898,6 +1021,7 @@
       if (!m.th && m.tc && m.tc.c) item(S.open.has(m.id) ? 'Свернуть ответы' : 'Показать ответы', () => toggleThread(m.id));
       item('Копировать', () => { navigator.clipboard && navigator.clipboard.writeText(m.text); toast('Скопировано'); });
       if (S.me.team && m.q) item(m.ans ? 'Снять «есть ответ»' : '✓ Есть ответ', () => answer(m));
+      if (canReward(m)) item(m.fd ? 'Забрать корм' : '🐟 Корм за ответ (+1)', () => toggleReward(m));
       if (S.me.admin) adminItems(m).forEach(([l, f, o]) => item(l, f, o));
       wrap.append(menu);
       sheetEl.append(back, wrap);
@@ -906,6 +1030,7 @@
     }
     function closeSheet() {
       if (sheetEl) { sheetEl.remove(); sheetEl = null; }
+      setTimeout(release, 0);
     }
 
     function flash(id) {
@@ -986,22 +1111,300 @@
       });
     }
 
+    // ── Корм за верный ответ ──────────────────────────────────────
+    function canReward(m) {
+      return !!(S.me.team && cfg.url.reward && !isReplay && m && !m.del && !m.team && !m.card && m.uid < 1000000000);
+    }
+    function setRewardMode(on) {
+      S.rewardMode = on;
+      root.classList.toggle('is-reward', on);
+      if (rewardBtn) {
+        rewardBtn.classList.toggle('is-on', on);
+        rewardBtn.textContent = on ? '🐟 Награждаю · выкл' : '🐟 Награждать';
+      }
+      if (on) toast('Нажимайте на верные ответы — каждому +1 корм');
+    }
+    // В режиме награждения нажатие на сообщение ученика (не на кнопку, цитату,
+    // реакцию) — дать или забрать корм.
+    body.addEventListener('click', (e) => {
+      if (!S.rewardMode) return;
+      if (e.target.closest('button, a, .lc-quote, .lc-chips, .lc-actions, .lc-name, .lc-thread-foot')) return;
+      const n = e.target.closest('.lc-msg');
+      if (!n || !n._m) return;
+      if (!canReward(n._m)) { toast(n._m.team ? 'Это сообщение команды' : 'Корм — только ученикам'); return; }
+      toggleReward(n._m);
+    });
+    const rewarding = new Set();
+    async function toggleReward(m) {
+      if (!canReward(m) || rewarding.has(m.id)) return;
+      rewarding.add(m.id);
+      const give = !m.fd;
+      // Сразу у себя; сервер подтвердит (или скажет, что корм уже дал коллега).
+      refresh(Object.assign({}, m, { fd: give ? { c: 1, by: S.me.name, uid: S.me.id, av: S.me.av || null } : undefined }));
+      if (navigator.vibrate && touch) navigator.vibrate(10);
+      const res = await api(give ? 'POST' : 'DELETE', url('reward', m.id)).catch(() => ({ ok: false, json: {} }));
+      rewarding.delete(m.id);
+      if (!res.ok) toast(res.json.message || 'Не получилось');
+      poll(true);
+    }
+
+    // Уведомление ученику: «+1 корма · за верный ответ». В чате, а не поверх
+    // видео; несколько подряд — складываются; само уходит через 5 с.
+    let giftEl = null;
+    let giftTimer = null;
+    function gift(fd) {
+      if (navigator.vibrate && touch) navigator.vibrate([20, 40, 20]);
+      if (root.classList.contains('is-folded')) {
+        tickerText.textContent = '🐟 +' + fd.c + ' корма за верный ответ';
+      }
+      if (giftEl && giftEl.isConnected) {
+        giftEl._n += fd.c;
+        giftEl.querySelector('.lc-gift-title b').textContent = '+' + giftEl._n;
+        giftEl.classList.remove('is-bump');
+        void giftEl.offsetWidth;
+        giftEl.classList.add('is-bump');
+      } else {
+        giftEl = el('div', 'lc-gift');
+        giftEl._n = fd.c;
+        giftEl.setAttribute('role', 'status');
+        const ic = el('div', 'lc-gift-icon');
+        const img = el('img');
+        img.src = (cfg.corm && (cfg.corm.mine || cfg.corm.chip)) || '';
+        img.alt = '';
+        ic.append(img);
+        const txt = el('div', 'lc-gift-text');
+        const title = el('div', 'lc-gift-title');
+        title.append(el('b', '', '+' + fd.c), document.createTextNode(' корма за верный ответ'));
+        txt.append(title, el('div', 'lc-gift-sub', fd.by));
+        giftEl.append(ic, txt);
+        giftEl.addEventListener('click', hideGift);
+        bodyWrap.append(giftEl);
+        requestAnimationFrame(() => giftEl && giftEl.classList.add('is-in'));
+      }
+      clearTimeout(giftTimer);
+      giftTimer = setTimeout(hideGift, 5000);
+    }
+    function hideGift() {
+      clearTimeout(giftTimer);
+      const g = giftEl;
+      giftEl = null;
+      if (!g) return;
+      g.classList.remove('is-in');
+      setTimeout(() => g.remove(), 400);
+    }
+
+    // Крупинки корма разлетаются от плашки.
+    function cormBurst(anchor) {
+      const r = anchor.getBoundingClientRect();
+      const fx = el('div', 'lc-crumbs');
+      fx.style.left = r.left + 12 + 'px';
+      fx.style.top = r.top + r.height / 2 + 'px';
+      for (let i = 0; i < 7; i++) {
+        const c = el('i');
+        c.style.setProperty('--dx', Math.round(rnd(-34, 34)) + 'px');
+        c.style.setProperty('--dy', Math.round(rnd(-38, -14)) + 'px');
+        c.style.animationDelay = i * 25 + 'ms';
+        fx.append(c);
+      }
+      document.body.append(fx);
+      setTimeout(() => fx.remove(), 1100);
+    }
+    function rnd(a, b) { return a + Math.random() * (b - a); }
+
+    // ── Итоги урока: карточка в ленте ─────────────────────────────
+    function dayTime(ts) {
+      const d = new Date(ts * 1000);
+      return d.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' }) + ', ' + hhmm(ts);
+    }
+    function summaryCard(card, preview) {
+      const B = card.blocks || {};
+      const c = el('div', 'lc-sum');
+      c.append(el('div', 'lc-sum-title', '📊 Итоги урока'));
+      if (card.note) c.append(el('div', 'lc-sum-note', card.note));
+      const sec = (icon, title, ...rows) => {
+        const x = el('div', 'lc-sum-sec');
+        const h = el('div', 'lc-sum-h');
+        h.append(el('span', 'lc-sum-ico', icon), el('span', '', title));
+        x.append(h, ...rows.filter(Boolean));
+        c.append(x);
+      };
+      const line = (text) => el('div', 'lc-sum-row', text);
+      const g = B.general;
+      if (g) {
+        const parts = [];
+        if (g.min) parts.push('⏱ ' + g.min + ' мин');
+        if (g.peak) parts.push('👥 до ' + g.peak + ' в эфире');
+        parts.push('💬 ' + g.msgs + ' ' + plural(g.msgs, 'сообщение', 'сообщения', 'сообщений'));
+        if (g.qs) parts.push('❓ ' + g.qs + ' ' + plural(g.qs, 'вопрос', 'вопроса', 'вопросов') + (g.ans ? ', ' + g.ans + ' с ответом' : ''));
+        const chips = el('div', 'lc-sum-chips');
+        parts.forEach((t) => chips.append(el('span', 'lc-sum-chip', t)));
+        sec('📌', 'Урок в цифрах', chips);
+      }
+      const p = B.polls;
+      if (p) {
+        const bar = el('div', 'lc-sum-bar');
+        const y = el('i');
+        y.style.width = p.yes + '%';
+        bar.append(y);
+        sec('👍', 'Пон / Не пон', line('В среднем ' + p.yes + '% «пон» за ' + p.n + ' ' + plural(p.n, 'опрос', 'опроса', 'опросов')), bar,
+          p.worst ? line('Сложнее всего было в ' + hhmm(p.worst.at) + ' — ' + p.worst.no + '% «не пон»') : null);
+      }
+      const e = B.emotion;
+      if (e) {
+        const r = el('div', 'lc-sum-row lc-sum-emo');
+        const info = emotionOf(e.code);
+        const img = emojiImg(info.img ? info : e, 'lc-sum-emo-img');
+        r.append(img, el('b', '', info.label || e.label), el('span', '', '× ' + e.c));
+        sec('🎭', 'Эмоция урока', r);
+      }
+      if (B.hot) sec('🔥', 'Самый жаркий момент', line(hhmm(B.hot.at) + ' — ' + B.hot.c + ' сообщений и эмоций за минуту'));
+      if (B.corm) sec('🐟', 'Корм', line('Раздали ' + B.corm.c + ' корма за ' + B.corm.n + ' ' + plural(B.corm.n, 'верный ответ', 'верных ответа', 'верных ответов')));
+      const h = B.heroes;
+      if (h) {
+        const rows = [];
+        const medals = ['🥇', '🥈', '🥉'];
+        if (h.top && h.top.length) {
+          const podium = el('div', 'lc-sum-podium');
+          h.top.forEach((t, i) => { const x = el('div', 'lc-sum-place'); x.append(el('span', 'lc-sum-medal', medals[i]), el('b', '', t.n), el('span', '', '+' + t.c)); podium.append(x); });
+          rows.push(podium);
+        }
+        if (h.first) rows.push(line('⚡ Первый верный ответ — ' + h.first.n));
+        if (h.curious) rows.push(line('🧐 Самый любопытный — ' + h.curious.n + ' (' + h.curious.c + ' ' + plural(h.curious.c, 'вопрос', 'вопроса', 'вопросов') + ')'));
+        if (h.soul) rows.push(line('💛 Душа чата — ' + h.soul.n + ' (' + h.soul.c + ' ' + plural(h.soul.c, 'реакция', 'реакции', 'реакций') + ')'));
+        sec('🏆', 'Герои урока', ...rows);
+      }
+      const nx = B.next;
+      if (nx) {
+        const rows = [];
+        if (nx.hw) {
+          const r = el('div', 'lc-sum-row');
+          r.append(document.createTextNode('📚 Домашка «' + nx.hw.title + '»' + (nx.hw.due ? ' — до ' + dayTime(nx.hw.due) : '')));
+          if (nx.hw.url && !S.me.team && !preview) {
+            const a = el('a', 'lc-sum-link', 'Открыть');
+            a.href = nx.hw.url;
+            a.target = '_blank';
+            r.append(document.createTextNode(' '), a);
+          }
+          rows.push(r);
+        }
+        if (nx.lesson) rows.push(line('📅 Следующий урок — ' + dayTime(nx.lesson.ts)));
+        if (nx.open) rows.push(line('❗ ' + nx.open + ' ' + plural(nx.open, 'вопрос', 'вопроса', 'вопросов') + ' без ответа — разберём в следующий раз'));
+        sec('➡️', 'Что дальше', ...rows);
+      }
+      const me = card.mine;
+      if (me || preview === 'me') {
+        const x = el('div', 'lc-sum-me');
+        if (me) {
+          const parts = [me.msgs + ' ' + plural(me.msgs, 'сообщение', 'сообщения', 'сообщений')];
+          if (me.answers) parts.push(me.answers + ' ' + plural(me.answers, 'верный ответ', 'верных ответа', 'верных ответов'));
+          if (me.corm) parts.push('+' + me.corm + ' корма');
+          if (me.votes) parts.push('пон ' + me.yes + ' из ' + me.votes);
+          x.append(el('b', '', 'Вы: '), document.createTextNode(parts.join(' · ')));
+        } else {
+          x.append(el('b', '', 'Вы: '), document.createTextNode('у каждого ученика — своя строка: сообщения, верные ответы, корм, «пон»'));
+        }
+        c.append(x);
+      }
+      return c;
+    }
+
+    // ── Итоги урока: окно отправки (админ) ───────────────────────
+    const SUM_BLOCKS = [['general', 'Урок в цифрах'], ['polls', 'Пон / Не пон'], ['emotion', 'Эмоция урока'], ['hot', 'Самый жаркий момент'],
+      ['corm', 'Корм'], ['heroes', 'Герои урока'], ['next', 'Что дальше'], ['me', 'Личная строка каждому ученику']];
+    async function openSummary() {
+      closeMenus();
+      let data;
+      try {
+        const res = await fetch(cfg.url.summary, { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+        if (!res.ok) throw new Error(res.status);
+        data = (await res.json()).blocks || {};
+      } catch (e) { toast('Не удалось собрать итоги'); return; }
+      const on = new Set(SUM_BLOCKS.map(([k]) => k).filter((k) => k === 'me' || data[k]));
+      const back = el('div', 'lc-modal');
+      const box = el('div', 'lc-modal-box');
+      const head = el('div', 'lc-modal-head');
+      head.append(el('b', '', 'Итоги урока в чат'), btn('lc-x', '✕', () => back.remove()));
+      const toggles = el('div', 'lc-sum-toggles');
+      const note = document.createElement('textarea');
+      note.className = 'lc-input lc-sum-noteinput';
+      note.placeholder = 'Пара слов от вас (необязательно)';
+      note.maxLength = 500;
+      const prev = el('div', 'lc-sum-preview');
+      const draw = () => {
+        const blocks = {};
+        on.forEach((k) => { if (k !== 'me' && data[k]) blocks[k] = data[k]; });
+        prev.replaceChildren(summaryCard({ blocks, note: note.value.trim() }, on.has('me') ? 'me' : true));
+      };
+      SUM_BLOCKS.forEach(([k, label]) => {
+        const l = el('label', 'lc-sum-toggle' + (k !== 'me' && !data[k] ? ' is-empty' : ''));
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = on.has(k);
+        cb.disabled = k !== 'me' && !data[k];
+        cb.addEventListener('change', () => { if (cb.checked) on.add(k); else on.delete(k); draw(); });
+        l.append(cb, el('span', '', label + (k !== 'me' && !data[k] ? ' — пока нечего' : '')));
+        toggles.append(l);
+      });
+      note.addEventListener('input', draw);
+      const sendBtn = btn('lc-btn', 'Отправить в чат', async () => {
+        sendBtn.disabled = true;
+        const res = await api('POST', cfg.url.summary, { blocks: Array.from(on), note: note.value.trim() || null }).catch(() => ({ ok: false, json: {} }));
+        sendBtn.disabled = false;
+        if (!res.ok) { toast(res.json.message || 'Не получилось отправить'); return; }
+        back.remove();
+        toast('Итоги отправлены в чат');
+        if (S.view !== 'chat') setView('chat');
+        poll(true);
+      });
+      const foot = el('div', 'lc-modal-foot');
+      foot.append(btn('lc-ghost', 'Отмена', () => back.remove()), sendBtn);
+      box.append(head, el('div', 'lc-modal-label', 'Что показать'), toggles, note, el('div', 'lc-modal-label', 'Так увидят ученики'), prev, foot);
+      back.append(box);
+      back.addEventListener('click', (e) => { if (e.target === back) back.remove(); });
+      document.body.append(back);
+      draw();
+    }
+
     // ── Ответ: в ветку, по желанию с цитатой ───────────────────────
     function setTarget(rootMsg, quote) {
       if (!S.entered) return;
+      // Был внизу — запоминаем до того, как строка ответа сделает ленту ниже:
+      // после отправки или отмены лента опустится к новым сообщениям.
+      const stick = nearBottom();
       S.target = { root: rootMsg, quote };
       setQuestion(false);
+      renderReplyBar();
+      if (stick) hold();
+      input.focus();
+    }
+    // Строка «Ответ Кате: …» над полем. Нажатие — к исходному сообщению
+    // (ученик мог уйти вниз). gone — исходное удалили, пока он писал.
+    function renderReplyBar(gone) {
       replyBar.innerHTML = '';
+      replyBar.classList.toggle('is-gone', !!gone);
       const t = el('div', 'lc-replybar-text');
-      const who = quote || rootMsg;
-      t.append(el('b', '', 'Ответ ' + who.n), el('span', '', who.text.slice(0, 90)));
+      if (gone) {
+        t.append(el('b', '', 'Сообщение удалено'), el('span', '', gone));
+      } else {
+        const who = S.target.quote || S.target.root;
+        t.append(el('b', '', '↩ ' + who.n), el('span', '', who.text.slice(0, 90)));
+        t.classList.add('is-link');
+        t.title = 'Показать сообщение';
+        t.addEventListener('click', () => {
+          if (!S.target) return;
+          const id = (S.target.quote || S.target.root).id;
+          if (S.target.quote && !S.open.has(S.target.root.id)) expand(S.target.root.id, false).then(() => flash(id));
+          else flash(id);
+        });
+      }
       replyBar.append(t, btn('lc-x', '✕', clearTarget));
       replyBar.hidden = false;
-      input.focus();
     }
     function clearTarget() {
       S.target = null;
       replyBar.hidden = true;
+      replyBar.classList.remove('is-gone');
+      setTimeout(release, 0);
     }
 
     // ── Отправка ───────────────────────────────────────────────────
@@ -1014,46 +1417,192 @@
       const text = input.value.trim();
       if (!text || sending || !canWriteNow()) return;
       if (Date.now() < S.slowUntil) return;
-      sending = true;
-      send.disabled = true;
       const target = S.target;
-      const res = await api('POST', url('send'), {
+      const payload = {
         text,
         thread: target ? target.root.id : null,
         reply_to: target && target.quote ? target.quote.id : null,
         question: S.question,
-      });
-      sending = false;
-      send.disabled = false;
-      if (res.ok) {
+      };
+      // Обычное сообщение — сразу в ленте («отправляю…»), поле пустеет.
+      // Ответ в ветку ждёт сервера: ветка рисуется из его данных.
+      let pend = null;
+      if (!target) {
+        pend = pendingNode(text);
+        feed.append(pend);
+        updateEmpty();
+        scrollBottom(false);
         input.value = '';
         autosize();
+      }
+      const ok = await deliver(payload, pend);
+      if (ok) {
+        if (target) { input.value = ''; autosize(); }
+        saveDraft();
         if (touch) input.blur(); // телефон: после отправки клавиатура убирается
         clearTarget();
-        if (S.question) setQuestion(false);
+        if (payload.question) setQuestion(false);
+      }
+    }
+
+    // true — ушло. Сбой связи: сообщение остаётся в ленте «Не отправлено».
+    // Отказ сервера (медленный режим, мьют, чат закрыт) — текст возвращается в поле.
+    async function deliver(payload, pend) {
+      sending = true;
+      send.disabled = true;
+      let res;
+      try {
+        res = await api('POST', url('send'), payload);
+      } catch (e) {
+        res = { ok: false, status: 0, json: {} };
+      }
+      sending = false;
+      send.disabled = !!S.slowUntil;
+      if (res.ok) {
+        if (pend) pend.remove();
         put(res.json.msg);
-        if (!target) scrollBottom(true);
+        if (!payload.thread) scrollBottom(true);
         if (res.json.slow && res.json.slow.slow) startSlow(res.json.slow.wait);
         poll(true);
-      } else if (res.json.error === 'slow') {
+        return true;
+      }
+      const network = res.status === 0 || res.status >= 500;
+      if (pend && network) { failPending(pend, payload); return false; }
+      if (pend) {
+        pend.remove();
+        updateEmpty();
+        if (!input.value.trim()) { input.value = payload.text; autosize(); }
+      }
+      if (res.json.error === 'slow') {
         startSlow(res.json.wait);
       } else if (res.json.error === 'muted' || res.json.error === 'closed') {
         poll(true, true);
         toast(res.json.message);
       } else {
-        toast(res.json.message || 'Не отправилось, попробуйте ещё раз');
+        toast(network ? 'Нет связи — сообщение не отправлено' : (res.json.message || 'Не отправилось, попробуйте ещё раз'));
       }
+      return false;
     }
+
+    function pendingNode(text) {
+      const n = el('div', 'lc-msg is-mine is-pending');
+      n.dataset.id = '9000000000000000'; // всегда последним в ленте
+      n.dataset.uid = S.me.id;
+      n.dataset.solo = '1';
+      n.append(avatar(S.me.id, S.me.name, S.me.av || null));
+      const main = el('div', 'lc-main');
+      const top = el('div', 'lc-top');
+      top.append(el('span', 'lc-name', S.me.name), el('span', 'lc-time lc-sending', 'отправляю…'));
+      main.append(top, el('div', 'lc-text', text));
+      n.append(main);
+      return n;
+    }
+    function failPending(n, payload) {
+      n.classList.remove('is-pending');
+      n.classList.add('is-failed');
+      n.querySelector('.lc-sending').textContent = 'не отправлено';
+      const bar = el('div', 'lc-failbar');
+      bar.append(
+        btn('lc-link', 'Повторить', async () => {
+          if (sending) return;
+          bar.remove();
+          n.classList.remove('is-failed');
+          n.classList.add('is-pending');
+          n.querySelector('.lc-sending').textContent = 'отправляю…';
+          if (await deliver(payload, n) && payload.question) setQuestion(false);
+        }),
+        btn('lc-link lc-link--muted', 'Удалить', () => {
+          n.remove();
+          updateEmpty();
+          if (!input.value.trim()) { input.value = payload.text; autosize(); saveDraft(); }
+        }),
+      );
+      const stick = nearBottom();
+      n.querySelector('.lc-main').append(bar);
+      if (stick) scrollBottom(false);
+    }
+
+    // Черновик — в браузере, на каждый урок свой: перезагрузил страницу,
+    // повернул телефон, вышел и вернулся — недописанное на месте (сутки).
+    const draftKey = 'lc-draft:' + (cfg.url.send || '');
+    let draftTimer = null;
+    function saveDraft() {
+      try {
+        if (input.value.trim()) localStorage.setItem(draftKey, JSON.stringify({ t: Date.now(), text: input.value }));
+        else localStorage.removeItem(draftKey);
+      } catch (e) { /* приватный режим */ }
+    }
+    function loadDraft() {
+      try {
+        const d = JSON.parse(localStorage.getItem(draftKey) || 'null');
+        if (d && Date.now() - d.t < 864e5 && !input.value) { input.value = d.text; autosize(); }
+      } catch (e) { /* нет — нет */ }
+    }
+    input.addEventListener('input', () => { clearTimeout(draftTimer); draftTimer = setTimeout(saveDraft, 300); });
+
+    // Ответили мне, а вкладка не на экране — «(1) Ответ в чате» в её названии.
+    const baseTitle = document.title;
+    let titleCount = 0;
+    function bumpTitle() {
+      if (!document.hidden) return;
+      titleCount++;
+      document.title = '(' + titleCount + ') Ответ в чате · ' + baseTitle;
+    }
+
+    // «Новые сообщения»: ушёл со вкладки дольше чем на 20 с — вернулся, и в
+    // ленте черта, с которой начинается непрочитанное.
+    let hiddenAt = 0;
+    let seenId = 0;
+    let divFrom = 0;
+    function lastFeedId() {
+      const ids = Array.from(S.msgs.keys());
+      return ids.length ? Math.max(...ids) : 0;
+    }
+    function placeDivider() {
+      if (!divFrom || isReplay) return;
+      const first = Array.from(feed.querySelectorAll(':scope > .lc-msg'))
+        .find((x) => Number(x.dataset.id) > divFrom && Number(x.dataset.uid) !== S.me.id && !x.classList.contains('is-pending'));
+      if (!first) return;
+      divFrom = 0;
+      feed.querySelectorAll('.lc-newline').forEach((x) => x.remove());
+      const line = el('div', 'lc-newline', 'Новые сообщения');
+      line.dataset.id = Number(first.dataset.id) - 0.5;
+      first.before(line);
+      regroup(feed);
+      // Непрочитанного больше, чем видно, — к началу непрочитанного.
+      if (line.offsetTop < body.scrollTop) body.scrollTop = line.offsetTop - 6;
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        hiddenAt = Date.now();
+        seenId = lastFeedId();
+        feed.querySelectorAll('.lc-newline').forEach((x) => x.remove());
+        regroup(feed);
+        return;
+      }
+      titleCount = 0;
+      document.title = baseTitle;
+      if (hiddenAt && Date.now() - hiddenAt > 20000 && seenId) { divFrom = seenId; placeDivider(); }
+    });
 
     let slowTimer = null;
     function startSlow(wait) {
       S.slowUntil = Date.now() + wait * 1000;
       clearInterval(slowTimer);
+      // Отсчёт — прямо на кнопке отправки, без отдельной строки.
       const tick = () => {
         const left = Math.ceil((S.slowUntil - Date.now()) / 1000);
-        if (left <= 0) { clearInterval(slowTimer); S.slowUntil = 0; renderComposer(); return; }
-        notice.textContent = 'Не так быстро 🙂 Следующее сообщение через ' + left + ' с';
-        notice.hidden = false;
+        if (left <= 0) {
+          clearInterval(slowTimer);
+          S.slowUntil = 0;
+          send.classList.remove('is-wait');
+          send.title = '';
+          renderComposer();
+          return;
+        }
+        send.dataset.wait = left;
+        send.classList.add('is-wait');
+        send.title = 'Медленный режим: следующее сообщение через ' + left + ' с';
         send.disabled = true;
       };
       tick();
@@ -1186,9 +1735,81 @@
       return body.scrollHeight - body.scrollTop - body.clientHeight < 90;
     }
     function scrollBottom(smooth) {
+      holdTop = null;
       body.scrollTo({ top: body.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
       S.unseen = 0;
       jumpNew.hidden = true;
+      lastGap = 0;
+    }
+
+    // ── Лента не двигается, пока ученик с ней работает ────────────
+    // Пишет ответ (читает исходное), открыто меню/реакции/карточка, палец на
+    // чате, выделен текст — новые сообщения не утаскивают ленту вниз, растёт
+    // «N новых ↓». Отпустил — лента опускается, если он сам её не прокрутил.
+    let fingerDown = 0;   // когда коснулся чата (0 — пальца нет)
+    let deferred = null;  // ответ сервера, отложенный до того, как палец уберут
+    let holdTop = null;   // где стояла лента, когда прокрутку вниз пришлось придержать
+    function held() {
+      if (S.target || fingerDown) return true;
+      if (document.querySelector('.lc-menu, .lc-picker.is-float, .lc-sheet')) return true;
+      const sel = window.getSelection ? window.getSelection() : null;
+      return !!(sel && !sel.isCollapsed && sel.anchorNode && body.contains(sel.anchorNode));
+    }
+    // Прокрутил ли ученик ленту сам, пока она была придержана. Положение ленты
+    // сравнивать нельзя: браузер сам подправляет его, когда сообщения выше
+    // меняют высоту (реакции, «N ответов»).
+    let userMoved = false;
+    const moved = () => { if (holdTop !== null) userMoved = true; };
+    ['wheel', 'touchmove', 'mousedown'].forEach((t) => body.addEventListener(t, moved, { passive: true }));
+    body.addEventListener('keydown', moved);
+    function hold() {
+      if (holdTop !== null) return;
+      holdTop = body.scrollTop;
+      userMoved = false;
+    }
+    function release() {
+      if (holdTop === null || held()) return;
+      holdTop = null;
+      if (!userMoved && S.view === 'chat') scrollBottom(true);
+    }
+    // Пока палец на чате, раскладку не трогаем (до 1,5 с): иначе реакция или
+    // кнопка сдвинется в момент нажатия и палец попадёт не туда.
+    root.addEventListener('touchstart', () => { fingerDown = Date.now(); }, { passive: true });
+    const fingerUp = () => {
+      if (!fingerDown) return;
+      fingerDown = 0;
+      setTimeout(() => {
+        if (fingerDown) return;
+        if (deferred) { const d = deferred; deferred = null; apply(d); }
+        release();
+      }, 300);
+    };
+    root.addEventListener('touchend', fingerUp, { passive: true });
+    root.addEventListener('touchcancel', fingerUp, { passive: true });
+    document.addEventListener('selectionchange', () => { if (holdTop !== null) setTimeout(release, 0); });
+
+    // Плашки над лентой (эмоции, опрос, закреп, баннер) появляются и исчезают —
+    // читаемое место не прыгает: лента сдвигается вместе с ними.
+    let lastGap = 0;
+    const trackGap = () => { lastGap = body.scrollHeight - body.scrollTop - body.clientHeight; };
+    body.addEventListener('scroll', trackGap, { passive: true });
+    if (window.ResizeObserver) {
+      const heights = new Map();
+      const ro = new ResizeObserver((entries) => {
+        let dh = 0;
+        entries.forEach((e) => {
+          const h = e.target.offsetHeight;
+          dh += h - (heights.has(e.target) ? heights.get(e.target) : h);
+          heights.set(e.target, h);
+        });
+        if (!dh || S.view !== 'chat') return;
+        if (lastGap < 90 && !held()) scrollBottom(false);
+        else {
+          body.scrollTop += dh;
+        }
+        trackGap();
+      });
+      [consoleBar, pinBar, strip, banner, netBar].forEach((x) => ro.observe(x));
     }
     body.addEventListener('scroll', () => {
       closeFloat();
@@ -1224,12 +1845,22 @@
 
     // Новое/изменённое сообщение с сервера. silent — без «новых сообщений».
     function put(m, silent) {
+      if (!silent && !m.del && m.fd && m.uid === S.me.id && !S.me.team) {
+        const prev = findMsg(m.id);
+        if (!prev || !prev.fd) gift(m.fd);
+      }
       if (m.th) {
         const t = S.threads.get(m.th);
         const isNew = t ? !t.has(m.id) : true;
         if (t) { if (m.del) t.delete(m.id); else t.set(m.id, m); syncThread(m.th); }
+        if (m.del && S.target && S.target.quote && S.target.quote.id === m.id) {
+          S.target.quote = null; // цитата пропала — ответ всё равно уйдёт в ветку
+          renderReplyBar();
+          toast('Сообщение, на которое вы отвечали, удалено — ответ уйдёт в ветку');
+        }
         // Ответили в моей ветке, а она свёрнута — кнопка «↩ N ответов вам».
         const r = S.msgs.get(m.th) || S.qOnly.get(m.th);
+        if (!silent && isNew && !m.del && m.uid !== S.me.id && ((r && r.uid === S.me.id) || (m.reply && m.reply.uid === S.me.id))) bumpTitle();
         if (!silent && isNew && !m.del && r && r.uid === S.me.id && m.uid !== S.me.id && !S.open.has(m.th)
           && !S.unseenReplies.includes(m.th)) {
           S.unseenReplies.push(m.th);
@@ -1240,8 +1871,14 @@
       if (m.del) {
         S.open.delete(m.id);
         S.threads.delete(m.id);
-        if (S.target && S.target.root.id === m.id) clearTarget();
+        // Исходное удалили, пока ученик писал ответ: текст не теряем, ответ
+        // уйдёт обычным сообщением — и он об этом знает.
+        if (S.target && S.target.root.id === m.id) {
+          S.target = null;
+          renderReplyBar('Ответ уйдёт в общий чат');
+        }
       }
+      if (!silent && !m.del && !S.msgs.has(m.id) && m.reply && m.reply.uid === S.me.id && m.uid !== S.me.id) bumpTitle();
       upsertFeed(m, silent);
     }
 
@@ -1267,7 +1904,7 @@
         if (silent) tickerText.textContent = m.n + ': ' + m.text; else tick(m);
       }
       if (S.pinned && S.pinned.id === m.id) renderPinned(m);
-      if (isNew && !silent && m.uid !== S.me.id && (!nearBottom() || S.view !== 'chat')) {
+      if (isNew && !silent && m.uid !== S.me.id && (!nearBottom() || held() || S.view !== 'chat')) {
         S.unseen++;
         jumpNew.textContent = S.unseen + ' ' + plural(S.unseen, 'новое сообщение', 'новых сообщения', 'новых сообщений') + ' ↓';
         jumpNew.hidden = S.view !== 'chat';
@@ -1379,10 +2016,18 @@
         const res = await fetch(cfg.url.feed + '&v=' + (full ? 0 : S.v) + (presence ? '&p=1' : ''), { credentials: 'omit', headers: { Accept: 'application/json' } });
         if (res.status === 401) { banner.textContent = 'Сессия чата устарела — обновите страницу'; banner.hidden = false; return; }
         if (!res.ok) throw new Error(res.status);
-        apply(await res.json());
+        const data = await res.json();
+        if (fingerDown && Date.now() - fingerDown < 1500) {
+          deferred = deferred && deferred.reset && !data.reset ? deferred : data;
+        } else {
+          deferred = null;
+          apply(data);
+        }
         failures = 0;
+        netBar.hidden = true;
       } catch (e) {
         failures++;
+        if (failures >= 2) netBar.hidden = false;
       } finally {
         polling = false;
         const base = document.hidden ? cfg.poll[1] : cfg.poll[0];
@@ -1419,8 +2064,12 @@
           if (!m.th && !S.msgs.has(m.id) && !m.del && S.msgs.size && m.id < Math.min(...S.msgs.keys())) return;
           put(m);
         });
-        if (stick && S.view === 'chat') scrollBottom(false);
+        if (stick && S.view === 'chat') {
+          if (held()) hold(); else scrollBottom(false);
+        }
+        placeDivider();
       }
+      trackGap();
       if ('pinned' in data) { S.pinned = data.pinned; renderPinned(data.pinned); }
       if ('online' in data) { S.online = data.online; onlineEl.textContent = '👥 ' + data.online; }
       if (data.room) { S.room = data.room; applyRoom(); }
@@ -1603,6 +2252,15 @@
     function emotionOf(code) {
       return (cfg.emotions || []).find((e) => e.code === code) || { e: '❔', label: code, img: '' };
     }
+    // Эмоция «оживает» на ~2 с: появилась, её поддержали, на неё нажали.
+    function playEmo(chip) {
+      const img = chip && chip.querySelector('img.lc-emo-img');
+      const info = chip && chip._e ? emotionOf(chip._e.code) : null;
+      if (!img || !info || !info.anim || calm()) return;
+      clearTimeout(img._t);
+      img.src = info.anim;
+      img._t = setTimeout(() => { img.src = info.img; }, ANIM_MS);
+    }
     function emojiImg(e, cls) {
       if (!e.img) return el('span', cls || 'lc-emo-img', e.e);
       const i = el('img', cls || 'lc-emo-img');
@@ -1645,8 +2303,10 @@
           b.append(icon, el('span', 'lc-emo-label', info.label), el('span', 'lc-emo-n'), bar);
           b._c = x.c;
         }
-        // Кто-то поддержал — эмоция «вздрагивает», вылетает «+1».
-        if (x.c > (b._c || 0) && b._e) {
+        // Кто-то поддержал — эмоция «вздрагивает», вылетает «+1», эмодзи оживает.
+        const fresh = !b._e;
+        const grewEmo = x.c > (b._c || 0) && !!b._e;
+        if (grewEmo) {
           b.classList.remove('is-bump');
           void b.offsetWidth;
           b.classList.add('is-bump');
@@ -1654,6 +2314,7 @@
         }
         b._c = x.c;
         b._e = x;
+        if (fresh || grewEmo) playEmo(b);
         b.classList.toggle('is-mine', !!x.mine);
         b.title = x.n + ' чувствует: ' + info.label + (x.c ? ' · поддержали: ' + x.names.join(', ') : '');
         b.querySelector('.lc-emo-n').textContent = x.c ? String(x.c) : '';
@@ -1685,6 +2346,7 @@
       b.classList.add('is-bump', 'is-pop');
       setTimeout(() => b.classList.remove('is-pop'), 650);
       floatText(b, '+1');
+      playEmo(b);
       if (navigator.vibrate && touch) navigator.vibrate(12);
       const res = await api('POST', url('support', x.id));
       if (!res.ok) toast(res.json.message || 'Не получилось');
@@ -1732,7 +2394,9 @@
       pop.dataset.code = x.code;
       const big = el('div', 'lc-pop-emo');
       const icon = el('span', 'lc-pop-icon');
-      icon.append(emojiImg(info, 'lc-pop-img'));
+      const live = emojiImg(info, 'lc-pop-img');
+      if (info.anim && live.tagName === 'IMG' && !calm()) live.src = info.anim;
+      icon.append(live);
       const txt = el('div', 'lc-pop-emo-text');
       txt.append(el('b', '', info.label), el('span', '', own ? 'Ваша эмоция' : x.n));
       big.append(icon, txt);
@@ -1976,6 +2640,8 @@
       [['в чате', d.online], ['сообщений', d.messages], ['писали', d.people], ['вопросов', d.questions], ['без ответа', d.unanswered]]
         .forEach(([l, n]) => { const c = el('div', 'lc-stats-num'); c.append(el('b', '', String(n)), el('span', '', l)); nums.append(c); });
       const parts = [nums];
+      // Итоги урока — в чат (обычно в конце эфира): кнопка здесь, а не в пульте.
+      if (S.me.admin && cfg.url.summary) parts.unshift(btn('lc-btn lc-stats-send', '📨 Отправить итоги в чат', () => openSummary()));
       if (d.top.length) parts.push(sec('Самые активные', ...d.top.map((t, i) => row((i + 1) + '. ' + t.name, String(t.c)))));
       if (d.polls.length) {
         parts.push(sec('Пон / Не пон', ...d.polls.map((p) => {
@@ -2012,6 +2678,7 @@
     try { if (localStorage.getItem('lc-folded') && touch && !isReplay) setFolded(true); } catch (e) { /* приватный режим */ }
     applyState();
     renderPinned(null);
+    if (!isReplay) loadDraft();
     if (isReplay) {
       startReplay();
     } else {

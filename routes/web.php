@@ -550,6 +550,12 @@ Route::middleware(['auth', 'billing.current', 'throttle:120,1'])
         Route::delete('/emotions/{emotion}/support', 'unsupport')->name('unsupport');
         Route::delete('/emotions/{emotion}', 'withdraw')->name('withdraw');
         Route::post('/poll/vote', 'vote')->name('vote');
+        Route::post('/messages/{message}/reward', 'reward')->name('reward');
+        Route::delete('/messages/{message}/reward', 'unreward')->name('unreward');
+        Route::get('/summary', 'summary')->name('summary');
+        Route::post('/statuses/{user}', 'setStatus')->whereNumber('user')->name('status');
+        Route::delete('/statuses/{user}', 'removeStatus')->whereNumber('user')->name('status.remove');
+        Route::post('/summary', 'sendSummary')->name('summary.send');
         Route::post('/poll', 'startPoll')->name('poll.start');
         Route::delete('/poll', 'closePoll')->name('poll.close');
         Route::post('/break', 'setBreak')->name('break');

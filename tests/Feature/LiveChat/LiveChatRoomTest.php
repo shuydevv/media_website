@@ -107,6 +107,76 @@ class LiveChatRoomTest extends TestCase
         $this->as($a, 'POST', 'live-chat.emotion', ['code' => 'lol'])->assertStatus(422)->assertJsonPath('error', 'cooldown');
     }
 
+    public function test_reward_for_answer_gives_one_corm_once_and_can_be_taken_back(): void
+    {
+        $a = $this->student('Аня', 0);
+        $a->forceFill(['fish_corm_balance' => 5])->save();
+        $mentor = User::factory()->create(['role' => User::ROLE_MENTOR]);
+        $this->as($a, 'POST', 'live-chat.send', ['text' => '135'])->assertOk();
+        $msg = \App\Models\ChatMessage::where('user_id', $a->id)->firstOrFail();
+
+        $this->as($this->admin, 'POST', 'live-chat.reward', [], ['message' => $msg->id])->assertOk();
+        // двое одному ответу корм не дают
+        $this->as($mentor, 'POST', 'live-chat.reward', [], ['message' => $msg->id])->assertStatus(422)->assertJsonPath('error', 'rewarded');
+        // ученику — нельзя
+        $this->as($a, 'POST', 'live-chat.reward', [], ['message' => $msg->id])->assertForbidden();
+        $this->assertSame(6, $a->fresh()->fish_corm_balance);
+
+        $fd = collect($this->feed($a)['msgs'])->firstWhere('id', $msg->id)['fd'];
+        $this->assertSame(1, $fd['c']);
+        $this->assertSame('Александр Полтавский', $fd['by']);
+
+        // промахнулись — куратор забирает
+        $this->as($mentor, 'DELETE', 'live-chat.unreward', [], ['message' => $msg->id])->assertOk();
+        $this->assertSame(5, $a->fresh()->fish_corm_balance);
+        $this->assertArrayNotHasKey('fd', collect($this->feed($a)['msgs'])->firstWhere('id', $msg->id));
+
+        // сообщение команды — без корма
+        $this->as($mentor, 'POST', 'live-chat.send', ['text' => 'Верно!'])->assertOk();
+        $own = \App\Models\ChatMessage::where('user_id', $mentor->id)->firstOrFail();
+        $this->as($this->admin, 'POST', 'live-chat.reward', [], ['message' => $own->id])->assertStatus(422)->assertJsonPath('error', 'team');
+    }
+
+    public function test_summary_card_with_personal_line_for_each_student(): void
+    {
+        $a = $this->student('Аня', 0);
+        $b = $this->student('Боря', 0);
+        $this->as($a, 'POST', 'live-chat.send', ['text' => '135'])->assertOk();
+        $this->as($b, 'POST', 'live-chat.send', ['text' => 'А почему так?', 'question' => true])->assertOk();
+        $msg = \App\Models\ChatMessage::where('user_id', $a->id)->firstOrFail();
+        $this->as($this->admin, 'POST', 'live-chat.reward', [], ['message' => $msg->id])->assertOk();
+
+        $preview = $this->as($this->admin, 'GET', 'live-chat.summary')->assertOk()->json('blocks');
+        $this->assertSame(2, $preview['general']['msgs']);
+        $this->assertSame('Аня Т.', $preview['heroes']['top'][0]['n']);
+        $this->assertSame('Боря Т.', $preview['heroes']['curious']['n']);
+        $this->assertSame(1, $preview['next']['open']);
+        $this->as($a, 'GET', 'live-chat.summary')->assertForbidden();
+
+        $this->as($this->admin, 'POST', 'live-chat.summary.send', ['blocks' => ['general', 'heroes', 'me'], 'note' => 'Молодцы!'])->assertOk();
+        $card = collect($this->feed($a)['msgs'])->firstWhere('text', 'Молодцы!')['card'];
+        $this->assertSame(['general', 'heroes'], array_keys($card['blocks']));
+        $this->assertSame(['msgs' => 1, 'answers' => 1, 'corm' => 1, 'yes' => 0, 'votes' => 0], $card['mine']);
+        $this->assertSame(0, collect($this->feed($b)['msgs'])->firstWhere('text', 'Молодцы!')['card']['mine']['answers']);
+        // у команды личной строки нет
+        $this->assertArrayNotHasKey('mine', collect($this->feed($this->admin)['msgs'])->firstWhere('text', 'Молодцы!')['card']);
+    }
+
+    public function test_admin_sets_one_status_for_lesson_or_forever(): void
+    {
+        $a = $this->student('Аня', 0);
+        $this->as($a, 'POST', 'live-chat.send', ['text' => 'привет'])->assertOk();
+        $this->as($this->admin, 'POST', 'live-chat.status', ['text' => 'Отличник', 'color' => 'green'], ['user' => $a->id])->assertOk();
+        $this->as($a, 'POST', 'live-chat.status', ['text' => 'Я сам'], ['user' => $a->id])->assertForbidden();
+        $this->assertSame(['t' => 'Отличник', 'c' => 'green', 'f' => false], $this->feed($a)['msgs'][0]['st']);
+        // поменять — навсегда; статус один
+        $this->as($this->admin, 'POST', 'live-chat.status', ['text' => 'Легенда чата', 'color' => 'pink', 'forever' => true], ['user' => $a->id])->assertOk();
+        $this->assertSame(1, \App\Models\ChatStatus::count());
+        $this->assertSame('Легенда чата', $this->feed($a)['msgs'][0]['st']['t']);
+        $this->as($this->admin, 'DELETE', 'live-chat.status.remove', [], ['user' => $a->id])->assertOk();
+        $this->assertArrayNotHasKey('st', $this->feed($a)['msgs'][0]);
+    }
+
     public function test_poll_understand_votes_names_and_hides_emotions(): void
     {
         $a = $this->student('Аня', 120);

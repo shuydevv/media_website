@@ -35,7 +35,9 @@ class LiveChatRoom
     {
         $out = [];
         foreach ($this->cfg['emotions'] as $code => [$emoji, $label, $noto]) {
-            $out[] = ['code' => $code, 'e' => $emoji, 'label' => $label, 'img' => asset('img/chat-reactions/noto/'.$noto.'.svg')];
+            // anim — живая версия (webp), если есть: эмоция оживает при появлении и нажатии.
+            $anim = is_file(public_path('img/chat-reactions/noto/'.$noto.'.webp')) ? asset('img/chat-reactions/noto/'.$noto.'.webp') : null;
+            $out[] = ['code' => $code, 'e' => $emoji, 'label' => $label, 'img' => asset('img/chat-reactions/noto/'.$noto.'.svg'), 'anim' => $anim];
         }
 
         return $out;

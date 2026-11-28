@@ -189,6 +189,10 @@ row-lock промокодов на SQLite пропускается. Старые
   4-го (`FishFoodService::levelFor`), числа и набор эмоций — `config/live_chat.php`. Гостевая ссылка
   `/live/<код>` (`LiveChat\GuestController`, код — `lesson_chats.guest_token`, кнопка в форме урока):
   гость НЕ пользователь — `chat_guests`, в чате id = `LiveChatService::GUEST_BASE` + id гостя.
+  Корм за верный ответ — `LiveChatRewards` (+`reward_corm`, команда: меню сообщения или режим «Награждать» в
+  пульте; одно сообщение — одна награда, `chat_rewards.message_id` уникален), в ленте — `fd`, уведомление ученику
+  рисует браузер. Итоги урока в чат — `LiveChatSummary` (карточка `chat_messages.card`, личная строка `mine` считается
+  при показе для каждого ученика).
   Активность в чате — в отчёте по ученику (`StudentReport::chatActivity`). Настройка сервера — `deploy/README.md`, раздел 11.
 
 - Отчёт по ученику — `/admin/users/{id}` (`Admin\User\ShowController` → `Service\StudentReport`,

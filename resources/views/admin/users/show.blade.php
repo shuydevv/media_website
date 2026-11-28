@@ -433,6 +433,7 @@
                                                     $chatStat['questions'] ? $chatStat['questions'].' вопр.' : null,
                                                     $chatStat['reactions'] ? $chatStat['reactions'].' реакц.' : null,
                                                     $chatStat['emotions'] ? $chatStat['emotions'].' эмоц.' : null,
+                                                    ! empty($chatStat['corm']) ? 'корм за ответы: '.$chatStat['corm'] : null,
                                                 ]);
                                             @endphp
                                             <div title="Активность в чате трансляции">чат: {{ implode(', ', $chatParts) }}</div>

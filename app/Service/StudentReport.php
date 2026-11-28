@@ -417,7 +417,7 @@ class StudentReport
      * Активность ученика в чатах трансляций по урокам: сообщения, вопросы,
      * реакции, ответы в «Пон / Не пон», эмоции. Пусто — в чате не участвовал.
      *
-     * @return array<int, array{messages: int, questions: int, reactions: int, polls: int, notGot: int, emotions: int}>
+     * @return array<int, array{messages: int, questions: int, reactions: int, polls: int, notGot: int, emotions: int, corm: int}>
      */
     private function chatActivity(User $user, array $lessonIds): array
     {
@@ -427,7 +427,7 @@ class StudentReport
         $out = [];
         $add = function ($rows, string $key) use (&$out) {
             foreach ($rows as $lessonId => $n) {
-                $out[$lessonId] ??= ['messages' => 0, 'questions' => 0, 'reactions' => 0, 'polls' => 0, 'notGot' => 0, 'emotions' => 0];
+                $out[$lessonId] ??= ['messages' => 0, 'questions' => 0, 'reactions' => 0, 'polls' => 0, 'notGot' => 0, 'emotions' => 0, 'corm' => 0];
                 $out[$lessonId][$key] = (int) $n;
             }
         };
@@ -443,6 +443,9 @@ class StudentReport
         $add((clone $votes)->where('v.choice', false)->groupBy('p.lesson_id')->selectRaw('p.lesson_id, count(*) as n')->pluck('n', 'lesson_id'), 'notGot');
         $add(\App\Models\ChatEmotion::where('user_id', $user->id)->whereIn('lesson_id', $lessonIds)->whereNull('withdrawn_at')
             ->groupBy('lesson_id')->selectRaw('lesson_id, count(*) as n')->pluck('n', 'lesson_id'), 'emotions');
+        // Корм за верные ответы в чате (LiveChatRewards).
+        $add(\App\Models\ChatReward::where('user_id', $user->id)->whereIn('lesson_id', $lessonIds)
+            ->groupBy('lesson_id')->selectRaw('lesson_id, sum(corm) as n')->pluck('n', 'lesson_id'), 'corm');
 
         return $out;
     }

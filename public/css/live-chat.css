@@ -769,3 +769,128 @@ div.lc-menu > .lc-pop-names:only-child { padding: 8px 10px; max-width: 260px; }
   .lc-layout .lc-poll-emoji img { width: 15px; height: 15px; }
   .lc-layout .lc-poll-pct { font-size: 12px; }
 }
+
+/* ── Микро-детали ленты и отправки ── */
+.lc-msg.is-pending .lc-text { opacity: .55; }
+.lc-sending { font-size: 11px; color: #a1a1aa; }
+.lc-msg.is-failed .lc-text { opacity: .7; }
+.lc-msg.is-failed .lc-sending { color: #dc2626; }
+.lc-failbar { display: flex; gap: 14px; margin-top: 2px; }
+.lc-failbar .lc-link { padding: 0; font-size: 12px; }
+.lc-banner.is-net { padding: 4px 10px; font-size: 12px; background: #fef2f2; color: #991b1b; }
+.lc-banner.is-net[hidden] { display: none; }
+.lc-newline { display: flex; align-items: center; gap: 8px; margin: 6px 10px; font-size: 11px; font-weight: 500; color: var(--lc-blue); }
+.lc-newline::before, .lc-newline::after { content: ''; flex: 1; height: 1px; background: var(--lc-blue-200); }
+.lc-replybar-text.is-link { cursor: pointer; }
+.lc-replybar-text.is-link:hover span { color: #18181b; }
+.lc-replybar.is-gone { border-left-color: #a1a1aa; }
+.lc-replybar.is-gone .lc-replybar-text b { color: #71717a; }
+.lc .lc-send.is-wait:disabled { opacity: 1; background: #e4e4e7 !important; color: #52525b !important; }
+.lc-send.is-wait svg { display: none; }
+.lc-send.is-wait::after { content: attr(data-wait); font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ── Корм за верный ответ ── */
+.lc-chip--fd { gap: 4px; padding: 1px 3px 1px 4px; background: #fef3c7 !important; color: #92400e; box-shadow: inset 0 0 0 1px #fde68a; }
+.lc button.lc-chip--fd:hover { background: #fde68a !important; }
+.lc-fd-img { width: 17px; height: 17px; object-fit: contain; }
+.lc-chip--fd .lc-chip-n { font-weight: 600; }
+.lc-chip--fd.is-new { animation: lc-fd-in .6s cubic-bezier(.22, 1, .36, 1) both; }
+.lc-chip--fd.is-new .lc-fd-img { animation: lc-emo-icon-in .7s .1s cubic-bezier(.22, 1, .36, 1) both; }
+@keyframes lc-fd-in { 0% { opacity: 0; transform: scale(.6); } 60% { opacity: 1; transform: scale(1.12); } 100% { transform: none; } }
+.lc-crumbs { position: fixed; z-index: 1003; width: 0; height: 0; pointer-events: none; }
+.lc-crumbs i { position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 2px; background: #d97706; animation: lc-crumb .9s cubic-bezier(.2, .8, .3, 1) forwards; }
+.lc-crumbs i:nth-child(odd) { background: #f59e0b; width: 5px; height: 5px; border-radius: 50%; }
+@keyframes lc-crumb { 0% { opacity: 1; transform: translate(0, 0) rotate(0); } 60% { opacity: 1; transform: translate(var(--dx), var(--dy)) rotate(140deg); } 100% { opacity: 0; transform: translate(var(--dx), calc(var(--dy) + 26px)) rotate(220deg); } }
+.lc-act--fd.is-on { background: #fef3c7; }
+/* режим награждения: сообщения учеников — как кнопки */
+.lc.is-reward .lc-feed > .lc-msg:not(.is-team), .lc.is-reward .lc-thread .lc-msg:not(.is-team) { cursor: copy; }
+.lc.is-reward .lc-feed > .lc-msg:not(.is-team):hover, .lc.is-reward .lc-thread .lc-msg:not(.is-team):hover { background: #fffbeb; box-shadow: inset 3px 0 0 #f59e0b; }
+.lc-cbtn.is-on { background: #fef3c7 !important; color: #92400e !important; box-shadow: inset 0 0 0 1px #fcd34d; }
+
+/* уведомление ученику — как «+N корма за визит», но в чате, не поверх видео */
+.lc-gift { position: absolute; top: 8px; left: 50%; z-index: 6; display: flex; align-items: center; gap: 10px; width: max-content; max-width: calc(100% - 20px);
+  padding: 8px 12px 8px 8px; border: 1.5px solid #c3daf3; border-radius: 14px; background: #fff; box-shadow: 0 10px 30px rgba(15, 23, 42, .16);
+  transform: translate(-50%, -14px) scale(.96); opacity: 0; cursor: pointer; transition: transform .45s cubic-bezier(.22, 1, .36, 1), opacity .3s ease; }
+.lc-gift.is-in { transform: translate(-50%, 0); opacity: 1; }
+.lc-gift.is-bump { animation: lc-gift-bump .45s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes lc-gift-bump { 40% { transform: translate(-50%, 0) scale(1.06); } }
+.lc-gift-icon { flex-shrink: 0; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: #eaf3fd; box-shadow: inset 0 -3px 0 #c3daf3; }
+.lc-gift-icon img { width: 26px; height: 26px; object-fit: contain; animation: lc-emo-icon-in .7s .15s cubic-bezier(.22, 1, .36, 1) both; }
+.lc-gift-text { min-width: 0; }
+.lc-gift-title { font-size: 14px; font-weight: 600; color: #1d2e3a; white-space: nowrap; }
+.lc-gift-title b { color: #2563eb; }
+.lc-gift-sub { font-size: 12px; color: #657b8b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 640px) {
+  .lc-gift { gap: 8px; padding: 5px 10px 5px 5px; border-radius: 999px; }
+  .lc-gift-icon { width: 28px; height: 28px; border-radius: 50%; box-shadow: none; }
+  .lc-gift-icon img { width: 20px; height: 20px; }
+  .lc-gift-title { font-size: 13px; }
+  .lc-gift-sub { display: none; }
+}
+
+/* ── Итоги урока — карточка ── */
+.lc-sum { margin-top: 4px; padding: 10px 12px; border-radius: 14px; background: linear-gradient(180deg, #eff6ff, #fff); box-shadow: inset 0 0 0 1px #dbeafe; display: flex; flex-direction: column; gap: 9px; }
+.lc-sum-title { font-size: 15px; font-weight: 600; color: #1e3a8a; }
+.lc-sum-note { white-space: pre-wrap; line-height: 1.4; }
+.lc-sum-sec { display: flex; flex-direction: column; gap: 4px; }
+.lc-sum-h { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; color: #64748b; }
+.lc-sum-ico { font-size: 13px; }
+.lc-sum-row { font-size: 13px; line-height: 1.4; }
+.lc-sum-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.lc-sum-chip { padding: 2px 8px; border-radius: 999px; background: #fff; box-shadow: inset 0 0 0 1px #e2e8f0; font-size: 12px; }
+.lc-sum-bar { height: 6px; border-radius: 999px; background: #fde68a; overflow: hidden; }
+.lc-sum-bar i { display: block; height: 100%; background: #22c55e; border-radius: 999px; }
+.lc-sum-emo { display: flex; align-items: center; gap: 6px; }
+.lc-sum-emo-img { width: 22px; height: 22px; font-size: 18px; line-height: 22px; }
+.lc-sum-podium { display: flex; gap: 6px; }
+.lc-sum-place { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 4px; border-radius: 10px; background: #fff; box-shadow: inset 0 0 0 1px #e2e8f0; font-size: 12px; }
+.lc-sum-place b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.lc-sum-place span:last-child { color: #92400e; }
+.lc-sum-medal { font-size: 18px; line-height: 1; }
+.lc-sum-link { color: var(--lc-blue); font-weight: 500; text-decoration: underline; }
+.lc-sum-me { padding: 7px 10px; border-radius: 10px; background: #fef3c7; color: #78350f; font-size: 13px; line-height: 1.4; }
+
+/* окно «Итоги в чат» */
+.lc-modal { position: fixed; inset: 0; z-index: 1100; display: grid; place-items: center; padding: 16px; background: rgba(15, 23, 42, .35); --lc-blue: #2563eb; --lc-blue-50: #eff6ff; --lc-blue-100: #dbeafe; --lc-blue-200: #bfdbfe; --lc-muted: #71717a; --lc-line: #e4e4e7; font-size: 14px; color: #18181b; }
+.lc-modal-box { width: min(440px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 16px; background: #fff; box-shadow: 0 20px 60px rgba(0, 0, 0, .25); animation: lc-pop .2s ease; }
+.lc-modal-head { display: flex; align-items: center; justify-content: space-between; font-size: 16px; }
+.lc-modal-head b { font-weight: 600; }
+.lc-modal-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .02em; color: #64748b; }
+.lc-modal button { font: inherit; border: 0; cursor: pointer; background: none; }
+.lc-modal .lc-btn { padding: 9px 14px; border-radius: 10px; background: var(--lc-blue); color: #fff; font-weight: 500; }
+.lc-modal .lc-btn:disabled { opacity: .6; }
+.lc-modal .lc-ghost { padding: 9px 12px; color: #52525b; }
+.lc-sum-toggles { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; }
+.lc-sum-toggle { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+.lc-sum-toggle.is-empty { color: #a1a1aa; cursor: default; }
+.lc-modal .lc-sum-noteinput { width: 100%; height: 60px; min-height: 60px; resize: vertical; padding: 8px 10px; border: 1px solid var(--lc-line); border-radius: 10px; font: inherit; }
+.lc-sum-preview .lc-sum { margin: 0; }
+.lc-modal-foot { display: flex; justify-content: flex-end; gap: 8px; position: sticky; bottom: -14px; margin: 0 -14px -14px; padding: 10px 14px; background: #fff; border-top: 1px solid #f1f1f3; }
+@media (max-width: 480px) { .lc-sum-toggles { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .lc-chip--fd, .lc-gift, .lc-gift-icon img { animation: none !important; transition: none !important; } }
+.lc-stats-send { width: 100%; margin-bottom: 10px; font-size: 13px; }
+
+/* ── Статус ученика (плашка у имени) ── */
+.lc-status { flex-shrink: 0; }
+.lc-status.is-blue { background: #dbeafe; color: #1e40af; }
+.lc-status.is-green { background: #dcfce7; color: #166534; }
+.lc-status.is-amber { background: #fef3c7; color: #92400e; }
+.lc-status.is-pink { background: #fce7f3; color: #9d174d; }
+.lc-status.is-violet { background: #ede9fe; color: #5b21b6; }
+.lc-st-box { width: min(360px, 100%); }
+.lc-st-preview { display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 10px; background: #f8fafc; font-size: 13px; }
+.lc-st-preview .lc-badge { font-size: 11px; font-weight: 500; padding: 1px 7px; border-radius: 6px; }
+.lc-modal .lc-st-input { width: 100%; padding: 8px 10px; border: 1px solid var(--lc-line); border-radius: 10px; font: inherit; outline: none; }
+.lc-modal .lc-st-input:focus { border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(147, 197, 253, .35); }
+.lc-st-presets { display: flex; flex-wrap: wrap; gap: 5px; }
+.lc-modal .lc-st-preset { padding: 3px 9px; border-radius: 999px; background: #f4f4f5; font-size: 12px; }
+.lc-modal .lc-st-preset:hover { background: #e4e4e7; }
+.lc-st-colors { display: flex; gap: 8px; }
+.lc-modal .lc-st-color { width: 26px; height: 26px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08); }
+.lc-modal .lc-st-color.is-on { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2563eb; }
+.lc-st-color.is-blue { background: #bfdbfe; } .lc-st-color.is-green { background: #bbf7d0; } .lc-st-color.is-amber { background: #fde68a; }
+.lc-st-color.is-pink { background: #fbcfe8; } .lc-st-color.is-violet { background: #ddd6fe; }
+.lc-st-scope { display: flex; gap: 2px; padding: 2px; border-radius: 10px; background: #f4f4f5; }
+.lc-modal .lc-st-opt { flex: 1; padding: 6px; border-radius: 8px; font-size: 13px; color: #52525b; }
+.lc-modal .lc-st-opt.is-on { background: #fff; color: #18181b; box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
+.lc-modal .lc-st-del { margin-right: auto; color: #b91c1c; }

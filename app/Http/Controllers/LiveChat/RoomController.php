@@ -57,6 +57,58 @@ class RoomController extends Controller
         return $this->run(fn () => $this->room->vote($lesson, $request->user(), (bool) $choice));
     }
 
+    // Корм за верный ответ — админ и куратор (LiveChatRewards сам проверяет команду).
+    public function reward(Request $request, Lesson $lesson, \App\Models\ChatMessage $message, \App\Service\LiveChat\LiveChatRewards $rewards)
+    {
+        $this->authorizeLesson($lesson);
+
+        return $this->run(fn () => $rewards->give($lesson, $message, $request->user()));
+    }
+
+    public function unreward(Request $request, Lesson $lesson, \App\Models\ChatMessage $message, \App\Service\LiveChat\LiveChatRewards $rewards)
+    {
+        $this->authorizeLesson($lesson);
+
+        return $this->run(fn () => $rewards->take($lesson, $message, $request->user()));
+    }
+
+    // Статус ученика (админ): POST — поставить/поменять, DELETE — убрать.
+    public function setStatus(Request $request, Lesson $lesson, int $user, \App\Service\LiveChat\LiveChatStatuses $statuses)
+    {
+        $this->authorizeAdmin($request, $lesson);
+        $d = $request->validate(['text' => ['required', 'string', 'max:24'], 'color' => ['nullable', 'string'], 'forever' => ['boolean']]);
+
+        return $this->run(fn () => $statuses->set($lesson, $request->user(), $user, $d['text'], $d['color'] ?? 'blue', (bool) ($d['forever'] ?? false)));
+    }
+
+    public function removeStatus(Request $request, Lesson $lesson, int $user, \App\Service\LiveChat\LiveChatStatuses $statuses)
+    {
+        $this->authorizeAdmin($request, $lesson);
+
+        return $this->run(fn () => $statuses->remove($lesson, $request->user(), $user));
+    }
+
+    // Итоги урока: GET — предпросмотр всех блоков, POST — отправить в чат.
+    public function summary(Request $request, Lesson $lesson, \App\Service\LiveChat\LiveChatSummary $summary)
+    {
+        $this->authorizeAdmin($request, $lesson);
+
+        return response()->json(['blocks' => $summary->build($lesson)]);
+    }
+
+    public function sendSummary(Request $request, Lesson $lesson, \App\Service\LiveChat\LiveChatSummary $summary)
+    {
+        $this->authorizeAdmin($request, $lesson);
+        $data = $request->validate([
+            'blocks' => ['array'],
+            'blocks.*' => ['string'],
+            'note' => ['nullable', 'string', 'max:500'],
+        ]);
+        $summary->send($lesson, $request->user(), $data['blocks'] ?? [], $data['note'] ?? null);
+
+        return response()->json(['ok' => true]);
+    }
+
     public function startPoll(Request $request, Lesson $lesson)
     {
         $this->authorizeAdmin($request, $lesson);

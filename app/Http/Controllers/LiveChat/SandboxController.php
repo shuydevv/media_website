@@ -65,7 +65,11 @@ class SandboxController extends Controller
                 'stats' => $u('stats?k=s'), 'emotion' => $u('emotions'), 'support' => $u('emotions/0/support'),
                 'vote' => $u('poll/vote'), 'pollStart' => $u('poll'), 'pollClose' => $u('poll'),
                 'break' => $u('break'), 'quiet' => $u('quiet'),
+                'reward' => $asStudent ? null : $u('messages/0/reward'),
+                'summary' => ! $asStudent && $user->isAdmin() ? $u('summary') : null,
+                'status' => ! $asStudent && $user->isAdmin() ? $u('statuses/0') : null,
             ],
+            'corm' => ['mine' => $user->fish_food_icon_url, 'chip' => app(\App\Service\FishFoodService::class)->foodImageUrl(null)],
         ];
 
         return view('live-chat.sandbox', [
