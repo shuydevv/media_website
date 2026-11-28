@@ -106,8 +106,9 @@ class ChatController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    public function mute(Request $request, Lesson $lesson, User $user)
+    public function mute(Request $request, Lesson $lesson, int $user)
     {
+        $user = $this->target($user);
         $this->authorizeLesson($lesson);
         abort_unless($request->user()->isAdmin(), 403);
         $data = $request->validate(['duration' => ['required', 'in:10m,lesson,forever']]);
@@ -121,13 +122,23 @@ class ChatController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    public function unmute(Request $request, Lesson $lesson, User $user)
+    public function unmute(Request $request, Lesson $lesson, int $user)
     {
+        $user = $this->target($user);
         $this->authorizeLesson($lesson);
         abort_unless($request->user()->isAdmin(), 403);
         $this->chat->unmute($lesson, $user);
 
         return response()->json(['ok' => true]);
+    }
+
+    /** Кого мьютят: пользователь или гость по ссылке. */
+    private function target(int $id): User
+    {
+        $u = $id >= LiveChatService::GUEST_BASE ? LiveChatService::guestFromId($id) : User::find($id);
+        abort_unless($u, 404);
+
+        return $u;
     }
 
     private function authorizeLesson(Lesson $lesson, ?ChatMessage $message = null): void

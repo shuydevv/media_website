@@ -4,6 +4,7 @@ namespace App\Http\Controllers\LiveChat;
 
 use App\Http\Controllers\Controller;
 use App\Models\Lesson;
+use App\Service\LiveChat\LiveChatRoom;
 use App\Service\LiveChat\LiveChatService;
 use Illuminate\Http\Request;
 
@@ -22,6 +23,10 @@ class FeedController extends Controller
     {
         $user = $this->chat->userFromToken($request->query('k'), $lesson);
         abort_unless($user, 401);
+        // Отметка «в чате» — раз в ~20 с (страница присылает p=1), не каждый опрос.
+        if ($request->query('p')) {
+            app(LiveChatRoom::class)->touch($lesson, $user);
+        }
 
         return response()->json($this->chat->feed($lesson, $user, (int) $request->query('v', 0)));
     }
@@ -40,6 +45,15 @@ class FeedController extends Controller
         abort_unless($user, 401);
 
         return response()->json($this->chat->thread($lesson, $user, (int) $request->query('root')));
+    }
+
+    /** Итоги урока для пульта — только команда. */
+    public function stats(Request $request, Lesson $lesson)
+    {
+        $user = $this->chat->userFromToken($request->query('k'), $lesson);
+        abort_unless($user && LiveChatService::isTeam($user), 403);
+
+        return response()->json(app(LiveChatRoom::class)->stats($lesson));
     }
 
     public function replay(Request $request, Lesson $lesson)

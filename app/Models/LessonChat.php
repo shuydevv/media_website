@@ -11,10 +11,12 @@ use Illuminate\Database\Eloquent\Model;
  */
 class LessonChat extends Model
 {
-    protected $fillable = ['lesson_id', 'version', 'shift_seconds', 'pinned_message_id', 'closed_at'];
+    protected $fillable = ['lesson_id', 'version', 'shift_seconds', 'pinned_message_id', 'closed_at', 'break_until', 'quiet_until', 'guest_token'];
 
     protected $casts = [
         'closed_at' => 'datetime',
+        'break_until' => 'datetime',
+        'quiet_until' => 'datetime',
     ];
 
     public function lesson()

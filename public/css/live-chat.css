@@ -425,3 +425,84 @@ button.lc-tr { cursor: pointer; }
   .lc-layout .lc-head, .lc-layout .lc-composer, .lc-layout .lc-pin { background: rgba(248, 250, 252, .7); }
   .lc-layout .lc-msg.is-team { background: rgba(239, 246, 255, .8); }
 }
+
+/* ── Пульт эфира (команда) ── */
+.lc-console { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; padding: 6px 10px; background: #fafafa; border-bottom: 1px solid #f1f1f3; }
+.lc-console[hidden] { display: none; }
+.lc-console::-webkit-scrollbar { display: none; }
+.lc-online { font-size: 12px; font-weight: 500; color: var(--lc-muted); white-space: nowrap; }
+.lc-online:empty { display: none; }
+.lc-cbtn { flex-shrink: 0; padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 500; white-space: nowrap; background: #fff !important; color: #3f3f46 !important; box-shadow: inset 0 0 0 1px #e4e4e7; }
+.lc-cbtn:hover { background: #f4f4f5 !important; }
+.lc-cbtn.is-on { background: var(--lc-blue-100) !important; color: #1e3a8a !important; box-shadow: inset 0 0 0 1px var(--lc-blue-200); }
+.lc-banner.is-room { background: #fffbeb; color: #92400e; }
+
+/* ── Над лентой: эмоции ── */
+.lc-strip { padding: 6px 8px; background: #fff; border-bottom: 1px solid #f1f1f3; }
+.lc-strip[hidden] { display: none; }
+.lc-emos { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.lc-emos::-webkit-scrollbar { display: none; }
+.lc-emo { position: relative; flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 10px 0 6px; border-radius: 10px; overflow: hidden; background: #f4f4f5 !important; font-size: 12px; font-weight: 500; color: #27272a !important; animation: lc-emo-in .3s cubic-bezier(.2, .9, .3, 1.25) both; }
+.lc-emo.is-mine { background: var(--lc-blue-100) !important; color: #1e40af !important; }
+.lc-emo-img { width: 20px; height: 20px; font-size: 18px; line-height: 20px; }
+.lc-emo-n { color: var(--lc-blue); }
+.lc-emo-n:empty { display: none; }
+.lc-emo-bar { position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--lc-blue); opacity: .45; animation: lc-emo-bar linear forwards; }
+@keyframes lc-emo-bar { from { width: 100%; } to { width: 0; } }
+@keyframes lc-emo-in { from { opacity: 0; transform: translateY(-6px) scale(.85); } to { opacity: 1; transform: none; } }
+
+/* ── Над лентой: «Пон / Не пон» ── */
+.lc-strip.is-poll { padding: 8px 10px; background: linear-gradient(180deg, #f8faff, #fff); }
+.lc-poll { animation: lc-emo-in .3s ease both; }
+.lc-poll-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 6px; font-size: 13px; }
+.lc-poll-time { font-size: 12px; color: var(--lc-muted); }
+.lc-poll-opts { display: flex; gap: 6px; }
+.lc-poll-opt { position: relative; flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 6px; height: 40px; padding: 0 12px; border-radius: 12px; overflow: hidden; background: #fff !important; box-shadow: inset 0 0 0 1.5px var(--lc-blue-200); font-size: 14px; font-weight: 600; color: #1e3a8a !important; transition: transform .1s; }
+.lc-poll-opt:not(:disabled):active { transform: scale(.97); }
+.lc .lc-poll-opt:disabled { opacity: 1; cursor: default; }
+.lc-poll-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--lc-blue-100); transition: width .6s cubic-bezier(.2, .8, .3, 1); }
+.lc-poll-opt.is-mine { box-shadow: inset 0 0 0 2px var(--lc-blue); }
+.lc-poll-opt.is-mine .lc-poll-fill { background: #bfdbfe; }
+.lc-poll-label, .lc-poll-pct { position: relative; }
+.lc-poll-pct { font-size: 13px; color: #1e40af; }
+.lc-poll-no { margin-top: 6px; font-size: 12px; color: #92400e; }
+
+/* ── Всплывашки: эмоция, выбор эмоции ── */
+.lc-pop { max-width: 280px; padding: 10px 12px; gap: 8px; }
+.lc-pop-head { font-size: 13px; color: var(--lc-muted); }
+.lc-pop-head b { color: #18181b; font-weight: 600; }
+.lc-pop-emo { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; }
+.lc-pop-img { width: 32px; height: 32px; font-size: 28px; line-height: 32px; }
+.lc-pop-names { font-size: 12px; color: var(--lc-muted); line-height: 1.4; }
+div.lc-menu > .lc-pop-names:only-child { padding: 8px 10px; max-width: 260px; }
+.lc-emo-grid { width: 300px; padding: 10px; }
+.lc-pop-title { font-size: 13px; font-weight: 600; margin: 0 2px 8px; }
+.lc-emo-cells { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+.lc-emo-cell { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 10px; background: none; border: 0; font: inherit; font-size: 13px; text-align: left; cursor: pointer; color: #27272a; }
+.lc-emo-cell:hover { background: #f4f4f5; }
+.lc-emo-cell-img { width: 26px; height: 26px; font-size: 22px; line-height: 26px; flex-shrink: 0; }
+
+/* ── Итоги урока (команда) ── */
+.lc-stats { padding: 10px 12px 16px; font-size: 13px; }
+.lc-stats[hidden] { display: none; }
+.lc-stats-nums { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; margin-bottom: 12px; }
+.lc-stats-num { padding: 8px; border-radius: 10px; background: #f4f4f5; display: flex; flex-direction: column; }
+.lc-stats-num b { font-size: 18px; font-weight: 600; color: #18181b; }
+.lc-stats-num span { font-size: 11px; color: var(--lc-muted); }
+.lc-stats-sec { margin-bottom: 14px; }
+.lc-stats-title { font-size: 12px; font-weight: 600; color: var(--lc-muted); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 6px; }
+.lc-stats-row { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; }
+.lc-stats-row b { font-weight: 600; white-space: nowrap; }
+.lc-stats-poll { padding: 4px 0 8px; border-bottom: 1px solid #f1f1f3; }
+.lc-stats-bar { height: 6px; border-radius: 3px; background: #fde68a; overflow: hidden; }
+.lc-stats-bar i { display: block; height: 100%; background: var(--lc-blue); }
+.lc-stats-names { margin-top: 4px; font-size: 12px; color: #92400e; }
+
+/* Всплывашки живут в body, вне .lc — свои цвета и сброс кнопок */
+.lc-menu, .lc-picker, .lc-sheet, .lc-burst { --lc-blue: #2563eb; --lc-blue-50: #eff6ff; --lc-blue-100: #dbeafe; --lc-blue-200: #bfdbfe; --lc-muted: #71717a; }
+.lc-menu .lc-btn { border: 0; cursor: pointer; font: inherit; font-size: 13px; padding: 7px 12px; border-radius: 10px; background: var(--lc-blue); color: #fff; font-weight: 500; }
+.lc-menu .lc-btn:disabled { background: #e4e4e7; color: #71717a; cursor: default; }
+@media (max-width: 767px) {
+  .lc-console { gap: 4px; padding: 5px 8px; }
+  .lc-cbtn { padding: 3px 7px; font-size: 11.5px; }
+}

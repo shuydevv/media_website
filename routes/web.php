@@ -139,6 +139,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Admin', 'prefix' => 'admin',
             Route::get('/create', 'CreateController')->name('admin.lessons.create');
             Route::post('/', 'StoreController')->name('admin.lessons.store');
             Route::get('/{lesson}/edit', 'EditController')->name('admin.lessons.edit');
+            Route::post('/{lesson}/guest-link', 'GuestLinkController')->name('admin.lessons.guest-link');
             Route::put('/{lesson}', 'UpdateController')->name('admin.lessons.update');
             Route::delete('/{lesson}', 'DestroyController')->name('admin.lessons.destroy');
         });
@@ -533,8 +534,38 @@ Route::middleware(['auth', 'billing.current', 'throttle:120,1'])
         Route::post('/messages/{message}/answer', 'answer')->name('answer');
         Route::delete('/messages/{message}', 'destroy')->name('delete');
         Route::post('/messages/{message}/pin', 'pin')->name('pin');
-        Route::post('/mutes/{user}', 'mute')->name('mute');
-        Route::delete('/mutes/{user}', 'unmute')->name('unmute');
+        Route::post('/mutes/{user}', 'mute')->whereNumber('user')->name('mute');
+        Route::delete('/mutes/{user}', 'unmute')->whereNumber('user')->name('unmute');
+    });
+
+// Пульт эфира и то, что над лентой: эмоции, «Пон / Не пон», перерыв, тишина.
+Route::middleware(['auth', 'billing.current', 'throttle:120,1'])
+    ->prefix('live-chat/{lesson}')
+    ->whereNumber('lesson')
+    ->name('live-chat.')
+    ->controller(\App\Http\Controllers\LiveChat\RoomController::class)
+    ->group(function () {
+        Route::post('/emotions', 'emotion')->name('emotion');
+        Route::post('/emotions/{emotion}/support', 'support')->name('support');
+        Route::post('/poll/vote', 'vote')->name('vote');
+        Route::post('/poll', 'startPoll')->name('poll.start');
+        Route::delete('/poll', 'closePoll')->name('poll.close');
+        Route::post('/break', 'setBreak')->name('break');
+        Route::post('/quiet', 'setQuiet')->name('quiet');
+    });
+
+// Гостевая ссылка на эфир урока — без входа на сайт (LiveChat\GuestController).
+Route::prefix('live/{token}')->where(['token' => '[A-Za-z0-9]{16,40}'])
+    ->middleware('throttle:120,1')
+    ->name('live-guest.')
+    ->controller(\App\Http\Controllers\LiveChat\GuestController::class)
+    ->group(function () {
+        Route::get('/', 'show')->name('show');
+        Route::post('/messages', 'send')->name('send');
+        Route::post('/name', 'rename')->name('name');
+        Route::post('/messages/{message}/reactions', 'react')->name('react');
+        Route::post('/poll/vote', 'vote')->name('vote');
+        Route::post('/emotions/{emotion}/support', 'support')->name('support');
     });
 
 // Сдача домашки студентом — пошагово, по одному вопросу на странице.

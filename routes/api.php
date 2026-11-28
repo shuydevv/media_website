@@ -49,6 +49,7 @@ Route::prefix('live-chat/{lesson}')->whereNumber('lesson')
         Route::get('/feed', 'feed')->name('feed');
         Route::get('/older', 'older')->name('older');
         Route::get('/thread', 'thread')->name('thread');
+        Route::get('/stats', 'stats')->name('stats');
         Route::get('/replay', 'replay')->name('replay');
     });
 

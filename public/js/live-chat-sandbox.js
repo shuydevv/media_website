@@ -42,6 +42,21 @@
   const mutes = new Map();        // uid → {until: ts|null, lesson: bool}
   const sent = new Map();         // uid → [[ts, текст]] — для медленного режима
   const STATE = { s: 'open', opensAt: null, opensLabel: null, breakUntil: null };
+  const SC = C.cfg || {};
+  const room = { breakUntil: null, quietUntil: null };
+  const emotions = [];          // {id, code, uid, n, ends, supports: Map(uid → имя)}
+  let emoId = 1;
+  const lastEmo = new Map();    // uid → когда делился эмоцией
+  const polls = [];             // {id, at, ends, closed, votes: Map(uid → {choice, name})}
+  let pollId = 1;
+  let online = 46;
+  const botLevel = new Map(bots.map(([id], i) => [id, [1, 2, 3, 3, 4, 5, 2, 3, 4, 1, 3, 2][i % 12]]));
+  const levelOf = (uid) => (uid === V.id ? (V.team ? 0 : (C.level || 4)) : (botLevel.get(uid) || 0));
+  const catalog = (() => { try { return JSON.parse(document.querySelector('[data-live-chat]').getAttribute('data-live-chat')).emotions || []; } catch (e) { return []; } })();
+  const quietNow = () => room.quietUntil && room.quietUntil > now();
+  const activeEmo = () => emotions.filter((e) => e.ends > now());
+  const pollActive = (p) => p && !p.closed && p.ends > now();
+  const stripEmoji = (t) => t.replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2300}-\u{23FF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}]/gu, '').replace(/\s+/g, ' ').trim();
 
   function mutedNow(uid) {
     const m = mutes.get(uid);
@@ -55,6 +70,7 @@
     opts = opts || {};
     if (mutedNow(uid)) return null;
     const u = users.get(uid);
+    if (uid !== V.id && !u.team && quietNow() && (!opts.q || opts.thread)) return null;
     let th = opts.thread || null;
     if (th && (!msgs.get(th) || msgs.get(th).del)) return null;
     const m = { id: nextId++, uid, n: u.n, b: u.b || null, text, q: !!opts.q && !th, ans: false, ansTs: null, ts: now(), reply: opts.reply || null, th, del: false };
@@ -112,13 +128,41 @@
 
   function me() {
     const mu = mutedNow(V.id);
-    return { id: V.id, name: users.get(V.id).n, badge: V.b, team: V.team, admin: V.admin, demo: false,
+    const lvl = levelOf(V.id);
+    const at = lastEmo.get(V.id);
+    return { id: V.id, name: users.get(V.id).n, badge: V.b, team: V.team, admin: V.admin, demo: false, guest: false,
+      level: lvl, emotion: !V.team && lvl >= SC.emotionLevel, emojiName: V.team || lvl >= SC.emojiNameLevel,
+      emotionAt: at && at + SC.emotionCooldown > now() ? at + SC.emotionCooldown : null,
       muted: mu ? { until: mu.until, lesson: mu.lesson } : null, write: !mu };
   }
   const pinnedOut = () => (pinned && msgs.get(pinned) && !msgs.get(pinned).del ? present(msgs.get(pinned)) : null);
 
+  function emoOut(e) {
+    return { id: e.id, code: e.code, n: e.n, uid: e.uid, ends: e.ends, c: e.supports.size,
+      mine: e.uid === V.id || e.supports.has(V.id), names: Array.from(e.supports.values()).reverse().slice(0, 30) };
+  }
+  function pollOut(p) {
+    const end = p.closed && p.closed < p.ends ? p.closed : p.ends;
+    const vs = Array.from(p.votes.entries());
+    const mine = p.votes.get(V.id);
+    return { id: p.id, at: p.at, ends: end, active: pollActive(p), hideAt: end + SC.pollResult,
+      yes: vs.filter(([, x]) => x.choice).length, no: vs.filter(([, x]) => !x.choice).length,
+      mine: mine ? mine.choice : null,
+      yesNames: vs.filter(([, x]) => x.choice).map(([, x]) => x.name), noNames: vs.filter(([, x]) => !x.choice).map(([, x]) => x.name) };
+  }
+  function snapshot() {
+    const last = polls[polls.length - 1];
+    const lastOut = last && pollOut(last);
+    return {
+      room: { breakUntil: room.breakUntil > now() ? room.breakUntil : null, quietUntil: quietNow() ? room.quietUntil : null },
+      emo: activeEmo().map(emoOut),
+      poll: lastOut && (lastOut.active || lastOut.hideAt > now()) ? lastOut : null,
+    };
+  }
+
   function feed(v) {
     const base = { v: ver, state: STATE };
+    if (V.team) base.online = online;
     if (v === ver) return base;
     const roots = Array.from(msgs.values()).filter((m) => !m.del && !m.th).sort((a, b) => a.id - b.id);
     if (v <= 0 || v > ver) {
@@ -128,10 +172,10 @@
         reset: true, more: roots.length > 100, msgs: last.map(present),
         questions: V.team ? roots.filter((m) => m.q && !m.ans && !ids.has(m.id)).map(present) : [],
         pinned: pinnedOut(), me: me(),
-      });
+      }, snapshot());
     }
     const changed = Array.from(msgs.values()).filter((m) => m.v > v).sort((a, b) => a.v - b.v);
-    return Object.assign(base, { msgs: changed.map(present), pinned: pinnedOut(), me: me() });
+    return Object.assign(base, { msgs: changed.map(present), pinned: pinnedOut(), me: me() }, snapshot());
   }
 
   function json(body, status) {
@@ -169,13 +213,16 @@
         sent.set(V.id, hist);
       }
       const thread = data.thread || null;
+      if (!V.team && quietNow() && (!data.question || thread)) return json({ error: 'quiet', message: 'Сейчас тишина — можно только задать вопрос преподавателю' }, 422);
       if (thread && (!msgs.get(thread) || msgs.get(thread).del)) return json({ error: 'thread', message: 'Сообщение, на которое вы отвечаете, удалено' }, 422);
       const quote = data.reply_to && msgs.get(data.reply_to) && msgs.get(data.reply_to).th === thread ? data.reply_to : null;
       m = add(V.id, text, { thread, reply: thread ? quote : null, q: !V.team && !!data.question });
       return json({ msg: present(m), slow });
     }
     if (path === 'name') {
-      const name = String(data.name || '').trim().slice(0, 32);
+      let name = String(data.name || '').trim();
+      if (levelOf(V.id) < SC.emojiNameLevel && !V.team) name = stripEmoji(name);
+      name = name.slice(0, 32);
       if (!name) return json({ error: 'empty', message: 'Введите имя' }, 422);
       users.get(V.id).n = name;
       return json({ name });
@@ -207,8 +254,105 @@
       ver++;
       return json({ ok: true });
     }
+    if (path === 'emotions' && method === 'POST') {
+      const err = proposeEmotion(V.id, String(data.code || ''));
+      return err ? json(err, 422) : json({ ok: true });
+    }
+    mm = path.match(/^emotions\/(\d+)\/support$/);
+    if (mm) {
+      const err = supportEmotion(V.id, Number(mm[1]));
+      return err ? json(err, 422) : json({ ok: true });
+    }
+    if (path === 'poll/vote') {
+      const err = votePoll(V.id, !!data.choice);
+      return err ? json(err, 422) : json({ ok: true });
+    }
+    if (path === 'poll') {
+      if (!V.admin) return json({ error: 'forbidden' }, 403);
+      if (method === 'DELETE') closePoll(); else startPoll();
+      return json({ ok: true });
+    }
+    if (path === 'break' || path === 'quiet') {
+      if (!V.admin) return json({ error: 'forbidden' }, 403);
+      const min = Number(data.minutes) || 0;
+      room[path === 'break' ? 'breakUntil' : 'quietUntil'] = min > 0 ? now() + min * 60 : null;
+      ver++;
+      return json({ ok: true });
+    }
+    if (path === 'stats') return json(stats());
     return json({ error: 'unknown' }, 404);
   }
+
+  // ── Эмоции, опросы, итоги — те же правила, что на сервере (LiveChatRoom) ──
+  function proposeEmotion(uid, code) {
+    if (!catalog.some((c) => c.code === code)) return { error: 'emotion', message: 'Такой эмоции нет' };
+    if (levelOf(uid) < SC.emotionLevel) return { error: 'level', message: 'Делиться эмоциями можно с ' + SC.emotionLevel + ' уровня акулы' };
+    if (pollActive(polls[polls.length - 1])) return { error: 'poll', message: 'Сейчас идёт опрос — эмоции после него' };
+    const act = activeEmo();
+    const same = act.find((e) => e.code === code);
+    if (same) return supportEmotion(uid, same.id);
+    if (act.length >= SC.emotionMax) return { error: 'full', message: 'Максимум эмоций на экране' };
+    const at = lastEmo.get(uid);
+    if (at && at + SC.emotionCooldown > now()) {
+      const w = at + SC.emotionCooldown - now();
+      return { error: 'cooldown', message: 'Следующей эмоцией можно поделиться через ' + Math.floor(w / 60) + ':' + String(w % 60).padStart(2, '0') };
+    }
+    const e = { id: emoId++, code, uid, n: users.get(uid).n, ends: now() + SC.emotionSeconds, supports: new Map() };
+    emotions.push(e);
+    lastEmo.set(uid, now());
+    ver++;
+    // «ученики» поддерживают эмоцию
+    free().filter((x) => x !== uid).sort(() => Math.random() - 0.5).slice(0, Math.floor(rnd(2, 9)))
+      .forEach((w) => later(rnd(2, 30), () => supportEmotion(w, e.id)));
+    return null;
+  }
+  function supportEmotion(uid, id) {
+    const e = emotions.find((x) => x.id === id && x.ends > now());
+    if (!e) return { error: 'gone', message: 'Эмоция уже исчезла' };
+    if (e.uid === uid || e.supports.has(uid)) return null;
+    e.supports.set(uid, users.get(uid).n);
+    ver++;
+    return null;
+  }
+  function startPoll() {
+    polls.forEach((p) => { if (!p.closed) p.closed = now(); });
+    emotions.forEach((e) => { if (e.ends > now()) e.ends = now(); }); // опрос важнее эмоций
+    const p = { id: pollId++, at: now(), ends: now() + SC.pollSeconds, closed: null, votes: new Map() };
+    polls.push(p);
+    ver++;
+    free().forEach((w) => {
+      if (Math.random() < 0.85) later(rnd(2, SC.pollSeconds - 4), () => votePoll(w, Math.random() < 0.72));
+    });
+  }
+  function closePoll() {
+    polls.forEach((p) => { if (!p.closed) p.closed = now(); });
+    ver++;
+  }
+  function votePoll(uid, choice) {
+    const p = polls[polls.length - 1];
+    if (!pollActive(p)) return { error: 'poll', message: 'Опрос уже закончился' };
+    if (p.votes.has(uid)) return { error: 'voted', message: 'Вы уже ответили' };
+    p.votes.set(uid, { choice, name: users.get(uid).n });
+    ver++;
+    return null;
+  }
+  function stats() {
+    const live = Array.from(msgs.values()).filter((m) => !m.del);
+    const counts = new Map();
+    live.forEach((m) => { if (!(users.get(m.uid) || {}).team) counts.set(m.uid, (counts.get(m.uid) || 0) + 1); });
+    const top = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([uid, c]) => ({ name: users.get(uid).n, c }));
+    const roots = live.filter((m) => !m.th);
+    return {
+      online, messages: live.length, people: new Set(live.map((m) => m.uid)).size,
+      questions: roots.filter((m) => m.q).length, unanswered: roots.filter((m) => m.q && !m.ans).length, top,
+      polls: polls.slice().reverse().map(pollOut),
+      emotions: emotions.slice().reverse().map((e) => {
+        const c = catalog.find((x) => x.code === e.code) || {};
+        return { e: c.e, label: c.label, n: e.n, c: e.supports.size, at: e.ends - SC.emotionSeconds };
+      }),
+    };
+  }
+  setInterval(() => { online = Math.max(38, Math.min(58, online + Math.round(rnd(-2, 2)))); }, 10000);
 
   // Ученик — не больше 3 реакций на сообщение: новая вытесняет самую раннюю.
   const order = new Map(); // id сообщения + ':' + uid → [id реакций по порядку]
@@ -328,7 +472,12 @@
     [320, T, 'Перерыв 5 минут, потом задание 8'], [330, 107, 'я тоже не понимаю про постиндустриальное', { q: true }],
     [345, 109, 'а можно вопрос не по теме? как готовиться к сочинению?', { q: true }], [360, 108, 'а когда закончим?'],
     [380, 110, 'сделайте громче пожалуйста'], [395, 111, 'всё слышно нормально'],
-  ];
+    // эмоции учеников
+    [92, 105, null, { emo: 'slow' }], [128, 103, null, { emo: 'brain' }], [205, 101, null, { emo: 'got' }],
+    [268, 105, null, { emo: 'love' }], [334, 107, null, { emo: 'break' }], [372, 110, null, { emo: 'tired' }],
+    // «преподаватель» (когда вы смотрите как ученик)
+    [150, T, null, { act: 'poll' }], [240, T, null, { act: 'quiet' }], [325, T, null, { act: 'break' }],
+  ].sort((a, b) => a[0] - b[0]);
   const ambient = [
     'а можно повторить?', 'спасибо!', 'понятно', 'записываю', '+', 'а где это в учебнике?', 'интересно',
     'а это в каком задании бывает?', 'ничего не понятно 😭', 'а если два варианта верные?', '🔥🔥🔥', 'круто',
@@ -349,6 +498,10 @@
       const [, who, text, o] = script[step++];
       const opts = o || {};
       if (who === T && viewerIsTeacher) continue; // преподаватель здесь — вы
+      if (opts.emo) { proposeEmotion(who, opts.emo); continue; }
+      if (opts.act === 'poll') { startPoll(); continue; }
+      if (opts.act === 'quiet') { room.quietUntil = now() + 60; ver++; add(T, 'Минуту тишины — решаем задание. Вопросы можно', {}); continue; }
+      if (opts.act === 'break') { room.breakUntil = now() + 300; ver++; continue; }
       const m = add(who, text, { q: !!opts.q, thread: opts.in ? keys[opts.in] : null });
       if (m && opts.key) keys[opts.key] = m.id;
     }
@@ -356,6 +509,7 @@
       const q = Math.random() < 0.2;
       const who = pick(free());
       if (who) add(who, q ? pick(ambientQ) : pick(ambient), { q });
+      if (Math.random() < 0.3) { const w = pick(free().filter((x) => levelOf(x) >= SC.emotionLevel)); if (w) proposeEmotion(w, pick(catalog).code); }
       nextAmbient = elapsed + rnd(12, 35);
     }
   }, 400);

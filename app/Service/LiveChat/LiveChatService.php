@@ -2,6 +2,8 @@
 
 namespace App\Service\LiveChat;
 
+use App\Models\ChatEmotion;
+use App\Models\ChatGuest;
 use App\Models\ChatMessage;
 use App\Models\ChatMessageReaction;
 use App\Models\ChatMute;
@@ -28,6 +30,12 @@ class LiveChatService
 {
     /** Сколько разных реакций ученик может поставить на одно сообщение. */
     public const MAX_REACTIONS = 3;
+
+    /**
+     * Гость по ссылке — не пользователь сайта: в чате его id = GUEST_BASE +
+     * chat_guests.id (см. миграцию create_live_chat_room_tables).
+     */
+    public const GUEST_BASE = 1000000000;
 
     private array $cfg;
 
@@ -85,6 +93,56 @@ class LiveChatService
         return $u->isAdmin() || $u->isMentor();
     }
 
+    public static function isGuest(User $u): bool
+    {
+        return (int) $u->id >= self::GUEST_BASE;
+    }
+
+    /** Гость как «пользователь» в памяти — не сохраняется в users. */
+    public static function guestUser(ChatGuest $g): User
+    {
+        $u = new User();
+        $u->forceFill([
+            'id' => self::GUEST_BASE + $g->id,
+            'role' => User::ROLE_READER,
+            'chat_name' => $g->name,
+            'is_demo' => false,
+        ]);
+
+        return $u;
+    }
+
+    public static function guestFromId(int $id): ?User
+    {
+        $g = ChatGuest::find($id - self::GUEST_BASE);
+
+        return $g ? self::guestUser($g) : null;
+    }
+
+    /** Уровень акулы ученика (от него зависят эмоции и эмодзи в имени). */
+    public function level(User $u): int
+    {
+        if (self::isGuest($u) || self::isTeam($u)) {
+            return 0;
+        }
+
+        return app(\App\Service\FishFoodService::class)->levelFor((int) $u->fish_total_fed);
+    }
+
+    /** Имя, под которым человек виден в чате. */
+    public function displayName(User $u): string
+    {
+        return self::isTeam($u) ? $this->teamName($u) : $this->studentName($u);
+    }
+
+    /** Эмодзи в имени — с уровня emoji_name_level; ниже — убираются. */
+    public function stripEmoji(string $s): string
+    {
+        $s = preg_replace('/[\x{1F000}-\x{1FAFF}\x{2600}-\x{27BF}\x{2300}-\x{23FF}\x{2B00}-\x{2BFF}\x{FE0F}\x{200D}\x{20E3}\x{3030}\x{303D}\x{3297}\x{3299}\x{E0020}-\x{E007F}]/u', '', $s);
+
+        return trim(preg_replace('/\s+/u', ' ', $s));
+    }
+
     /**
      * Имя ученика по умолчанию: последнее использованное, иначе из профиля —
      * имя и первая буква фамилии с точкой («Аня К.»).
@@ -97,7 +155,7 @@ class LiveChatService
         }
         $name = $u->chat_name ?: ($profile ?: $u->name);
 
-        return Str::limit(trim((string) $name) ?: 'Ученик', $this->cfg['name_max'], '');
+        return Str::limit(trim((string) $name) ?: (self::isGuest($u) ? 'Гость' : 'Ученик'), $this->cfg['name_max'], '');
     }
 
     public function teamName(User $u): string
@@ -126,19 +184,35 @@ class LiveChatService
         $team = self::isTeam($u);
         $mute = $this->activeMute($u, $lesson);
 
+        $level = $this->level($u);
+        $guest = self::isGuest($u);
+        $lastEmotion = $team || $guest ? null : ChatEmotion::where('lesson_id', $lesson->id)->where('user_id', $u->id)->max('created_at');
+        $emotionAt = $lastEmotion ? Carbon::parse($lastEmotion)->addSeconds($this->cfg['emotion_cooldown']) : null;
+
         return [
-            'id' => $u->id,
+            'id' => (int) $u->id,
             'name' => $team ? $this->teamName($u) : $this->studentName($u),
-            'badge' => $team ? $this->teamBadge($u) : null,
+            'badge' => $team ? $this->teamBadge($u) : ($guest ? 'Гость' : null),
             'team' => $team,
             'admin' => $u->isAdmin(),
+            'guest' => $guest,
             'demo' => (bool) $u->is_demo,
+            'level' => $level,
+            'emotion' => ! $team && ! $guest && $level >= $this->cfg['emotion_level'],
+            'emotionAt' => $emotionAt && $emotionAt->isFuture() ? $emotionAt->timestamp : null,
+            'emojiName' => $level >= $this->cfg['emoji_name_level'],
             'muted' => $mute ? ['until' => $mute->until?->timestamp, 'lesson' => $mute->lesson_id !== null] : null,
             'write' => ChatState::canWrite($state) && ! $mute && ! $u->is_demo,
         ];
     }
 
     // ── Изменения ─────────────────────────────────────────────────────
+
+    /** Изменение чата из соседних сервисов (LiveChatRoom) — тот же change(). */
+    public function mutate(LessonChat $chat, callable $apply)
+    {
+        return $this->change($chat, $apply);
+    }
 
     /** Один шаг изменения чата: $apply получает новый номер версии. */
     private function change(LessonChat $chat, callable $apply)
@@ -174,6 +248,9 @@ class LiveChatService
         $this->assertCanWrite($u, $lesson, $state);
 
         $team = self::isTeam($u);
+        if (! $team && $chat->quiet_until && $chat->quiet_until->isFuture() && (! $question || $threadId || $replyTo)) {
+            throw new ChatRefused('quiet', 'Сейчас тишина — можно только задать вопрос преподавателю');
+        }
         $slow = ['slow' => false, 'wait' => 0];
         if (! $team) {
             $recent = ChatMessage::where('lesson_id', $lesson->id)->where('user_id', $u->id)
@@ -217,7 +294,7 @@ class LiveChatService
                 'lesson_id' => $lesson->id,
                 'user_id' => $u->id,
                 'author_name' => $team ? $this->teamName($u) : $this->studentName($u),
-                'author_badge' => $team ? $this->teamBadge($u) : null,
+                'author_badge' => $team ? $this->teamBadge($u) : (self::isGuest($u) ? 'Гость' : null),
                 'body' => $text,
                 'reply_to_id' => $reply?->id,
                 'thread_id' => $root?->id,
@@ -245,11 +322,20 @@ class LiveChatService
 
     public function rename(User $u, string $name): string
     {
-        $name = Str::limit(trim(preg_replace('/\s+/u', ' ', $name)), $this->cfg['name_max'], '');
+        $name = trim(preg_replace('/\s+/u', ' ', $name));
+        if ($this->level($u) < $this->cfg['emoji_name_level']) {
+            $name = $this->stripEmoji($name);
+        }
+        $name = Str::limit($name, $this->cfg['name_max'], '');
         if ($name === '') {
             throw new ChatRefused('empty', 'Введите имя');
         }
-        $u->forceFill(['chat_name' => $name])->save();
+        if (self::isGuest($u)) {
+            ChatGuest::whereKey((int) $u->id - self::GUEST_BASE)->update(['name' => $name]);
+            $u->chat_name = $name;
+        } else {
+            $u->forceFill(['chat_name' => $name])->save();
+        }
 
         return $name;
     }
@@ -352,6 +438,11 @@ class LiveChatService
             'state' => $this->stateOut($state),
         ];
 
+        $room = app(LiveChatRoom::class);
+        if (self::isTeam($viewer)) {
+            $out['online'] = $room->online($lesson);
+        }
+
         if ($since === (int) $chat->version) {
             return $out;
         }
@@ -377,6 +468,7 @@ class LiveChatService
         $out['msgs'] = $this->present($msgs, $viewer);
         $out['pinned'] = $this->pinned($chat, $viewer);
         $out['me'] = $this->me($viewer, $lesson, $state['state']);
+        $out += $room->snapshot($lesson, $chat, $viewer);
 
         return $out;
     }
@@ -562,6 +654,8 @@ class LiveChatService
             ];
             if ($isAdmin && $u && ! $team) {
                 $out['real'] = trim($u->full_name) ?: $u->name;
+            } elseif ($isAdmin && $m->user_id >= self::GUEST_BASE) {
+                $out['real'] = 'Гость по ссылке, не зарегистрирован';
             }
 
             return $out;
@@ -593,6 +687,10 @@ class LiveChatService
             'poll' => [$this->cfg['poll_visible_ms'], $this->cfg['poll_hidden_ms']],
             'max' => $this->cfg['message_max'],
             'nameMax' => $this->cfg['name_max'],
+            'emotions' => app(LiveChatRoom::class)->emotionCatalog(),
+            'emotionMax' => $this->cfg['emotion_max'],
+            'emotionLevel' => $this->cfg['emotion_level'],
+            'emojiNameLevel' => $this->cfg['emoji_name_level'],
             'url' => [
                 'feed' => route('live-chat.feed', $id).'?k='.$k,
                 'older' => route('live-chat.older', $id).'?k='.$k,
@@ -608,6 +706,14 @@ class LiveChatService
                 'pin' => route('live-chat.pin', [$id, 0]),
                 'mute' => route('live-chat.mute', [$id, 0]),
                 'unmute' => route('live-chat.unmute', [$id, 0]),
+                'stats' => route('live-chat.stats', $id).'?k='.$k,
+                'emotion' => route('live-chat.emotion', $id),
+                'support' => route('live-chat.support', [$id, 0]),
+                'vote' => route('live-chat.vote', $id),
+                'pollStart' => route('live-chat.poll.start', $id),
+                'pollClose' => route('live-chat.poll.close', $id),
+                'break' => route('live-chat.break', $id),
+                'quiet' => route('live-chat.quiet', $id),
             ],
         ];
     }
@@ -637,7 +743,7 @@ class LiveChatService
             return null;
         }
 
-        return User::find((int) $uid);
+        return (int) $uid >= self::GUEST_BASE ? self::guestFromId((int) $uid) : User::find((int) $uid);
     }
 
     private function sign(int $uid, int $lessonId, int $exp): string

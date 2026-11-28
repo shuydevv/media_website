@@ -183,7 +183,13 @@ row-lock промокодов на SQLite пропускается. Старые
   По умолчанию выключен (`LIVE_CHAT_ENABLED`, на уроках — iframe Kinescope). Песочница
   `/live-chat/sandbox` (`SandboxController` + `public/js/live-chat-sandbox.js`): тот же
   live-chat.js, сервер подменён в браузере (fetch на `/__sandbox/…`), боты по сценарию — в базу
-  ничего не пишется; при изменении JSON ленты правь и её. Настройка сервера — `deploy/README.md`, раздел 11.
+  ничего не пишется; при изменении JSON ленты правь и её. Пульт эфира, эмоции, «Пон / Не пон», перерыв, тишина, онлайн, итоги —
+  `LiveChatRoom` (+ `LiveChat\RoomController`), в ленте — `room`/`emo`/`poll`/`online`; пульт встроен в
+  чат команды (страница урока, `/live-chat/console`). Эмоции — с 3-го уровня акулы, эмодзи в имени — с
+  4-го (`FishFoodService::levelFor`), числа и набор эмоций — `config/live_chat.php`. Гостевая ссылка
+  `/live/<код>` (`LiveChat\GuestController`, код — `lesson_chats.guest_token`, кнопка в форме урока):
+  гость НЕ пользователь — `chat_guests`, в чате id = `LiveChatService::GUEST_BASE` + id гостя.
+  Активность в чате — в отчёте по ученику (`StudentReport::chatActivity`). Настройка сервера — `deploy/README.md`, раздел 11.
 
 - Отчёт по ученику — `/admin/users/{id}` (`Admin\User\ShowController` → `Service\StudentReport`,
   только читает). Данные для него собираются в других местах: просмотр уроков —

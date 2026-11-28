@@ -425,6 +425,21 @@
                                         @if($l['hasNotes'] && $l['state'] !== 'no_data')
                                             <div>конспект: {{ $l['notesOpened'] ? 'открывал' : 'не открывал' }}</div>
                                         @endif
+                                        @if($l['chat'])
+                                            @php
+                                                $chatStat = $l['chat'];
+                                                $chatParts = array_filter([
+                                                    $chatStat['messages'].' сообщ.',
+                                                    $chatStat['questions'] ? $chatStat['questions'].' вопр.' : null,
+                                                    $chatStat['reactions'] ? $chatStat['reactions'].' реакц.' : null,
+                                                    $chatStat['emotions'] ? $chatStat['emotions'].' эмоц.' : null,
+                                                ]);
+                                            @endphp
+                                            <div title="Активность в чате трансляции">чат: {{ implode(', ', $chatParts) }}</div>
+                                            @if($chatStat['polls'])
+                                                <div>«пон / не пон»: {{ $chatStat['polls'] - $chatStat['notGot'] }} / {{ $chatStat['notGot'] }}</div>
+                                            @endif
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

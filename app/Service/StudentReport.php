@@ -337,21 +337,24 @@ class StudentReport
             ->get()
             ->groupBy('lesson_id');
 
+        $chat = $this->chatActivity($user, $lessons->pluck('id')->all());
+
         // Учёт просмотров начался не с первого урока курса: всё, что было
         // раньше первой записи в lesson_views, — "нет данных", а не "не смотрел".
         $trackingSince = LessonView::min('created_at');
         $trackingSince = $trackingSince ? Carbon::parse($trackingSince) : null;
 
         $rows = $lessons
-            ->map(function (Lesson $lesson) use ($views, $enrolledAt, $trackingSince) {
+            ->map(function (Lesson $lesson) use ($views, $enrolledAt, $trackingSince, $chat) {
                 $start = $lesson->courseSession?->start_date_time;
                 $byKind = $views->get($lesson->id, collect())->keyBy('kind');
 
                 if (! $start || $start->isFuture()) {
                     return null;
                 }
-                // Урок до зачисления показываем, только если ученик его всё же открыл.
-                if ($enrolledAt && $start->lt($enrolledAt) && $byKind->isEmpty()) {
+                // Урок до зачисления показываем, только если ученик его всё же открыл
+                // (смотрел видео или был в чате трансляции).
+                if ($enrolledAt && $start->lt($enrolledAt) && $byKind->isEmpty() && empty($chat[$lesson->id])) {
                     return null;
                 }
 
@@ -393,6 +396,7 @@ class StudentReport
                     'notesOpened' => $byKind->has(LessonView::KIND_NOTES),
                     'hasNotes' => filled($lesson->notes_link),
                     'lastWatchedAt' => $byKind->max('last_watched_at'),
+                    'chat' => $chat[$lesson->id] ?? null,
                 ];
             })
             ->filter()
@@ -407,6 +411,40 @@ class StudentReport
             'watched' => $tracked->where('state', 'watched')->count(),
             'missed' => $tracked->where('state', 'missed')->values(),
         ];
+    }
+
+    /**
+     * Активность ученика в чатах трансляций по урокам: сообщения, вопросы,
+     * реакции, ответы в «Пон / Не пон», эмоции. Пусто — в чате не участвовал.
+     *
+     * @return array<int, array{messages: int, questions: int, reactions: int, polls: int, notGot: int, emotions: int}>
+     */
+    private function chatActivity(User $user, array $lessonIds): array
+    {
+        if (! $lessonIds) {
+            return [];
+        }
+        $out = [];
+        $add = function ($rows, string $key) use (&$out) {
+            foreach ($rows as $lessonId => $n) {
+                $out[$lessonId] ??= ['messages' => 0, 'questions' => 0, 'reactions' => 0, 'polls' => 0, 'notGot' => 0, 'emotions' => 0];
+                $out[$lessonId][$key] = (int) $n;
+            }
+        };
+        $msgs = \App\Models\ChatMessage::where('user_id', $user->id)->whereIn('lesson_id', $lessonIds)->whereNull('deleted_at');
+        $add((clone $msgs)->groupBy('lesson_id')->selectRaw('lesson_id, count(*) as n')->pluck('n', 'lesson_id'), 'messages');
+        $add((clone $msgs)->where('is_question', true)->groupBy('lesson_id')->selectRaw('lesson_id, count(*) as n')->pluck('n', 'lesson_id'), 'questions');
+        $add(\Illuminate\Support\Facades\DB::table('chat_message_reactions as r')->join('chat_messages as m', 'm.id', '=', 'r.message_id')
+            ->where('r.user_id', $user->id)->whereIn('m.lesson_id', $lessonIds)
+            ->groupBy('m.lesson_id')->selectRaw('m.lesson_id, count(*) as n')->pluck('n', 'lesson_id'), 'reactions');
+        $votes = \Illuminate\Support\Facades\DB::table('chat_poll_votes as v')->join('chat_polls as p', 'p.id', '=', 'v.poll_id')
+            ->where('v.user_id', $user->id)->whereIn('p.lesson_id', $lessonIds);
+        $add((clone $votes)->groupBy('p.lesson_id')->selectRaw('p.lesson_id, count(*) as n')->pluck('n', 'lesson_id'), 'polls');
+        $add((clone $votes)->where('v.choice', false)->groupBy('p.lesson_id')->selectRaw('p.lesson_id, count(*) as n')->pluck('n', 'lesson_id'), 'notGot');
+        $add(\App\Models\ChatEmotion::where('user_id', $user->id)->whereIn('lesson_id', $lessonIds)
+            ->groupBy('lesson_id')->selectRaw('lesson_id, count(*) as n')->pluck('n', 'lesson_id'), 'emotions');
+
+        return $out;
     }
 
     /**

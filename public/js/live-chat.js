@@ -55,6 +55,10 @@
       more: false,
       entered: !cfg.askName || isReplay || isConsole,
       replayAll: false,
+      room: { breakUntil: null, quietUntil: null },
+      emo: [],                // эмоции над лентой
+      poll: null,             // «Пон / Не пон»
+      online: null,           // сколько в чате (видит команда)
       videoTime: 0,
       replayShift: 0,
       player: null,
@@ -106,7 +110,30 @@
       head.append(replayToggle);
     }
 
+    // Пульт эфира — у команды прямо в чате (и на странице урока, и в OBS):
+    // онлайн, «Пон / Не пон», перерыв, тишина, итоги урока.
+    const consoleBar = el('div', 'lc-console');
+    consoleBar.hidden = !S.me.team || isReplay;
+    // Онлайн — в строке «Чат», чтобы кнопки пульта помещались в одну строку.
+    const onlineEl = el('span', 'lc-online', '');
+    onlineEl.title = 'Сейчас в чате';
+    if (S.me.team && !isReplay) title.append(onlineEl);
+    let pollBtn = null;
+    if (S.me.admin && !isReplay) {
+      pollBtn = btn('lc-cbtn', '👍 Пон / Не пон', () => togglePoll());
+      consoleBar.append(
+        pollBtn,
+        btn('lc-cbtn', '☕ Перерыв', (e) => roomMenu(e.currentTarget, 'break')),
+        btn('lc-cbtn', '🤫 Тишина', (e) => roomMenu(e.currentTarget, 'quiet')),
+      );
+    }
+    const statsBtn = btn('lc-cbtn', '📊 Итоги', () => setView(S.view === 'stats' ? 'chat' : 'stats'));
+    if (S.me.team && !isReplay) consoleBar.append(statsBtn);
+
     const pinBar = el('div', 'lc-pin');
+    // Над лентой: опрос «Пон / Не пон» или эмоции учеников (опрос важнее).
+    const strip = el('div', 'lc-strip');
+    strip.hidden = true;
     const banner = el('div', 'lc-banner');
 
     const bodyWrap = el('div', 'lc-bodywrap');
@@ -115,7 +142,9 @@
     const qList = el('div', 'lc-feed lc-qlist');
     qList.hidden = true;
     const empty = el('div', 'lc-empty');
-    body.append(feed, qList, empty);
+    const statsView = el('div', 'lc-stats');
+    statsView.hidden = true;
+    body.append(feed, qList, statsView, empty);
 
     const jumpNew = btn('lc-jump', '', () => scrollBottom(true));
     jumpNew.hidden = true;
@@ -154,7 +183,7 @@
     row.append(input, send);
     composer.append(replyBar, qTag, notice, row);
 
-    root.append(head, pinBar, banner, bodyWrap);
+    root.append(head, consoleBar, pinBar, strip, banner, bodyWrap);
     if (!isReplay) root.append(composer);
 
     // Вход в чат: имя показывается при каждом входе, уже подставленное.
@@ -228,7 +257,7 @@
     }
     function url(name, m) {
       const u = cfg.url[name];
-      return m === undefined ? u : u.replace(/\/(messages|mutes)\/0(?=\/|$)/, '/$1/' + m);
+      return m === undefined ? u : u.replace(/\/(messages|mutes|emotions)\/0(?=\/|$)/, '/$1/' + m);
     }
     async function api(method, u, data) {
       const res = await fetch(u, {
@@ -745,7 +774,7 @@
       const inThread = !!S.target;
       popMenu(anchor, [
         ['❓ Вопрос преподавателю', () => setQuestion(true), { disabled: inThread, hint: inThread ? 'не в ответе' : '' }],
-        ['😊 Поделиться эмоцией', () => {}, { disabled: true, hint: 'скоро' }],
+        emotionItem(),
         ['🎨 Стикеры', () => {}, { disabled: true, hint: 'скоро' }],
       ], true);
     }
@@ -971,6 +1000,7 @@
     async function saveName(name) {
       const res = await api('POST', url('name'), { name });
       if (!res.ok) { toast(res.json.message || 'Не получилось сохранить имя'); return false; }
+      if (res.json.name !== name.trim() && !S.me.emojiName) toast('Эмодзи в имени — с ' + cfg.emojiNameLevel + ' уровня акулы');
       S.me.name = res.json.name;
       renderNameBox();
       return true;
@@ -1218,14 +1248,18 @@
       tabQ.classList.toggle('is-active', v === 'questions');
       feed.hidden = v !== 'chat';
       qList.hidden = v !== 'questions';
+      statsView.hidden = v !== 'stats';
+      statsBtn.classList.toggle('is-on', v === 'stats');
+      if (v === 'stats') loadStats(); else clearInterval(statsTimer);
       jumpNew.hidden = v !== 'chat' || !S.unseen;
       renderQuestions();
       updateEmpty();
-      if (v === 'questions') body.scrollTop = 0; else scrollBottom(false);
+      if (v === 'questions' || v === 'stats') body.scrollTop = 0; else scrollBottom(false);
     }
 
     function updateEmpty() {
       if (S.view === 'questions') return;
+      if (S.view === 'stats') { empty.textContent = ''; return; }
       empty.textContent = feed.childElementCount ? '' : (isReplay ? (S.replayAll ? 'В чате не было сообщений' : 'Сообщения появятся по ходу видео') : 'Сообщений пока нет');
     }
 
@@ -1260,11 +1294,13 @@
       banner.textContent = text;
       banner.hidden = !text;
       banner.className = 'lc-banner is-' + s;
+      applyRoom();
       renderComposer();
     }
 
     // ── Опрос сервера ──────────────────────────────────────────────
     let pollTimer = null;
+    let lastPresence = 0;
     let polling = false;
     let failures = 0;
     async function poll(now, full) {
@@ -1273,7 +1309,9 @@
       if (polling) { pollTimer = setTimeout(() => poll(), 300); return; }
       polling = true;
       try {
-        const res = await fetch(cfg.url.feed + '&v=' + (full ? 0 : S.v), { credentials: 'omit', headers: { Accept: 'application/json' } });
+        const presence = Date.now() - lastPresence > 20000;
+        if (presence) lastPresence = Date.now();
+        const res = await fetch(cfg.url.feed + '&v=' + (full ? 0 : S.v) + (presence ? '&p=1' : ''), { credentials: 'omit', headers: { Accept: 'application/json' } });
         if (res.status === 401) { banner.textContent = 'Сессия чата устарела — обновите страницу'; banner.hidden = false; return; }
         if (!res.ok) throw new Error(res.status);
         apply(await res.json());
@@ -1319,6 +1357,11 @@
         if (stick && S.view === 'chat') scrollBottom(false);
       }
       if ('pinned' in data) { S.pinned = data.pinned; renderPinned(data.pinned); }
+      if ('online' in data) { S.online = data.online; onlineEl.textContent = '👥 ' + data.online; }
+      if (data.room) { S.room = data.room; applyRoom(); }
+      if ('emo' in data) S.emo = data.emo || [];
+      if ('poll' in data) S.poll = data.poll;
+      if ('emo' in data || 'poll' in data) { renderStrip(); renderConsole(); }
       S.v = data.v;
       if (stateChanged) { applyState(); rerenderAll(); }
       renderQuestions();
@@ -1437,6 +1480,267 @@
     window.addEventListener('resize', landFit);
     if (window.visualViewport) window.visualViewport.addEventListener('resize', landFit);
     onOrient();
+
+    // ── Пульт: перерыв, тишина, «Пон / Не пон» ─────────────────────
+    const nowSec = () => Math.floor(Date.now() / 1000);
+    const left = (ts) => Math.max(0, ts - nowSec());
+    const mmss = (sec) => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+
+    function roomMenu(anchor, kind) {
+      const active = kind === 'break' ? S.room.breakUntil : S.room.quietUntil;
+      const set = async (minutes) => {
+        const res = await api('POST', url(kind), { minutes });
+        if (!res.ok) toast(res.json.message || 'Не получилось');
+        poll(true);
+      };
+      const items = [5, 10, 15].map((m) => [m + ' минут', () => set(m)]);
+      if (active && left(active)) items.push([kind === 'break' ? 'Закончить перерыв' : 'Закончить тишину', () => set(0), { danger: true }]);
+      popMenu(anchor, items);
+    }
+    async function togglePoll() {
+      const active = S.poll && S.poll.active && left(S.poll.ends);
+      const res = active ? await api('DELETE', url('pollClose')) : await api('POST', url('pollStart'));
+      if (!res.ok) toast(res.json.message || 'Не получилось');
+      poll(true);
+    }
+    function renderConsole() {
+      if (!pollBtn) return;
+      const active = S.poll && S.poll.active && left(S.poll.ends);
+      pollBtn.textContent = active ? '⏹ Закрыть · ' + mmss(left(S.poll.ends)) : '👍 Пон / Не пон';
+      pollBtn.classList.toggle('is-on', !!active);
+    }
+
+    // Перерыв — плашкой с отсчётом; тишина — ученикам можно только вопросы.
+    function applyRoom() {
+      if (isReplay) return;
+      const s = S.state.s;
+      const quiet = S.room.quietUntil && left(S.room.quietUntil);
+      if (s === 'open' || s === 'break') {
+        const br = S.room.breakUntil && left(S.room.breakUntil);
+        const parts = [];
+        if (br) parts.push('☕ Перерыв · вернёмся через ' + mmss(br));
+        if (quiet) parts.push('🤫 Тишина до ' + hhmm(S.room.quietUntil) + (S.me.team ? '' : ' — можно только задать вопрос'));
+        if (s === 'open') {
+          banner.textContent = parts.join(' · ');
+          banner.hidden = !parts.length;
+          banner.className = 'lc-banner is-room';
+        }
+      }
+      const forced = !!quiet && !S.me.team;
+      if (forced !== !!S.quietForced) {
+        S.quietForced = forced;
+        if (forced) setQuestion(true); else setQuestion(false);
+        qTag.querySelector('.lc-x').hidden = forced;
+      }
+    }
+
+    // ── Над лентой: опрос или эмоции ───────────────────────────────
+    function emotionOf(code) {
+      return (cfg.emotions || []).find((e) => e.code === code) || { e: '❔', label: code, img: '' };
+    }
+    function emojiImg(e, cls) {
+      if (!e.img) return el('span', cls || 'lc-emo-img', e.e);
+      const i = el('img', cls || 'lc-emo-img');
+      i.src = e.img;
+      i.alt = e.e;
+      return i;
+    }
+    function activeEmo() {
+      return S.emo.filter((x) => left(x.ends) > 0);
+    }
+    function pollVisible() {
+      return S.poll && (S.poll.active && left(S.poll.ends) > 0 || left(S.poll.hideAt) > 0);
+    }
+
+    function renderStrip() {
+      if (isReplay) { strip.hidden = true; return; }
+      if (pollVisible()) {
+        renderPoll();
+        return;
+      }
+      const list = activeEmo();
+      strip.hidden = !list.length;
+      strip.classList.remove('is-poll');
+      if (!list.length) { strip.replaceChildren(); return; }
+      // Эмоции по id — чтобы тающая полоска не начиналась заново при каждом опросе.
+      const box = strip.querySelector(':scope > .lc-emos') || el('div', 'lc-emos');
+      const keep = new Map(Array.from(box.children).map((x) => [Number(x.dataset.id), x]));
+      const nodes = list.map((x) => {
+        const info = emotionOf(x.code);
+        let b = keep.get(x.id);
+        if (!b) {
+          b = btn('lc-emo', '', () => emotionPop(b));
+          b.dataset.id = x.id;
+          const bar = el('i', 'lc-emo-bar');
+          bar.style.animationDuration = left(x.ends) + 's';
+          b.append(emojiImg(info), el('span', 'lc-emo-label', info.label), el('span', 'lc-emo-n'), bar);
+        }
+        b._e = x;
+        b.classList.toggle('is-mine', !!x.mine);
+        b.querySelector('.lc-emo-n').textContent = x.c ? String(x.c) : '';
+        return b;
+      });
+      box.replaceChildren(...nodes);
+      if (!box.isConnected) strip.replaceChildren(box);
+    }
+
+    function emotionPop(chip) {
+      const x = chip._e;
+      const info = emotionOf(x.code);
+      const pop = el('div', 'lc-pop');
+      const head = el('div', 'lc-pop-head');
+      head.append(el('b', '', x.n), el('span', '', ' чувствует:'));
+      const big = el('div', 'lc-pop-emo');
+      big.append(emojiImg(info, 'lc-pop-img'), el('span', '', info.label));
+      const sup = btn('lc-btn lc-btn--sm', x.uid === S.me.id ? 'Это ваша эмоция' : (x.mine ? 'Вы поддержали' : 'Поддержать'), async () => {
+        closeMenus();
+        const res = await api('POST', url('support', x.id));
+        if (!res.ok) toast(res.json.message || 'Не получилось');
+        else if (navigator.vibrate && touch) navigator.vibrate(10);
+        poll(true);
+      });
+      sup.disabled = !!x.mine || !cfg.url.support || !canReact();
+      pop.append(head, big, sup);
+      if (x.c) pop.append(el('div', 'lc-pop-names', 'Поддержали (' + x.c + '): ' + x.names.join(', ') + (x.c > x.names.length ? '…' : '')));
+      showPop(chip, pop);
+    }
+
+    function showPop(anchor, pop) {
+      closeMenus();
+      pop.classList.add('lc-menu');
+      document.body.append(pop);
+      const r = anchor.getBoundingClientRect();
+      pop.style.top = Math.max(8, Math.min(r.bottom + 6, window.innerHeight - pop.offsetHeight - 8)) + 'px';
+      pop.style.left = Math.max(8, Math.min(r.left, window.innerWidth - pop.offsetWidth - 8)) + 'px';
+      setTimeout(() => document.addEventListener('click', (e) => { if (!pop.contains(e.target)) closeMenus(); }, { once: true }), 0);
+    }
+
+    // «Пон / Не пон» — как опрос в сторис: две большие кнопки, после ответа
+    // (или конца опроса) — проценты. Кто как ответил — по наведению (ПК) или
+    // долгому нажатию (телефон); у команды «не пон» видно сразу в пульте.
+    function renderPoll() {
+      const P = S.poll;
+      strip.hidden = false;
+      strip.classList.add('is-poll');
+      const active = P.active && left(P.ends) > 0;
+      const total = P.yes + P.no;
+      const showRes = !active || P.mine !== null || S.me.team;
+      let card = strip.querySelector(':scope > .lc-poll');
+      if (!card || Number(card.dataset.id) !== P.id) {
+        card = el('div', 'lc-poll');
+        card.dataset.id = P.id;
+        strip.replaceChildren(card);
+      }
+      const head = el('div', 'lc-poll-head');
+      head.append(el('b', '', 'Пон или не пон?'), el('span', 'lc-poll-time', active ? mmss(left(P.ends)) : 'итог · ' + total + ' ' + plural(total, 'ответ', 'ответа', 'ответов')));
+      const opts = el('div', 'lc-poll-opts');
+      [[true, '👍 Пон', P.yes, P.yesNames], [false, '🤔 Не пон', P.no, P.noNames]].forEach(([choice, label, n, names]) => {
+        const pct = total ? Math.round(n / total * 100) : 0;
+        const o = btn('lc-poll-opt' + (P.mine === choice ? ' is-mine' : '') + (showRes ? ' is-res' : ''), '', () => vote(choice));
+        o.disabled = !active || P.mine !== null || S.me.team || S.me.demo;
+        const fill = el('i', 'lc-poll-fill');
+        fill.style.width = (showRes ? pct : 0) + '%';
+        o.append(fill, el('span', 'lc-poll-label', label), el('span', 'lc-poll-pct', showRes ? pct + '%' : ''));
+        if (names && names.length) {
+          o.title = names.join(', ');
+          longPress(o, () => showPop(o, el('div', 'lc-pop-names', (choice ? 'Пон: ' : 'Не пон: ') + names.join(', '))));
+        }
+        opts.append(o);
+      });
+      const parts = [head, opts];
+      if (S.me.team && P.noNames && P.noNames.length) parts.push(el('div', 'lc-poll-no', 'Не пон: ' + P.noNames.join(', ')));
+      card.replaceChildren(...parts);
+    }
+
+    async function vote(choice) {
+      if (!S.poll || S.poll.mine !== null) return;
+      S.poll = Object.assign({}, S.poll, { mine: choice, yes: S.poll.yes + (choice ? 1 : 0), no: S.poll.no + (choice ? 0 : 1) });
+      renderPoll();
+      if (navigator.vibrate && touch) navigator.vibrate(10);
+      const res = await api('POST', url('vote'), { choice });
+      if (!res.ok) toast(res.json.message || 'Не получилось');
+      poll(true);
+    }
+
+    // Пункт скрепки «Поделиться эмоцией» — с причиной, если сейчас нельзя.
+    function emotionItem() {
+      const label = '😊 Поделиться эмоцией';
+      if (!cfg.url.emotion || S.me.guest) return [label, () => {}, { disabled: true, hint: 'для учеников' }];
+      if (!S.me.emotion) return [label, () => {}, { disabled: true, hint: 'с ' + cfg.emotionLevel + ' уровня акулы' }];
+      if (pollVisible() && S.poll.active) return [label, () => {}, { disabled: true, hint: 'идёт опрос' }];
+      if (activeEmo().length >= cfg.emotionMax) return [label, () => {}, { disabled: true, hint: 'Максимум эмоций на экране' }];
+      if (S.me.emotionAt && left(S.me.emotionAt)) return [label, () => {}, { disabled: true, hint: 'через ' + mmss(left(S.me.emotionAt)) }];
+      return [label, () => setTimeout(() => emotionPicker(clip), 0)];
+    }
+    function emotionPicker(anchor) {
+      const pop = el('div', 'lc-emo-grid');
+      pop.append(el('div', 'lc-pop-title', 'Что вы чувствуете?'));
+      const grid = el('div', 'lc-emo-cells');
+      (cfg.emotions || []).forEach((e) => {
+        const b = btn('lc-emo-cell', '', async () => {
+          closeMenus();
+          const res = await api('POST', url('emotion'), { code: e.code });
+          if (!res.ok) toast(res.json.message || 'Не получилось');
+          else if (navigator.vibrate && touch) navigator.vibrate(15);
+          poll(true);
+        });
+        b.append(emojiImg(e, 'lc-emo-cell-img'), el('span', '', e.label));
+        grid.append(b);
+      });
+      pop.append(grid);
+      showPop(anchor, pop);
+      const r = anchor.getBoundingClientRect();
+      pop.style.top = Math.max(8, r.top - pop.offsetHeight - 8) + 'px';
+    }
+
+    // ── Итоги урока (команда) ──────────────────────────────────────
+    let statsTimer = null;
+    async function loadStats() {
+      clearInterval(statsTimer);
+      statsTimer = setInterval(() => { if (S.view === 'stats') refreshStats(); }, 10000);
+      refreshStats();
+    }
+    async function refreshStats() {
+      if (!cfg.url.stats) return;
+      let d;
+      try { d = await getJson(cfg.url.stats); } catch (e) { statsView.textContent = 'Не удалось загрузить итоги'; return; }
+      const sec = (title, ...kids) => { const x = el('div', 'lc-stats-sec'); x.append(el('div', 'lc-stats-title', title), ...kids); return x; };
+      const row = (a, b) => { const r = el('div', 'lc-stats-row'); r.append(el('span', '', a), el('b', '', b)); return r; };
+      const nums = el('div', 'lc-stats-nums');
+      [['в чате', d.online], ['сообщений', d.messages], ['писали', d.people], ['вопросов', d.questions], ['без ответа', d.unanswered]]
+        .forEach(([l, n]) => { const c = el('div', 'lc-stats-num'); c.append(el('b', '', String(n)), el('span', '', l)); nums.append(c); });
+      const parts = [nums];
+      if (d.top.length) parts.push(sec('Самые активные', ...d.top.map((t, i) => row((i + 1) + '. ' + t.name, String(t.c)))));
+      if (d.polls.length) {
+        parts.push(sec('Пон / Не пон', ...d.polls.map((p) => {
+          const tot = p.yes + p.no;
+          const box = el('div', 'lc-stats-poll');
+          const bar = el('div', 'lc-stats-bar');
+          const y = el('i', 'is-yes');
+          y.style.width = (tot ? Math.round(p.yes / tot * 100) : 0) + '%';
+          bar.append(y);
+          box.append(row(hhmm(p.at) + (p.active ? ' · идёт' : ''), tot ? Math.round(p.yes / tot * 100) + '% пон · ' + tot : 'нет ответов'), bar);
+          if (p.noNames.length) box.append(el('div', 'lc-stats-names', 'Не пон: ' + p.noNames.join(', ')));
+          return box;
+        })));
+      }
+      if (d.emotions.length) parts.push(sec('Эмоции', ...d.emotions.map((e) => row(e.e + ' ' + e.label + ' · ' + e.n, '+' + e.c))));
+      if (parts.length === 1) parts.push(el('div', 'lc-empty', 'Итоги появятся по ходу урока'));
+      statsView.replaceChildren(...parts);
+    }
+
+    // Раз в секунду: отсчёты перерыва и опроса, исчезновение эмоций.
+    if (!isReplay) {
+      setInterval(() => {
+        applyRoom();
+        renderConsole();
+        if (S.emo.length || S.poll) {
+          const hadPoll = !strip.hidden && strip.classList.contains('is-poll');
+          if (hadPoll && !pollVisible()) strip.classList.remove('is-poll');
+          if (pollVisible()) renderPoll(); else renderStrip();
+        }
+      }, 1000);
+    }
 
     // ── Старт ──────────────────────────────────────────────────────
     try { if (localStorage.getItem('lc-folded') && touch && !isReplay) setFolded(true); } catch (e) { /* приватный режим */ }
