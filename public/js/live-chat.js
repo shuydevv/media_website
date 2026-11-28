@@ -538,19 +538,35 @@
     // ПК: наведение на ❤️ раскрывает основной ряд, «›» или свайп влево — все
     // реакции (повторно «‹» — свернуть). Выбор живёт поверх страницы
     // (position: fixed), иначе его обрезает край ленты.
+    // Закрывается не сразу: 0,7 с на то, чтобы довести мышь, а пока курсор
+    // идёт по «коридору» между сердечком и панелью — не закрывается вовсе.
     let floatPicker = null, floatTimer = null;
     function closeFloat() {
       clearTimeout(floatTimer);
+      floatTimer = null;
+      document.removeEventListener('mousemove', floatCorridor);
       if (floatPicker) { floatPicker.remove(); floatPicker = null; }
     }
+    function floatCorridor(e) {
+      if (!floatPicker || !floatPicker._heart) return;
+      const a = floatPicker._heart.getBoundingClientRect();
+      const b = floatPicker.getBoundingClientRect();
+      const pad = 12;
+      const inside = e.clientX >= Math.min(a.left, b.left) - pad && e.clientX <= Math.max(a.right, b.right) + pad
+        && e.clientY >= Math.min(a.top, b.top) - pad && e.clientY <= Math.max(a.bottom, b.bottom) + pad;
+      if (inside) { clearTimeout(floatTimer); floatTimer = null; }
+      else if (!floatTimer) floatTimer = setTimeout(closeFloat, 350);
+    }
     function hoverPicker(heart, n) {
-      const leave = () => { clearTimeout(floatTimer); floatTimer = setTimeout(closeFloat, 250); };
+      const leave = () => { clearTimeout(floatTimer); floatTimer = setTimeout(closeFloat, 700); };
       heart.addEventListener('mouseenter', () => {
         clearTimeout(floatTimer);
         if (floatPicker && floatPicker.dataset.id === String(n._m.id)) return;
         closeFloat();
         floatPicker = picker(n, closeFloat, false);
         floatPicker.dataset.id = n._m.id;
+        floatPicker._heart = heart;
+        document.addEventListener('mousemove', floatCorridor);
         floatPicker.classList.add('is-float');
         document.body.append(floatPicker);
         const r = heart.getBoundingClientRect();
@@ -724,7 +740,9 @@
     function armMenu(menu, anchor) {
       menuAnchor = anchor;
       const off = (e) => {
-        if (menu.contains(e.target) || (anchor && anchor.contains(e.target))) return;
+        // !isConnected — кнопка меню убрала себя по клику («Показать всех»):
+        // это нажатие внутри, а не мимо.
+        if (!e.target.isConnected || menu.contains(e.target) || (anchor && anchor.contains(e.target))) return;
         closeMenus();
       };
       menuOff = off;
@@ -1724,14 +1742,33 @@
       if (x.c) {
         const who = el('div', 'lc-pop-who');
         who.append(el('div', 'lc-pop-who-title', 'Поддержали · ' + x.c));
-        const list = el('div', 'lc-pop-who-list');
-        (x.names || []).forEach((n) => {
-          const row = el('div', 'lc-pop-who-row');
-          row.append(avatarFor(n), el('span', '', n));
-          list.append(row);
-        });
-        if (x.c > (x.names || []).length) list.append(el('div', 'lc-pop-who-more', 'и ещё ' + (x.c - x.names.length)));
+        // Две колонки; больше 10 — первые 10 и «Показать всех» (список
+        // прокручивается). Имён сервер отдаёт до 30, остальные — числом.
+        const names = x.names || [];
+        const list = el('div', 'lc-pop-who-list' + (names.length > 1 ? ' is-two' : ''));
+        const SHORT = 10;
+        const fill = (all) => {
+          list.replaceChildren();
+          (all ? names : names.slice(0, SHORT)).forEach((n) => {
+            const row = el('div', 'lc-pop-who-row');
+            row.title = n;
+            row.append(avatarFor(n), el('span', '', n));
+            list.append(row);
+          });
+          list.classList.toggle('is-all', all);
+        };
+        fill(false);
         who.append(list);
+        const hidden = x.c - Math.min(names.length, SHORT);
+        if (hidden > 0) {
+          const more = btn('lc-pop-who-more', 'Показать всех · ещё ' + hidden, () => {
+            fill(true);
+            const rest = x.c - names.length;
+            if (rest > 0) more.replaceWith(el('div', 'lc-pop-who-rest', 'и ещё ' + rest));
+            else more.remove();
+          });
+          who.append(more);
+        }
         pop.append(who);
       } else if (!own) {
         pop.append(el('div', 'lc-pop-hint', 'Пока никто не поддержал — будьте первым'));

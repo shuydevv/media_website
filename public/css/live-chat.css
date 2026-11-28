@@ -609,7 +609,7 @@ div.lc-menu > .lc-pop-names:only-child { padding: 8px 10px; max-width: 260px; }
 @keyframes lc-emo-icon-in { 0% { opacity: 0; transform: scale(.5) rotate(-10deg); } 60% { opacity: 1; transform: scale(1.06) rotate(2deg); } 100% { opacity: 1; transform: none; } }
 .lc-emo.is-out { transition: opacity .2s ease, transform .2s ease; opacity: 0; transform: scale(.9); pointer-events: none; }
 
-.lc-emo-card { width: 250px; padding: 12px; gap: 10px; }
+.lc-emo-card { width: 270px; padding: 12px; gap: 10px; }
 .lc-pop-emo { gap: 10px; }
 .lc-pop-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; background: var(--emo, #f4f4f5); flex-shrink: 0; }
 .lc-pop-icon .lc-pop-img { width: 30px; height: 30px; font-size: 26px; line-height: 30px; animation: lc-emo-icon-in .6s cubic-bezier(.22, 1, .36, 1) both; }
@@ -624,7 +624,14 @@ div.lc-menu > .lc-pop-names:only-child { padding: 8px 10px; max-width: 260px; }
 .lc-pop-who-list { display: flex; flex-direction: column; gap: 4px; max-height: 132px; overflow-y: auto; }
 .lc-pop-who-row { display: flex; align-items: center; gap: 7px; font-size: 13px; color: #27272a; }
 .lc-pop-who-row .lc-av--xs { box-shadow: none; }
-.lc-pop-who-more { font-size: 12px; color: var(--lc-muted); padding-left: 25px; }
+.lc-pop-who-list.is-two { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 10px; }
+.lc-pop-who-list.is-all { max-height: 168px; overflow-y: auto; overscroll-behavior: contain; padding-right: 2px; scrollbar-width: thin; scrollbar-color: #d4d4d8 transparent; }
+.lc-pop-who-row { min-width: 0; }
+.lc-pop-who-row > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lc-pop-who-row .lc-av--xs { flex-shrink: 0; }
+.lc-menu .lc-pop-who-more { align-self: flex-start; margin-top: 6px; padding: 3px 0; border: 0; background: none; font: inherit; font-size: 12px; font-weight: 500; color: var(--lc-blue); cursor: pointer; }
+.lc-menu .lc-pop-who-more:hover { text-decoration: underline; }
+.lc-pop-who-rest { margin-top: 6px; font-size: 12px; color: var(--lc-muted); }
 .lc-pop-hint { font-size: 12px; color: var(--lc-muted); line-height: 1.35; }
 .lc-menu .lc-btn.lc-emo-plus { display: flex; justify-content: center; align-items: baseline; gap: 6px; padding: 9px 12px; font-size: 14px; transition: transform .1s, filter .15s; }
 .lc-menu .lc-btn.lc-emo-plus:hover { filter: brightness(1.08); }
@@ -632,38 +639,73 @@ div.lc-menu > .lc-pop-names:only-child { padding: 8px 10px; max-width: 260px; }
 .lc-menu .lc-btn.lc-btn--ghost { background: #f4f4f5; color: #3f3f46; padding: 9px 12px; font-size: 13px; }
 .lc-menu .lc-btn.lc-btn--ghost:hover { background: #e4e4e7; }
 
-/* ── «Пон / Не пон»: плашки ── */
+/* ── «Пон / Не пон»: игровые кнопки, как в тренажёрах (partials/game-buttons):
+   бледная заливка, обводка, блик сверху и полоса потемнее снизу. После ответа
+   кнопки «вдавлены» (плоские, белые), итог — насыщенной полосой. ── */
 .lc-strip.is-poll { padding: 10px 10px 12px; background: linear-gradient(180deg, #f8faff, #fff); }
 .lc-poll-head { align-items: center; margin-bottom: 8px; }
 .lc-poll-head > b { font-size: 14px; font-weight: 600; color: #18181b; }
 .lc-poll-opts { gap: 8px; }
-.lc-poll-opt {
-  --opt-bg: #fff; --opt-line: #e4e4e7; --opt-ink: #27272a; --opt-fill: #e4e4e7; --opt-strong: #a1a1aa;
-  height: 46px; padding: 0 12px 0 6px; border-radius: 14px; background: var(--opt-bg) !important; color: var(--opt-ink) !important;
-  box-shadow: inset 0 0 0 1px var(--opt-line), 0 1px 2px rgba(0, 0, 0, .04); font-size: 14px; font-weight: 600;
-  transition: transform .15s ease, box-shadow .15s ease, opacity .3s ease;
+.lc .lc-poll-opt {
+  --fill: #F6F8FA; --hover: #EEF2F5; --line: #C9D3DB; --low: #D5DEE5; --bar: #E2E8F0; --strong: #94A3B8; --ink: #1D2E3A;
+  height: 46px; padding: 0 12px 0 6px; border: 1.5px solid var(--line); border-radius: 14px;
+  background: var(--fill) !important; color: var(--ink) !important; font-size: 15px; font-weight: 600;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .9), inset 0 -4px 0 var(--low);
+  transition: transform .08s ease, box-shadow .08s ease, background-color .15s ease, border-color .2s ease;
 }
-.lc-poll-opt.is-yes { --opt-bg: #f0fdf4; --opt-line: #bbf7d0; --opt-ink: #166534; --opt-fill: #dcfce7; --opt-strong: #22c55e; }
-.lc-poll-opt.is-no { --opt-bg: #fff7ed; --opt-line: #fed7aa; --opt-ink: #9a3412; --opt-fill: #ffedd5; --opt-strong: #f97316; }
-.lc-poll-opt:not(:disabled):hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1.5px var(--opt-strong), 0 4px 12px rgba(0, 0, 0, .07); }
-.lc-poll-opt:not(:disabled):active { transform: scale(.97); }
-.lc-poll-fill { background: var(--opt-fill) !important; border-radius: 0 10px 10px 0; }
-.lc-poll-opt.is-lead .lc-poll-fill { background: var(--opt-fill) !important; filter: saturate(1.6) brightness(.97); }
-.lc-poll-opt.is-mine { box-shadow: inset 0 0 0 2px var(--opt-strong), 0 1px 2px rgba(0, 0, 0, .04); }
-.lc-poll-opt.is-mine .lc-poll-fill { background: var(--opt-fill) !important; }
-.lc-poll-opt.is-res:not(.is-mine):not(.is-lead) { opacity: .8; }
+.lc .lc-poll-opt.is-yes { --fill: #F0FDF4; --hover: #DCFCE7; --line: #86EFAC; --low: #B3E3C3; --bar: #BBF7D0; --strong: #22C55E; --ink: #15803D; }
+.lc .lc-poll-opt.is-no { --fill: #FFFBEB; --hover: #FEF3C7; --line: #FCD34D; --low: #F5DC8A; --bar: #FDE68A; --strong: #F59E0B; --ink: #B45309; }
+.lc .lc-poll-opt:not(:disabled):hover { background: var(--hover) !important; transform: none; box-shadow: inset 0 2px 0 rgba(255, 255, 255, .9), inset 0 -4px 0 var(--low); }
+.lc .lc-poll-opt:not(:disabled):active { transform: translateY(1px); box-shadow: inset 0 1px 0 var(--low); }
+.lc .lc-poll-opt:focus-visible { outline: 3px solid #93C5FD; outline-offset: 2px; }
 .lc-poll-label { gap: 8px; }
-.lc-poll-emoji { display: grid; place-items: center; width: 34px; height: 34px; margin: 0; border-radius: 10px; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .08); }
+.lc-poll-emoji { display: grid; place-items: center; width: 32px; height: 32px; margin: 0 0 2px; border-radius: 10px; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
 .lc-poll-emoji img { width: 22px; height: 22px; display: block; }
-.lc-poll-check { display: none; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: var(--opt-strong); color: #fff; font-size: 10px; line-height: 1; }
+
+/* итог: кнопка вдавлена — белая, плоская; полоса — насыщенная */
+.lc .lc-poll-opt.is-res { background: #fff !important; box-shadow: none; border-color: var(--line); }
+.lc .lc-poll-opt.is-res .lc-poll-emoji { margin-bottom: 0; }
+.lc-poll-fill { background: var(--bar) !important; border-radius: 0; transition: width .7s cubic-bezier(.2, .8, .3, 1); }
+.lc-poll-opt.is-lead .lc-poll-fill, .lc-poll-opt.is-mine .lc-poll-fill { background: var(--bar) !important; filter: none; }
+.lc .lc-poll-opt.is-res.is-mine { border-color: var(--strong); box-shadow: 0 0 0 1px var(--strong); }
+.lc-poll-opt.is-res:not(.is-mine):not(.is-lead) { opacity: 1; }
+.lc-poll-opt.is-res:not(.is-lead) .lc-poll-fill { opacity: .7; }
+.lc-poll-check { display: none; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: var(--strong); color: #fff; font-size: 10px; line-height: 1; }
 .lc-poll-opt.is-mine .lc-poll-check { display: inline-grid; animation: lc-emo-icon-in .4s cubic-bezier(.22, 1, .36, 1) both; }
-.lc-poll-pct { font-size: 14px; font-weight: 600; color: var(--opt-ink); font-variant-numeric: tabular-nums; }
-.lc-poll-opt.is-voted { animation: lc-voted2 .55s cubic-bezier(.22, 1, .36, 1); }
-@keyframes lc-voted2 { 0% { transform: scale(1); } 35% { transform: scale(1.04); } 100% { transform: scale(1); } }
-.lc-poll.is-done .lc-poll-opt { box-shadow: inset 0 0 0 1px var(--opt-line); }
+.lc-poll-pct { font-size: 15px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.lc-poll-opt.is-voted { animation: lc-voted2 .45s cubic-bezier(.22, 1, .36, 1); }
+@keyframes lc-voted2 { 0% { transform: translateY(1px); } 40% { transform: translateY(2px) scale(.98); } 100% { transform: none; } }
 @media (max-width: 640px) {
-  .lc-poll-opt { height: 44px; }
+  .lc .lc-poll-opt { height: 44px; }
+}
+/* Тесно (чат поверх видео в горизонтальном режиме, узкая колонка): опрос
+   ужимается по ширине самой полосы, а не экрана — эмодзи без плитки, мельче
+   шрифт и отступы; подпись никогда не переносится. */
+.lc-strip { container: lc-strip / inline-size; }
+.lc-poll-label { min-width: 0; white-space: nowrap; }
+.lc-poll-name { overflow: hidden; text-overflow: ellipsis; }
+.lc-poll-pct { flex-shrink: 0; }
+@container lc-strip (max-width: 330px) {
+  .lc-poll-head { margin-bottom: 6px; }
+  .lc-poll-head > b { font-size: 13px; }
+  .lc-poll-count { display: none; }
+  .lc-poll-opts { gap: 6px; }
+  .lc .lc-poll-opt { height: 38px; padding: 0 8px 0 6px; gap: 4px; border-radius: 12px; font-size: 13px; }
+  .lc-poll-label { gap: 5px; }
+  .lc-poll-emoji, .lc .lc-poll-opt.is-res .lc-poll-emoji { width: auto; height: auto; margin: 0; background: none; box-shadow: none; border-radius: 0; }
+  .lc-poll-emoji img { width: 18px; height: 18px; }
+  .lc-poll-pct { font-size: 13px; }
+  .lc-poll-check { width: 14px; height: 14px; font-size: 9px; }
+}
+@container lc-strip (max-width: 250px) {
+  .lc-poll-check { display: none !important; }
 }
 @media (prefers-reduced-motion: reduce) {
   .lc-pop-img, .lc-poll-check, .lc-poll-opt { animation: none !important; }
 }
+
+/* Реакции на сообщении команды (голубой фон): серое выделение выглядит
+   грязно — белые, при наведении ярче. На остальных сообщениях — как было. */
+.lc-msg.is-team .lc-chip:not(.is-mine) { background: rgba(255, 255, 255, .7); }
+.lc-msg.is-team .lc-chip:hover:not(:disabled):not(.is-mine) { background: #fff; }
+.lc-msg.is-team .lc-chip.is-mine:hover:not(:disabled) { background: #cfe0fc; }
