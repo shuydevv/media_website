@@ -506,3 +506,96 @@ div.lc-menu > .lc-pop-names:only-child { padding: 8px 10px; max-width: 260px; }
   .lc-console { gap: 4px; padding: 5px 8px; }
   .lc-cbtn { padding: 3px 7px; font-size: 11.5px; }
 }
+
+/* ── Правки 28.11 ── */
+
+/* Ветка: аватарка ответившего — ровно под именем автора (42px), время — ровно
+   под временем исходного (правый отступ 10px как у ленты), низ ветки — под
+   текстом ответа, линия над ним — по ширине кнопок. */
+.lc-thread { margin: 0 0 6px 20px; padding-left: 20px; }
+.lc-msg.is-reply { padding-left: 0; padding-right: 10px; }
+.lc-msg.is-reply.is-team { margin: 1px 0 1px -6px; padding-left: 6px; padding-right: 10px; }
+.lc-thread-foot { display: flex; width: fit-content; margin: 2px 0 0 27px; padding: 5px 0 3px; border-top: 1px solid #e4e4e7; }
+.lc-thread-empty { padding-left: 27px; }
+
+/* Время везде одного размера — и у сообщений внутри группы, и у ветки */
+.lc-gtime { font-size: 11px; }
+.lc-thlast { font-size: 11px; color: #a1a1aa; }
+
+/* Эмоция появляется один раз — не при каждом обновлении */
+.lc-emo { animation: none; }
+.lc-emo.is-new { animation: lc-emo-in .3s cubic-bezier(.2, .9, .3, 1.25) both; }
+
+/* Реакция преподавателя — как в Telegram: плашка, справа аватарка */
+.lc-chip--tr { padding: 1px 3px 1px 5px; gap: 5px; }
+.lc-av--chip { flex: 0 0 18px; width: 18px; height: 18px; margin: 0; font-size: 9px; box-shadow: 0 0 0 1.5px #fff; }
+
+/* Телефон: реакции в листе появляются по очереди и при открытии */
+.lc-picker.is-sheet .lc-picker-row:first-child .lc-pick { animation: lc-pick-in .32s cubic-bezier(.2, .9, .3, 1.25) both; animation-delay: calc(var(--i, 0) * 28ms + 60ms); }
+.lc-burst { z-index: 1003; }
+
+/* Телефон: сообщения чуть свободнее */
+@media (max-width: 767px) {
+  .lc-msg { padding-top: 5px; padding-bottom: 5px; }
+  .lc-msg.is-cont { padding-top: 1px; }
+}
+
+/* Клавиатура открыта: только лента и поле ввода — без пульта, эмоций, опроса,
+   плашек и кнопок «вниз», иначе поле ввода обрезается */
+.lc-layout.is-pinned .lc-console, .lc-layout.is-pinned .lc-strip, .lc-layout.is-pinned .lc-banner,
+.lc-layout.is-pinned .lc-pin, .lc-layout.is-pinned .lc-jumps { display: none !important; }
+
+/* ── Статус чата — кружок ── */
+.lc-pill { width: 9px; height: 9px; padding: 0; border-radius: 50%; background: #a1a1aa; font-size: 0; flex-shrink: 0; position: relative; }
+.lc-pill.is-open { background: #22c55e; }
+.lc-pill.is-open::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; background: #22c55e; opacity: .35; animation: lc-live 2s ease-out infinite; }
+.lc-pill.is-break { background: #f59e0b; }
+@keyframes lc-live { 0% { transform: scale(.6); opacity: .45; } 100% { transform: scale(1.9); opacity: 0; } }
+
+/* ── Эмоции: живые плашки ── */
+.lc-emo { --emo: #f4f4f5; --emo-ink: #27272a; background: var(--emo) !important; color: var(--emo-ink) !important; transition: transform .15s ease, box-shadow .15s ease; box-shadow: 0 1px 2px rgba(0, 0, 0, .05); }
+.lc-emo[data-code="lol"], .lc-emo[data-code="imba"], .lc-emo[data-code="vibe_up"] { --emo: linear-gradient(135deg, #fff7ed, #ffedd5); --emo-ink: #9a3412; }
+.lc-emo[data-code="based"], .lc-emo[data-code="cringe"], .lc-emo[data-code="vibe_down"] { --emo: linear-gradient(135deg, #f5f3ff, #ede9fe); --emo-ink: #5b21b6; }
+.lc-emo[data-code="brain"], .lc-emo[data-code="lost"], .lc-emo[data-code="slow"], .lc-emo[data-code="break"] { --emo: linear-gradient(135deg, #fffbeb, #fef3c7); --emo-ink: #92400e; }
+.lc-emo:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0, 0, 0, .08); }
+.lc-emo:active { transform: scale(.95); }
+.lc-emo.is-mine { box-shadow: inset 0 0 0 1.5px var(--lc-blue), 0 1px 2px rgba(0, 0, 0, .05); }
+.lc-emo .lc-emo-n { color: inherit; opacity: .8; font-weight: 600; }
+.lc-emo-icon { display: inline-grid; place-items: center; }
+.lc-emo.is-bump { animation: lc-emo-bump .45s cubic-bezier(.3, 1.6, .5, 1); }
+.lc-emo.is-pop .lc-emo-icon { animation: lc-emo-jump .6s cubic-bezier(.3, 1.6, .5, 1); }
+.lc-emo.is-new .lc-emo-icon { animation: lc-emo-jump .6s .15s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes lc-emo-bump { 0% { transform: scale(1); } 40% { transform: scale(1.08) rotate(-1.5deg); } 100% { transform: scale(1); } }
+@keyframes lc-emo-jump { 0% { transform: translateY(0) scale(1); } 35% { transform: translateY(-6px) scale(1.25) rotate(-8deg); } 70% { transform: translateY(1px) scale(.95) rotate(4deg); } 100% { transform: none; } }
+.lc-emo-bar { background: currentColor; opacity: .3; }
+
+/* «+1» и эмодзи, улетающие вверх */
+.lc-float { position: fixed; z-index: 1003; transform: translate(-50%, 0); pointer-events: none; font-size: 13px; font-weight: 600; color: #2563eb; animation: lc-float .9s ease-out forwards; text-shadow: 0 1px 0 #fff; }
+@keyframes lc-float { 0% { opacity: 0; transform: translate(-50%, 4px) scale(.7); } 20% { opacity: 1; transform: translate(-50%, -8px) scale(1.1); } 100% { opacity: 0; transform: translate(-50%, -34px) scale(1); } }
+
+/* ── «Пон / Не пон»: кольцо-таймер, живые кнопки ── */
+.lc-poll-meta { display: inline-flex; align-items: center; gap: 8px; }
+.lc-poll-count { font-size: 12px; color: var(--lc-muted); }
+.lc-poll-ring { position: relative; display: inline-grid; place-items: center; width: 24px; height: 24px; }
+.lc-poll-ring[hidden] { display: none; }
+.lc-poll-ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.lc-ring-bg { fill: none; stroke: #e4e4e7; stroke-width: 2.5; }
+.lc-ring-fg { fill: none; stroke: var(--lc-blue); stroke-width: 2.5; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.lc-poll-ring .lc-poll-time { position: relative; font-size: 9.5px; font-weight: 600; color: #1e3a8a; }
+.lc-poll.is-done .lc-poll-head .lc-poll-time { font-size: 12px; font-weight: 400; color: var(--lc-muted); }
+.lc-poll.is-done .lc-poll-meta { display: inline; }
+.lc-poll-emoji { display: inline-block; margin-right: 6px; font-size: 16px; }
+.lc-poll-label { display: inline-flex; align-items: center; }
+.lc-poll.is-open .lc-poll-opt .lc-poll-emoji { animation: lc-bob 1.8s ease-in-out infinite; }
+.lc-poll.is-open .lc-poll-opt + .lc-poll-opt .lc-poll-emoji { animation-delay: .9s; }
+.lc-poll-opt:not(:disabled):hover { box-shadow: inset 0 0 0 2px var(--lc-blue); transform: translateY(-1px); }
+.lc-poll-opt:not(:disabled):hover .lc-poll-emoji { animation: lc-wiggle .5s ease-in-out infinite; }
+.lc-poll-fill { transition: width .7s cubic-bezier(.2, .8, .3, 1); }
+.lc-poll-opt.is-lead .lc-poll-fill { background: #bfdbfe; }
+.lc-poll-opt.is-voted { animation: lc-voted .55s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes lc-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes lc-wiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-12deg) scale(1.1); } 75% { transform: rotate(12deg) scale(1.1); } }
+@keyframes lc-voted { 0% { transform: scale(1); } 35% { transform: scale(1.05); box-shadow: inset 0 0 0 2px var(--lc-blue), 0 0 0 6px rgba(37, 99, 235, .15); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .lc-pill.is-open::after, .lc-poll-emoji, .lc-emo, .lc-emo-icon { animation: none !important; }
+}

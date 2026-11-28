@@ -395,22 +395,22 @@
       (t.who || []).forEach((w) => faces.append(avatar(w.uid, w.n, w.av, 'lc-av lc-av--xs')));
       b.append(faces, el('span', '', t.c + ' ' + plural(t.c, 'ответ', 'ответа', 'ответов')));
       if (t.teach) b.append(el('span', 'lc-thteach', '· есть ответ преподавателя'));
-      else if (t.last && !isReplay) b.append(el('span', 'lc-thlast', '· последний ' + hhmm(t.last)));
+      else if (t.last && !isReplay) b.append(el('span', 'lc-thlast', '· ' + hhmm(t.last)));
       return b;
     }
 
     function renderChips(m, n) {
       const box = el('div', 'lc-chips');
-      // Реакции команды — аватаркой с эмодзи, как «сердечко от автора».
+      // Реакции команды — как в Telegram: такая же плашка, но справа вместо
+      // числа — аватарка преподавателя. В общий счётчик не входят.
       (m.tr || []).forEach(([rid, uid, name, av]) => {
         const r = reactions.get(rid);
         if (!r) return;
         const mine = uid === S.me.id;
-        const t = el(mine ? 'button' : 'span', 'lc-tr' + (mine ? ' is-mine' : ''));
+        const t = mine ? btn('lc-chip lc-chip--tr is-mine', '', () => react(n._m, rid, t)) : el('span', 'lc-chip lc-chip--tr');
         t.dataset.rid = rid;
-        if (mine) { t.type = 'button'; t.addEventListener('click', () => react(n._m, rid, t)); }
         t.title = name + ' — реакция';
-        t.append(avatar(uid, name, av, 'lc-av lc-av--tr'), reactionImg(r, false));
+        t.append(reactionImg(r, false), avatar(uid, name, av, 'lc-av lc-av--chip'));
         box.append(t);
       });
       (m.rx || []).forEach(([rid, count, mine]) => {
@@ -572,6 +572,7 @@
       const mainRow = el('div', 'lc-picker-row');
       const extraRow = el('div', 'lc-picker-row lc-picker-extra');
       let extraIndex = 0;
+      let mainIndex = 0;
       cfg.reactions.filter((r) => r.active).forEach((r) => {
         const b = btn('lc-pick', '', () => {
           react(cur(), r.id, b);
@@ -585,7 +586,7 @@
           b.addEventListener('mouseenter', () => { img.src = r.anim; });
           b.addEventListener('mouseleave', () => { img.src = r.still || r.anim; });
         }
-        if (!r.main) b.style.setProperty('--i', extraIndex++);
+        b.style.setProperty('--i', r.main ? mainIndex++ : extraIndex++);
         (r.main ? mainRow : extraRow).append(b);
       });
       p.append(mainRow);
@@ -636,7 +637,8 @@
         if (ex) { ex[1] += mine ? -1 : 1; ex[2] = !mine; } else rx.push([rid, 1, true]);
         refresh(Object.assign({}, m, { rx: rx.filter((x) => x[1] > 0) }));
       }
-      if (added && r) burst(r, fromEl, m.id, rid);
+      // Чуть позже: на телефоне сначала закрывается лист с реакциями.
+      if (added && r) setTimeout(() => burst(r, fromEl, m.id, rid), 40);
       if (navigator.vibrate && touch) navigator.vibrate(10);
       const res = await api('POST', url('react', m.id), { reaction: rid });
       if (!res.ok) toast(res.json.message || 'Не получилось');
@@ -713,13 +715,40 @@
       poll(true);
     }
 
+    // Одно открытое меню; повторное нажатие на ту же кнопку его закрывает.
+    // Раньше обработчик «нажали мимо» от прошлого открытия закрывал новое меню —
+    // скрепка открывалась через раз.
+    let menuAnchor = null;
+    let menuOff = null;
+    let hintTimer = null;
+    function armMenu(menu, anchor) {
+      menuAnchor = anchor;
+      const off = (e) => {
+        if (menu.contains(e.target) || (anchor && anchor.contains(e.target))) return;
+        closeMenus();
+      };
+      menuOff = off;
+      setTimeout(() => { if (menuOff === off) document.addEventListener('click', off); }, 0);
+    }
+    function toggleSame(anchor) {
+      if (anchor && menuAnchor === anchor && document.querySelector('.lc-menu')) { closeMenus(); return true; }
+      return false;
+    }
     function popMenu(anchor, items, above) {
+      if (toggleSame(anchor)) return;
       closeMenus();
       const menu = el('div', 'lc-menu');
       items.forEach(([label, fn, opts]) => {
         opts = opts || {};
         const b = btn('lc-menu-item' + (opts.danger ? ' is-danger' : ''), label, () => { closeMenus(); fn(); });
-        if (opts.disabled) { b.disabled = true; if (opts.hint) b.append(el('span', 'lc-menu-hint', opts.hint)); }
+        if (opts.disabled) {
+          b.disabled = true;
+          if (opts.hint) {
+            const h = el('span', 'lc-menu-hint', opts.hint);
+            if (opts.until) h.dataset.until = opts.until; // живой отсчёт
+            b.append(h);
+          }
+        }
         menu.append(b);
       });
       document.body.append(menu);
@@ -727,10 +756,24 @@
       const top = above ? r.top - menu.offsetHeight - 6 : r.bottom + 4;
       menu.style.top = Math.max(8, Math.min(top, window.innerHeight - menu.offsetHeight - 8)) + 'px';
       menu.style.left = Math.max(8, Math.min(above ? r.left : r.right - menu.offsetWidth, window.innerWidth - menu.offsetWidth - 8)) + 'px';
-      setTimeout(() => document.addEventListener('click', closeMenus, { once: true }), 0);
+      if (menu.querySelector('[data-until]')) {
+        hintTimer = setInterval(() => {
+          menu.querySelectorAll('[data-until]').forEach((h) => {
+            const l = Math.max(0, Number(h.dataset.until) - Math.floor(Date.now() / 1000));
+            if (l > 0) { h.textContent = 'через ' + Math.floor(l / 60) + ':' + String(l % 60).padStart(2, '0'); return; }
+            h.closest('button').disabled = false;
+            h.remove();
+          });
+        }, 1000);
+      }
+      armMenu(menu, anchor);
     }
     function closeMenus() {
       document.querySelectorAll('.lc-menu').forEach((x) => x.remove());
+      if (menuOff) document.removeEventListener('click', menuOff);
+      menuOff = null;
+      menuAnchor = null;
+      clearInterval(hintTimer);
     }
     function adminMenu(m, anchor) {
       popMenu(anchor, adminItems(m));
@@ -909,6 +952,7 @@
           blk.dataset.root = id;
           blk.dataset.id = id + '.5';
           blk.classList.add('is-new');
+          blk.addEventListener('animationend', () => blk.classList.remove('is-new'), { once: true });
         }
         if (host.nextElementSibling !== blk) host.after(blk);
         const items = Array.from((S.threads.get(id) || new Map()).values()).sort((a, b) => a.id - b.id)
@@ -966,6 +1010,7 @@
       if (res.ok) {
         input.value = '';
         autosize();
+        if (touch) input.blur(); // телефон: после отправки клавиатура убирается
         clearTarget();
         if (S.question) setQuestion(false);
         put(res.json.msg);
@@ -1070,8 +1115,7 @@
       window.visualViewport.addEventListener('resize', layoutPin);
       window.visualViewport.addEventListener('scroll', layoutPin);
     }
-    // Отправка не закрывает клавиатуру — можно писать дальше, как в мессенджерах.
-    send.addEventListener('pointerdown', (e) => { if (document.activeElement === input) e.preventDefault(); });
+
 
     function renderNameBox() {
       nameBox.innerHTML = '';
@@ -1283,8 +1327,11 @@
     function applyState() {
       keepAwake();
       const s = S.state.s;
-      pill.className = 'lc-pill is-' + s;
-      pill.textContent = isReplay ? 'запись' : ({ waiting: 'скоро', open: 'открыт', break: 'пауза', closed: 'завершён' })[s] || '';
+      // Статус — кружком: зелёный — чат открыт, жёлтый — эфир прервался,
+      // серый — закрыт, ещё не открылся или это запись. Словами — в подсказке.
+      pill.className = 'lc-pill is-' + (isReplay ? 'replay' : s);
+      pill.textContent = '';
+      pill.title = isReplay ? 'Запись эфира' : ({ waiting: 'Чат скоро откроется', open: 'Чат открыт', break: 'Эфир прервался', closed: 'Эфир завершён' })[s] || '';
       let text = '';
       if (!isReplay) {
         if (s === 'waiting') text = 'Чат откроется' + (S.state.opensLabel ? ' в ' + S.state.opensLabel : ' перед уроком');
@@ -1569,19 +1616,70 @@
         const info = emotionOf(x.code);
         let b = keep.get(x.id);
         if (!b) {
-          b = btn('lc-emo', '', () => emotionPop(b));
+          b = btn('lc-emo is-new', '', () => tapEmotion(b));
           b.dataset.id = x.id;
+          b.dataset.code = x.code; // свой цвет у каждой эмоции (CSS)
+          b.addEventListener('animationend', (e) => { if (e.target === b) b.classList.remove('is-new', 'is-bump'); });
+          longPress(b, () => { b._lp = Date.now(); emotionPop(b); });
           const bar = el('i', 'lc-emo-bar');
           bar.style.animationDuration = left(x.ends) + 's';
-          b.append(emojiImg(info), el('span', 'lc-emo-label', info.label), el('span', 'lc-emo-n'), bar);
+          const icon = el('span', 'lc-emo-icon');
+          icon.append(emojiImg(info));
+          b.append(icon, el('span', 'lc-emo-label', info.label), el('span', 'lc-emo-n'), bar);
+          b._c = x.c;
         }
+        // Кто-то поддержал — эмоция «вздрагивает», вылетает «+1».
+        if (x.c > (b._c || 0) && b._e) {
+          b.classList.remove('is-bump');
+          void b.offsetWidth;
+          b.classList.add('is-bump');
+          floatText(b, '+' + (x.c - b._c));
+        }
+        b._c = x.c;
         b._e = x;
         b.classList.toggle('is-mine', !!x.mine);
+        b.title = x.n + ' чувствует: ' + info.label + (x.c ? ' · поддержали: ' + x.names.join(', ') : '') + (x.mine || x.uid === S.me.id ? '' : ' · нажмите, чтобы поддержать');
         b.querySelector('.lc-emo-n').textContent = x.c ? String(x.c) : '';
         return b;
       });
-      box.replaceChildren(...nodes);
+      const ids = new Set(list.map((x) => x.id));
+      Array.from(box.children).forEach((c) => { if (!ids.has(Number(c.dataset.id))) c.remove(); });
+      nodes.forEach((b) => { if (b.parentNode !== box) box.append(b); });
       if (!box.isConnected) strip.replaceChildren(box);
+    }
+
+    // Нажатие на чужую эмоцию — сразу поддержка (как реакция); на свою или уже
+    // поддержанную — подробности. Подробности ещё — долгим нажатием.
+    async function tapEmotion(b) {
+      if (b._lp && Date.now() - b._lp < 900) return; // это было долгое нажатие
+      const x = b._e;
+      if (x.mine || x.uid === S.me.id || !cfg.url.support || !canReact()) { emotionPop(b); return; }
+      x.mine = true;
+      x.c += 1;
+      b._c = x.c;
+      b._e = x;
+      b.classList.add('is-mine');
+      b.querySelector('.lc-emo-n').textContent = String(x.c);
+      b.classList.remove('is-bump');
+      void b.offsetWidth;
+      b.classList.add('is-bump', 'is-pop');
+      setTimeout(() => b.classList.remove('is-pop'), 650);
+      floatText(b, '+1');
+      if (navigator.vibrate && touch) navigator.vibrate(12);
+      const res = await api('POST', url('support', x.id));
+      if (!res.ok) toast(res.json.message || 'Не получилось');
+      poll(true);
+    }
+
+    // «+1» и эмодзи, улетающие вверх от элемента.
+    function floatText(anchor, text) {
+      if (!anchor.isConnected || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const r = anchor.getBoundingClientRect();
+      const f = el('div', 'lc-float', text);
+      f.style.left = r.left + r.width / 2 + 'px';
+      f.style.top = r.top + 'px';
+      document.body.append(f);
+      setTimeout(() => f.remove(), 900);
     }
 
     function emotionPop(chip) {
@@ -1606,13 +1704,14 @@
     }
 
     function showPop(anchor, pop) {
+      if (toggleSame(anchor)) return;
       closeMenus();
       pop.classList.add('lc-menu');
       document.body.append(pop);
       const r = anchor.getBoundingClientRect();
       pop.style.top = Math.max(8, Math.min(r.bottom + 6, window.innerHeight - pop.offsetHeight - 8)) + 'px';
       pop.style.left = Math.max(8, Math.min(r.left, window.innerWidth - pop.offsetWidth - 8)) + 'px';
-      setTimeout(() => document.addEventListener('click', (e) => { if (!pop.contains(e.target)) closeMenus(); }, { once: true }), 0);
+      armMenu(pop, anchor);
     }
 
     // «Пон / Не пон» — как опрос в сторис: две большие кнопки, после ответа
@@ -1626,37 +1725,96 @@
       const total = P.yes + P.no;
       const showRes = !active || P.mine !== null || S.me.team;
       let card = strip.querySelector(':scope > .lc-poll');
-      if (!card || Number(card.dataset.id) !== P.id) {
-        card = el('div', 'lc-poll');
-        card.dataset.id = P.id;
-        strip.replaceChildren(card);
-      }
-      const head = el('div', 'lc-poll-head');
-      head.append(el('b', '', 'Пон или не пон?'), el('span', 'lc-poll-time', active ? mmss(left(P.ends)) : 'итог · ' + total + ' ' + plural(total, 'ответ', 'ответа', 'ответов')));
-      const opts = el('div', 'lc-poll-opts');
-      [[true, '👍 Пон', P.yes, P.yesNames], [false, '🤔 Не пон', P.no, P.noNames]].forEach(([choice, label, n, names]) => {
+      if (!card || Number(card.dataset.id) !== P.id) card = buildPoll(P);
+      card.classList.toggle('is-open', active && P.mine === null && !S.me.team);
+      card.classList.toggle('is-done', !active);
+
+      // кольцо-таймер
+      const dur = Math.max(1, P.ends - P.at);
+      card._ring.style.strokeDashoffset = String(RING * (1 - left(P.ends) / dur));
+      card._ring.parentNode.parentNode.hidden = !active;
+      card._time.textContent = active ? String(left(P.ends)) : 'итог · ' + total + ' ' + plural(total, 'ответ', 'ответа', 'ответов');
+      card._count.textContent = active ? total + ' ' + plural(total, 'ответ', 'ответа', 'ответов') : '';
+
+      card._opts.forEach((o) => {
+        const n = o._choice ? P.yes : P.no;
         const pct = total ? Math.round(n / total * 100) : 0;
-        const o = btn('lc-poll-opt' + (P.mine === choice ? ' is-mine' : '') + (showRes ? ' is-res' : ''), '', () => vote(choice));
+        o.classList.toggle('is-mine', P.mine === o._choice);
+        o.classList.toggle('is-res', showRes);
+        o.classList.toggle('is-lead', showRes && total > 0 && n * 2 > total);
         o.disabled = !active || P.mine !== null || S.me.team || S.me.demo;
-        const fill = el('i', 'lc-poll-fill');
-        fill.style.width = (showRes ? pct : 0) + '%';
-        o.append(fill, el('span', 'lc-poll-label', label), el('span', 'lc-poll-pct', showRes ? pct + '%' : ''));
-        if (names && names.length) {
-          o.title = names.join(', ');
-          longPress(o, () => showPop(o, el('div', 'lc-pop-names', (choice ? 'Пон: ' : 'Не пон: ') + names.join(', '))));
-        }
-        opts.append(o);
+        o._fill.style.width = (showRes ? pct : 0) + '%';
+        countTo(o._pct, showRes ? pct : null);
+        o._names = o._choice ? P.yesNames : P.noNames;
+        o.title = o._names && o._names.length ? o._names.join(', ') : '';
       });
-      const parts = [head, opts];
-      if (S.me.team && P.noNames && P.noNames.length) parts.push(el('div', 'lc-poll-no', 'Не пон: ' + P.noNames.join(', ')));
-      card.replaceChildren(...parts);
+      card._no.hidden = !(S.me.team && P.noNames && P.noNames.length);
+      card._no.textContent = 'Не пон: ' + (P.noNames || []).join(', ');
     }
 
-    async function vote(choice) {
+    const RING = 2 * Math.PI * 9;
+    function buildPoll(P) {
+      const card = el('div', 'lc-poll');
+      card.dataset.id = P.id;
+      const head = el('div', 'lc-poll-head');
+      const title = el('b', '', 'Пон или не пон?');
+      const right = el('span', 'lc-poll-meta');
+      card._count = el('span', 'lc-poll-count');
+      const ringBox = el('span', 'lc-poll-ring');
+      ringBox.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="9" class="lc-ring-bg"/><circle cx="12" cy="12" r="9" class="lc-ring-fg" stroke-dasharray="' + RING + '"/></svg>';
+      card._ring = ringBox.querySelector('.lc-ring-fg');
+      card._time = el('span', 'lc-poll-time');
+      ringBox.append(card._time);
+      right.append(card._count, ringBox);
+      head.append(title, right);
+      const opts = el('div', 'lc-poll-opts');
+      card._opts = [[true, '👍', 'Пон'], [false, '🤔', 'Не пон']].map(([choice, emoji, label]) => {
+        const o = btn('lc-poll-opt', '', () => vote(choice, o));
+        o._choice = choice;
+        o._fill = el('i', 'lc-poll-fill');
+        o._pct = el('span', 'lc-poll-pct');
+        const lab = el('span', 'lc-poll-label');
+        lab.append(el('span', 'lc-poll-emoji', emoji), el('span', '', label));
+        o.append(o._fill, lab, o._pct);
+        longPress(o, () => {
+          if (o._names && o._names.length) showPop(o, el('div', 'lc-pop-names', (choice ? 'Пон: ' : 'Не пон: ') + o._names.join(', ')));
+        });
+        opts.append(o);
+        return o;
+      });
+      card._no = el('div', 'lc-poll-no');
+      card.append(head, opts, card._no);
+      strip.replaceChildren(card);
+      return card;
+    }
+
+    // Проценты «досчитывают» до нового значения.
+    function countTo(elm, target) {
+      if (target === null) { elm.textContent = ''; elm._v = 0; return; }
+      const from = elm._v || 0;
+      if (from === target && elm.textContent) return;
+      const t0 = performance.now();
+      const step = (t) => {
+        const k = Math.min(1, (t - t0) / 450);
+        const v = Math.round(from + (target - from) * (1 - Math.pow(1 - k, 3)));
+        elm.textContent = v + '%';
+        if (k < 1) requestAnimationFrame(step);
+      };
+      elm._v = target;
+      requestAnimationFrame(step);
+    }
+
+    async function vote(choice, btnEl) {
       if (!S.poll || S.poll.mine !== null) return;
       S.poll = Object.assign({}, S.poll, { mine: choice, yes: S.poll.yes + (choice ? 1 : 0), no: S.poll.no + (choice ? 0 : 1) });
       renderPoll();
-      if (navigator.vibrate && touch) navigator.vibrate(10);
+      if (btnEl) {
+        btnEl.classList.remove('is-voted');
+        void btnEl.offsetWidth;
+        btnEl.classList.add('is-voted');
+        floatText(btnEl, choice ? '👍' : '🤔');
+      }
+      if (navigator.vibrate && touch) navigator.vibrate(12);
       const res = await api('POST', url('vote'), { choice });
       if (!res.ok) toast(res.json.message || 'Не получилось');
       poll(true);
@@ -1669,8 +1827,9 @@
       if (!S.me.emotion) return [label, () => {}, { disabled: true, hint: 'с ' + cfg.emotionLevel + ' уровня акулы' }];
       if (pollVisible() && S.poll.active) return [label, () => {}, { disabled: true, hint: 'идёт опрос' }];
       if (activeEmo().length >= cfg.emotionMax) return [label, () => {}, { disabled: true, hint: 'Максимум эмоций на экране' }];
-      if (S.me.emotionAt && left(S.me.emotionAt)) return [label, () => {}, { disabled: true, hint: 'через ' + mmss(left(S.me.emotionAt)) }];
-      return [label, () => setTimeout(() => emotionPicker(clip), 0)];
+      const open = () => setTimeout(() => emotionPicker(clip), 0);
+      if (S.me.emotionAt && left(S.me.emotionAt)) return [label, open, { disabled: true, hint: 'через ' + mmss(left(S.me.emotionAt)), until: S.me.emotionAt }];
+      return [label, open];
     }
     function emotionPicker(anchor) {
       const pop = el('div', 'lc-emo-grid');

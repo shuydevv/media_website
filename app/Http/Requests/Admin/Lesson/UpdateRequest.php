@@ -6,6 +6,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateRequest extends FormRequest
 {
+    use NormalizesKinescopeCodes;
+
     public function authorize(): bool
     {
         return true;
@@ -19,11 +21,11 @@ class UpdateRequest extends FormRequest
             'meet_link' => ['nullable', 'string'],
             'recording_link' => ['nullable', 'string'],
             'chat_shift_seconds' => ['nullable', 'integer', 'between:-3600,3600'],
-            'short_class' => ['nullable','string','max:255'],
+            'short_class' => ['nullable', 'string', 'max:255'],
             'notes_link' => ['nullable', 'url'],
             'homework_id' => ['nullable', 'exists:homeworks,id'],
             'image' => ['nullable', 'image', 'max:5120'], // до 5MB
-            'lesson_type'       => ['required','in:theory,practice'],
+            'lesson_type' => ['required', 'in:theory,practice'],
         ];
     }
 

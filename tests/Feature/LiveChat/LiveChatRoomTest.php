@@ -73,7 +73,7 @@ class LiveChatRoomTest extends TestCase
         $this->assertSame(['Боря Т.'], $emo[0]['names']);
 
         $this->as($c, 'POST', 'live-chat.emotion', ['code' => 'slow'])->assertOk();
-        $this->as($d, 'POST', 'live-chat.emotion', ['code' => 'fire'])->assertOk();
+        $this->as($d, 'POST', 'live-chat.emotion', ['code' => 'imba'])->assertOk();
         $this->as($b, 'POST', 'live-chat.emotion', ['code' => 'lol'])->assertStatus(422)->assertJsonPath('message', 'Максимум эмоций на экране');
 
         // через минуту эмоции исчезли, но у Ани ещё не прошло 5 минут
@@ -92,7 +92,7 @@ class LiveChatRoomTest extends TestCase
 
         $this->as($b, 'POST', 'live-chat.poll.start')->assertForbidden();
         $this->as($this->admin, 'POST', 'live-chat.poll.start')->assertOk();
-        $this->as($a, 'POST', 'live-chat.emotion', ['code' => 'fire'])->assertStatus(422)->assertJsonPath('error', 'poll');
+        $this->as($a, 'POST', 'live-chat.emotion', ['code' => 'imba'])->assertStatus(422)->assertJsonPath('error', 'poll');
 
         $this->as($a, 'POST', 'live-chat.vote', ['choice' => true])->assertOk();
         $this->as($b, 'POST', 'live-chat.vote', ['choice' => false])->assertOk();

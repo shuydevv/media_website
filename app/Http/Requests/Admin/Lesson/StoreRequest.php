@@ -7,6 +7,8 @@ use Illuminate\Validation\Rule;
 
 class StoreRequest extends FormRequest
 {
+    use NormalizesKinescopeCodes;
+
     public function authorize(): bool
     {
         return true;
@@ -24,11 +26,11 @@ class StoreRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'meet_link' => ['nullable', 'string'],
             'recording_link' => ['nullable', 'string'],
-            'short_class' => ['nullable','string','max:255'],
+            'short_class' => ['nullable', 'string', 'max:255'],
             'notes_link' => ['nullable', 'url'],
             'homework_id' => ['nullable', 'exists:homeworks,id'],
             'image' => ['nullable', 'image', 'max:5120'], // до 5MB
-            'lesson_type'       => ['required','in:theory,practice'],
+            'lesson_type' => ['required', 'in:theory,practice'],
         ];
     }
 
